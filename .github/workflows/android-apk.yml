@@ -27,13 +27,6 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Install reverse-engineering tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jadx apktool
-          jadx --version
-          apktool --version
-
       - name: Install npm dependencies
         run: npm install --no-audit --no-fund
 
