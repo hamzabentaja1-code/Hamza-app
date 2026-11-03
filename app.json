@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "HamZa",
+    "slug": "hamza-app",
+    "version": "0.7.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "android": {
+      "package": "com.hamza.app"
+    }
+  }
+}
