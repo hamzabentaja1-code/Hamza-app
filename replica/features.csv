@@ -1,0 +1,31 @@
+feature,area,priority,evidence,status,notes
+Dashboard KPIs,dashboard,must,public website and App Store description,partial,Existing HamZa summary is basic; date filters and reconciliation unverified
+Customer profiles and history,contacts,must,public website,partial,Basic customer records exist; balances/history incomplete
+Supplier profiles and history,contacts,must,public website,partial,Basic supplier records exist; balances/history incomplete
+Product and service catalog,catalog,must,public website and current source,partial,Basic name/price/quantity exists; references/images/variants absent
+Quotes,devis,must,public website and current source,partial,Basic single-product quote flow exists; multi-line and lifecycle incomplete
+Invoices,documents,must,public website,missing,Need numbering, multi-line PDF, statuses and conversion
+Delivery notes,documents,must,public website,missing,Need partial delivery and stock posting
+Customer orders,documents,should,public website,missing,Need order lifecycle and conversion
+Proforma invoices,documents,should,public website,missing,Need document type and balance rules
+Credit notes and returns,documents,should,public website,missing,Need return workflow and stock/payment corrections
+Supplier purchases,purchasing,must,public website and current source,partial,Basic purchase records exist; supplier document lifecycle incomplete
+Supplier invoice OCR,AI,should,public website,unknown,Advertised publicly; requires separate OCR implementation/provider
+Stock ledger,inventory,must,public website and current source,partial,Simple quantity adjustment exists; audit ledger absent
+Multiple warehouses,inventory,should,public website,missing,Need warehouse model and transfers
+Stock counts and audit,inventory,should,public website,missing,Need count sessions, discrepancy reasons and audit trail
+Barcode scan,inventory,should,public website,missing,Need camera/barcode integration and product lookup
+POS cart and receipt,POS,should,public website,partial,Current source has sales form but not full POS cart
+Expenses,finance,must,public website and current source,partial,Basic expense capture exists; categories and recurring expenses incomplete
+Partial payments and balances,finance,must,public website,partial,Basic payment entries exist; allocations and remaining balance incomplete
+Cheques and effects,finance,should,public website,missing,Need due dates and settlement tracking
+Cash register and reconciliation,finance,should,public website,missing,Need cash movements and closing reconciliation
+Bank reconciliation,finance,could,public website,missing,Requires bank statement import and matching
+Reports and Excel export,reports,must,public website,partial,Basic summary only; filters and export incomplete
+PDF preview/share/print,mobile,must,public website and static APK report,partial,Some PDF generation/share exists; thermal printer integration not implemented in current app
+Bluetooth/network thermal printing,mobile,should,static APK report,missing,Native capability evidenced in reference wrapper; must be independently implemented and device-tested
+Push notifications,mobile,could,static APK report,missing,Registration strings observed; actual notification behavior unverified
+Arabic/French localization,settings,must,user requirements and current source,partial,Arabic UI and language toggle exist; French coverage incomplete
+Company profile and Moroccan identifiers,settings,must,user requirements,missing,ICE/RC/IF and document details
+Users roles and permissions,settings,should,public website,missing,Team and permission model absent
+Online storefront and orders,ecommerce,could,public website,unknown,Plan-dependent; not in first MVP
