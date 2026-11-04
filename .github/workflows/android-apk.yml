@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: hamza-android-${{ github.ref }}
+  group: hamza-android-recovery-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
