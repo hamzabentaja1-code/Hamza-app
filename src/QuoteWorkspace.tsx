@@ -10,12 +10,14 @@ export type QuoteRecord = {
   unitPrice:number; total:number; date:string; status:string;
   lines?:QuoteLine[]; notes?:string;
 };
+export type QuoteConversionType = 'invoice' | 'delivery';
 type Props = {
   products:Product[];
   customers:Customer[];
   quotes:QuoteRecord[];
   onSave:(quote:QuoteRecord)=>void;
   onPdf:(title:string, customerName:string, lines:string[], total:number)=>void;
+  onConvert:(quote:QuoteRecord,type:QuoteConversionType)=>void;
 };
 
 const gold='#D6AE55';
@@ -26,7 +28,7 @@ const choice={borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marg
 const active={borderColor:gold,backgroundColor:'#302819'};
 const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
-export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf}:Props) {
+export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,onConvert}:Props) {
   const [customerId,setCustomerId]=useState('');
   const [productId,setProductId]=useState('');
   const [quantity,setQuantity]=useState('1');
@@ -113,7 +115,11 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf}:
       <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {q.status}</Text>
       {quoteLines(q).map((line,i)=><Text key={i} style={{color:'#DDD',marginTop:5}}>{line}</Text>)}
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
-      <Pressable onPress={()=>onPdf('Devis',q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[])],q.total)} style={{alignSelf:'flex-start',padding:8}}><Text style={{color:gold,fontWeight:'800'}}>تصدير PDF</Text></Pressable>
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:8}}>
+        <Pressable onPress={()=>onPdf('Devis',q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[])],q.total)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
+        <Pressable onPress={()=>onConvert(q,'delivery')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>سند خروج</Text></Pressable>
+        <Pressable onPress={()=>onConvert(q,'invoice')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>فاتورة</Text></Pressable>
+      </View>
     </View>)}
     {quotes.length===0&&<Text style={{color:'#999',textAlign:'center',padding:12}}>مازال ما كاين حتى عرض سعر.</Text>}
   </ScrollView>;
