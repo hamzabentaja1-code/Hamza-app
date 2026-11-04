@@ -1,0 +1,39 @@
+name: YanCommerce read-only scan
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_url:
+        description: 'Starting YanCommerce page'
+        required: false
+        default: 'https://app.yancommerce.com/ventes/devis?onboarding=quick-devis-v1'
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run read-only scan
+        env:
+          YANCOMMERCE_URL: ${{ inputs.start_url }}
+          YANCOMMERCE_STORAGE_STATE_BASE64: ${{ secrets.YANCOMMERCE_STORAGE_STATE_BASE64 }}
+        run: node tools/yancommerce-scan.mjs
+      - name: Upload scan report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yancommerce-readonly-scan
+          path: yancommerce-scan/
+          if-no-files-found: warn
+          retention-days: 7
