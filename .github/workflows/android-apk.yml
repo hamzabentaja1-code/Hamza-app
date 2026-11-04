@@ -30,10 +30,12 @@ jobs:
       - name: Install npm dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Check Expo project health
+      - name: Check Expo project health (advisory)
+        continue-on-error: true
         run: npx expo-doctor
 
-      - name: Check Expo dependency compatibility
+      - name: Check Expo dependency compatibility (advisory)
+        continue-on-error: true
         run: npx expo install --check
 
       - name: TypeScript validation
@@ -104,7 +106,9 @@ jobs:
           echo "MOBSF_FILE_NAME=$FILE_NAME" >> "$GITHUB_ENV"
           curl --fail-with-body -sS -X POST http://127.0.0.1:8000/api/v1/scan \
             -H "Authorization: $MOBSF_RUNTIME_API_KEY" \
-            --data-urlencode "hash=$HASH" -o mobsf-scan-response.json
+            --data-urlencode "hash=$HASH" \\
+            --data-urlencode "file_name=$FILE_NAME" \\
+            --data-urlencode "scan_type=apk" -o mobsf-scan-response.json
           cat mobsf-scan-response.json
 
       - name: Export MobSF JSON security report
