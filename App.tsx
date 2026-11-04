@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {SafeAreaView, View, Text, Pressable, ScrollView, TextInput, StyleSheet, Alert, ActivityIndicator} from 'react-native';
 import {StatusBar} from 'expo-status-bar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {readAppData, writeAppData} from './src/storage';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
@@ -40,8 +40,8 @@ export default function App() {
   const [name,setName]=useState(''); const [price,setPrice]=useState(''); const [qty,setQty]=useState('');
   const [customer,setCustomer]=useState('');
   const [saleProduct,setSaleProduct]=useState(''); const [saleCustomer,setSaleCustomer]=useState(''); const [saleQty,setSaleQty]=useState('1');
-  useEffect(()=>{(async()=>{try{const raw=await AsyncStorage.getItem(STORE_KEY);if(raw){const d=JSON.parse(raw);setProducts(d.products||[]);setCustomers(d.customers||[]);setSales(d.sales||[]);setPurchases(d.purchases||[]);setExpenses(d.expenses||[]);setSuppliers(d.suppliers||[]);setQuotes(d.quotes||[]);setPayments(d.payments||[]);}}catch(e){Alert.alert('تنبيه','تعذر تحميل البيانات المحفوظة.');}finally{setLoaded(true);}})();},[]);
-  useEffect(()=>{if(loaded){AsyncStorage.setItem(STORE_KEY,JSON.stringify({products,customers,sales,purchases,expenses,suppliers,quotes,payments})).catch(()=>Alert.alert('خطأ','ما قدرناش نحفظو البيانات.'));}},[products,customers,sales,purchases,expenses,suppliers,quotes,payments,loaded]);
+  useEffect(()=>{(async()=>{try{const d=await readAppData({products:[],customers:[],sales:[],purchases:[],expenses:[],suppliers:[],quotes:[],payments:[]});setProducts(Array.isArray(d.products)?d.products as Product[]:[]);setCustomers(Array.isArray(d.customers)?d.customers as Customer[]:[]);setSales(Array.isArray(d.sales)?d.sales as Sale[]:[]);setPurchases(Array.isArray(d.purchases)?d.purchases as Purchase[]:[]);setExpenses(Array.isArray(d.expenses)?d.expenses as Expense[]:[]);setSuppliers(Array.isArray(d.suppliers)?d.suppliers as Supplier[]:[]);setQuotes(Array.isArray(d.quotes)?d.quotes as Quote[]:[]);setPayments(Array.isArray(d.payments)?d.payments as Payment[]:[]);}catch(e){Alert.alert('تنبيه',e instanceof Error?e.message:'تعذر تحميل البيانات المحفوظة.');}finally{setLoaded(true);}})();},[]);
+  useEffect(()=>{if(loaded){writeAppData({products,customers,sales,purchases,expenses,suppliers,quotes,payments}).catch(()=>Alert.alert('خطأ','ما قدرناش نحفظو البيانات.'));}},[products,customers,sales,purchases,expenses,suppliers,quotes,payments,loaded]);
   const stockValue=useMemo(()=>products.reduce((a,p)=>a+p.price*p.qty,0),[products]);
   const salesTotal=useMemo(()=>sales.reduce((a,x)=>a+x.total,0),[sales]);
   const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
