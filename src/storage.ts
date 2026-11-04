@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const HAMZA_STORAGE_KEY = 'hamza_app_data';
+export const HAMZA_STORAGE_KEY = 'hamza_app_data_v03';
 export const HAMZA_SCHEMA_VERSION = 1;
 
 export interface HamzaBackup {
