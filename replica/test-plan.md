@@ -1,33 +1,30 @@
-# HamZa Replica test plan — quote vertical slice
+# HamZa Replica test plan — quote to invoice / delivery slice
 
-## Automated quote-calculation cases
+## Automated tests authored (not yet run)
 
-- Q-H1: two lines, 2 × 1250 and 3 × 2000 centimes → subtotal 8500 centimes.
-- Q-H2: line discount and document discount apply in the correct order.
-- Q-H3: fractional quantity 0.25 × 10000 centimes → 2500 centimes.
-- Q-N1: empty line list is rejected.
-- Q-N2: zero quantity, negative unit price and more than three decimal places are rejected.
-- Q-N3: line discount greater than line gross is rejected.
-- Q-N4: document discount greater than subtotal is rejected.
+- Q-H1: multi-line quote totals in integer MAD centimes.
+- Q-H2: line and document discounts apply in the correct order.
+- Q-H3: fractional quantity to three decimal places.
+- Q-N1: empty quote is rejected.
+- Q-N2: invalid quantity, negative price and excess decimal precision are rejected.
+- Q-N3: line or document discount cannot exceed the relevant amount.
+- D-H1: invoice conversion creates a numbered document and does not change stock.
+- D-H2: delivery conversion deducts stock from linked products.
+- D-N1: duplicate conversion of the same quote to the same document type is rejected.
+- D-N2: delivery conversion is rejected when stock is insufficient.
 
-Test command: npm run test:quote. These tests are authored but have not yet been executed in CI.
+Run with: npm run test:quote
 
-## Manual mobile cases — pending
+## Manual Android tests — pending
 
-- Q-M1: select a customer, add at least three different products and save.
-- Q-M2: remove a line and verify totals recalculate.
-- Q-M3: enter a decimal quantity and verify the total.
-- Q-M4: enter invalid/negative discount and verify save is blocked.
-- Q-M5: close and reopen app; quote and all lines remain saved.
-- Q-M6: export Arabic PDF; verify RTL text, line order, amount and page layout.
-- Q-M7: switch to French and export; verify LTR labels and layout.
-- Q-M8: old single-line quotes from the previous version still display and export.
+- Select a customer, add three products, remove one line, set a discount and save.
+- Close and reopen the app; quote and all lines remain saved.
+- Export Arabic PDF and verify RTL, Arabic glyph shaping, line order and totals.
+- Switch to French and verify LTR labels and layout.
+- Convert quote to invoice; verify invoice appears in invoice list and stock is unchanged.
+- Convert quote to delivery note; verify stock decreases exactly once.
+- Try converting the same quote to the same document type again; verify it is blocked.
+- Try delivery conversion with insufficient stock; verify no document is created and stock remains unchanged.
+- Restore an older backup; verify existing records are preserved and new documents default to an empty list.
 
-## Not yet covered
-
-- Customer-to-quote-to-delivery/invoice conversion.
-- Payment allocation and outstanding balances.
-- Stock posting and duplicate-action protection.
-- Android physical-device smoke test, accessibility and performance.
-
-No case is marked passed until it has actually run and its result has been observed.
+No test is marked passed until it has actually run and its result has been observed.
