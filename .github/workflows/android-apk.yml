@@ -107,7 +107,7 @@ jobs:
           curl --fail-with-body -sS -X POST http://127.0.0.1:8000/api/v1/scan \
             -H "Authorization: $MOBSF_RUNTIME_API_KEY" \
             --data-urlencode "hash=$HASH" \
-            --data-urlencode "file_name=$FILE_NAME" \\
+            --data-urlencode "file_name=$FILE_NAME" \
             --data-urlencode "scan_type=apk" -o mobsf-scan-response.json
           cat mobsf-scan-response.json
 
