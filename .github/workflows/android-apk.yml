@@ -117,12 +117,12 @@ jobs:
       - name: Verify hardened Android configuration
         shell: bash
         run: |
-          grep -Eq '^[[:space:]]*android\\.minSdkVersion[[:space:]]*=[[:space:]]*29[[:space:]]*
+          grep -Fq 'android.minSdkVersion=29' android/gradle.properties
           if grep -q 'android:usesCleartextTraffic="true"' android/app/src/main/AndroidManifest.xml; then
             echo "Cleartext traffic is still enabled"
             exit 1
           fi
-          grep -n 'minSdkVersion' android/build.gradle android/app/build.gradle | head -10
+          grep -n 'android.minSdkVersion' android/gradle.properties
           grep -n 'usesCleartextTraffic' android/app/src/main/AndroidManifest.xml || true
 
       - name: Build signed release APK
