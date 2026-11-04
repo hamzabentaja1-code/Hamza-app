@@ -1,20 +1,23 @@
 # HamZa Replica build log
 
-## 2026-11-04 — first quote vertical slice (partial)
+## 2026-11-04 — quote, invoice and delivery vertical slice (partial)
 
-- Added src/domain/quote-calculator.ts: multi-line totals using integer MAD centimes, fractional quantities up to three decimals, and discount validation.
-- Added src/QuoteWorkspace.tsx: customer selection, product selection, multi-line quote editor, quantity, global discount, notes, saved quote history and PDF action.
-- Connected the workspace to App.tsx; old single-line quote records remain readable through a fallback display path.
-- Updated PDF export to use Arabic RTL labels/layout when AR is selected and French LTR labels/layout when FR is selected.
-- Added tests/quote-calculator.test.cjs and npm run test:quote using the existing TypeScript compiler and Node's built-in test runner.
-- Added .gitignore entries for generated test output and environment files.
-- Status: code written and committed to branch; tests have NOT yet been executed in a project build environment. Arabic PDF font shaping and physical Android behavior remain unverified.
+- Added multi-line quote editor with customer selection, product selection, fractional quantities, global discount, notes and saved history.
+- Quote totals use integer MAD centimes with validation in src/domain/quote-calculator.ts.
+- Added Arabic RTL / French LTR PDF labels and direction in App.tsx; Arabic font shaping still needs device verification.
+- Added quote-to-invoice conversion with a local numbered invoice record.
+- Added quote-to-delivery conversion with linked-product stock validation, stock deduction and duplicate-conversion protection.
+- Added conversion logic in src/domain/document-conversion.ts so its invariants can be unit-tested.
+- Added Node built-in unit tests for quote calculations, invoice conversion, delivery stock deduction, duplicate prevention and insufficient stock.
+- Added npm run test:quote to compile the pure TypeScript domain modules and run those tests.
+- Preserved old quote records for display/PDF. Legacy quotes without linked product IDs are blocked from delivery conversion to avoid incorrect stock changes.
+- Status: implementation committed to the working branch. Automated tests, TypeScript app compilation, Android bundle and physical device PDF rendering have NOT yet been run.
 
-## Remaining for this vertical slice
+## Remaining
 
-- Run npm run test:quote and npx tsc --noEmit in CI.
-- Verify Android bundling and PDF generation on a device.
-- Add business profile data (company identity, address and Moroccan ICE/RC/IF) to the PDF template.
-- Quote-to-delivery and quote-to-invoice conversion, with duplicate-conversion protection.
-- Partial payment allocation and customer outstanding balance.
-- Stock ledger with one-time posting.
+- Execute npm run test:quote and npx tsc --noEmit in a real CI environment.
+- Verify PDF Arabic shaping, layout and sharing on Android.
+- Add company profile fields (business name, address, phone, ICE, RC and IF) to PDF.
+- Implement partial delivery, invoice payment allocation and customer outstanding balances.
+- Add stock movement ledger/audit trail and purchase posting.
+- Install and smoke-test APK on a physical Android device before calling this build verified.
