@@ -4,7 +4,8 @@ import {StatusBar} from 'expo-status-bar';
 import {readAppData, writeAppData, createBackup, restoreBackup} from './src/storage';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import QuoteWorkspace, {QuoteRecord, QuoteLine, QuoteConversionType} from './src/QuoteWorkspace';
+import QuoteWorkspace, {QuoteRecord, QuoteConversionType} from './src/QuoteWorkspace';
+import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/domain/document-conversion';
 
 const GOLD = '#D6AE55';
 const htmlSafe=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
@@ -25,7 +26,7 @@ type Purchase = {id:number; productName:string; supplierName:string; qty:number;
 type Expense = {id:number; title:string; amount:number; date:string};
 type Supplier = {id:number; name:string};
 type Quote = QuoteRecord;
-type CommercialDocument = {id:number; number:string; type:'invoice'|'delivery'; customerName:string; total:number; date:string; status:string; sourceQuoteId:number; lines:QuoteLine[]};
+type CommercialDocument = ConvertedDocument;
 type Payment = {id:number; customerName:string; amount:number; method:string; date:string; note:string};
 export default function App() {
   const [screen,setScreen]=useState('الرئيسية');
@@ -58,42 +59,16 @@ export default function App() {
   const addExpense=()=>{const a=Number(expenseAmount.replace(',','.'));if(!expenseTitle.trim()||!Number.isFinite(a)||a<=0){Alert.alert('معلومات ناقصة','دخل وصف المصروف ومبلغ صحيح.');return;}setExpenses(v=>[{id:Date.now(),title:expenseTitle.trim(),amount:a,date:new Date().toLocaleDateString('fr-MA')},...v]);setExpenseTitle('');setExpenseAmount('');};
   const addQuote=()=>{const p=products.find(x=>String(x.id)===quoteProduct);const c=customers.find(x=>String(x.id)===quoteCustomer);const q=Number(quoteQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert('معلومات ناقصة','اختار المنتج والزبون والكمية.');return;}const x:Quote={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,date:new Date().toLocaleDateString('fr-MA'),status:'معلق'};setQuotes(v=>[x,...v]);setQuoteQty('1');Alert.alert('تم حفظ عرض السعر',`${x.total.toFixed(2)} DH`);};
   const convertQuote=(quote:Quote,type:QuoteConversionType)=>{
-    if(documents.some(d=>d.sourceQuoteId===quote.id&&d.type===type)){
-      Alert.alert('تم التحويل من قبل','هاد العرض سبق تحول لنفس نوع الوثيقة.');
-      return;
+    try{
+      const result=createConvertedDocument(
+        quote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),
+      );
+      setDocuments(current=>[result.document,...current]);
+      if(type==='delivery') setProducts(result.updatedProducts as Product[]);
+      Alert.alert('تم التحويل',type==='invoice'?'تسجلات الفاتورة.':'تسجل سند الخروج وتحدّث المخزون.');
+    }catch(error){
+      Alert.alert('تعذر التحويل',error instanceof Error?error.message:'وقع خطأ أثناء تحويل العرض.');
     }
-    const lines:QuoteLine[]=quote.lines?.length?quote.lines:[];
-    if(type==='delivery'){
-      if(!lines.length||lines.some(line=>!line.productId)){
-        Alert.alert('خاص عرض جديد','هاد العرض قديم وما فيهش ربط مباشر بالمنتجات. أنشئ عرضاً جديداً قبل سند الخروج.');
-        return;
-      }
-      const required=new Map<number,number>();
-      lines.forEach(line=>required.set(line.productId,(required.get(line.productId)||0)+line.qty));
-      const insufficient=Array.from(required.entries()).find(([id,amount])=>{
-        const product=products.find(p=>p.id===id);
-        return !product||product.qty<amount;
-      });
-      if(insufficient){
-        const product=products.find(p=>p.id===insufficient[0]);
-        Alert.alert('المخزون غير كافٍ',`المنتج ${product?.name||''} ما فيهش الكمية المطلوبة.`);
-        return;
-      }
-      setProducts(current=>current.map(product=>{
-        const amount=required.get(product.id)||0;
-        return amount?{...product,qty:product.qty-amount}:product;
-      }));
-    }
-    const id=Date.now();
-    const document:CommercialDocument={
-      id,number:(type==='invoice'?'FAC-':'BL-')+id,
-      type,customerName:quote.customerName,total:quote.total,
-      date:new Date().toLocaleDateString('fr-MA'),status:'صادرة',
-      sourceQuoteId:quote.id,
-      lines:lines.length?lines:[{productId:0,productName:quote.productName,qty:quote.qty,unitPrice:quote.unitPrice,total:quote.total}],
-    };
-    setDocuments(current=>[document,...current]);
-    Alert.alert('تم التحويل',type==='invoice'?'تسجلات الفاتورة.':'تسجل سند الخروج وتحدّث المخزون.');
   };
   const addPayment=()=>{const c=customers.find(x=>String(x.id)===paymentCustomer);const a=Number(paymentAmount.replace(',','.'));if(!c||!Number.isFinite(a)||a<=0){Alert.alert('معلومات ناقصة','اختار الزبون ودخل مبلغ صحيح.');return;}setPayments(v=>[{id:Date.now(),customerName:c.name,amount:a,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:paymentNote.trim()},...v]);setPaymentAmount('');setPaymentNote('');Alert.alert('تم تسجيل الأداء');};
   const exportBackup=async()=>{try{setBackupBusy(true);const json=await createBackup({products,customers,sales,purchases,expenses,suppliers,quotes,payments,documents});await Share.share({title:'HamZa backup',message:json});}catch(e){Alert.alert('خطأ','ما قدرناش نوجدوا النسخة الاحتياطية.');}finally{setBackupBusy(false);}};
