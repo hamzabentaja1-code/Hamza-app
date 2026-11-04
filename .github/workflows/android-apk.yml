@@ -49,15 +49,101 @@ jobs:
           mkdir -p android/app/src/main/assets
           npx expo export:embed --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
 
-      - name: Build debug APK
+      - name: Create temporary CI release signing key
+        shell: bash
+        run: |
+          STORE_PASS="$(openssl rand -hex 24)"
+          KEY_PASS="$(openssl rand -hex 24)"
+          KEY_FILE="$RUNNER_TEMP/hamza-ci-release.keystore"
+          echo "::add-mask::$STORE_PASS"
+          echo "::add-mask::$KEY_PASS"
+          keytool -genkeypair -v -storetype PKCS12 -keystore "$KEY_FILE" \
+            -alias hamza-release -keyalg RSA -keysize 3072 -sigalg SHA256withRSA \
+            -validity 3650 -storepass "$STORE_PASS" -keypass "$KEY_PASS" \
+            -dname "CN=HamZa Temporary CI Release, OU=Build, O=HamZa, C=MA"
+          {
+            echo "HAMZA_RELEASE_STORE_FILE=$KEY_FILE"
+            echo "HAMZA_RELEASE_STORE_PASSWORD=$STORE_PASS"
+            echo "HAMZA_RELEASE_KEY_ALIAS=hamza-release"
+            echo "HAMZA_RELEASE_KEY_PASSWORD=$KEY_PASS"
+          } >> "$GITHUB_ENV"
+
+      - name: Configure release signing
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path("android/app/build.gradle")
+          s = p.read_text()
+          if "signingConfigs {" not in s:
+              raise SystemExit("Could not locate signingConfigs block in generated Gradle file")
+          release_signing = """signingConfigs {
+                  release {
+                      storeFile file(System.getenv("HAMZA_RELEASE_STORE_FILE"))
+                      storePassword System.getenv("HAMZA_RELEASE_STORE_PASSWORD")
+                      keyAlias System.getenv("HAMZA_RELEASE_KEY_ALIAS")
+                      keyPassword System.getenv("HAMZA_RELEASE_KEY_PASSWORD")
+                  }
+          """
+          s = s.replace("signingConfigs {", release_signing, 1)
+          m = re.search(r"buildTypes\\s*\\{", s)
+          if not m:
+              raise SystemExit("Could not locate buildTypes block in generated Gradle file")
+          rel = re.search(r"release\\s*\\{", s[m.end():])
+          if not rel:
+              raise SystemExit("Could not locate release build type")
+          start = m.end() + rel.start()
+          brace = s.find("{", start)
+          depth = 0
+          end = None
+          for i in range(brace, len(s)):
+              if s[i] == "{": depth += 1
+              elif s[i] == "}":
+                  depth -= 1
+                  if depth == 0:
+                      end = i + 1
+                      break
+          if end is None:
+              raise SystemExit("Could not parse release build type")
+          block = s[start:end]
+          block = re.sub(r"signingConfig\\s+signingConfigs\\.debug", "signingConfig signingConfigs.release", block)
+          if "signingConfig signingConfigs.release" not in block:
+              block = block.replace("{", "{\\n            signingConfig signingConfigs.release", 1)
+          s = s[:start] + block + s[end:]
+          p.write_text(s)
+          PY
+
+      - name: Verify hardened Android configuration
+        shell: bash
+        run: |
+          grep -q 'minSdkVersion = 29\|minSdkVersion 29\|minSdkVersion rootProject.ext.minSdkVersion' android/build.gradle android/app/build.gradle
+          if grep -q 'android:usesCleartextTraffic="true"' android/app/src/main/AndroidManifest.xml; then
+            echo "Cleartext traffic is still enabled"
+            exit 1
+          fi
+          grep -n 'minSdkVersion' android/build.gradle android/app/build.gradle | head -10
+          grep -n 'usesCleartextTraffic' android/app/src/main/AndroidManifest.xml || true
+
+      - name: Build signed release APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Verify APK signature
+        shell: bash
+        run: |
+          APK="$(find android/app/build/outputs/apk/release -type f -name '*.apk' | head -n 1)"
+          test -n "$APK"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -x "$APKSIGNER"
+          "$APKSIGNER" verify --verbose --print-certs "$APK"
+          echo "APK_PATH=$APK" >> "$GITHUB_ENV"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: HamZa-APK
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 14
 
@@ -117,7 +203,7 @@ jobs:
             -H "Authorization: $MOBSF_RUNTIME_API_KEY" \
             --data-urlencode "hash=$MOBSF_SCAN_HASH" -o HamZa-MobSF-Report.json
           test -s HamZa-MobSF-Report.json
-          jq '{app_name: .app_name, package_name: .package_name, security_score: .security_score, track: .track, findings: (.findings | length)}' HamZa-MobSF-Report.json || true
+          jq '{app_name: .app_name, package_name: .package_name, security_score: .security_score, findings: (.appsec | {high: (.high|length), warning: (.warning|length)})}' HamZa-MobSF-Report.json || true
 
       - name: Upload MobSF report
         uses: actions/upload-artifact@v4
