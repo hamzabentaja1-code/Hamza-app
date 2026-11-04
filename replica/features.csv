@@ -3,9 +3,9 @@ Dashboard KPIs,dashboard,must,public website and App Store description,partial,E
 Customer profiles and history,contacts,must,public website,partial,Basic customer records exist; balances/history incomplete
 Supplier profiles and history,contacts,must,public website,partial,Basic supplier records exist; balances/history incomplete
 Product and service catalog,catalog,must,public website and current source,partial,Basic name/price/quantity exists; references/images/variants absent
-Quotes,devis,must,public website and current source,partial,Basic single-product quote flow exists; multi-line and lifecycle incomplete
-Invoices,documents,must,public website,missing,Need numbering, multi-line PDF, statuses and conversion
-Delivery notes,documents,must,public website,missing,Need partial delivery and stock posting
+Quotes,devis,must,public website and current source,partial,Multi-line editor, integer-centime totals, discount and notes, PDF export, and invoice/delivery conversion; tests authored but not executed
+Invoices,documents,must,public website,partial,Quotes can now create local invoice records and PDF; numbering and broader invoice lifecycle remain incomplete
+Delivery notes,documents,must,public website,partial,Quote conversion creates delivery record and deducts linked product quantities with duplicate protection; partial delivery and audit ledger remain incomplete
 Customer orders,documents,should,public website,missing,Need order lifecycle and conversion
 Proforma invoices,documents,should,public website,missing,Need document type and balance rules
 Credit notes and returns,documents,should,public website,missing,Need return workflow and stock/payment corrections

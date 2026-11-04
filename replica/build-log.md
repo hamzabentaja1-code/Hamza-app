@@ -1,0 +1,23 @@
+# HamZa Replica build log
+
+## 2026-11-04 — quote, invoice and delivery vertical slice (partial)
+
+- Added multi-line quote editor with customer selection, product selection, fractional quantities, global discount, notes and saved history.
+- Quote totals use integer MAD centimes with validation in src/domain/quote-calculator.ts.
+- Added Arabic RTL / French LTR PDF labels and direction in App.tsx; Arabic font shaping still needs device verification.
+- Added quote-to-invoice conversion with a local numbered invoice record.
+- Added quote-to-delivery conversion with linked-product stock validation, stock deduction and duplicate-conversion protection.
+- Added conversion logic in src/domain/document-conversion.ts so its invariants can be unit-tested.
+- Added Node built-in unit tests for quote calculations, invoice conversion, delivery stock deduction, duplicate prevention and insufficient stock.
+- Added npm run test:quote to compile the pure TypeScript domain modules and run those tests.
+- Preserved old quote records for display/PDF. Legacy quotes without linked product IDs are blocked from delivery conversion to avoid incorrect stock changes.
+- Status: implementation committed to the working branch. Automated tests, TypeScript app compilation, Android bundle and physical device PDF rendering have NOT yet been run.
+
+## Remaining
+
+- Execute npm run test:quote and npx tsc --noEmit in a real CI environment.
+- Verify PDF Arabic shaping, layout and sharing on Android.
+- Add company profile fields (business name, address, phone, ICE, RC and IF) to PDF.
+- Implement partial delivery, invoice payment allocation and customer outstanding balances.
+- Add stock movement ledger/audit trail and purchase posting.
+- Install and smoke-test APK on a physical Android device before calling this build verified.

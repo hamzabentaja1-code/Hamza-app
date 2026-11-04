@@ -8,7 +8,8 @@
     "android": "expo start --android",
     "web": "expo start --web",
     "build:apk": "eas build --platform android --profile preview",
-    "build:production": "eas build --platform android --profile production"
+    "build:production": "eas build --platform android --profile production",
+    "test:quote": "tsc src/domain/quote-calculator.ts src/domain/document-conversion.ts --target ES2020 --module commonjs --outDir .test-build && node --test tests/quote-calculator.test.cjs tests/document-conversion.test.cjs"
   },
   "dependencies": {
     "expo": "~54.0.0",
