@@ -39,6 +39,8 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf}:
   const calculation=useMemo(()=>{
     if(!lines.length) return null;
     try {
+      const discountValue=Number(discount.replace(',','.'));
+      if(!Number.isFinite(discountValue)||discountValue<0) return null;
       return calculateQuote(lines.map(line=>({
         productId:String(line.productId),
         description:line.productName,
@@ -66,6 +68,7 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf}:
       customerName:selectedCustomer.name,qty:lines.reduce((n,x)=>n+x.qty,0),
       unitPrice:0,total:calculation.totalCentimes/100,
       date:new Date().toLocaleDateString('fr-MA'),status:'معلق',
+      notes:notes.trim(),
       lines:lines.map((line,index)=>({...line,total:calculation.lines[index].lineTotalCentimes/100})),
     };
     onSave(record);
