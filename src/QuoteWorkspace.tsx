@@ -8,7 +8,7 @@ export type QuoteLine = {productId:number; productName:string; qty:number; unitP
 export type QuoteRecord = {
   id:number; productName:string; customerName:string; qty:number;
   unitPrice:number; total:number; date:string; status:string;
-  lines?:QuoteLine[];
+  lines?:QuoteLine[]; notes?:string;
 };
 type Props = {
   products:Product[];
@@ -110,7 +110,7 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf}:
       <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {q.status}</Text>
       {quoteLines(q).map((line,i)=><Text key={i} style={{color:'#DDD',marginTop:5}}>{line}</Text>)}
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
-      <Pressable onPress={()=>onPdf('Devis',q.customerName,quoteLines(q),q.total)} style={{alignSelf:'flex-start',padding:8}}><Text style={{color:gold,fontWeight:'800'}}>تصدير PDF</Text></Pressable>
+      <Pressable onPress={()=>onPdf('Devis',q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[])],q.total)} style={{alignSelf:'flex-start',padding:8}}><Text style={{color:gold,fontWeight:'800'}}>تصدير PDF</Text></Pressable>
     </View>)}
     {quotes.length===0&&<Text style={{color:'#999',textAlign:'center',padding:12}}>مازال ما كاين حتى عرض سعر.</Text>}
   </ScrollView>;
