@@ -6,6 +6,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import QuoteWorkspace, {QuoteRecord, QuoteConversionType} from './src/QuoteWorkspace';
 import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/domain/document-conversion';
+import {applyPaymentToInvoice} from './src/domain/payment-allocation';
 
 const GOLD = '#D6AE55';
 const htmlSafe=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
@@ -26,8 +27,8 @@ type Purchase = {id:number; productName:string; supplierName:string; qty:number;
 type Expense = {id:number; title:string; amount:number; date:string};
 type Supplier = {id:number; name:string};
 type Quote = QuoteRecord;
-type CommercialDocument = ConvertedDocument;
-type Payment = {id:number; customerName:string; amount:number; method:string; date:string; note:string};
+type CommercialDocument = ConvertedDocument & {paidCentimes?:number};
+type Payment = {id:number; customerName:string; amount:number; method:string; date:string; note:string; documentId?:number};
 export default function App() {
   const [screen,setScreen]=useState('الرئيسية');
   const [search,setSearch]=useState('');
@@ -38,7 +39,7 @@ export default function App() {
   const [purchases,setPurchases]=useState<Purchase[]>([]); const [expenses,setExpenses]=useState<Expense[]>([]); const [suppliers,setSuppliers]=useState<Supplier[]>([]);
   const [quotes,setQuotes]=useState<Quote[]>([]); const [payments,setPayments]=useState<Payment[]>([]); const [documents,setDocuments]=useState<CommercialDocument[]>([]);
   const [quoteProduct,setQuoteProduct]=useState(''); const [quoteCustomer,setQuoteCustomer]=useState(''); const [quoteQty,setQuoteQty]=useState('1');
-  const [paymentCustomer,setPaymentCustomer]=useState(''); const [paymentAmount,setPaymentAmount]=useState(''); const [paymentMethod,setPaymentMethod]=useState('نقداً'); const [paymentNote,setPaymentNote]=useState('');
+  const [paymentCustomer,setPaymentCustomer]=useState(''); const [paymentDocument,setPaymentDocument]=useState(''); const [paymentAmount,setPaymentAmount]=useState(''); const [paymentMethod,setPaymentMethod]=useState('نقداً'); const [paymentNote,setPaymentNote]=useState('');
   const [supplierName,setSupplierName]=useState(''); const [purchaseProduct,setPurchaseProduct]=useState(''); const [purchaseSupplier,setPurchaseSupplier]=useState(''); const [purchaseQty,setPurchaseQty]=useState('1'); const [purchaseCost,setPurchaseCost]=useState(''); const [expenseTitle,setExpenseTitle]=useState(''); const [expenseAmount,setExpenseAmount]=useState('');
   const [loaded,setLoaded]=useState(false); const [backupText,setBackupText]=useState(''); const [backupBusy,setBackupBusy]=useState(false);
   const [name,setName]=useState(''); const [price,setPrice]=useState(''); const [qty,setQty]=useState(''); const [editingProductId,setEditingProductId]=useState<number|null>(null);
@@ -70,7 +71,24 @@ export default function App() {
       Alert.alert('تعذر التحويل',error instanceof Error?error.message:'وقع خطأ أثناء تحويل العرض.');
     }
   };
-  const addPayment=()=>{const c=customers.find(x=>String(x.id)===paymentCustomer);const a=Number(paymentAmount.replace(',','.'));if(!c||!Number.isFinite(a)||a<=0){Alert.alert('معلومات ناقصة','اختار الزبون ودخل مبلغ صحيح.');return;}setPayments(v=>[{id:Date.now(),customerName:c.name,amount:a,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:paymentNote.trim()},...v]);setPaymentAmount('');setPaymentNote('');Alert.alert('تم تسجيل الأداء');};
+  const addPayment=()=>{
+    const c=customers.find(x=>String(x.id)===paymentCustomer);
+    const a=Number(paymentAmount.replace(',','.'));
+    if(!c||!Number.isFinite(a)||a<=0){Alert.alert('معلومات ناقصة','اختار الزبون ودخل مبلغ صحيح.');return;}
+    const invoice=documents.find(d=>d.id===Number(paymentDocument)&&d.type==='invoice'&&d.customerName===c.name);
+    if(paymentDocument&&!invoice){Alert.alert('الفاتورة غير موجودة','عاود اختار فاتورة صالحة لهذا الزبون.');return;}
+    let paidCentimes:number|undefined;
+    if(invoice){
+      try{
+        const result=applyPaymentToInvoice({type:'invoice',total:invoice.total,paidCentimes:invoice.paidCentimes,status:invoice.status},Math.round(a*100));
+        paidCentimes=result.invoice.paidCentimes;
+        setDocuments(current=>current.map(d=>d.id===invoice.id?{...d,paidCentimes:result.invoice.paidCentimes,status:result.invoice.status}:d));
+      }catch(error){Alert.alert('تعذر تسجيل الأداء',error instanceof Error?error.message:'راجع مبلغ الأداء.');return;}
+    }
+    setPayments(v=>[{id:Date.now(),customerName:c.name,amount:a,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:paymentNote.trim(),...(invoice?{documentId:invoice.id}:{})},...v]);
+    setPaymentAmount('');setPaymentNote('');setPaymentDocument('');
+    Alert.alert('تم تسجيل الأداء',invoice?'تحدّث الرصيد المتبقي ديال الفاتورة.':'تسجل الأداء كدفعة غير مخصصة لفاتورة.');
+  };
   const exportBackup=async()=>{try{setBackupBusy(true);const json=await createBackup({products,customers,sales,purchases,expenses,suppliers,quotes,payments,documents});await Share.share({title:'HamZa backup',message:json});}catch(e){Alert.alert('خطأ','ما قدرناش نوجدوا النسخة الاحتياطية.');}finally{setBackupBusy(false);}};
   const importBackup=()=>{Alert.alert('استرجاع البيانات','هاد العملية غادي تعوض البيانات الحالية بالنسخة اللي لصقتي. واش متأكد؟',[{text:'إلغاء',style:'cancel'},{text:'استرجاع',style:'destructive',onPress:async()=>{try{setBackupBusy(true);const d=await restoreBackup(backupText);setProducts(Array.isArray(d.products)?d.products as Product[]:[]);setCustomers(Array.isArray(d.customers)?d.customers as Customer[]:[]);setSales(Array.isArray(d.sales)?d.sales as Sale[]:[]);setPurchases(Array.isArray(d.purchases)?d.purchases as Purchase[]:[]);setExpenses(Array.isArray(d.expenses)?d.expenses as Expense[]:[]);setSuppliers(Array.isArray(d.suppliers)?d.suppliers as Supplier[]:[]);setQuotes(Array.isArray(d.quotes)?d.quotes as Quote[]:[]);setPayments(Array.isArray(d.payments)?d.payments as Payment[]:[]);setDocuments(Array.isArray(d.documents)?d.documents as CommercialDocument[]:[]);setBackupText('');Alert.alert('تم الاسترجاع','ترجعات البيانات بنجاح.');}catch(e){Alert.alert('تعذر الاسترجاع',e instanceof Error?e.message:'النسخة غير صالحة.');}finally{setBackupBusy(false);}}}]);};
   const exportPdf=async(title:string,customerName:string,lines:string[],total:number)=>{
@@ -116,7 +134,10 @@ export default function App() {
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':'delivery')).length===0&&<Text style={s.empty}>مازال ما تسجلات حتى وثيقة من هاد النوع.</Text>}
         {sales.length>0&&<Text style={s.note}>سجل المبيعات القديم باقي محفوظ كما هو.</Text>}
       </>
-      :screen==='الأداءات'?<><View style={s.panel}><Text style={s.panelTitle}>تسجيل أداء زبون</Text>{customers.map(c=><Pressable key={c.id} onPress={()=>setPaymentCustomer(String(c.id))} style={[s.choice,paymentCustomer===String(c.id)&&s.choiceActive]}><Text style={s.itemTitle}>{c.name}</Text></Pressable>)}<TextInput value={paymentAmount} onChangeText={setPaymentAmount} keyboardType="decimal-pad" placeholder="المبلغ DH" placeholderTextColor="#888" style={s.input}/><View style={s.row}>{['نقداً','تحويل','شيك'].map(m=><Pressable key={m} onPress={()=>setPaymentMethod(m)} style={[s.choice,{flex:1},paymentMethod===m&&s.choiceActive]}><Text style={s.itemTitle}>{m}</Text></Pressable>)}</View><TextInput value={paymentNote} onChangeText={setPaymentNote} placeholder="ملاحظة (اختياري)" placeholderTextColor="#888" style={s.input}/><Pressable style={s.action} onPress={addPayment}><Text style={s.actionText}>تسجيل الأداء</Text></Pressable></View><Text style={s.section}>سجل الأداءات ({payments.length})</Text>{payments.map(x=><View key={x.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{x.customerName} • {x.method}</Text><Text style={s.itemSub}>{x.date} {x.note}</Text></View><Text style={s.itemPrice}>{x.amount.toFixed(2)} DH</Text><Pressable onPress={()=>exportPdf('Reçu de paiement',x.customerName,[`Mode: ${x.method}`,`Montant: ${x.amount.toFixed(2)} DH`,x.note],x.amount)}><Text style={s.gold}>PDF</Text></Pressable></View>)}</>
+      :screen==='الأداءات'?<><View style={s.panel}><Text style={s.panelTitle}>تسجيل أداء زبون</Text>{customers.map(c=><Pressable key={c.id} onPress={()=>{setPaymentCustomer(String(c.id));setPaymentDocument('');}} style={[s.choice,paymentCustomer===String(c.id)&&s.choiceActive]}><Text style={s.itemTitle}>{c.name}</Text></Pressable>)}
+        <Text style={s.fieldLabel}>اختار الفاتورة (اختياري)</Text>
+        {documents.filter(d=>d.type==='invoice'&&(!paymentCustomer||d.customerName===customers.find(c=>String(c.id)===paymentCustomer)?.name)&&d.paidCentimes!==Math.round(d.total*100)).map(d=><Pressable key={d.id} onPress={()=>setPaymentDocument(String(d.id))} style={[s.choice,paymentDocument===String(d.id)&&s.choiceActive]}><Text style={s.itemTitle}>{d.number} — باقي {((d.total*100-(d.paidCentimes||0))/100).toFixed(2)} DH</Text></Pressable>)}
+        <TextInput value={paymentAmount} onChangeText={setPaymentAmount} keyboardType="decimal-pad" placeholder="المبلغ DH" placeholderTextColor="#888" style={s.input}/><View style={s.row}>{['نقداً','تحويل','شيك'].map(m=><Pressable key={m} onPress={()=>setPaymentMethod(m)} style={[s.choice,{flex:1},paymentMethod===m&&s.choiceActive]}><Text style={s.itemTitle}>{m}</Text></Pressable>)}</View><TextInput value={paymentNote} onChangeText={setPaymentNote} placeholder="ملاحظة (اختياري)" placeholderTextColor="#888" style={s.input}/><Pressable style={s.action} onPress={addPayment}><Text style={s.actionText}>تسجيل الأداء</Text></Pressable></View><Text style={s.section}>سجل الأداءات ({payments.length})</Text>{payments.map(x=><View key={x.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{x.customerName} • {x.method}</Text><Text style={s.itemSub}>{x.date} {x.note}</Text></View><Text style={s.itemPrice}>{x.amount.toFixed(2)} DH</Text><Pressable onPress={()=>exportPdf('Reçu de paiement',x.customerName,[`Mode: ${x.method}`,`Montant: ${x.amount.toFixed(2)} DH`,x.note],x.amount)}><Text style={s.gold}>PDF</Text></Pressable></View>)}</>
       :screen==='النسخ الاحتياطي'?<><View style={s.panel}><Text style={s.panelTitle}>حماية بياناتك</Text><Text style={s.panelText}>صدر نسخة JSON فيها المنتجات والزبناء والموردين والمبيعات والمشتريات والمصاريف والعروض والأداءات. خزن الملف فمكان آمن.</Text><Pressable style={[s.action,{marginTop:14}]} disabled={backupBusy} onPress={exportBackup}><Text style={s.actionText}>{backupBusy?'جاري التحضير...':'تصدير نسخة احتياطية'}</Text></Pressable></View><View style={[s.panel,{marginTop:14}]}><Text style={s.panelTitle}>استرجاع نسخة</Text><Text style={s.panelText}>حل ملف النسخة الاحتياطية، نسخ المحتوى كامل، ولصقو هنا. الاسترجاع كيعوض البيانات الحالية.</Text><TextInput value={backupText} onChangeText={setBackupText} multiline numberOfLines={8} textAlignVertical="top" placeholder="لصق محتوى ملف JSON هنا..." placeholderTextColor="#888" style={[s.input,{minHeight:150,textAlign:'left'}]}/><Pressable style={s.action} disabled={backupBusy||!backupText.trim()} onPress={importBackup}><Text style={s.actionText}>استرجاع البيانات</Text></Pressable></View></>
       :screen==='التقارير'?<View style={s.panel}><Text style={s.panelTitle}>ملخص الحسابات</Text><Text style={s.panelText}>المبيعات: {salesTotal.toFixed(2)} DH</Text><Text style={s.panelText}>المشتريات: {purchaseTotal.toFixed(2)} DH</Text><Text style={s.panelText}>المصاريف: {expenseTotal.toFixed(2)} DH</Text><Text style={s.panelTitle}>الصافي الأولي: {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text><Text style={s.note}>الحساب أولي ولا يشمل تكاليف أخرى أو ديون غير مسجلة.</Text></View>
       :<View style={s.panel}><Text style={s.panelTitle}>قسم {screen}</Text><Text style={s.panelText}>الواجهة الأولية موجودة. الوظائف التفصيلية لهذا القسم مازال ما تبرمجاتش.</Text><Text style={s.note}>الحالة: قيد التطوير</Text></View>}
