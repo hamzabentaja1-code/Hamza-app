@@ -87,10 +87,10 @@ jobs:
                   }
           """
           s = s.replace("signingConfigs {", release_signing, 1)
-          m = re.search(r"buildTypes\\s*\\{", s)
+          m = re.search(r"buildTypes\s*\{", s)
           if not m:
               raise SystemExit("Could not locate buildTypes block in generated Gradle file")
-          rel = re.search(r"release\\s*\\{", s[m.end():])
+          rel = re.search(r"release\s*\{", s[m.end():])
           if not rel:
               raise SystemExit("Could not locate release build type")
           start = m.end() + rel.start()
@@ -107,9 +107,9 @@ jobs:
           if end is None:
               raise SystemExit("Could not parse release build type")
           block = s[start:end]
-          block = re.sub(r"signingConfig\\s+signingConfigs\\.debug", "signingConfig signingConfigs.release", block)
+          block = re.sub(r"signingConfig\s+signingConfigs\.debug", "signingConfig signingConfigs.release", block)
           if "signingConfig signingConfigs.release" not in block:
-              block = block.replace("{", "{\\n            signingConfig signingConfigs.release", 1)
+              block = block.replace("{", "{\n            signingConfig signingConfigs.release", 1)
           s = s[:start] + block + s[end:]
           p.write_text(s)
           PY
