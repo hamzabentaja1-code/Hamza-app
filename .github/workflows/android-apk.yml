@@ -58,3 +58,73 @@ jobs:
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
+
+  mobsf:
+    name: MobSF Android security scan
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Download built APK
+        uses: actions/download-artifact@v4
+        with:
+          name: HamZa-APK
+          path: dist/apk
+
+      - name: Start MobSF container
+        env:
+          MOBSF_API_KEY: ${{ secrets.MOBSF_API_KEY }}
+        run: |
+          API_KEY="${MOBSF_API_KEY:-$(openssl rand -hex 32)}"
+          echo "::add-mask::$API_KEY"
+          echo "MOBSF_RUNTIME_API_KEY=$API_KEY" >> "$GITHUB_ENV"
+          docker pull opensecurity/mobile-security-framework-mobsf:latest
+          docker run -d --name mobsf -p 8000:8000 -e MOBSF_API_KEY="$API_KEY" opensecurity/mobile-security-framework-mobsf:latest
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8000/ >/dev/null; then
+              echo "MobSF is ready"
+              exit 0
+            fi
+            sleep 5
+          done
+          docker logs mobsf
+          exit 1
+
+      - name: Upload APK to MobSF and run static analysis
+        run: |
+          APK="$(find dist/apk -type f -name '*.apk' | head -n 1)"
+          test -n "$APK"
+          curl --fail-with-body -sS -X POST http://127.0.0.1:8000/api/v1/upload \
+            -H "Authorization: $MOBSF_RUNTIME_API_KEY" \
+            -F "file=@$APK" -o mobsf-upload.json
+          HASH="$(jq -r '.hash // empty' mobsf-upload.json)"
+          FILE_NAME="$(jq -r '.file_name // empty' mobsf-upload.json)"
+          test -n "$HASH"
+          echo "MOBSF_SCAN_HASH=$HASH" >> "$GITHUB_ENV"
+          echo "MOBSF_FILE_NAME=$FILE_NAME" >> "$GITHUB_ENV"
+          curl --fail-with-body -sS -X POST http://127.0.0.1:8000/api/v1/scan \
+            -H "Authorization: $MOBSF_RUNTIME_API_KEY" \
+            --data-urlencode "hash=$HASH" -o mobsf-scan-response.json
+          cat mobsf-scan-response.json
+
+      - name: Export MobSF JSON security report
+        run: |
+          curl --fail-with-body -sS -X POST http://127.0.0.1:8000/api/v1/report_json \
+            -H "Authorization: $MOBSF_RUNTIME_API_KEY" \
+            --data-urlencode "hash=$MOBSF_SCAN_HASH" -o HamZa-MobSF-Report.json
+          test -s HamZa-MobSF-Report.json
+          jq '{app_name: .app_name, package_name: .package_name, security_score: .security_score, track: .track, findings: (.findings | length)}' HamZa-MobSF-Report.json || true
+
+      - name: Upload MobSF report
+        uses: actions/upload-artifact@v4
+        with:
+          name: HamZa-MobSF-Report
+          path: |
+            HamZa-MobSF-Report.json
+            mobsf-scan-response.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Stop MobSF container
+        if: always()
+        run: docker rm -f mobsf || true
