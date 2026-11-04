@@ -2,11 +2,14 @@
   "expo": {
     "name": "HamZa",
     "slug": "hamza-app",
-    "version": "0.7.0",
+    "version": "0.7.1",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "android": {
-      "package": "com.hamza.app"
+      "package": "com.hamza.app",
+      "minSdkVersion": 29,
+      "usesCleartextTraffic": false,
+      "allowBackup": false
     }
   }
 }
