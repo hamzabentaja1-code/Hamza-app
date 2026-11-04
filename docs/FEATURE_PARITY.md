@@ -17,7 +17,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Users, roles, permissions, activity history
 - [ ] Arabic/French complete localization, language persistence, theme
 - [ ] Numbering series, document templates, custom fields
-- [ ] Import/export and backup/restore
+- [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
+- [ ] Automated scheduled backups and encrypted backup files
 
 ### Products and inventory
 - [ ] Product/service catalog with references, barcodes, photos and multiple images
