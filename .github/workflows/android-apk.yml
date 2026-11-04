@@ -30,6 +30,15 @@ jobs:
       - name: Install npm dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Check Expo project health
+        run: npx expo-doctor
+
+      - name: Check Expo dependency compatibility
+        run: npx expo install --check
+
+      - name: TypeScript validation
+        run: npx tsc --noEmit
+
       - name: Generate native Android project
         run: npx expo prebuild --platform android --clean
 
