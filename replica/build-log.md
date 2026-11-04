@@ -1,15 +1,20 @@
 # HamZa Replica build log
 
-## 2026-11-04 — quote calculation foundation
+## 2026-11-04 — first quote vertical slice (partial)
 
-- Status: implemented as a standalone TypeScript domain module; not yet connected to the quote screen.
-- Added `src/domain/quote-calculator.ts` for multi-line quote totals using integer MAD centimes.
-- Validation included: at least one line, positive quantity up to three decimals, non-negative unit price and discounts, line discount not exceeding line amount, document discount not exceeding subtotal, and safe-integer totals.
-- Remaining: connect calculator to the quote editor, persist multiple lines without losing existing AsyncStorage data, render Arabic/French quote PDF, and add automated tests.
+- Added src/domain/quote-calculator.ts: multi-line totals using integer MAD centimes, fractional quantities up to three decimals, and discount validation.
+- Added src/QuoteWorkspace.tsx: customer selection, product selection, multi-line quote editor, quantity, global discount, notes, saved quote history and PDF action.
+- Connected the workspace to App.tsx; old single-line quote records remain readable through a fallback display path.
+- Updated PDF export to use Arabic RTL labels/layout when AR is selected and French LTR labels/layout when FR is selected.
+- Added tests/quote-calculator.test.cjs and npm run test:quote using the existing TypeScript compiler and Node's built-in test runner.
+- Added .gitignore entries for generated test output and environment files.
+- Status: code written and committed to branch; tests have NOT yet been executed in a project build environment. Arabic PDF font shaping and physical Android behavior remain unverified.
 
-## Not yet complete
+## Remaining for this vertical slice
 
-- Customer-to-quote-to-PDF vertical slice.
-- Quote conversion to delivery note and invoice.
-- Partial-payment allocation and stock ledger posting.
-- Android device smoke test and APK validation.
+- Run npm run test:quote and npx tsc --noEmit in CI.
+- Verify Android bundling and PDF generation on a device.
+- Add business profile data (company identity, address and Moroccan ICE/RC/IF) to the PDF template.
+- Quote-to-delivery and quote-to-invoice conversion, with duplicate-conversion protection.
+- Partial payment allocation and customer outstanding balance.
+- Stock ledger with one-time posting.
