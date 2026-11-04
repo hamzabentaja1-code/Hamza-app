@@ -1,6 +1,13 @@
 # HamZa Replica test plan — quote to invoice / delivery slice
 
-## Automated tests authored (not yet run)
+## Automated tests
+
+- P-H1: partial payment updates paid amount and remaining balance.
+- P-H2: final payment marks invoice paid.
+- P-N1: overpayment and non-invoice allocations are rejected.
+- C-H1: customer balances aggregate invoices and exclude delivery notes.
+- C-H2: fully paid invoices have zero outstanding balance.
+- C-N1: invalid paid amounts are rejected and balances sort by largest debt.
 
 - Q-H1: multi-line quote totals in integer MAD centimes.
 - Q-H2: line and document discounts apply in the correct order.
