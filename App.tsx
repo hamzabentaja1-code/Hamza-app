@@ -53,6 +53,11 @@ export default function App() {
   const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
   const customerBalances=useMemo(()=>calculateCustomerBalances(documents),[documents]);
   const balanceFor=(customerName:string)=>customerBalances.find(x=>x.customerName===customerName);
+  const receivablesTotal=useMemo(()=>customerBalances.reduce((sum,x)=>sum+x.outstandingCentimes,0)/100,[customerBalances]);
+  const openInvoiceCount=useMemo(()=>documents.filter(d=>d.type==='invoice'&&(d.total*100-(d.paidCentimes||0))>0).length,[documents]);
+  const lowStockProducts=useMemo(()=>products.filter(p=>p.qty>0&&p.qty<=5),[products]);
+  const outOfStockCount=useMemo(()=>products.filter(p=>p.qty<=0).length,[products]);
+  const quoteTotal=useMemo(()=>quotes.reduce((sum,q)=>sum+q.total,0),[quotes]);
   const resetProductForm=()=>{setName('');setPrice('');setQty('');setEditingProductId(null);};
   const startEditProduct=(p:Product)=>{setEditingProductId(p.id);setName(p.name);setPrice(String(p.price));setQty(String(p.qty));};
   const addProduct=()=>{const n=Number(price.replace(',','.'));const q=Number(qty||'0');if(!name.trim()||!price.trim()||!Number.isFinite(n)||n<0||!Number.isFinite(q)||q<0){Alert.alert('معلومات ناقصة','دخل اسم المنتج وثمن وكمية صحيحين.');return;}if(editingProductId!==null){setProducts(v=>v.map(p=>p.id===editingProductId?{...p,name:name.trim(),price:n,qty:q}:p));Alert.alert('تم التعديل','تبدلات معلومات المنتج بنجاح.');}else{setProducts(v=>[{id:Date.now(),name:name.trim(),price:n,qty:q},...v]);}resetProductForm();};
@@ -115,7 +120,25 @@ export default function App() {
       {screen==='الرئيسية'?<>
         <View style={s.hero}><Text style={s.heroLabel}>مرحبا بك في</Text><Text style={s.heroTitle}>HamZa</Text><Text style={s.heroText}>تسيير تجارتك من مكان واحد</Text></View>
         <View style={s.stats}><View style={s.stat}><Text style={s.statNum}>{products.length}</Text><Text style={s.statLabel}>المنتجات</Text></View><View style={s.stat}><Text style={s.statNum}>{customers.length}</Text><Text style={s.statLabel}>الزبناء</Text></View><View style={s.stat}><Text style={s.statNum}>{salesTotal.toFixed(0)} DH</Text><Text style={s.statLabel}>مجموع المبيعات</Text></View></View>
-        <View style={s.summary}><Text style={s.summaryText}>قيمة المخزون: {stockValue.toFixed(2)} DH</Text><Text style={s.summaryText}>عدد عمليات البيع: {sales.length}</Text><Text style={s.summaryText}>مجموع المشتريات: {purchaseTotal.toFixed(2)} DH</Text><Text style={s.summaryText}>مجموع المصاريف: {expenseTotal.toFixed(2)} DH</Text><Text style={s.summaryText}>الصافي الأولي: {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text></View>
+        <View style={s.summary}>
+          <Text style={s.panelTitle}>ملخص النشاط</Text>
+          <Text style={s.summaryText}>قيمة المخزون بسعر البيع: {stockValue.toFixed(2)} DH</Text>
+          <Text style={s.summaryText}>المبيعات المسجلة: {salesTotal.toFixed(2)} DH • {sales.length} عملية</Text>
+          <Text style={s.summaryText}>المشتريات: {purchaseTotal.toFixed(2)} DH</Text>
+          <Text style={s.summaryText}>المصاريف: {expenseTotal.toFixed(2)} DH</Text>
+          <Text style={s.summaryText}>الصافي الأولي: {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text>
+        </View>
+        <View style={s.stats}>
+          <View style={s.stat}><Text style={s.statNum}>{receivablesTotal.toFixed(2)} DH</Text><Text style={s.statLabel}>ديون الزبناء</Text></View>
+          <View style={s.stat}><Text style={s.statNum}>{openInvoiceCount}</Text><Text style={s.statLabel}>فواتير غير مسواة</Text></View>
+          <View style={s.stat}><Text style={s.statNum}>{quotes.length}</Text><Text style={s.statLabel}>عروض الأسعار</Text></View>
+        </View>
+        <View style={s.summary}>
+          <Text style={s.summaryText}>المنتجات قليلة المخزون (5 أو أقل): {lowStockProducts.length}</Text>
+          <Text style={s.summaryText}>المنتجات النافدة: {outOfStockCount}</Text>
+          {lowStockProducts.slice(0,4).map(p=><Text key={p.id} style={s.note}>{p.name} — باقي {p.qty}</Text>)}
+          {lowStockProducts.length===0&&<Text style={s.summaryText}>ما كايناش منتجات قليلة المخزون حالياً.</Text>}
+        </View>
         <TextInput value={search} onChangeText={setSearch} placeholder="قلب على قسم..." placeholderTextColor="#888" style={s.search}/>
         <View style={s.grid}>{modules.filter(m=>m.ar.includes(search)||m.en.toLowerCase().includes(search.toLowerCase())).map(m=><Pressable key={m.en} onPress={()=>go(m.ar)} style={s.tile}><Text style={s.tileIcon}>{m.icon}</Text><Text style={s.tileTitle}>{m.ar}</Text><Text style={s.tileSub}>{m.en}</Text></Pressable>)}</View>
       </>:screen==='المنتجات'||screen==='المخزون'?<>
@@ -142,7 +165,34 @@ export default function App() {
         {documents.filter(d=>d.type==='invoice'&&(!paymentCustomer||d.customerName===customers.find(c=>String(c.id)===paymentCustomer)?.name)&&d.paidCentimes!==Math.round(d.total*100)).map(d=><Pressable key={d.id} onPress={()=>setPaymentDocument(String(d.id))} style={[s.choice,paymentDocument===String(d.id)&&s.choiceActive]}><Text style={s.itemTitle}>{d.number} — باقي {((d.total*100-(d.paidCentimes||0))/100).toFixed(2)} DH</Text></Pressable>)}
         <TextInput value={paymentAmount} onChangeText={setPaymentAmount} keyboardType="decimal-pad" placeholder="المبلغ DH" placeholderTextColor="#888" style={s.input}/><View style={s.row}>{['نقداً','تحويل','شيك'].map(m=><Pressable key={m} onPress={()=>setPaymentMethod(m)} style={[s.choice,{flex:1},paymentMethod===m&&s.choiceActive]}><Text style={s.itemTitle}>{m}</Text></Pressable>)}</View><TextInput value={paymentNote} onChangeText={setPaymentNote} placeholder="ملاحظة (اختياري)" placeholderTextColor="#888" style={s.input}/><Pressable style={s.action} onPress={addPayment}><Text style={s.actionText}>تسجيل الأداء</Text></Pressable></View><Text style={s.section}>سجل الأداءات ({payments.length})</Text>{payments.map(x=><View key={x.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{x.customerName} • {x.method}</Text><Text style={s.itemSub}>{x.date} {x.note}</Text></View><Text style={s.itemPrice}>{x.amount.toFixed(2)} DH</Text><Pressable onPress={()=>exportPdf('Reçu de paiement',x.customerName,[`Mode: ${x.method}`,`Montant: ${x.amount.toFixed(2)} DH`,x.note],x.amount)}><Text style={s.gold}>PDF</Text></Pressable></View>)}</>
       :screen==='النسخ الاحتياطي'?<><View style={s.panel}><Text style={s.panelTitle}>حماية بياناتك</Text><Text style={s.panelText}>صدر نسخة JSON فيها المنتجات والزبناء والموردين والمبيعات والمشتريات والمصاريف والعروض والأداءات. خزن الملف فمكان آمن.</Text><Pressable style={[s.action,{marginTop:14}]} disabled={backupBusy} onPress={exportBackup}><Text style={s.actionText}>{backupBusy?'جاري التحضير...':'تصدير نسخة احتياطية'}</Text></Pressable></View><View style={[s.panel,{marginTop:14}]}><Text style={s.panelTitle}>استرجاع نسخة</Text><Text style={s.panelText}>حل ملف النسخة الاحتياطية، نسخ المحتوى كامل، ولصقو هنا. الاسترجاع كيعوض البيانات الحالية.</Text><TextInput value={backupText} onChangeText={setBackupText} multiline numberOfLines={8} textAlignVertical="top" placeholder="لصق محتوى ملف JSON هنا..." placeholderTextColor="#888" style={[s.input,{minHeight:150,textAlign:'left'}]}/><Pressable style={s.action} disabled={backupBusy||!backupText.trim()} onPress={importBackup}><Text style={s.actionText}>استرجاع البيانات</Text></Pressable></View></>
-      :screen==='التقارير'?<View style={s.panel}><Text style={s.panelTitle}>ملخص الحسابات</Text><Text style={s.panelText}>المبيعات: {salesTotal.toFixed(2)} DH</Text><Text style={s.panelText}>المشتريات: {purchaseTotal.toFixed(2)} DH</Text><Text style={s.panelText}>المصاريف: {expenseTotal.toFixed(2)} DH</Text><Text style={s.panelTitle}>الصافي الأولي: {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text><Text style={s.note}>الحساب أولي ولا يشمل تكاليف أخرى أو ديون غير مسجلة.</Text></View>
+      :screen==='التقارير'?<>
+        <View style={s.panel}>
+          <Text style={s.panelTitle}>تقرير النشاط التجاري</Text>
+          <Text style={s.panelText}>إجمالي المبيعات: {salesTotal.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>إجمالي المشتريات: {purchaseTotal.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>إجمالي المصاريف: {expenseTotal.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>الصافي الأولي: {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text>
+          <Pressable style={s.action} onPress={()=>exportPdf('Rapport d’activité','',['Ventes: '+salesTotal.toFixed(2)+' DH','Achats: '+purchaseTotal.toFixed(2)+' DH','Dépenses: '+expenseTotal.toFixed(2)+' DH','Résultat initial: '+(salesTotal-purchaseTotal-expenseTotal).toFixed(2)+' DH'],salesTotal-purchaseTotal-expenseTotal)}><Text style={s.actionText}>تصدير تقرير النشاط PDF</Text></Pressable>
+        </View>
+        <View style={[s.panel,{marginTop:12}]}>
+          <Text style={s.panelTitle}>تقرير ديون الزبناء</Text>
+          <Text style={s.panelText}>إجمالي المبالغ المتبقية: {receivablesTotal.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>عدد الفواتير المفتوحة: {openInvoiceCount}</Text>
+          {customerBalances.filter(x=>x.outstandingCentimes>0).map(x=><View key={x.customerName} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{x.customerName}</Text><Text style={s.itemSub}>{x.invoiceCount} فاتورة</Text></View><Text style={s.itemPrice}>{(x.outstandingCentimes/100).toFixed(2)} DH</Text></View>)}
+          {receivablesTotal===0&&<Text style={s.note}>ما كايناش ديون مسجلة حالياً.</Text>}
+          <Pressable style={s.action} onPress={()=>exportPdf('Situation des clients','',customerBalances.filter(x=>x.outstandingCentimes>0).map(x=>x.customerName+' — '+(x.outstandingCentimes/100).toFixed(2)+' DH'),receivablesTotal)}><Text style={s.actionText}>تصدير تقرير الديون PDF</Text></Pressable>
+        </View>
+        <View style={[s.panel,{marginTop:12}]}>
+          <Text style={s.panelTitle}>تقرير المخزون</Text>
+          <Text style={s.panelText}>عدد المنتجات: {products.length}</Text>
+          <Text style={s.panelText}>قيمة المخزون بسعر البيع: {stockValue.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>منتجات نافدة: {outOfStockCount}</Text>
+          <Text style={s.panelText}>منتجات قليلة المخزون: {lowStockProducts.length}</Text>
+          {products.map(p=><View key={p.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{p.name}</Text><Text style={s.itemSub}>الكمية: {p.qty}</Text></View><Text style={s.itemPrice}>{(p.price*p.qty).toFixed(2)} DH</Text></View>)}
+          <Pressable style={s.action} onPress={()=>exportPdf('Etat du stock','',products.map(p=>p.name+' — '+p.qty+' × '+p.price.toFixed(2)+' DH'),stockValue)}><Text style={s.actionText}>تصدير حالة المخزون PDF</Text></Pressable>
+        </View>
+        <Text style={s.note}>الأرقام مبنية على السجلات الموجودة داخل HamZa. الصافي الأولي ليس ربحاً محاسبياً نهائياً، ولا يشمل تكلفة البضاعة المباعة أو الضرائب أو الالتزامات غير المسجلة.</Text>
+      </>
       :<View style={s.panel}><Text style={s.panelTitle}>قسم {screen}</Text><Text style={s.panelText}>الواجهة الأولية موجودة. الوظائف التفصيلية لهذا القسم مازال ما تبرمجاتش.</Text><Text style={s.note}>الحالة: قيد التطوير</Text></View>}
       <Text style={s.footer}>HamZa • com.hamza.app • v0.7 • البيانات محفوظة على الهاتف</Text>
     </ScrollView></SafeAreaView>;
