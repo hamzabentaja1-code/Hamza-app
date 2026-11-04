@@ -1,6 +1,6 @@
 feature,area,priority,evidence,status,notes
 Dashboard KPIs,dashboard,must,public website and App Store description,partial,Existing HamZa summary is basic; date filters and reconciliation unverified
-Customer profiles and history,contacts,must,public website,partial,Basic customer records exist; balances/history incomplete
+Customer profiles and history,contacts,must,public website,partial,Basic customer records plus invoice-count and outstanding-balance summary; full activity history and customer statements incomplete
 Supplier profiles and history,contacts,must,public website,partial,Basic supplier records exist; balances/history incomplete
 Product and service catalog,catalog,must,public website and current source,partial,Basic name/price/quantity exists; references/images/variants absent
 Quotes,devis,must,public website and current source,partial,Multi-line editor, integer-centime totals, discount and notes, PDF export, and invoice/delivery conversion; tests authored but not executed
@@ -17,7 +17,7 @@ Stock counts and audit,inventory,should,public website,missing,Need count sessio
 Barcode scan,inventory,should,public website,missing,Need camera/barcode integration and product lookup
 POS cart and receipt,POS,should,public website,partial,Current source has sales form but not full POS cart
 Expenses,finance,must,public website and current source,partial,Basic expense capture exists; categories and recurring expenses incomplete
-Partial payments and balances,finance,must,public website,partial,Basic payment entries exist; allocations and remaining balance incomplete
+Partial payments and balances,finance,must,public website,partial,Invoice payment allocation and customer outstanding balances are implemented; unallocated payments remain separate and broader finance lifecycle is incomplete
 Cheques and effects,finance,should,public website,missing,Need due dates and settlement tracking
 Cash register and reconciliation,finance,should,public website,missing,Need cash movements and closing reconciliation
 Bank reconciliation,finance,could,public website,missing,Requires bank statement import and matching
