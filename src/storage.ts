@@ -23,7 +23,7 @@ export async function readAppData<T extends Record<string, unknown>>(fallback: T
     if (parsed.schemaVersion === undefined) {
       const migrated = { ...parsed, schemaVersion: HAMZA_SCHEMA_VERSION };
       await AsyncStorage.setItem(HAMZA_STORAGE_KEY, JSON.stringify(migrated));
-      return migrated as T;
+      return migrated as unknown as T;
     }
     if (parsed.schemaVersion !== HAMZA_SCHEMA_VERSION) {
       throw new Error('نسخة البيانات غير مدعومة. احتافظ بنسخة احتياطية قبل التحديث.');
