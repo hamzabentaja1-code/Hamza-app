@@ -13,11 +13,19 @@
 - Preserved old quote records for display/PDF. Legacy quotes without linked product IDs are blocked from delivery conversion to avoid incorrect stock changes.
 - Status: implementation committed to the working branch. Automated tests, TypeScript app compilation, Android bundle and physical device PDF rendering have NOT yet been run.
 
+## 2026-11-04 — customer receivables (partial)
+
+- Added customer-level outstanding invoice balances, grouped from invoices and calculated in integer MAD centimes.
+- Customer list now displays invoice count and remaining amount, plus aggregate open receivables.
+- Delivery notes are excluded from receivables; unallocated payments do not reduce invoice balances.
+- Added unit tests for aggregation, settled invoices, delivery exclusion, sorting and invalid balances.
+- CI run after this change is pending; do not treat the feature as build-verified until that run completes.
+
 ## Remaining
 
-- Execute npm run test:quote and npx tsc --noEmit in a real CI environment.
+- Re-run npm run test:quote and npx tsc --noEmit after the customer receivables change.
 - Verify PDF Arabic shaping, layout and sharing on Android.
 - Add company profile fields (business name, address, phone, ICE, RC and IF) to PDF.
-- Implement partial delivery, invoice payment allocation and customer outstanding balances.
+- Implement partial delivery and customer statements; payment allocation and customer outstanding balances are now implemented.
 - Add stock movement ledger/audit trail and purchase posting.
 - Install and smoke-test APK on a physical Android device before calling this build verified.
