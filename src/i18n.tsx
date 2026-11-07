@@ -753,6 +753,17 @@ const fr: Record<string, string> = {
   "البنك: ": "Banque : ",
   "الحساب: ": "Compte : ",
 
+  "الاتجاه الشهري": "Tendance mensuelle",
+  "المبيعات: ": "Ventes : ",
+  "المشتريات: ": "Achats : ",
+  "مرتجعات المبيعات: ": "Retours clients : ",
+  "مرتجعات الموردين: ": "Retours fournisseurs : ",
+  "المصاريف: ": "Dépenses : ",
+  "مقارنة الموردين حسب صافي المشتريات": "Comparaison des fournisseurs par achats nets",
+  "عدد المشتريات: ": "Nombre d’achats : ",
+  "المرتجعات: ": "Retours : ",
+  "لا توجد مشتريات موردين في الفترة المحددة.": "Aucun achat fournisseur sur la période sélectionnée.",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
