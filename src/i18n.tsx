@@ -944,6 +944,16 @@ const fr: Record<string, string> = {
   "الفواتير الأولية": "Factures pro forma",
   "بادئة الفاتورة الأولية — PRO": "Préfixe des factures pro forma — PRO",
 
+  "معرف المنتج والنسخة غير صالحين": "L’identifiant du produit ou de la variante est invalide",
+  "خصائص النسخة مطلوبة": "Les attributs de la variante sont obligatoires",
+  "كمية النسخة غير صالحة": "Quantité de variante invalide",
+  "ثمن النسخة غير صالح": "Prix de variante invalide",
+  "معرف النسخة مسجل من قبل": "Cet identifiant de variante existe déjà",
+  "مرجع النسخة مسجل من قبل": "Cette référence de variante existe déjà",
+  "نفس خصائص النسخة مسجلة من قبل": "Cette combinaison d’attributs existe déjà pour ce produit",
+  "تاريخ أو كمية حركة النسخة غير صالحة": "Date ou quantité du mouvement de variante invalide",
+  "اتجاه كمية الحركة لا يطابق نوعها": "Le signe de la quantité ne correspond pas au type de mouvement",
+  "مخزون النسخة غير كافٍ": "Stock de variante insuffisant",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
