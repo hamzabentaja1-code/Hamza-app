@@ -1,5 +1,5 @@
 const test=require('node:test');const assert=require('node:assert/strict');
-const {buildCommercialPdfHtml}=require('../.test-build/commercial-pdf.js');
+const {buildCommercialPdfHtml,localizeCommercialPdfTitle}=require('../.test-build/commercial-pdf.js');
 const profile={name:'HamZa',address:'Casablanca',showTaxFields:false,taxRate:20};
 test('commercial PDF renders Arabic right-to-left labels and TTC total by default',()=>{
  const html=buildCommercialPdfHtml({language:'AR',title:'فاتورة',customerName:'زبون',lines:['منتج × 2'],total:240,companyProfile:profile,dateLabel:'07/11/2026'});
@@ -16,4 +16,10 @@ test('commercial PDF escapes user content and accepts only local or data image l
 test('summary PDF can omit total block',()=>{
  const html=buildCommercialPdfHtml({language:'FR',title:'Rapport',customerName:'',lines:['Ventes'],total:99,showTotal:false,companyProfile:profile,dateLabel:'today'});
  assert.doesNotMatch(html,/TTC:/);
+});
+
+test('commercial PDF titles use Arabic document names and preserve generated numbering',()=>{
+ assert.equal(localizeCommercialPdfTitle('Facture FAC-2026-0003','AR'),'فاتورة FAC-2026-0003');
+ assert.equal(localizeCommercialPdfTitle('Bon de commande BC-2026-0004','AR'),'أمر شراء BC-2026-0004');
+ assert.equal(localizeCommercialPdfTitle('عنوان مخصص','AR'),'عنوان مخصص');
 });
