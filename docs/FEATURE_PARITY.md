@@ -110,12 +110,12 @@ This project is an independent implementation of the workflows observed in YanCo
 ## Status policy
 A screen appearing is not proof that its controls work. A module is marked complete only after its workflows and acceptance tests pass. No live business data should be copied from the reference account.
 
-
 ## Accessibility
 
 - [x] Shared accessible button semantics, text-derived labels, keyboard focus, disabled state and expanded hit slop
 - [x] Translated accessibility labels for text inputs
 - [x] Selected-state announcements for key product, customer and supplier choices
 - [x] Explicit labels for image previews and language switch
+- [x] Automated static accessibility regression tests cover primary workspaces and shared control wrappers (tests/accessibility.test.cjs)
 - [ ] Manual TalkBack verification in Arabic and French at normal and enlarged font sizes
 - [ ] Android Accessibility Scanner audit for contrast, touch target and clickable bounds
