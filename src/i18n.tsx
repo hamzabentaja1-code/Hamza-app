@@ -1131,6 +1131,8 @@ const fr: Record<string, string> = {
   "إضافة متابعة تواصل": "Ajout d’un suivi de contact",
   "حذف متابعة تواصل": "Suppression d’un suivi de contact",
   "معلومات سجل التواصل غير صالحة": "Les informations de suivi sont invalides",
+  "زبون": "Client",
+  "مورد": "Fournisseur",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
