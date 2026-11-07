@@ -56,7 +56,18 @@ export function validateMovement(movement: InventoryMovement): string[] {
   if (!movement.productName.trim()) errors.push("اسم المنتج إجباري");
   if (!Number.isSafeInteger(movement.quantityDelta) || movement.quantityDelta === 0) errors.push("تغيير الكمية خاصو يكون رقم صحيح وغير صفر");
   if (!movement.date.trim() || !Number.isFinite(Date.parse(movement.date))) errors.push("تاريخ الحركة غير صالح");
-  if (!["opening", "purchase", "sale", "delivery", "return_in", "return_out", "adjustment", "stock_count", "transfer_in", "transfer_out"].includes(movement.kind)) errors.push("نوع حركة المخزون غير صالح");
+  if (!["opening", "purchase", "sale", "delivery", "return_in", "return_out", "adjustment", "stock_count", "transfer_in", "transfer_out"].includes(movement.kind)) {
+    errors.push("نوع حركة المخزون غير صالح");
+  } else {
+    const positiveKinds: InventoryMovementKind[] = ["opening", "purchase", "return_in", "transfer_in"];
+    const negativeKinds: InventoryMovementKind[] = ["sale", "delivery", "return_out", "transfer_out"];
+    if (positiveKinds.includes(movement.kind) && movement.quantityDelta < 0) {
+      errors.push("هاد النوع من الحركة خاصو يزيد المخزون");
+    }
+    if (negativeKinds.includes(movement.kind) && movement.quantityDelta > 0) {
+      errors.push("هاد النوع من الحركة خاصو ينقص المخزون");
+    }
+  }
   if (movement.warehouseId !== undefined && !movement.warehouseId.trim()) errors.push("المخزن غير صالح");
   if (movement.unitCost !== undefined && (!Number.isFinite(movement.unitCost) || movement.unitCost < 0)) errors.push("تكلفة الوحدة غير صالحة");
   return errors;
