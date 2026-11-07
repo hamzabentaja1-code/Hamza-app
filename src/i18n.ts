@@ -199,6 +199,12 @@ const fr: Record<string, string> = {
   "إجمالي المشتريات:": "Total des achats :",
   "إجمالي المصاريف:": "Total des dépenses :",
   "إجمالي المبيعات:": "Total des ventes :"
+  "زيد منتجات أولاً.": "Ajoutez d’abord des produits.",
+  "زيد زبناء أولاً.": "Ajoutez d’abord des clients.",
+  "سندات الخروج": "Bons de sortie",
+  "سجل المبيعات القديم باقي محفوظ كما هو.": "L’historique des ventes précédent est conservé.",
+  "ما كايناش ديون مسجلة حالياً.": "Aucune créance enregistrée actuellement.",
+  "شيك": "Chèque"
 };
 
 export function translate(language: AppLanguage, value: string): string {
