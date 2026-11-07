@@ -23,3 +23,16 @@ test('price groups validate names and apply centime-safe discounts',()=>{
  assert.throws(()=>ext.validateContactPriceGroups([{...group},{...group,id:'other',name:' retail '}]),/غير صالحة/);
  assert.throws(()=>ext.priceForContactGroup(-1),/غير صالح/);
 });
+
+test('customer price groups persist through the app and flow from contact selection into quotes and invoices',()=>{
+ const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
+ const quote=fs.readFileSync(path.join(__dirname,'..','src','QuoteWorkspace.tsx'),'utf8');
+ const pricing=fs.readFileSync(path.join(__dirname,'..','src','domain','document-pricing.ts'),'utf8');
+ assert.match(app,/priceGroups,priceGroupName,priceGroupDiscount/);
+ assert.match(app,/priceGroupId:customerPriceGroupId/);
+ assert.match(app,/writeAppData\(\{[\s\S]*?priceGroups\}/);
+ assert.match(app,/<QuoteWorkspace[^>]*priceGroups=\{priceGroups\}/);
+ assert.match(quote,/priceForContactGroup\(basePrice,selectedPriceGroup\)/);
+ assert.match(quote,/priceGroupDiscountPercent:selectedPriceGroup\?\.discountPercent/);
+ assert.match(pricing,/quote\.priceGroupDiscountPercent/);
+});
