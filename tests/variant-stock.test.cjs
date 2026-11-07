@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {createProductVariant, applyVariantStockMovement, totalVariantStock, findVariantByAttributes} = require('../.test-build/variant-stock.js');
+const {createProductVariant, applyVariantStockMovement, totalVariantStock, variantStockValueCentimes, variantStockProfitCentimes, findVariantByAttributes} = require('../.test-build/variant-stock.js');
 
 const variant = (overrides = {}) => ({
   id:'v-1', productId:10, sku:'TSHIRT-BLK-M', barcode:'123456',
