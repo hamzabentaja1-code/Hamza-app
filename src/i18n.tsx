@@ -5,6 +5,9 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "الخدمات لا تستقبل في المخزون.": "Les services ne sont pas réceptionnés en stock.",
+  "الخدمة لا تحتاج كمية في المخزون": "Le service ne nécessite pas de quantité en stock",
+  "نوع العنصر": "Type d’article",
   "سجل حركات المخزون": "Historique des mouvements de stock",
   "المسجل فالمخزن:": "Enregistré dans l’entrepôt :",
   "المخزون السابق: ": "Stock précédent : ",
