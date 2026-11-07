@@ -93,9 +93,15 @@ test('movement history can be scoped to one warehouse while legacy history stays
   assert.deepEqual(inventoryMovementsForProduct(second, 1).map(x => x.id), ['warehouse-two-opening', 'opening-1']);
 });
 
-test('movement validation rejects fractional quantities and invalid dates', () => {
+test('movement validation rejects fractional quantities, invalid dates and incorrect movement directions', () => {
   assert.throws(() => appendInventoryMovement([], { ...opening, id: 'fractional', quantityDelta: 1.5 }), /رقم صحيح/);
   assert.throws(() => appendInventoryMovement([], { ...opening, id: 'bad-date', date: 'not-a-date' }), /تاريخ الحركة غير صالح/);
+  assert.throws(() => appendInventoryMovement([], { ...opening, id: 'negative-opening', quantityDelta: -2 }), /خاصو يزيد المخزون/);
+  assert.throws(() => appendInventoryMovement([], { ...opening, id: 'positive-sale', kind: 'sale', quantityDelta: 2 }), /خاصو ينقص المخزون/);
+  assert.throws(() => appendInventoryMovement([], { ...opening, id: 'positive-transfer-out', kind: 'transfer_out', quantityDelta: 1 }), /خاصو ينقص المخزون/);
+  assert.throws(() => appendInventoryMovement([], { ...opening, id: 'negative-transfer-in', kind: 'transfer_in', quantityDelta: -1 }), /خاصو يزيد المخزون/);
+  assert.doesNotThrow(() => appendInventoryMovement([], { ...opening, id: 'positive-adjustment', kind: 'adjustment', quantityDelta: 2 }));
+  assert.doesNotThrow(() => appendInventoryMovement([], { ...opening, id: 'negative-adjustment', kind: 'adjustment', quantityDelta: -2 }));
 });
 
 test('customer return movements add stock and reversal removes it safely', () => {
