@@ -25,3 +25,12 @@ test('caps preserved discounts at the new invoice subtotal',()=>{
  assert.equal(result.total,0);
  assert.equal(result.documentDiscount,10);
 });
+
+
+test('variant-specific quote prices are preserved instead of applying base product invoice price',()=>{
+ const quote={total:125,lines:[{productId:1,productName:'T-shirt',variantId:'blue-xl',variantLabel:'Blue / XL',qty:1,unitPrice:125,total:125}]};
+ const result=applyInvoicePriceRules(quote,[{id:1,invoicePrice:99}]);
+ assert.equal(result.lines[0].unitPrice,125);
+ assert.equal(result.lines[0].variantId,'blue-xl');
+ assert.equal(result.lines[0].variantLabel,'Blue / XL');
+});
