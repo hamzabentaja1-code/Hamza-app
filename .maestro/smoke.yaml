@@ -472,3 +472,33 @@ appId: com.hamza.app
 - assertVisible: "Transfert entre la caisse et la banque"
 - assertVisible: "Confirmer le transfert caisse-banque"
 - tapOn: "Accueil"
+
+# Arabic: installation work orders, technicians, equipment and time entries.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "طلبات التركيب"
+- tapOn: "طلبات التركيب"
+- assertVisible: "التقنيون"
+- assertVisible: "المعدات"
+- assertVisible: "طلبات وأوامر التركيب"
+- assertVisible: "ساعات العمل والتكلفة"
+- tapOn: "الرئيسية"
+
+# French: installation work orders and field operations are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "طلبات التركيب"
+- tapOn: "Ordres d'installation"
+- assertVisible: "Techniciens"
+- assertVisible: "Équipements"
+- assertVisible: "Demandes et ordres d'installation"
+- assertVisible: "Heures de travail et coût"
+- tapOn: "Accueil"
