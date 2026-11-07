@@ -35,7 +35,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Inventory ledger unit tests for movements, duplicate protection, negative stock prevention and stock-count variance
 - [ ] Separate price rules for quotes/orders vs invoices
 - [ ] HT/TTC display mode and configurable tax rules where required
-- [ ] Stock tracking separately for delivery notes and invoices
+- [x] Invoice and delivery-note conversions deduct stock only once per quote, regardless of conversion order; later document conversion does not double-deduct
 - [x] Persistent stock movement ledger for opening stock, purchases, manual sales, POS sales, delivery notes, product quantity corrections and physical stock counts
 - [x] Physical stock count variance is recorded as an auditable movement and updates the product quantity
 - [x] Multiple warehouses with a persistent default warehouse; legacy movements without warehouse IDs are assigned to the default warehouse during balance calculation
