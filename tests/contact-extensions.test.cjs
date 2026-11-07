@@ -53,7 +53,7 @@ test('contact custom fields and saved image gallery are integrated for customers
  assert.ok(app.includes("openContactEditor('supplier',x.id)"));
  assert.ok(app.includes('const saveContactEditor=()=>'));
  assert.ok(app.includes('const addExistingContactImage=async()=>'));
- assert.match(app,/const addExistingContactDocument\\s*=\\s*async\\s*\\(\\)\\s*=>/);
+ assert.match(app,/const addExistingContactDocument\s*=\s*async\s*\(\)\s*=>/);
  assert.ok(app.includes('DocumentPicker.getDocumentAsync'));
  assert.ok(app.includes('decodedBytes>4_000_000'));
  assert.ok(app.includes('mimeByExtension[extension]'));
