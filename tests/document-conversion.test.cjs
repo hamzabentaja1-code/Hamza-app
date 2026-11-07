@@ -65,3 +65,16 @@ test('proforma invoices never deduct stock and do not block later invoice/delive
   assert.equal(invoice.stockDeducted,true);
   assert.equal(invoice.updatedProducts[0].qty,8);
 });
+
+
+test('variant lines preserve identity and are excluded from base-product stock deduction',()=>{
+ const quote={id:91,productName:'T-shirt',customerName:'Client',qty:2,unitPrice:125,total:250,lines:[
+  {productId:7,productName:'T-shirt',variantId:'blue-xl',variantLabel:'Blue / XL',qty:2,unitPrice:125,total:250,trackStock:false}
+ ]};
+ const products=[{id:7,qty:10}];
+ const result=convertQuote(quote,'delivery',[],products,901,'07/11/2026');
+ assert.equal(result.stockDeducted,false);
+ assert.equal(result.updatedProducts[0].qty,10);
+ assert.equal(result.document.lines[0].variantId,'blue-xl');
+ assert.equal(result.document.lines[0].variantLabel,'Blue / XL');
+});
