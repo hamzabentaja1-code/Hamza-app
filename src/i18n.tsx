@@ -301,6 +301,7 @@ export function TTextInput(props: TextInputProps) {
   const language = useContext(LanguageContext);
   return <NativeTextInput {...props}
     placeholder={translateText(props.placeholder, language)}
+    accessibilityLabel={props.accessibilityLabel || translateText(props.placeholder, language) || (language === 'AR' ? 'حقل إدخال' : 'Champ de saisie')}
     style={[props.style, {writingDirection: language === 'AR' ? 'rtl' : 'ltr', textAlign: language === 'AR' ? 'right' : 'left'}]}
   />;
 }
