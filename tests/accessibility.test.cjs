@@ -515,3 +515,13 @@ test('activity history records the user who performed each action', () => {
   assert.match(app, /entry\.userName/);
   assert.match(app, /logActivity\('تبديل المستخدم'/);
 });
+
+
+test('product CSV exports separate rows with variant-specific prices and stock', () => {
+  const app = read('App.tsx');
+  assert.match(app, /const rows=products\.flatMap\(p=>\{const variants=productVariants\.filter/);
+  assert.match(app, /v\.costPriceCentimes/);
+  assert.match(app, /v\.salePriceCentimes/);
+  assert.match(app, /v\.stockQty/);
+  assert.match(app, /Variant status/);
+});
