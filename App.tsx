@@ -98,7 +98,7 @@ export default function App() {
   const profitSummary=useMemo(()=>calculateSalesProfit(sales.map(x=>({total:x.total,quantity:x.qty,unitCost:x.costPrice}))),[sales]);
   const grossProfit=profitSummary.grossProfit-totalReturnProfitAdjustment(salesReturns);
   const untrackedSalesCount=profitSummary.untrackedSalesCount;
-  const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
+  const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const supplierReturnTotal=useMemo(()=>supplierReturns.reduce((sum,x)=>sum+x.amountCentimes,0)/100,[supplierReturns]); const netPurchaseTotal=purchaseTotal-supplierReturnTotal; const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
   const customerBalances=useMemo(()=>calculateCustomerBalances(documents,customers.map(c=>({customerName:c.name,openingBalanceCentimes:c.openingBalanceCentimes}))),[documents,customers]);
   const supplierBalances=useMemo(()=>calculateSupplierBalances(purchases,suppliers.map(x=>({supplierName:x.name,openingBalanceCentimes:x.openingBalanceCentimes})),supplierReturns),[purchases,suppliers,supplierReturns]);
   const supplierPayablesTotal=supplierBalances.reduce((sum,x)=>sum+x.outstandingCentimes,0)/100;
@@ -437,7 +437,7 @@ export default function App() {
           <Text style={s.summaryText}>المبيعات المسجلة: {salesTotal.toFixed(2)} DH • {sales.length} عملية</Text>
           <Text style={s.summaryText}>المشتريات: {purchaseTotal.toFixed(2)} DH</Text>
           <Text style={s.summaryText}>المصاريف: {expenseTotal.toFixed(2)} DH</Text>
-          <Text style={s.summaryText}>الصافي الأولي: {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text>
+          <Text style={s.summaryText}>الصافي الأولي: {(salesTotal-netPurchaseTotal-expenseTotal).toFixed(2)} DH</Text>
         </View>
         <View style={s.stats}>
           <View style={s.stat}><Text style={s.statNum}>{receivablesTotal.toFixed(2)} DH</Text><Text style={s.statLabel}>ديون الزبناء</Text></View>
@@ -530,7 +530,7 @@ export default function App() {
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':'delivery')).map(d=><View key={d.id} style={s.listItem}>
           <View style={{flex:1}}><Text style={s.itemTitle}>{d.number} • {d.customerName}</Text><Text style={s.itemSub}>{d.date} • {d.status} • {d.lines.length} سطر</Text>{d.dueDate?<Text style={s.itemSub}>تاريخ الاستحقاق: {d.dueDate}</Text>:null}</View>
           <Text style={s.itemPrice}>{d.total.toFixed(2)} DH</Text>
-          <Pressable onPress={()=>exportPdf(d.type==='invoice'?'Facture':'Bon de sortie',d.customerName,d.lines.map(line=>line.productName+' × '+line.qty+' — '+line.total.toFixed(2)+' DH'),d.total)}><Text style={s.gold}>PDF</Text></Pressable>
+          <Pressable onPress={()=>exportPdf(d.type==='invoice'?'Facture':'Bon de sortie',d.customerName,[...(d.type==='invoice'&&d.dueDate?[(language==='FR'?'Date d’échéance : ':'تاريخ الاستحقاق: ')+d.dueDate]:[]),...d.lines.map(line=>line.productName+' × '+line.qty+' — '+line.total.toFixed(2)+' DH')],d.total)}><Text style={s.gold}>PDF</Text></Pressable>
         </View>)}
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':'delivery')).length===0&&<Text style={s.empty}>مازال ما تسجلات حتى وثيقة من هاد النوع.</Text>}
         {sales.length>0&&<Text style={s.note}>سجل المبيعات القديم باقي محفوظ كما هو.</Text>}
@@ -617,8 +617,8 @@ export default function App() {
           <Text style={s.panelText}>مجمل ربح المبيعات المحسوب بالتكلفة المسجلة: {grossProfit.toFixed(2)} DH</Text>
           <Text style={s.panelText}>الربح بعد المصاريف المسجلة: {(grossProfit-expenseTotal).toFixed(2)} DH</Text>
           <Text style={s.panelText}>مبيعات قديمة بلا تكلفة محفوظة: {untrackedSalesCount} (ما داخلاش فحساب الربح)</Text>
-          <Text style={s.panelText}>الصافي الأولي النقدي (المبيعات - المشتريات - المصاريف): {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text>
-          <Pressable style={s.action} onPress={()=>exportPdf('Rapport d’activité','',['Ventes: '+salesTotal.toFixed(2)+' DH','Achats: '+purchaseTotal.toFixed(2)+' DH','Dépenses: '+expenseTotal.toFixed(2)+' DH','Marge brute suivie: '+grossProfit.toFixed(2)+' DH','Ventes historiques sans coût: '+untrackedSalesCount,'Résultat de trésorerie initial: '+(salesTotal-purchaseTotal-expenseTotal).toFixed(2)+' DH'],grossProfit-expenseTotal)}><Text style={s.actionText}>تصدير تقرير النشاط PDF</Text></Pressable>
+          <Text style={s.panelText}>الصافي الأولي النقدي (المبيعات - صافي المشتريات - المصاريف): {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text>
+          <Pressable style={s.action} onPress={()=>exportPdf('Rapport d’activité','',['Ventes: '+salesTotal.toFixed(2)+' DH','Achats bruts: '+purchaseTotal.toFixed(2)+' DH','Retours fournisseurs: '+supplierReturnTotal.toFixed(2)+' DH','Achats nets: '+netPurchaseTotal.toFixed(2)+' DH','Dépenses: '+expenseTotal.toFixed(2)+' DH','Marge brute suivie: '+grossProfit.toFixed(2)+' DH','Ventes historiques sans coût: '+untrackedSalesCount,'Résultat de trésorerie initial: '+(salesTotal-purchaseTotal-expenseTotal).toFixed(2)+' DH'],grossProfit-expenseTotal)}><Text style={s.actionText}>تصدير تقرير النشاط PDF</Text></Pressable>
         </View>
         <View style={[s.panel,{marginTop:12}]}>
           <Text style={s.panelTitle}>تقرير ديون الزبناء</Text>
