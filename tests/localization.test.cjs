@@ -95,3 +95,9 @@ test('French dictionary covers remaining static alert messages', () => {
     assert.ok(source.includes(JSON.stringify(key) + ':'), 'missing translation for ' + key);
   }
 });
+
+
+test('French dictionary covers the field-operations category error', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'i18n.tsx'), 'utf8');
+  assert.ok(source.includes('"تعذر إضافة الفئة.": "Impossible d’ajouter la catégorie."'));
+});
