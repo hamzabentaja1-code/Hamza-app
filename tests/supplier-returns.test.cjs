@@ -17,3 +17,22 @@ test('rejects fractional, zero and invalid return dates',()=>{
   assert.throws(()=>calculateSupplierReturn(purchase,[],input));
  }
 });
+
+test('ignores returns linked to other purchases',()=>{
+ const other={...purchase,id:8};
+ const ret=calculateSupplierReturn(other,[],{id:9,qty:4,date:'2026-11-07T10:00:00.000Z'});
+ assert.equal(remainingSupplierReturnQuantity(purchase,[ret]),10);
+});
+test('rejects malformed purchase and corrupt historical return records',()=>{
+ assert.throws(()=>remainingSupplierReturnQuantity({...purchase,id:0},[]),/غير صالحة/);
+ assert.throws(()=>remainingSupplierReturnQuantity(purchase,[{
+  id:0,purchaseId:7,supplierName:'Fournisseur A',productName:'Cable',
+  qty:1,unitCost:12.5,amountCentimes:1250,date:'2026-11-07',reason:''
+ }]),/غير صالح/);
+});
+test('supports a zero-cost return without creating a supplier credit',()=>{
+ const free={...purchase,unitCost:0};
+ const result=calculateSupplierReturn(free,[],{id:4,qty:2,date:'2026-11-07T10:00:00.000Z'});
+ assert.equal(result.amountCentimes,0);
+ assert.equal(result.qty,2);
+});
