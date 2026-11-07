@@ -305,7 +305,8 @@ test('bank workspace imports pasted CSV statements and reports matched duplicate
   assert.match(app, /importBankStatement\(bankMovements,accountId,csv\)/);
   assert.match(workspace, /onImportStatement\(active\.id,statementCsv\)/);
   assert.match(workspace, /date;description;amount/);
-  assert.match(domain, /existingByBase/);\n  assert.match(domain, /descriptionSimilarity/);
+  assert.match(domain, /existingByBase/);
+  assert.match(domain, /descriptionSimilarity/);
   assert.match(domain, /appendBankMovement/);
 });
 
