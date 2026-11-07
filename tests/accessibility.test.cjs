@@ -327,3 +327,16 @@ test('service items are not selectable for stock counts or warehouse transfers',
   assert.match(app, /products=\{products\.filter\(p=>p\.kind!=='service'\)/);
   assert.match(app, /kindText==='service'\?'service':'product'/);
 });
+
+test('separate quote and invoice product prices are stored and applied on invoice conversion', () => {
+  const app = read('App.tsx');
+  const quote = read('src/QuoteWorkspace.tsx');
+  const pricing = read('src/domain/document-pricing.ts');
+  assert.match(app, /quotePrice\?:number; invoicePrice\?:number/);
+  assert.match(app, /productQuotePrice/);
+  assert.match(app, /productInvoicePrice/);
+  assert.match(app, /applyInvoicePriceRules\(quote,products\)/);
+  assert.match(quote, /selectedProduct\.quotePrice\?\?selectedProduct\.price/);
+  assert.match(quote, /documentDiscount:calculation\.discountCentimes\/100/);
+  assert.match(pricing, /invoicePrice/);
+});
