@@ -88,8 +88,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Automatic due-date reminders for unpaid invoices, supplier obligations and recurring expenses (local OS notifications, permission-gated)
 - [x] Numbered credit-note PDF records are generated for partial customer returns and their value is automatically applied oldest-first to the customer's unpaid invoices; unused amounts remain as a visible customer credit balance and appear in customer statements
 - [x] Configurable document numbering for quotes, invoices, delivery notes and purchase orders
-- [x] Custom fee/service lines can be added to quotes without creating stock movements; quote product lookup supports product name, reference and barcode
-- [ ] Named document sections and camera barcode scanning directly inside the document editor
+- [x] Quote editor supports non-stock custom fee/service lines, named section headings, and product lookup by name, reference or barcode; sections carry through converted invoice/delivery PDFs without affecting totals or stock
+- [ ] Camera barcode scanning directly inside the document editor
 - [x] Basic PDF generation and sharing for quotes, invoices, delivery notes, receipts and statements, with company profile branding
 
 ### Purchases
