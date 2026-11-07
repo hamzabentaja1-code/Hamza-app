@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {Alert, View, StyleSheet} from 'react-native';
-import {TText as Text, TTextInput as TextInput} from './i18n';
+import {TText as Text, TTextInput as TextInput, LanguageContext, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 import {Warehouse, InventoryMovement, inventoryBalance, inventoryBalanceForWarehouse} from './domain/inventory-ledger';
 
@@ -19,7 +19,7 @@ type Props = {
 
 const GOLD='#D6AE55';
 export default function WarehouseWorkspace({warehouses,movements,products,activeWarehouseId,onSelectWarehouse,onAddWarehouse,onTransfer}:Props){
-  const [name,setName]=useState('');
+  const language=useContext(LanguageContext);\n  const t=(value:string)=>translateText(value,language)||value;\n  const [name,setName]=useState('');
   const [productId,setProductId]=useState('');
   const [destinationId,setDestinationId]=useState('');
   const [quantity,setQuantity]=useState('1');
@@ -27,16 +27,16 @@ export default function WarehouseWorkspace({warehouses,movements,products,active
   const active=warehouses.find(w=>w.id===activeWarehouseId);
   const addWarehouse=()=>{
     const clean=name.trim();
-    if(!clean){Alert.alert('معلومات ناقصة','دخل اسم المخزن.');return;}
-    if(warehouses.some(w=>w.name.trim().toLocaleLowerCase()===clean.toLocaleLowerCase())){Alert.alert('مخزن موجود','هاد الاسم مستعمل من قبل.');return;}
+    if(!clean){Alert.alert(t('معلومات ناقصة'),t('دخل اسم المخزن.'));return;}
+    if(warehouses.some(w=>w.name.trim().toLocaleLowerCase()===clean.toLocaleLowerCase())){Alert.alert(t('مخزن موجود'),t('هاد الاسم مستعمل من قبل.'));return;}
     onAddWarehouse({id:'warehouse-'+Date.now(),name:clean});
     setName('');
   };
   const submitTransfer=()=>{
     const product=products.find(p=>String(p.id)===productId);
     const amount=Number(quantity);
-    if(!product||!destinationId){Alert.alert('معلومات ناقصة','اختار المنتج ومخزن الوجهة.');return;}
-    if(!Number.isSafeInteger(amount)||amount<1){Alert.alert('كمية غير صالحة','دخل كمية صحيحة أكبر من صفر.');return;}
+    if(!product||!destinationId){Alert.alert(t('معلومات ناقصة'),t('اختار المنتج ومخزن الوجهة.'));return;}
+    if(!Number.isSafeInteger(amount)||amount<1){Alert.alert(t('كمية غير صالحة'),t('دخل كمية صحيحة أكبر من صفر.'));return;}
     const saved=onTransfer({id:'transfer-'+Date.now(),productId:product.id,quantity:amount,fromWarehouseId:activeWarehouseId,toWarehouseId:destinationId,date:new Date().toISOString(),note:note.trim()||undefined,unitCost:product.costPrice});
     if(saved){setProductId('');setDestinationId('');setQuantity('1');setNote('');}
   };
