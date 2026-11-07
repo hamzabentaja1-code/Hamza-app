@@ -297,3 +297,14 @@ test('French translation dictionary contains unique keys', () => {
   const keys = [...dictionary.matchAll(/^\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*:/gm)].map(match => match[1]);
   assert.equal(new Set(keys).size, keys.length, 'translation dictionary must not contain duplicate keys');
 });
+
+test('bank workspace imports pasted CSV statements and reports matched duplicates', () => {
+  const app = read('App.tsx');
+  const workspace = read('src/BankWorkspace.tsx');
+  const domain = read('src/domain/bank-statement-import.ts');
+  assert.match(app, /importBankStatement\(bankMovements,accountId,csv\)/);
+  assert.match(workspace, /onImportStatement\(active\.id,statementCsv\)/);
+  assert.match(workspace, /date;description;amount/);
+  assert.match(domain, /existingCounts/);
+  assert.match(domain, /appendBankMovement/);
+});
