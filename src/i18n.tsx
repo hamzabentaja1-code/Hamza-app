@@ -1370,6 +1370,8 @@ const fr: Record<string, string> = {
   "راجع الحقول.": "Vérifiez les champs.",
   "تعذر تصدير التقرير": "Impossible d’exporter le rapport",
   "تعذر إضافة الفئة.": "Impossible d’ajouter la catégorie.",
+  "اختيار ملف كشف البنك من الهاتف": "Choisir un relevé bancaire sur le téléphone",
+  "اختيار ملف CSV من الهاتف": "Choisir un fichier CSV sur le téléphone",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
