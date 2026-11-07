@@ -118,3 +118,15 @@ test('POS workspace exposes working stock and category filters without changing 
  assert.match(workspace,/setCategoryFilter\(categoryFilter===category\?'':category\)/);
  assert.match(workspace,/findPosProduct\(mapped,scannedBarcode\)/);
 });
+
+test('POS recent sales link to the existing validated returns workflow and respect permissions',()=>{
+ const fs=require('node:fs');const path=require('node:path');const root=path.join(__dirname,'..');
+ const app=fs.readFileSync(path.join(root,'App.tsx'),'utf8');
+ const workspace=fs.readFileSync(path.join(root,'src','PosWorkspace.tsx'),'utf8');
+ assert.match(workspace,/remainingReturnQuantity\(sale,salesReturns\)/);
+ assert.match(workspace,/disabled=\{!canStartReturn\|\|remaining===0\}/);
+ assert.match(workspace,/onStartReturn\(sale\.id\)/);
+ assert.match(app,/recentSales=\{sales\.slice\(0,8\)\}/);
+ assert.match(app,/canStartReturn=\{canWriteModule\(activeUser,'المرتجعات'\)\}/);
+ assert.match(app,/setReturnSaleId\(String\(saleId\)\)[\s\S]*?setScreen\('المرتجعات'\)/);
+});
