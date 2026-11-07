@@ -877,7 +877,7 @@ export default function App() {
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':screen==='الفواتير الأولية'?'proforma':'delivery')).map(d=><View key={d.id} style={s.listItem}>
           <View style={{flex:1}}><Text style={s.itemTitle}>{d.number} • {d.customerName}</Text><Text style={s.itemSub}>{d.date} • {d.status} • {d.lines.length} سطر</Text>{d.dueDate?<Text style={s.itemSub}>تاريخ الاستحقاق: {d.dueDate}</Text>:null}</View>
           <Text style={s.itemPrice}>{d.total.toFixed(2)} DH</Text>
-          <Pressable onPress={()=>exportPdf((d.type==='invoice'?'Facture ':d.type==='delivery'?'Bon de sortie ':'Facture pro forma ')+d.number,d.customerName,[...(d.type==='invoice'&&d.dueDate?[(language==='FR'?'Date d’échéance : ':'تاريخ الاستحقاق: ')+d.dueDate]:[]),...d.lines.map(line=>line.productName+(line.variantLabel?' • '+line.variantLabel:'')+' × '+line.qty+' — '+line.total.toFixed(2)+' DH')],d.total)}><Text style={s.gold}>PDF</Text></Pressable>
+          <Pressable onPress={()=>exportPdf((d.type==='invoice'?'Facture ':d.type==='delivery'?'Bon de sortie ':'Facture pro forma ')+d.number,d.customerName,[...(d.type==='invoice'&&d.dueDate?[(language==='FR'?'Date d’échéance : ':'تاريخ الاستحقاق: ')+d.dueDate]:[]),...d.lines.map(line=>line.lineType==='section'?'── '+line.productName+' ──':line.productName+(line.variantLabel?' • '+line.variantLabel:'')+' × '+line.qty+' — '+line.total.toFixed(2)+' DH')],d.total)}><Text style={s.gold}>PDF</Text></Pressable>
         </View>)}
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':'delivery')).length===0&&<Text style={s.empty}>مازال ما تسجلات حتى وثيقة من هاد النوع.</Text>}
         {sales.length>0&&<Text style={s.note}>سجل المبيعات القديم باقي محفوظ كما هو.</Text>}
