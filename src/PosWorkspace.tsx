@@ -6,18 +6,20 @@ import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
 type Product = {id:number; name:string; price:number; qty:number; photoData?:string; kind?:'product'|'service'};
+type ProductVariant = {id:string;productId:number;attributes:Record<string,string>;stockQty:number;costPriceCentimes?:number;salePriceCentimes?:number;active:boolean};
 type Customer = {id:number; name:string};
-type CheckoutLine = {productId:number; name:string; quantity:number; unitPrice:number; discount:number};
+type CheckoutLine = {productId:number; variantId?:string; name:string; quantity:number; unitPrice:number; discount:number};
 type Props = {
   products: Product[];
   customers: Customer[];
+  variants: ProductVariant[];
   bankAccountName?: string;
   onCheckout: (data:{customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'; total:number})=>boolean|void;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PosWorkspace({products,customers,bankAccountName,onCheckout}:Props){
+export default function PosWorkspace({products,customers,variants,bankAccountName,onCheckout}:Props){
   const language:AppLanguage=useContext(LanguageContext);
  const showAlert = (...args: Parameters<typeof Alert.alert>) => {
   const [title, message, buttons, options] = args;
@@ -33,7 +35,7 @@ export default function PosWorkspace({products,customers,bankAccountName,onCheck
   const [method,setMethod]=useState<'cash'|'card'|'transfer'>('cash');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
-  const mapped:PosProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,salePrice:p.price,stock:p.qty,trackStock:p.kind!=='service'})),[products]);
+  const mapped:PosProduct[]=useMemo(()=>products.flatMap(p=>{const variantsForProduct=variants.filter(v=>v.productId===p.id&&v.active);if(!variantsForProduct.length)return [{id:String(p.id),productId:p.id,name:p.name,salePrice:p.price,stock:p.qty,trackStock:p.kind!=='service'}];return variantsForProduct.map(v=>({id:String(p.id)+'::'+v.id,productId:p.id,variantId:v.id,variantLabel:Object.values(v.attributes).join(' / '),name:p.name+' • '+Object.values(v.attributes).join(' / '),salePrice:v.salePriceCentimes===undefined?p.price:v.salePriceCentimes/100,stock:v.stockQty,trackStock:true}));}),[products,variants]);
   const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>p.name.toLocaleLowerCase().includes(q)).slice(0,8);},[mapped,term]);
   const discount=Number(discountText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:0};
@@ -45,7 +47,7 @@ export default function PosWorkspace({products,customers,bankAccountName,onCheck
     if(!Number.isFinite(discount)||discount<0){showAlert('تخفيض غير صالح','دخل تخفيض صحيح.');return;}
     const validation=validateCheckout({...currentCart,paidAmount:totals.total});
     if(validation.length){showAlert('راجع السلة',validation.join('\n'));return;}
-    const lines:CheckoutLine[]=currentCart.lines.map(line=>({productId:Number(line.productId),name:line.name,quantity:line.quantity,unitPrice:line.unitPrice,discount:line.discount}));
+    const lines:CheckoutLine[]=currentCart.lines.map(line=>{const product=mapped.find(p=>p.id===line.productId);return {productId:product?.productId??Number(line.productId),variantId:product?.variantId,name:line.name,quantity:line.quantity,unitPrice:line.unitPrice,discount:line.discount};});
     const name=customers.find(c=>String(c.id)===customerId)?.name||'زبون عابر';
     showAlert('تأكيد البيع',`المجموع ${money(totals.total)}\nالزبون: ${name}\nطريقة الأداء: ${method==='cash'?'نقداً':method==='card'?'بطاقة':'تحويل'}`,[
       {text:'رجوع',style:'cancel'},
