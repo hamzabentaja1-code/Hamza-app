@@ -308,7 +308,7 @@ export default function App() {
     const duration=taskDuration.trim()===''?0:Number(taskDuration.replace(',','.'));
     const projectId=taskProjectId?Number(taskProjectId):undefined;
     if(!taskTitle.trim()||!Number.isFinite(duration)||duration<0||(projectId!==undefined&&!projects.some(p=>p.id===projectId))){showAlert('معلومات ناقصة','دخل عنوان المهمة ومدة صحيحة واختار مشروعاً صالحاً إن وجد.');return;}
-    if(!isValidIsoDate(taskDueDate)||!isValidIsoDate(taskRecurrenceEndDate)||(taskRecurrenceEndDate&&taskDueDate&&taskRecurrenceEndDate<taskDueDate)){showAlert('تاريخ غير صالح','راجع موعد المهمة ونهاية التكرار بصيغة YYYY-MM-DD.');return;}
+    if(!isValidIsoDate(taskDueDate)||!isValidIsoDate(taskRecurrenceEndDate)||(taskRecurrence&&!taskDueDate)||(taskRecurrenceEndDate&&taskDueDate&&taskRecurrenceEndDate<taskDueDate)){showAlert('تاريخ غير صالح','راجع موعد المهمة ونهاية التكرار بصيغة YYYY-MM-DD.');return;}
     const previous=editingTaskId===null?undefined:workTasks.find(t=>t.id===editingTaskId);
     const task:WorkTask={id:editingTaskId??Date.now(),title:taskTitle.trim(),projectId,assignee:taskAssignee.trim(),priority:taskPriority,dueDate:taskDueDate,durationHours:duration,status:previous?.status||'todo',recurrence:taskRecurrence||undefined,recurrenceEndDate:taskRecurrenceEndDate||undefined};
     if(editingTaskId!==null)setWorkTasks(current=>current.map(t=>t.id===editingTaskId?task:t));else setWorkTasks(current=>[task,...current]);
