@@ -8,9 +8,9 @@ test('custom contact fields are trimmed, unique and bounded',()=>{
  assert.equal(ext.normalizeContactCustomFields([{id:'x',name:'A',value:'1'},{id:'y',name:'a',value:'2'}]).length,1);
 });
 test('multiple custom fields parse one name=value pair per line',()=>{
- const fields=ext.parseContactCustomFieldsText('ICE=123\\nSecteur=Installation\\nCode=AB-7','contact');
+ const fields=ext.parseContactCustomFieldsText(['ICE=123','Secteur=Installation','Code=AB-7'].join(String.fromCharCode(10)),'contact');
  assert.deepEqual(fields.map(x=>[x.name,x.value]),[['ICE','123'],['Secteur','Installation'],['Code','AB-7']]);
- assert.throws(()=>ext.parseContactCustomFieldsText('ICE=123\\nSans valeur','c'),/الاسم=القيمة/);
+ assert.throws(()=>ext.parseContactCustomFieldsText(['ICE=123','Sans valeur'].join(String.fromCharCode(10)),'c'),/الاسم=القيمة/);
  assert.throws(()=>ext.parseContactCustomFieldsText('ICE=1\\nice=2','c'),/موجود من قبل/);
 });
 test('contact image attachments accept only bounded base64 images and can be removed',()=>{
