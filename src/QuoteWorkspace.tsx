@@ -61,6 +61,8 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
   const [lines,setLines]=useState<QuoteLine[]>([]);
   const [notes,setNotes]=useState('');
   const [validUntil,setValidUntil]=useState('');
+  const [feeDescription,setFeeDescription]=useState('');
+  const [feeAmount,setFeeAmount]=useState('');
   const selectedCustomer=customers.find(c=>String(c.id)===customerId);
   const selectedPriceGroup=priceGroups.find(group=>group.id===selectedCustomer?.priceGroupId&&group.active);
   const selectedProduct=products.find(p=>String(p.id)===productId);
@@ -109,6 +111,15 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
     setCustomPrice('');
     setQuantity('1');
   };
+  const addAdditionalFee=()=>{
+    const description=feeDescription.trim();
+    const amount=Number(feeAmount.replace(',','.'));
+    if(!description){showAlert('وصف الرسوم مطلوب','كتب وصف الخدمة أو الرسوم الإضافية.');return;}
+    if(!Number.isFinite(amount)||amount<=0){showAlert('مبلغ غير صالح','دخل مبلغاً أكبر من صفر.');return;}
+    const line:QuoteLine={productId:0,productName:'رسوم إضافية: '+description,qty:1,unitPrice:amount,total:amount,trackStock:false};
+    setLines(current=>[...current,line]);
+    setFeeDescription('');setFeeAmount('');
+  };
   const save=()=>{
     if(!selectedCustomer){showAlert('اختار الزبون','خاصك تحدد الزبون قبل الحفظ.');return;}
     if(!calculation){showAlert('راجع العرض','زيد منتج واحد على الأقل وتأكد من التخفيض.');return;}
@@ -148,6 +159,14 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
       <View style={{flexDirection:'row',gap:8}}>
         <TextInput value={quantity} onChangeText={setQuantity} keyboardType="decimal-pad" placeholder="الكمية" placeholderTextColor="#888" style={[input,{flex:1}]}/>
         <Pressable onPress={addLine} style={[button,{flex:1,marginTop:0}]}><Text style={{color:'#151515',fontWeight:'900'}}>+ إضافة للسطر</Text></Pressable>
+      </View>
+      <View style={{borderTopWidth:1,borderColor:'#444',paddingTop:12,marginTop:8}}>
+        <Text style={{color:'#CCC',fontWeight:'800',marginBottom:7}}>إضافة رسوم أو خدمة خارج كتالوج المنتجات</Text>
+        <TextInput value={feeDescription} onChangeText={setFeeDescription} placeholder="وصف الرسوم أو الخدمة" placeholderTextColor="#888" style={input}/>
+        <View style={{flexDirection:'row',gap:8}}>
+          <TextInput value={feeAmount} onChangeText={setFeeAmount} keyboardType="decimal-pad" placeholder="المبلغ DH" placeholderTextColor="#888" style={[input,{flex:1}]}/>
+          <Pressable onPress={addAdditionalFee} style={[button,{flex:1,marginTop:0}]}><Text style={{color:'#151515',fontWeight:'900'}}>+ إضافة رسوم</Text></Pressable>
+        </View>
       </View>
       <Text style={{color:gold,fontWeight:'800',marginVertical:8}}>المنتجات المضافة ({lines.length})</Text>
       {lines.map((line,index)=><View key={index} style={{flexDirection:'row',alignItems:'center',gap:8,borderBottomWidth:1,borderColor:'#333',paddingVertical:9}}>
