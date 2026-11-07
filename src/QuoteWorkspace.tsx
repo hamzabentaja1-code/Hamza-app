@@ -126,7 +126,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
           </View>
         </View>
         <Text style={{color:gold,fontWeight:'800'}}>{Number.isFinite(line.total)?line.total.toFixed(2):'—'} DH</Text>
-        <Pressable onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}{tr('حذف')}</Text></Pressable>
+        <Pressable onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}>{tr('حذف')}</Text></Pressable>
       </View>)}
       <TextInput value={discount} onChangeText={setDiscount} keyboardType="decimal-pad" placeholder={tr('تخفيض إجمالي (DH)')} placeholderTextColor="#888" style={[input,{marginTop:12}]}/>
       <TextInput value={notes} onChangeText={setNotes} placeholder={tr('ملاحظات (اختياري)')} placeholderTextColor="#888" style={input}/>
@@ -135,7 +135,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
         <Text style={{color:'#DDD',marginTop:5}}>{tr('التخفيض:')} {calculation?money(calculation.discountCentimes):'0.00 DH'}</Text>
         <Text style={{color:gold,fontSize:20,fontWeight:'900',marginTop:7}}>{tr('المجموع النهائي:')} {calculation?money(calculation.totalCentimes):'0.00 DH'}</Text>
       </View>
-      <Pressable onPress={save} style={button}><Text style={{color:'#151515',fontWeight:'900'}}{tr('حفظ عرض السعر')}</Text></Pressable>
+      <Pressable onPress={save} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('حفظ عرض السعر')}</Text></Pressable>
     </View>
     <Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>{tr('عروض الأسعار السابقة')} ({quotes.length})</Text>
     {quotes.map(q=><View key={q.id} style={[panel,{marginBottom:8}]}>
