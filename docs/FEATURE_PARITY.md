@@ -98,7 +98,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Supplier purchase orders with expected delivery dates, partial/full goods receipts, stock updates and order PDF
 - [x] Supplier price requests with supplier-specific request lifecycle, offer capture, per-product/per-variant price comparison and local persistence (tests/supplier-procurement.test.cjs)
 - [x] Supplier invoice entry linked to received purchase orders; validates received/unbilled quantities, supplier identity, duplicate invoice numbers and editable invoice unit costs without double-counting stock (tests/supplier-procurement.test.cjs)
-- [ ] Supplier invoice-level payment allocation and payable reconciliation
+- [x] Supplier invoice-level partial/full payment allocation, centime-safe outstanding balances, duplicate/overpayment validation, reversible entries, cash/bank ledger posting, local persistence and backup/restore (tests/supplier-invoice-payments.test.cjs)
 - [x] Supplier partial payment history with centime-safe allocation, receipts, and reversible payment entries
 - [x] Partial supplier returns with stock deduction, purchase linkage, supplier credit balances, account statement rows and reversal on delete
 - [x] Supplier purchase comparison by gross purchases, returns and net purchases within a selected date range
@@ -155,7 +155,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Unified agenda with date-range filtering for task due dates, scheduled work orders, recurring expense due dates and unpaid invoice due dates; overdue items are highlighted
 - [x] Monthly calendar grid with Monday-first weeks, previous/next month navigation, event counts, selected-day announcements and one-day filtering
 - [x] Recurring task rules for weekly/monthly/yearly schedules; completion creates the next occurrence, clamps month-end/leap-year dates, honors an optional end date and prevents duplicate generation (tests/recurring-tasks.test.cjs)
-- [ ] Task push notifications, attachments and advanced filters
+- [x] Permission-gated local notifications for upcoming open task due dates, alongside invoice, supplier and recurring-expense reminders
+- [ ] Task attachments and advanced filters
 - [x] Basic sales/purchase/stock/cash/receivables/payables/gross-profit summary reports with PDF exports
 - [x] Date-range report filters with previous equal-length period comparisons; net sales and net purchases account for returns and invalid legacy dates are reported
 - [x] Monthly sales/purchase trends with returns and expenses, plus supplier comparisons in period analysis
