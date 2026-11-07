@@ -40,7 +40,7 @@ export default function PosWorkspace({products,customers,variants,bankAccountNam
   const [method,setMethod]=useState<'cash'|'card'|'transfer'>('cash');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
-  const mapped:PosProduct[]=useMemo(()=>products.flatMap(p=>{const variantsForProduct=variants.filter(v=>v.productId===p.id&&v.active);if(!variantsForProduct.length)return [{id:String(p.id),productId:p.id,name:p.name,salePrice:p.price,stock:p.qty,trackStock:p.kind!=='service'}];return variantsForProduct.map(v=>({id:String(p.id)+'::'+v.id,productId:p.id,variantId:v.id,variantLabel:Object.values(v.attributes).join(' / '),name:p.name+' • '+Object.values(v.attributes).join(' / '),salePrice:v.salePriceCentimes===undefined?p.price:v.salePriceCentimes/100,stock:v.stockQty,trackStock:true}));}),[products,variants]);
+  const mapped:PosProduct[]=useMemo(()=>products.flatMap(p=>{const allVariants=variants.filter(v=>v.productId===p.id);const variantsForProduct=allVariants.filter(v=>v.active);if(!allVariants.length)return [{id:String(p.id),productId:p.id,name:p.name,salePrice:p.price,stock:p.qty,trackStock:p.kind!=='service'}];if(!variantsForProduct.length)return [];return variantsForProduct.map(v=>({id:String(p.id)+'::'+v.id,productId:p.id,variantId:v.id,variantLabel:Object.values(v.attributes).join(' / '),name:p.name+' • '+Object.values(v.attributes).join(' / '),salePrice:v.salePriceCentimes===undefined?p.price:v.salePriceCentimes/100,stock:v.stockQty,trackStock:true}));}),[products,variants]);
   const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>p.name.toLocaleLowerCase().includes(q)).slice(0,8);},[mapped,term]);
   const discount=Number(discountText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:0};
@@ -74,7 +74,7 @@ export default function PosWorkspace({products,customers,variants,bankAccountNam
         <Text style={{color:GOLD,fontWeight:'900'}}>+ أضف</Text>
       </Pressable>)}
       {!!term.trim()&&matches.length===0&&<Text style={{color:'#999',padding:10}}>ما لقيناش منتج بهاد الاسم.</Text>}
-      {products.length===0&&<Text style={{color:'#999',padding:10}}>زيد المنتجات أولاً من قسم المنتجات.</Text>}
+      {products.length===0&&<Text style={{color:'#999',padding:10}}>زيد المنتجات أولاً من قسم المنتجات.</Text>}{products.length>0&&mapped.length===0&&<Text style={{color:'#999',padding:10}}>ما كايناش منتجات أو نسخ نشطة للبيع.</Text>}
     </View>
     {parkedCarts.length>0?<View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#6A542A'}}>
       <Text style={{color:GOLD,fontSize:16,fontWeight:'800',marginBottom:8}}>المبيعات المعلقة ({parkedCarts.length})</Text>
