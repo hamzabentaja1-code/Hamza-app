@@ -10,7 +10,7 @@ const Pressable = AccessiblePressable;
 type Product = {id:number; name:string; price:number; qty:number; kind?:'product'|'service'; quotePrice?:number; invoicePrice?:number;reference?:string;barcode?:string};
 type ProductVariant = {id:string;productId:number;attributes:Record<string,string>;stockQty:number;salePriceCentimes?:number;active:boolean};
 type Customer = {id:number; name:string; priceGroupId?:string};
-export type QuoteLine = {productId:number; productName:string; qty:number; unitPrice:number; total:number; trackStock?:boolean; variantId?:string; variantLabel?:string};
+export type QuoteLine = {productId:number; productName:string; qty:number; unitPrice:number; total:number; trackStock?:boolean; variantId?:string; variantLabel?:string;lineType?:'section'};
 export type QuoteRecord = {
   id:number; number?:string; productName:string; customerName:string; qty:number;
   unitPrice:number; total:number; date:string; status:string;
@@ -63,6 +63,7 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
   const [validUntil,setValidUntil]=useState('');
   const [feeDescription,setFeeDescription]=useState('');
   const [feeAmount,setFeeAmount]=useState('');
+  const [sectionTitle,setSectionTitle]=useState('');
   const selectedCustomer=customers.find(c=>String(c.id)===customerId);
   const selectedPriceGroup=priceGroups.find(group=>group.id===selectedCustomer?.priceGroupId&&group.active);
   const selectedProduct=products.find(p=>String(p.id)===productId);
@@ -111,6 +112,12 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
     setCustomPrice('');
     setQuantity('1');
   };
+  const addSection=()=>{
+    const title=sectionTitle.trim();
+    if(!title){showAlert('عنوان القسم مطلوب','كتب عنواناً للقسم قبل إضافته.');return;}
+    setLines(current=>[...current,{productId:0,productName:title,qty:1,unitPrice:0,total:0,trackStock:false,lineType:'section'}]);
+    setSectionTitle('');
+  };
   const addAdditionalFee=()=>{
     const description=feeDescription.trim();
     const amount=Number(feeAmount.replace(',','.'));
@@ -139,7 +146,7 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
     showAlert('تم حفظ عرض السعر','تقدر دابا تصدره PDF.');
   };
   const quoteLines=(quote:QuoteRecord)=>quote.lines?.length
-    ? quote.lines.map(line=>`${line.productName}${line.variantLabel?' • '+line.variantLabel:''} × ${line.qty} — ${line.total.toFixed(2)} DH`)
+    ? quote.lines.map(line=>line.lineType==='section'?`── ${line.productName} ──`:`${line.productName}${line.variantLabel?' • '+line.variantLabel:''} × ${line.qty} — ${line.total.toFixed(2)} DH`)
     : [`${quote.productName} × ${quote.qty} — ${quote.total.toFixed(2)} DH`];
 
   return <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom:20}}>
@@ -168,16 +175,25 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
           <Pressable onPress={addAdditionalFee} style={[button,{flex:1,marginTop:0}]}><Text style={{color:'#151515',fontWeight:'900'}}>+ إضافة رسوم</Text></Pressable>
         </View>
       </View>
+      <View style={{borderTopWidth:1,borderColor:'#444',paddingTop:12,marginTop:8}}>
+        <Text style={{color:'#CCC',fontWeight:'800',marginBottom:7}}>إضافة عنوان قسم داخل العرض</Text>
+        <View style={{flexDirection:'row',gap:8}}>
+          <TextInput value={sectionTitle} onChangeText={setSectionTitle} placeholder="عنوان القسم" placeholderTextColor="#888" style={[input,{flex:1}]}/>
+          <Pressable onPress={addSection} style={[button,{flex:1,marginTop:0}]}><Text style={{color:'#151515',fontWeight:'900'}}>+ إضافة قسم</Text></Pressable>
+        </View>
+      </View>
       <Text style={{color:gold,fontWeight:'800',marginVertical:8}}>المنتجات المضافة ({lines.length})</Text>
       {lines.map((line,index)=><View key={index} style={{flexDirection:'row',alignItems:'center',gap:8,borderBottomWidth:1,borderColor:'#333',paddingVertical:9}}>
         <View style={{flex:1}}>
-          <Text style={{color:'#FFF',fontWeight:'700'}}>{line.productName}{line.variantLabel?' • '+line.variantLabel:''}</Text>
-          <View style={{flexDirection:'row',gap:6,marginTop:6}}>
-            <TextInput value={String(line.qty)} onChangeText={v=>updateLine(index,{qty:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder="الكمية" placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
-            <TextInput value={String(line.unitPrice)} onChangeText={v=>updateLine(index,{unitPrice:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder="الثمن" placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
-          </View>
+          {line.lineType==='section'?<Text style={{color:gold,fontWeight:'900',fontSize:16,paddingVertical:8}}>▰ {line.productName}</Text>:<>
+            <Text style={{color:'#FFF',fontWeight:'700'}}>{line.productName}{line.variantLabel?' • '+line.variantLabel:''}</Text>
+            <View style={{flexDirection:'row',gap:6,marginTop:6}}>
+              <TextInput value={String(line.qty)} onChangeText={v=>updateLine(index,{qty:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder="الكمية" placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
+              <TextInput value={String(line.unitPrice)} onChangeText={v=>updateLine(index,{unitPrice:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder="الثمن" placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
+            </View>
+          </>}
         </View>
-        <Text style={{color:gold,fontWeight:'800'}}>{Number.isFinite(line.total)?line.total.toFixed(2):'—'} DH</Text>
+        {line.lineType==='section'?null:<Text style={{color:gold,fontWeight:'800'}}>{Number.isFinite(line.total)?line.total.toFixed(2):'—'} DH</Text>}
         <Pressable accessibilityLabel={language==='AR'?'حذف '+line.productName:'Supprimer '+line.productName} accessibilityHint={language==='AR'?'إزالة هذا المنتج من عرض السعر':'Retirer ce produit du devis'} onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
       </View>)}
       <TextInput value={discount} onChangeText={setDiscount} keyboardType="decimal-pad" placeholder="تخفيض إجمالي (DH)" placeholderTextColor="#888" style={[input,{marginTop:12}]}/>
