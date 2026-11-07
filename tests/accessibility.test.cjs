@@ -382,6 +382,7 @@ test('quotes track expiry and accepted/rejected lifecycle with safe deletion', (
   assert.match(quote, /onUpdate\(\{\.\.\.q,status:'مرفوض'\}\)/);
   assert.match(quote, /ما يمكنش تحويل عرض مرفوض أو منتهي/);
   assert.match(app, /onDelete=\{\(id\)=>\{const quote=quotes\.find/);
+  assert.match(app, /documents\.some\(document=>document\.sourceQuoteId===id\)/);
 });
 
 test('proforma invoices have their own series and document screen without affecting stock', () => {
