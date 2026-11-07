@@ -18,6 +18,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: hamza-code-verify-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     name: Domain tests and TypeScript (no Android build)
