@@ -13,7 +13,8 @@ This project is an independent implementation of the workflows observed in YanCo
 ## Required functional modules
 
 ### Dashboard and core setup
-- [ ] Company profile, logo, address, Moroccan identifiers (ICE, RC, IF), banking details
+- [x] Company profile, logo, address, contact details and Moroccan identifiers (ICE, RC, IF) included in PDF branding
+- [ ] Banking details in company profile and configurable document numbering
 - [ ] Users, roles, permissions, activity history
 - [ ] Arabic/French complete localization, language persistence, theme
 - [ ] Numbering series, document templates, custom fields
