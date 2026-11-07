@@ -48,14 +48,14 @@ test('rejects discounts greater than the amount', () => {
 
 const { convertQuote } = require('../.test-build/document-conversion.js');
 
-test('converts quote to invoice without changing stock', () => {
+test('converts quote to invoice and deducts stock exactly once', () => {
   const products = [{id:7,qty:10}];
   const result = convertQuote({
     id:1,productName:'Widget',customerName:'Client',qty:2,unitPrice:500,total:1000,
     lines:[{productId:7,productName:'Widget',qty:2,unitPrice:500,total:1000}],
   },'invoice',[],products,99,'04/11/2026');
   assert.equal(result.document.number,'FAC-99');
-  assert.deepEqual(result.updatedProducts,products);
+  assert.deepEqual(result.updatedProducts,[{id:7,qty:8}]);\n  assert.equal(result.stockDeducted,true);
 });
 
 test('delivery conversion deducts stock once and blocks duplicates', () => {
