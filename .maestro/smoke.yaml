@@ -6,7 +6,581 @@ appId: com.hamza.app
 - assertVisible: "Gestion commerciale"
 - assertVisible: "الرئيسية"
 - assertVisible: "المنتجات"
-- tapOn: "نقطة البيع"
-- assertVisible: "نقطة البيع"
+
+# Arabic: visit every primary module and verify its main screen renders.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "المنتجات"
+- tapOn: "المنتجات"
+- assertVisible: "إضافة منتج جديد"
+- assertVisible: "الماركة (اختياري)"
+- assertVisible: "الوحدة (قطعة، متر...)"
 - tapOn: "الرئيسية"
-- assertVisible: "HamZa"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "نقطة البيع"
+- tapOn: "نقطة البيع"
+- assertVisible: "نقطة البيع POS"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "الزبناء"
+- tapOn: "الزبناء"
+- assertVisible: "إضافة زبون"
+- assertVisible: "كشف الحساب"
+- assertVisible: "الدين الافتتاحي DH"
+- assertVisible: "سقف الدين DH"
+- assertVisible: "أجل الأداء بالأيام (اختياري)"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "الموردون"
+- tapOn: "الموردون"
+- assertVisible: "إضافة مورد"
+- assertVisible: "كشف الحساب"
+- assertVisible: "الدين الافتتاحي DH"
+- assertVisible: "سقف الدين DH"
+- assertVisible: "أجل الأداء بالأيام (اختياري)"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "المبيعات"
+- tapOn: "المبيعات"
+- assertVisible: "تسجيل عملية بيع"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "المرتجعات"
+- tapOn: "المرتجعات"
+- assertVisible: "تسجيل مرتجع زبون"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "جرد وحركات المخزون"
+- tapOn: "جرد وحركات المخزون"
+- assertVisible: "جرد المخزون"
+- assertVisible: "سجل حركات المخزون"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "المخازن"
+- tapOn: "المخازن"
+- assertVisible: "إدارة المخازن"
+- assertVisible: "تحويل بين المخازن"
+- assertVisible: "إضافة مخزن"
+- assertVisible: "المخزون حسب المخزن"
+- tapOn: "الرئيسية"
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "المشتريات"
+- tapOn: "المشتريات"
+- assertVisible: "تسجيل شراء وإضافة للمخزون"
+- assertVisible: "سجل أداءات الموردين"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "أوامر الشراء"
+- tapOn: "أوامر الشراء"
+- assertVisible: "إنشاء أمر شراء"
+- assertVisible: "حفظ أمر الشراء"
+- assertVisible: "أوامر الشراء"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "Stock"
+- tapOn: "المخزون"
+- assertVisible: "إضافة منتج جديد"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "عروض الأسعار"
+- tapOn: "عروض الأسعار"
+- assertVisible: "إنشاء عرض سعر متعدد المنتجات"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "الفواتير"
+- tapOn: "الفواتير"
+- assertVisible: "الفواتير"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "Bon de sortie"
+- tapOn: "Bon de sortie"
+- assertVisible: "سندات الخروج"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "المصاريف"
+- tapOn: "المصاريف"
+- assertVisible: "إضافة مصروف"
+- assertVisible: "تصنيف المصروف (اختياري)"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "الصندوق"
+- tapOn: "الصندوق"
+- assertVisible: "الرصيد الحالي للصندوق"
+- assertVisible: "سجل الصندوق"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "النسخ الاحتياطي"
+- tapOn: "النسخ الاحتياطي"
+- assertVisible: "حماية بياناتك"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "المشاريع والمهام"
+- tapOn: "المشاريع والمهام"
+- assertVisible: "إضافة مشروع / ورش"
+- assertVisible: "إضافة مهمة"
+- assertVisible: "المشاريع"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "الأداءات"
+- tapOn: "الأداءات"
+- assertVisible: "تسجيل أداء زبون"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "التقارير"
+- tapOn: "التقارير"
+- assertVisible: "تقرير النشاط التجاري"
+- assertVisible: "تقرير ديون الموردين"
+- assertVisible: "تقرير الصندوق"
+- tapOn: "الرئيسية"
+
+# French: verify the language switch and translated navigation/content.
+- tapOn: "AR"
+- assertVisible: "Accueil"
+- assertVisible: "Produits"
+- assertVisible: "Point de vente"
+- tapOn: "Accueil"
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المنتجات"
+- tapOn: "Produits"
+- assertVisible: "Ajouter un produit"
+- assertVisible: "Marque (facultatif)"
+- assertVisible: "Unité (pièce, mètre...)"
+- tapOn: "Accueil"
+
+# French: projects and tasks are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المشاريع والمهام"
+- tapOn: "Projets et tâches"
+- assertVisible: "Ajouter un projet / chantier"
+- assertVisible: "Ajouter une tâche"
+- tapOn: "Accueil"
+
+# French: customer returns are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المرتجعات"
+- tapOn: "Retours clients"
+- assertVisible: "Enregistrer un retour client"
+- tapOn: "Accueil"
+
+# French: supplier payment history is translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المشتريات"
+- tapOn: "Achats"
+- assertVisible: "Historique des paiements fournisseurs"
+- tapOn: "Accueil"
+
+# French: cash register labels are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الصندوق"
+- tapOn: "Caisse"
+- assertVisible: "Solde actuel de la caisse"
+- assertVisible: "Journal de caisse"
+- tapOn: "Accueil"
+
+# French: account statements are available for customers and suppliers.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الزبناء"
+- tapOn: "Clients"
+- assertVisible: "Relevé de compte"
+- tapOn: "Accueil"
+
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الموردون"
+- tapOn: "Fournisseurs"
+- assertVisible: "Relevé de compte"
+- tapOn: "Accueil"
+
+# French: customer and supplier credit profile fields are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الزبناء"
+- tapOn: "Clients"
+- assertVisible: "Solde initial dû (DH)"
+- assertVisible: "Plafond de crédit (DH)"
+- assertVisible: "Délai de paiement en jours (facultatif)"
+- tapOn: "Accueil"
+
+# French: expense categories are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المصاريف"
+- tapOn: "Dépenses"
+- assertVisible: "Catégorie de dépense (facultatif)"
+- tapOn: "Accueil"
+
+# French: purchase order and goods receipt workflow is translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "أوامر الشراء"
+- tapOn: "Bons de commande"
+- assertVisible: "Créer un bon de commande"
+- assertVisible: "Enregistrer le bon de commande"
+- tapOn: "Accueil"
+
+# Arabic: company profile and PDF branding settings.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "إعدادات الشركة"
+- tapOn: "إعدادات الشركة"
+- assertVisible: "بيانات الشركة والفوترة"
+- assertVisible: "اسم الشركة"
+- assertVisible: "ICE"
+- assertVisible: "حفظ بيانات الشركة"
+- tapOn: "الرئيسية"
+
+# French: company profile and PDF branding settings.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "إعدادات الشركة"
+- tapOn: "Paramètres de l’entreprise"
+- assertVisible: "Informations de l’entreprise et facturation"
+- assertVisible: "Nom de l’entreprise"
+- assertVisible: "Enregistrer les informations de l’entreprise"
+- tapOn: "Accueil"
+
+# French: supplier debt and cash reports are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "التقارير"
+- tapOn: "Rapports"
+- assertVisible: "Rapport des dettes fournisseurs"
+- assertVisible: "Rapport de caisse"
+- tapOn: "Accueil"
+
+# French: multi-warehouse stock management and transfers are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المخازن"
+- tapOn: "Entrepôts"
+- assertVisible: "Gestion des entrepôts"
+- assertVisible: "Transfert entre entrepôts"
+- assertVisible: "Ajouter un entrepôt"
+- assertVisible: "Stock par entrepôt"
+- tapOn: "Accueil"
+
+
+# Arabic: bank accounts, transfers and reconciliation.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "الحسابات البنكية"
+- tapOn: "الحسابات البنكية"
+- assertVisible: "الحسابات البنكية"
+- assertVisible: "إضافة حساب بنكي"
+- assertVisible: "تحويل بين الحسابات"
+- assertVisible: "التسوية مع كشف البنك"
+- assertVisible: "تحويل بين الصندوق والبنك"
+- assertVisible: "تأكيد تحويل الصندوق والبنك"
+- tapOn: "الرئيسية"
+
+# French: bank accounts and reconciliation are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الحسابات البنكية"
+- tapOn: "Comptes bancaires"
+- assertVisible: "Comptes bancaires"
+- assertVisible: "Ajouter un compte bancaire"
+- assertVisible: "Virement entre comptes"
+- assertVisible: "Rapprochement bancaire"
+- assertVisible: "Transfert entre la caisse et la banque"
+- assertVisible: "Confirmer le transfert caisse-banque"
+- tapOn: "Accueil"
+
+# Arabic: installation work orders, technicians, equipment and time entries.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "طلبات التركيب"
+- tapOn: "طلبات التركيب"
+- assertVisible: "التقنيون"
+- assertVisible: "المعدات"
+- assertVisible: "طلبات وأوامر التركيب"
+- assertVisible: "ساعات العمل والتكلفة"
+- tapOn: "الرئيسية"
+
+# French: installation work orders and field operations are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "طلبات التركيب"
+- tapOn: "Ordres d'installation"
+- assertVisible: "Techniciens"
+- assertVisible: "Équipements"
+- assertVisible: "Demandes et ordres d'installation"
+- assertVisible: "Heures de travail et coût"
+- tapOn: "Accueil"
+
+# Arabic: recurring expense rules and due expense generation.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "المصاريف المتكررة"
+- tapOn: "المصاريف المتكررة"
+- assertVisible: "إضافة مصروف متكرر"
+- assertVisible: "الدورية"
+- assertVisible: "تسجيل المصاريف المستحقة حتى اليوم"
+- tapOn: "الرئيسية"
+
+# French: recurring expense scheduling is translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المصاريف المتكررة"
+- tapOn: "Dépenses récurrentes"
+- assertVisible: "Ajouter une dépense récurrente"
+- assertVisible: "Fréquence"
+- assertVisible: "Générer les dépenses échues jusqu'à aujourd'hui"
+- tapOn: "Accueil"
+
+# Arabic: agenda combines tasks, work orders and due financial items.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "الأجندة"
+- tapOn: "الأجندة"
+- assertVisible: "الأجندة والمواعيد"
+- assertVisible: "المواعيد حسب التاريخ"
+- tapOn: "الرئيسية"
+
+# French: agenda date filters and combined due events.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الأجندة"
+- tapOn: "Agenda"
+- assertVisible: "Agenda et échéances"
+- assertVisible: "Échéances par date"
+- tapOn: "Accueil"
+
+# Arabic: date range report with previous-period comparison.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "تحليل الفترة"
+- tapOn: "تحليل الفترة"
+- assertVisible: "تحليل مالي حسب الفترة"
+- assertVisible: "الفترة الحالية مقابل الفترة السابقة"
+- assertVisible: "صافي المبيعات"
+- tapOn: "الرئيسية"
+
+# French: period comparison report labels.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "تحليل الفترة"
+- tapOn: "Analyse par période"
+- assertVisible: "Analyse financière par période"
+- assertVisible: "Période actuelle comparée à la précédente"
+- assertVisible: "Ventes nettes"
+- tapOn: "Accueil"

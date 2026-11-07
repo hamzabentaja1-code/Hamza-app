@@ -1,0 +1,75 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const {createPurchaseOrder,receivePurchaseOrder,cancelPurchaseOrder}=require('../.test-build/purchase-orders.js');
+const order=()=>createPurchaseOrder({id:1,supplierName:'Supplier A',createdAt:'2026-11-07T09:00:00.000Z',lines:[
+ {productId:10,productName:'Cable',quantity:10,unitCost:12.5},
+ {productId:11,productName:'Plug',quantity:5,unitCost:4},
+]});
+test('creates validated supplier order with unreceived quantities',()=>{
+ const value=order();
+ assert.equal(value.status,'ordered');
+ assert.equal(value.lines[0].receivedQuantity,0);
+});
+test('supports partial then complete goods receipts',()=>{
+ const first=receivePurchaseOrder(order(),{date:'2026-11-07T10:00:00.000Z',lines:[{productId:10,quantity:4}]});
+ assert.equal(first.order.status,'partially_received');
+ assert.equal(first.order.lines[0].receivedQuantity,4);
+ const second=receivePurchaseOrder(first.order,{date:'2026-11-08T10:00:00.000Z',lines:[
+  {productId:10,quantity:6},{productId:11,quantity:5}
+ ]});
+ assert.equal(second.order.status,'received');
+ assert.equal(second.remaining,0);
+});
+test('rejects receipts above outstanding order quantities and unknown products',()=>{
+ assert.throws(()=>receivePurchaseOrder(order(),{date:'2026-11-07',lines:[{productId:10,quantity:11}]}),/تتجاوز/);
+ assert.throws(()=>receivePurchaseOrder(order(),{date:'2026-11-07',lines:[{productId:99,quantity:1}]}),/غير موجود/);
+});
+test('rejects duplicate or invalid order lines',()=>{
+ assert.throws(()=>createPurchaseOrder({id:2,supplierName:'A',createdAt:'2026-11-07',lines:[
+  {productId:1,productName:'A',quantity:2,unitCost:3},{productId:1,productName:'A',quantity:1,unitCost:3}
+ ]}));
+});
+test('cancels unreceived orders only',()=>{
+ assert.equal(cancelPurchaseOrder(order()).status,'cancelled');
+ const received=receivePurchaseOrder(order(),{date:'2026-11-07',lines:[{productId:10,quantity:10},{productId:11,quantity:5}]}).order;
+ assert.throws(()=>cancelPurchaseOrder(received));
+});
+
+test('allows cancellation after partial receipt but preserves received quantities',()=>{
+ const partial=receivePurchaseOrder(order(),{date:'2026-11-07',lines:[{productId:10,quantity:2}]}).order;
+ const cancelled=cancelPurchaseOrder(partial);
+ assert.equal(cancelled.status,'cancelled');
+ assert.equal(cancelled.lines[0].receivedQuantity,2);
+ assert.throws(()=>receivePurchaseOrder(cancelled,{date:'2026-11-08',lines:[{productId:10,quantity:1}]}));
+});
+test('rejects corrupted persisted order receipt counts',()=>{
+ const invalid={...order(),lines:[{...order().lines[0],receivedQuantity:11}]};
+ assert.throws(()=>receivePurchaseOrder(invalid,{date:'2026-11-07',lines:[{productId:10,quantity:1}]}),/غير صالح/);
+});
+
+test('rejects corrupted expected delivery dates in saved orders',()=>{
+ const invalid={...order(),expectedDate:'not-a-date'};
+ assert.throws(()=>receivePurchaseOrder(invalid,{date:'2026-11-07',lines:[{productId:10,quantity:1}]}),/غير صالح/);
+});
+
+
+test('purchase orders keep two variants of one product as separate receipt lines',()=>{
+ const value=createPurchaseOrder({id:77,supplierName:'Supplier B',createdAt:'2026-11-07T09:00:00.000Z',lines:[
+  {productId:10,productName:'T-shirt',variantId:'blue-xl',variantLabel:'Blue / XL',quantity:5,unitCost:30},
+  {productId:10,productName:'T-shirt',variantId:'red-m',variantLabel:'Red / M',quantity:3,unitCost:28},
+ ]});
+ assert.equal(value.lines.length,2);
+ const first=receivePurchaseOrder(value,{date:'2026-11-07T10:00:00.000Z',lines:[{productId:10,variantId:'blue-xl',quantity:2}]});
+ assert.equal(first.order.lines[0].receivedQuantity,2);
+ assert.equal(first.order.lines[1].receivedQuantity,0);
+ const second=receivePurchaseOrder(first.order,{date:'2026-11-08T10:00:00.000Z',lines:[{productId:10,variantId:'red-m',quantity:3}]});
+ assert.equal(second.order.lines[0].receivedQuantity,2);
+ assert.equal(second.order.lines[1].receivedQuantity,3);
+});
+
+test('purchase order rejects a receipt for the wrong variant',()=>{
+ const value=createPurchaseOrder({id:78,supplierName:'Supplier B',createdAt:'2026-11-07',lines:[
+  {productId:10,productName:'T-shirt',variantId:'blue-xl',quantity:5,unitCost:30},
+ ]});
+ assert.throws(()=>receivePurchaseOrder(value,{date:'2026-11-07',lines:[{productId:10,variantId:'red-m',quantity:1}]}),/غير موجودة/);
+});

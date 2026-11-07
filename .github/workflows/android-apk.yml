@@ -1,11 +1,6 @@
 name: Build HamZa Android APK
 
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - '.devcontainer/**'
-      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:
@@ -17,6 +12,8 @@ concurrency:
 
 jobs:
   build:
+    # APK builds are manual only. Keep CI focused on source checks until all requested features are complete.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -228,13 +225,7 @@ jobs:
           arch: x86_64
           profile: pixel_6
           script: |
-            APK="$(find dist/apk -type f -name '*.apk' | head -n 1)"
-            test -n "$APK"
-            adb install "$APK"
-            curl -Ls "https://get.maestro.mobile.dev" | bash
-            export PATH="$HOME/.maestro/bin:$PATH"
-            maestro --version
-            maestro test .maestro/smoke.yaml
+            APK="$(find "$GITHUB_WORKSPACE/dist/apk" -type f -name '*.apk' -print -quit)"; test -n "$APK"; adb install "$APK"; curl -Ls "https://get.maestro.mobile.dev" | bash; export PATH="$HOME/.maestro/bin:$PATH"; maestro --version; maestro test .maestro/smoke.yaml
 
   mobsf:
     name: MobSF Android security scan

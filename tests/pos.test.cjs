@@ -45,3 +45,30 @@ test('POS checkout rejects empty carts and underpaid cash checkouts', () => {
   assert.ok(validateCheckout(cart).includes('المبلغ المؤدى أقل من المجموع'));
   assert.deepEqual(validateCheckout({...cart, paymentMethod:'credit'}), []);
 });
+
+test('POS accepts service lines without stock tracking', () => {
+  const service={id:'service-1',name:'Installation',salePrice:300,stock:0,trackStock:false};
+  const cart=addPosLine(emptyPosCart(),service,3);
+  assert.equal(cart.lines[0].quantity,3);
+  assert.equal(cart.lines[0].unitPrice,300);
+});
+
+
+test('POS keeps source product and variant identity on cart lines', () => {
+  const variant = {id:'42::blue-xl', productId:42, variantId:'blue-xl', variantLabel:'أزرق / XL', name:'T-shirt • أزرق / XL', salePrice:199, stock:4, trackStock:true};
+  const cart = addPosLine(emptyPosCart(), variant, 2);
+  assert.equal(cart.lines[0].productId, '42::blue-xl');
+  assert.equal(cart.lines[0].sourceProductId, 42);
+  assert.equal(cart.lines[0].variantId, 'blue-xl');
+  assert.equal(cart.lines[0].variantLabel, 'أزرق / XL');
+  assert.throws(() => addPosLine(cart, variant, 3), /المخزون غير كافي/);
+});
+
+test('POS treats each variant as a separate stock item', () => {
+  const blue = {id:'42::blue', productId:42, variantId:'blue', name:'T-shirt blue', salePrice:100, stock:2, trackStock:true};
+  const red = {id:'42::red', productId:42, variantId:'red', name:'T-shirt red', salePrice:110, stock:5, trackStock:true};
+  const cart = addPosLine(addPosLine(emptyPosCart(), blue, 2), red, 4);
+  assert.equal(cart.lines.length, 2);
+  assert.equal(cart.lines[0].variantId, 'blue');
+  assert.equal(cart.lines[1].variantId, 'red');
+});

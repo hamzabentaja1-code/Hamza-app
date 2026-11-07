@@ -4,6 +4,9 @@ export type ConversionLine = {
   qty:number;
   unitPrice:number;
   total:number;
+  trackStock?:boolean;
+  variantId?:string;
+  variantLabel?:string;
 };
 export type QuoteForConversion = {
   id:number;
@@ -15,7 +18,7 @@ export type QuoteForConversion = {
   lines?:ConversionLine[];
 };
 export type StockProduct = {id:number; qty:number};
-export type DocumentKind = 'invoice'|'delivery';
+export type DocumentKind = 'invoice'|'delivery'|'proforma';
 export type ConvertedDocument = {
   id:number;
   number:string;
@@ -31,10 +34,11 @@ export type ExistingDocument = {sourceQuoteId:number; type:DocumentKind};
 export type ConversionResult = {
   document:ConvertedDocument;
   updatedProducts:StockProduct[];
+  stockDeducted:boolean;
 };
 
 /** Creates a quote-derived document and returns the stock snapshot.
- * Delivery notes post stock once; invoices never change stock.
+ * The first invoice or delivery note posts stock; its paired document never deducts twice.
  */
 export function convertQuote(
   quote:QuoteForConversion,
@@ -43,18 +47,23 @@ export function convertQuote(
   products:StockProduct[],
   id:number,
   date:string,
+  documentNumber?:string,
 ):ConversionResult {
   if(documents.some(d=>d.sourceQuoteId===quote.id&&d.type===type)) {
     throw new Error('This quote has already been converted to this document type');
   }
   const lines=quote.lines?.length?quote.lines:[];
   let updatedProducts=products;
-  if(type==='delivery') {
-    if(!lines.length||lines.some(line=>!line.productId)) {
+  const stockAlreadyDeducted=documents.some(d=>d.sourceQuoteId===quote.id&&(d.type==='invoice'||d.type==='delivery'));
+  const trackedLines=lines.filter(line=>line.trackStock!==false);
+  const shouldDeductStock=type!=='proforma'&&!stockAlreadyDeducted&&trackedLines.length>0;
+  if(type==='delivery'&&!lines.length)throw new Error('A new quote with linked products is required for a delivery note');
+  if(shouldDeductStock) {
+    if(trackedLines.some(line=>!line.productId)) {
       throw new Error('A new quote with linked products is required for a delivery note');
     }
     const required=new Map<number,number>();
-    lines.forEach(line=>required.set(line.productId,(required.get(line.productId)||0)+line.qty));
+    trackedLines.forEach(line=>required.set(line.productId,(required.get(line.productId)||0)+line.qty));
     const missing=Array.from(required.entries()).find(([productId,amount])=>{
       const product=products.find(p=>p.id===productId);
       return !product||product.qty<amount;
@@ -71,7 +80,7 @@ export function convertQuote(
   }];
   const document:ConvertedDocument={
     id,
-    number:(type==='invoice'?'FAC-':'BL-')+id,
+    number:documentNumber||((type==='invoice'?'FAC-':type==='delivery'?'BL-':'PRO-')+id),
     type,
     customerName:quote.customerName,
     total:quote.total,
@@ -80,5 +89,5 @@ export function convertQuote(
     sourceQuoteId:quote.id,
     lines:documentLines,
   };
-  return {document,updatedProducts};
+  return {document,updatedProducts,stockDeducted:shouldDeductStock};
 }
