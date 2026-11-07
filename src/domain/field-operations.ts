@@ -4,7 +4,7 @@ export type Technician={id:string;name:string;phone?:string;specialty?:string;ho
 export type Equipment={id:string;name:string;category?:string;reference?:string;serialNumber?:string;status:'available'|'assigned'|'maintenance';notes?:string};
 export type WorkOrderStatus='requested'|'scheduled'|'in_progress'|'completed'|'cancelled';
 export type WorkOrderPriority='low'|'normal'|'high'|'urgent';
-export type WorkOrder={id:string;number:string;title:string;customerName:string;projectId?:number;description:string;category?:WorkOrderCategory;status:WorkOrderStatus;priority:WorkOrderPriority;scheduledAt?:string;technicianId?:string;equipmentIds:string[];createdAt:string;notes?:string};
+export type WorkOrder={id:string;number:string;title:string;customerName:string;projectId?:number;description:string;category?:WorkOrderCategory;status:WorkOrderStatus;priority:WorkOrderPriority;scheduledAt?:string;technicianId?:string;equipmentIds:string[];createdAt:string;notes?:string;settlement?:WorkOrderSettlement};
 export type WorkTimeEntry={id:string;workOrderId:string;technicianId:string;date:string;hours:number;hourlyRate:number;costCentimes:number;notes?:string};
 
 const validDate=(value:string)=>!!value.trim()&&Number.isFinite(Date.parse(value));
