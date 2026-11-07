@@ -667,3 +667,13 @@ test('quote editor refuses section-only documents',()=>{
  assert.match(quote,/!lines\.some\(line=>line\.lineType!=='section'\)/);
  assert.match(quote,/زيد منتجاً أو رسماً إضافياً قبل حفظ العرض/);
 });
+
+test('quote editor camera scanner selects an exact barcode or reference match',()=>{
+ const app=read('App.tsx');
+ assert.match(app,/barcodeScannerTarget==='quote'\)setQuoteScannedBarcode\(code\)/);
+ assert.match(app,/openBarcodeScanner\('quote'\)/);
+ const quote=read('src/QuoteWorkspace.tsx');
+ assert.match(quote,/onScanBarcode:\(\)=>void/);
+ assert.match(quote,/product\.barcode\?\.trim\(\)\.toLocaleLowerCase\(\)===code\|\|product\.reference\?\.trim\(\)\.toLocaleLowerCase\(\)===code/);
+ assert.match(quote,/onBarcodeConsumed\(\)/);
+});
