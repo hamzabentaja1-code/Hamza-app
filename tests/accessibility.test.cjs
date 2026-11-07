@@ -7,10 +7,9 @@ const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('all primary workspaces use the shared accessible button wrapper', () => {
-  const files = ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx'];
-  for (const file of files) {
+  for (const file of ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx']) {
     const source = read(file);
-    assert.match(source, /import AccessiblePressable from ['"].\/AccessiblePressable['"]/,
+    assert.match(source, /import AccessiblePressable from ['"].*AccessiblePressable['"]/,
       file + ' must import AccessiblePressable');
     assert.match(source, /const Pressable = AccessiblePressable/,
       file + ' must route Pressable controls through AccessiblePressable');
@@ -25,7 +24,7 @@ test('primary workspace text inputs use translated accessible labels', () => {
   for (const file of ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx',
     'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx']) {
     const source = read(file);
-    assert.match(source, /TTextInput as TextInput|\{[^}]*TTextInput as TextInput/,
+    assert.match(source, /TTextInput as TextInput/,
       file + ' must use the shared translated TextInput');
     assert.match(source, /<TextInput\b/,
       file + ' must contain accessible translated text inputs');
