@@ -27,5 +27,5 @@ test('user access workspace routes every native alert through the translation wr
   assert.match(source, /Alert\.alert\(t\(title\),t\(message\)/);
   assert.match(source, /accessibilityState=\{\{selected:role===item\}\}/);
   assert.equal((source.match(/Alert\.alert\(/g) || []).length, 1);
-  assert.match(source, /buttons\?\.map\(button=>\(\.\.\.button,text:button\.text\?t\(button\.text\):button\.text\)\)/);
+  assert.ok(source.includes('buttons?.map(button=>({...button,text:button.text?t(button.text):button.text}))'));
 });
