@@ -16,5 +16,9 @@ test('customer and supplier cards expose real phone and WhatsApp actions',()=>{
  assert.match(app,/Linking\.openURL\(contactChannelUrl\(raw,channel\)\)/);
  assert.match(app,/openContactChannel\(c\.phone\|\|'','whatsapp'\)/);
  assert.match(app,/openContactChannel\(x\.phone\|\|'','call'\)/);
+ assert.match(app,/c\.phone\?\.trim\(\)\|\|c\.email\?\.trim\(\)/);
+ assert.match(app,/x\.phone\?\.trim\(\)\|\|x\.email\?\.trim\(\)/);
+ assert.match(app,/openContactChannel\(c\.email\|\|'','email'\)/);
+ assert.match(app,/openContactChannel\(x\.email\|\|'','email'\)/);
  assert.match(app,/openContactChannel\(value:string,channel:'whatsapp'\|'call'\|'email'\)/);
 });
