@@ -33,7 +33,7 @@ import {calculateCustomerBalances} from './src/domain/customer-balances';
 import {calculateSalesProfit} from './src/domain/profit';
 import {calculateSupplierBalances} from './src/domain/supplier-balances';
 import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput, translateText} from './src/i18n';
-import {buildCommercialPdfHtml} from './src/domain/commercial-pdf';
+import {buildCommercialPdfHtml,localizeCommercialPdfTitle} from './src/domain/commercial-pdf';
 
 import AccessiblePressable from './src/AccessiblePressable';
 const Pressable = AccessiblePressable;
@@ -693,7 +693,7 @@ export default function App() {
   };
   const exportPdf=async(title:string,customerName:string,lines:string[],total:number,showTotal=true)=>{
     try{
-      const html=buildCommercialPdfHtml({language,title,customerName,lines,total,showTotal,companyProfile,dateLabel:new Date().toLocaleDateString(language==='AR'?'ar-MA':'fr-MA')});
+      const pdfTitle=language==='AR'?localizeCommercialPdfTitle(title,language):(translateText(title,language)||title);const html=buildCommercialPdfHtml({language,title:pdfTitle,customerName,lines,total,showTotal,companyProfile,dateLabel:new Date().toLocaleDateString(language==='AR'?'ar-MA':'fr-MA')});
       const file=await Print.printToFileAsync({html});
       if(await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri,{mimeType:'application/pdf',dialogTitle:title});
       else showAlert('PDF جاهز',file.uri);
