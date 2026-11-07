@@ -57,3 +57,10 @@ test('keeps credit notes as customer credit when no invoice is outstanding',()=>
 test('rejects invalid customer credit notes',()=>{
  assert.throws(()=>calculateCustomerBalances([],[],[{customerName:'Amina',total:-1}]),/credit note is invalid/);
 });
+
+test('retains a credit note for a customer with no invoice or opening balance',()=>{
+ const result=calculateCustomerBalances([],[],[{customerName:'Amina',total:12.5}]);
+ assert.equal(result.length,1);
+ assert.equal(result[0].outstandingCentimes,0);
+ assert.equal(result[0].creditBalanceCentimes,1250);
+});
