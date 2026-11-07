@@ -1061,6 +1061,17 @@ const fr: Record<string, string> = {
   "اختار الحساب اللي غادي تستعمل دابا.": "Choisissez le compte à utiliser maintenant.",
   "المستخدم": "Utilisateur",
   "المستخدم: ": "Utilisateur : ",
+  "قبل إضافة أمر الشراء.": "avant d’ajouter la commande.",
+  "المنتج أو النسخة موجودة بالفعل في قائمة الأمر.": "Ce produit ou cette variante figure déjà dans la commande.",
+  "نسخة المنتج (المقاس / اللون)": "Variante du produit (taille / couleur)",
+  "مخزون ": "Stock ",
+  "المنتج أو النسخة غير موجودة في أمر الشراء.": "Le produit ou la variante est introuvable dans la commande.",
+  "نسخة المنتج المرتبطة بأمر الشراء لم تعد موجودة.": "La variante liée à la commande n’existe plus.",
+  "استلام أمر شراء ": "Réception de la commande ",
+  "المنتج أو النسخة المستلمة غير موجودة في أمر الشراء": "Le produit ou la variante reçue ne figure pas dans la commande.",
+  "هاد المنتج عندو تنويعات. اختار المقاس أو اللون قبل إضافة أمر الشراء.": "Ce produit a des variantes. Choisissez une taille ou une couleur avant de l’ajouter à la commande.",
+  "استلام هذا المنتج": "Recevoir ce produit",
+  "تأكيد الاستلام وإضافة للمخزون": "Confirmer la réception et ajouter au stock",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
