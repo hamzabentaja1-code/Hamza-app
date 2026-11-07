@@ -899,6 +899,14 @@ const fr: Record<string, string> = {
   "الصادرة غير المؤداة: ": "Chèques émis non payés : ",
 
   " • الاستحقاق: ": " • Échéance : ",
+
+  "إيداع الشيك": "Déposer le chèque",
+  "تقديم الشيك للبنك": "Présenter le chèque à la banque",
+  "إنشاء": "Création",
+  "إنشاء الشيك": "Création du chèque",
+  "سجل حركات الشيكات": "Historique des mouvements de chèques",
+  "مازال ما تسجلات حتى حركة شيك.": "Aucun mouvement de chèque enregistré.",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
