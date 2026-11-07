@@ -970,6 +970,7 @@ const fr: Record<string, string> = {
   "هاد العرض مرتبط بفاتورة أو سند أو فاتورة أولية.": "Ce devis est lié à une facture, un bon de sortie ou une facture pro forma.",
 
   "تنويعات المنتجات": "Variantes des produits",
+  "منتج": "Produit",
   "تنويعات المنتجات والمخزون": "Variantes des produits et stock",
   "سجل المقاسات والألوان والمرجع والباركود ومخزون كل نسخة بشكل مستقل.": "Gérez séparément les tailles, couleurs, références, codes-barres et stocks de chaque variante.",
   "بيانات النسخة غير صالحة": "Données de variante invalides",
