@@ -116,7 +116,20 @@ export default function App() {
       else Alert.alert('PDF جاهز',file.uri);
     }catch(e){Alert.alert('خطأ','تعذر إنشاء PDF. تأكد من تثبيت مكتبات expo-print و expo-sharing.');}
   };
-  const checkoutPos=(data:{customerName:string;lines:{productId:number;name:string;quantity:number;unitPrice:number;discount:number}[];paymentMethod:'cash'|'card'|'transfer';total:number})=>{\n    const invalid=data.lines.find(line=>{const product=products.find(p=>p.id===line.productId);return !product||product.qty<line.quantity;});\n    if(invalid){Alert.alert('المخزون تبدل','الكمية المتوفرة ما بقاتش كافية. راجع السلة.');return;}\n    const subtotal=data.lines.reduce((sum,line)=>sum+line.quantity*line.unitPrice-line.discount,0);\n    const globalDiscount=Math.max(0,subtotal-data.total);\n    const today=new Date().toLocaleDateString('fr-MA');\n    const records=data.lines.map((line,index)=>{const raw=line.quantity*line.unitPrice-line.discount;const share=subtotal>0?globalDiscount*(raw/subtotal):0;return {id:Date.now()+index,productName:line.name,customerName:data.customerName,qty:line.quantity,unitPrice:line.unitPrice,total:Math.max(0,raw-share),discount:line.discount+share,date:today,paymentMethod:data.paymentMethod};});\n    setSales(current=>[...records,...current]);\n    setProducts(current=>current.map(product=>{const sold=data.lines.filter(line=>line.productId===product.id).reduce((sum,line)=>sum+line.quantity,0);return sold?{...product,qty:product.qty-sold}:product;}));\n    const methodLabel=data.paymentMethod==='cash'?'نقداً':data.paymentMethod==='card'?'بطاقة':'تحويل';\n    exportPdf('Reçu de vente',data.customerName,[...data.lines.map(line=>line.name+' × '+line.quantity+' — '+(line.quantity*line.unitPrice-line.discount).toFixed(2)+' DH'), 'طريقة الأداء: '+methodLabel],data.total);\n  };\n  const go=(s:string)=>{setScreen(s);setSearch('');};
+  const checkoutPos=(data:{customerName:string;lines:{productId:number;name:string;quantity:number;unitPrice:number;discount:number}[];paymentMethod:'cash'|'card'|'transfer';total:number})=>{
+    const invalid=data.lines.find(line=>{const product=products.find(p=>p.id===line.productId);return !product||product.qty<line.quantity;});
+    if(invalid){Alert.alert('المخزون تبدل','الكمية المتوفرة ما بقاتش كافية. راجع السلة.');return false;}
+    const subtotal=data.lines.reduce((sum,line)=>sum+line.quantity*line.unitPrice-line.discount,0);
+    const globalDiscount=Math.max(0,subtotal-data.total);
+    const today=new Date().toLocaleDateString('fr-MA');
+    const records=data.lines.map((line,index)=>{const raw=line.quantity*line.unitPrice-line.discount;const share=subtotal>0?globalDiscount*(raw/subtotal):0;return {id:Date.now()+index,productName:line.name,customerName:data.customerName,qty:line.quantity,unitPrice:line.unitPrice,total:Math.max(0,raw-share),discount:line.discount+share,date:today,paymentMethod:data.paymentMethod};});
+    setSales(current=>[...records,...current]);
+    setProducts(current=>current.map(product=>{const sold=data.lines.filter(line=>line.productId===product.id).reduce((sum,line)=>sum+line.quantity,0);return sold?{...product,qty:product.qty-sold}:product;}));
+    const methodLabel=data.paymentMethod==='cash'?'نقداً':data.paymentMethod==='card'?'بطاقة':'تحويل';
+    exportPdf('Reçu de vente',data.customerName,[...data.lines.map(line=>line.name+' × '+line.quantity+' — '+(line.quantity*line.unitPrice-line.discount).toFixed(2)+' DH'), 'طريقة الأداء: '+methodLabel],data.total);
+    return true;
+  };
+  const go=(s:string)=>{setScreen(s);setSearch('');};
   if(!loaded)return <SafeAreaView style={s.safe}><StatusBar style="light"/><ActivityIndicator color={GOLD} style={{flex:1}}/></SafeAreaView>;
   return <SafeAreaView style={s.safe}><StatusBar style="light"/><View style={s.header}><View><Text style={s.brand}>HamZa</Text><Text style={s.sub}>Gestion commerciale</Text></View><Pressable onPress={()=>setLanguage(language==='AR'?'FR':'AR')} style={s.lang}><Text style={s.gold}>{language}</Text></Pressable></View>
     <ScrollView contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
