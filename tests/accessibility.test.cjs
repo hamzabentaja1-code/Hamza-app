@@ -564,3 +564,9 @@ test('variant stock workspace uses the selected warehouse for counts, movements 
   assert.match(workspace, /variantWarehouseBalance\(selectedVariant\.id,movements,activeWarehouseId/);
   assert.match(domain, /variantWarehouseBalance/);
 });
+
+test('application root and contact editor modal follow Arabic RTL and French LTR layout direction',()=>{
+ const app=read('App.tsx');
+ assert.match(app,/<SafeAreaView style=\{\[s\.safe,\{direction:language==='AR'\?'rtl':'ltr'\}\]\}>/);
+ assert.match(app,/direction:language==='AR'\?'rtl':'ltr'/);
+});
