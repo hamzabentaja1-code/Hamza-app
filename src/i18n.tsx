@@ -964,6 +964,8 @@ const fr: Record<string, string> = {
   "المتوفر: ": "Disponible : ",
 
   "تصدير التقرير CSV": "Exporter le rapport CSV",
+  "ما قدرناش نشاركوا تقرير CSV.": "Impossible de partager le rapport CSV.",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
