@@ -32,7 +32,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Variant management workspace with normalized size/color attributes, SKU/barcode uniqueness, per-variant stock and centime-safe cost/sale prices
 - [x] Variant stock movement validation for purchases, sales, returns and adjustments; variant records and movement history persist through local save and JSON backup/restore
 - [x] Connect variant selection and stock deduction to POS, direct sales, multi-line quotes, first invoice/delivery conversion, manual purchases, customer returns, supplier returns and purchase-order receipts; variant movement history is assigned to the active/original warehouse
-- [ ] Camera-based barcode scanning
+- [x] Camera barcode scanning from the product editor, POS, direct sales and purchases, with permission-gated scanning and exact barcode/reference lookup (tests/pos.test.cjs)
 - [x] Single product photo: choose, replace, remove, preview, and persist in local product data
 - [x] Product name search and product edit flow
 - [x] Basic free-text category, brand, unit and variant metadata in product cards, search, bulk import and CSV export
@@ -124,16 +124,18 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Customer selection, general discount, cash/card/transfer methods and checkout validation
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
 - [x] Product category dictionary and category selection
-- [ ] Camera barcode scanning and advanced stock filters
+- [x] Camera barcode scanning from POS with exact barcode lookup and cart insertion (tests/pos.test.cjs)
+- [ ] Advanced stock filters
 - [x] Parked POS sales persist across screens and app restarts and can be resumed or deleted
-- [ ] POS-linked returns, camera barcode scanning and physical receipt-printer integration
+- [ ] POS-linked returns and physical receipt-printer integration
 
 ### Projects and field operations
 - [x] Installation work orders with requested, scheduled, in-progress, completed and cancelled lifecycle states, customer/project linkage and equipment allocation
 - [x] Basic project records with customer, budget, dates, notes, status and project-linked expense totals
 - [x] Task create/read/update/delete with project link, assignee, priority, due date, estimated duration and status
 - [x] Technician profiles with phone, specialty and hourly rate; equipment records with reference, serial number, availability and assignment state
-- [ ] Equipment category dictionaries and technician permissions
+- [x] Equipment category dictionaries support create/select/delete, reject deleting categories in use, and persist through local save and backup/restore (tests/equipment-categories.test.cjs)
+- [ ] Technician permissions
 - [x] Work-time entries with date, technician, hours, hourly rate and centime-safe cost totals per work order and technician
 - [ ] Settlement, attachments, photo evidence and advanced work-order history
 
@@ -148,7 +150,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Detailed period-analysis PDF export includes period comparisons, monthly trends and supplier comparisons
 - [x] CSV export for period summary, monthly trends and supplier comparison
 - [x] XLSX export for period analysis, including current/previous-period metrics, monthly trends and supplier comparisons; workbook generation, base64 file persistence and native sharing are covered by tests/xlsx-export.test.cjs
-- [ ] Configurable report layouts
+- [x] Configurable period-report sections (summary, comparison, monthly trend and supplier comparison) persist locally and in backups, and apply consistently to PDF, CSV and XLSX exports (tests/report-layout.test.cjs)
 
 ## Acceptance tests required before calling a module complete
 - Create, read, update and delete (with confirmation) persist after app restart.
