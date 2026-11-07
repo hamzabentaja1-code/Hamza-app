@@ -21,7 +21,7 @@ test('purchase workspace persists supplier price rules and uses them when suppli
  assert.match(app,/supplierPriceRules,setSupplierPriceRules/);
  assert.match(app,/normalizeSupplierPriceRules\(d\.supplierPriceRules\)/);
  assert.match(app,/findSupplierPriceRule\(supplierPriceRules/);
- assert.match(app,/upsertSupplierPriceRule\(supplierPriceRules/);
+ assert.match(app,/upsertSupplierPriceRule\(current,rule\)/);
  assert.match(app,/supplierPriceRules,workOrders|supplierPriceRules/);
  assert.match(app,/حفظ ثمن المورد لهذا المنتج/);
  assert.match(app,/writeAppData\(\{[\s\S]*?supplierPriceRules/);
