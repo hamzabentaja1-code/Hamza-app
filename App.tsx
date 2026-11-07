@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {SafeAreaView, View, Pressable, ScrollView, StyleSheet, Alert, ActivityIndicator, Share, Image, Modal} from 'react-native';
+import {SafeAreaView, View, ScrollView, StyleSheet, Alert, ActivityIndicator, Share, Image, Modal} from 'react-native';
 import {StatusBar} from 'expo-status-bar';
 import {readAppData, writeAppData, createBackup, restoreBackup} from './src/storage';
 import * as Print from 'expo-print';
@@ -13,6 +13,8 @@ import {calculateCustomerBalances} from './src/domain/customer-balances';
 import {calculateSalesProfit} from './src/domain/profit';
 import {calculateSupplierBalances} from './src/domain/supplier-balances';
 import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput} from './src/i18n';
+import AccessiblePressable from './src/AccessiblePressable';
+const Pressable = AccessiblePressable;
 import {InventoryMovement, appendInventoryMovement, createStockCount} from './src/domain/inventory-ledger';
 import {calculateSalesReturn, remainingReturnQuantity, totalReturnProfitAdjustment} from './src/domain/sales-returns';
 import {allocateSupplierPayment, reverseSupplierPayment} from './src/domain/supplier-payments';
