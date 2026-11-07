@@ -6,7 +6,7 @@ import {TText as Text, TTextInput as TextInput, LanguageContext, translateText} 
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
-type Product = {id:number; name:string; price:number; qty:number};
+type Product = {id:number; name:string; price:number; qty:number; kind?:'product'|'service'};
 type Customer = {id:number; name:string};
 export type QuoteLine = {productId:number; productName:string; qty:number; unitPrice:number; total:number; trackStock?:boolean};
 export type QuoteRecord = {
