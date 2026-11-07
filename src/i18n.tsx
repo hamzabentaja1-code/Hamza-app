@@ -685,6 +685,15 @@ const fr: Record<string, string> = {
   "نطاق تاريخ غير صالح": "Plage de dates invalide",
   "متأخر": "En retard",
   "فترة غير صالحة": "Période invalide",
+  "اختار المنتج وسجل الكمية الفعلية. التطبيق يحسب الفرق ويسجلو كحركة جرد مع التاريخ والملاحظة.": "Choisissez le produit et saisissez la quantité réelle. L’application calcule l’écart et l’enregistre comme mouvement d’inventaire avec la date et la note.",
+  "المسجل فالمخزن:": "Enregistré dans l’entrepôt :",
+  "المخزون السابق:": "Stock précédent :",
+  "المعدود:": "Compté :",
+  "الفرق:": "Écart :",
+  "اختار المنتج ودخل الكمية المعدودة بشكل صحيح.": "Choisissez un produit et saisissez une quantité comptée valide.",
+  "المخزون السابق: ": "Stock précédent : ",
+  "المعدود: ": "Compté : ",
+  "الفرق: ": "Écart : ",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
