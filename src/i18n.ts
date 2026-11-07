@@ -281,7 +281,13 @@ const fr: Record<string, string> = {
   "تزادو ": "Ajoutés : ",
   "منتج. الأسطر المرفوضة أو المكررة: ": " produit(s). Lignes rejetées ou en double : ",
   "المجموع: ": "Total : ",
-  "النسخة غير صالحة.": "La sauvegarde est invalide."
+  "النسخة غير صالحة.": "La sauvegarde est invalide.",
+  "ICE (اختياري)": "ICE (facultatif)",
+  "ICE: ": "ICE : ",
+  "متوفر:": "Disponible :",
+  "مرجع: ": "Réf. : ",
+  "باركود: ": "Code-barres : ",
+  "الصنف: ": "Catégorie : "
 };
 
 export function translate(language: AppLanguage, value: string): string {
