@@ -2,14 +2,15 @@ import React,{useMemo,useState} from 'react';
 import {ScrollView,View,Alert} from 'react-native';
 import {TText as Text,TTextInput as TextInput} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
-import {SupplierPriceRequest,createSupplierPriceRequest,transitionSupplierPriceRequest,recordSupplierPriceOffer,compareSupplierOffers} from './domain/supplier-procurement';
+import {SupplierPriceRequest,SupplierInvoice,createSupplierPriceRequest,transitionSupplierPriceRequest,recordSupplierPriceOffer,compareSupplierOffers,createSupplierInvoice} from './domain/supplier-procurement';
 type Supplier={id:number;name:string};
 type Product={id:number;name:string;reference?:string;barcode?:string;kind?:string};
 type Variant={id:string;productId:number;attributes:Record<string,string>;active:boolean};
-type Props={suppliers:Supplier[];products:Product[];variants:Variant[];requests:SupplierPriceRequest[];onSave:(item:SupplierPriceRequest)=>void;onUpdate:(item:SupplierPriceRequest)=>void};
+type PurchaseOrder={id:number;supplierName:string;status:'ordered'|'partially_received'|'received'|'cancelled';lines:Array<{productId:number;productName:string;quantity:number;receivedQuantity:number;unitCost:number;variantId?:string;variantLabel?:string}>};
+type Props={suppliers:Supplier[];products:Product[];variants:Variant[];requests:SupplierPriceRequest[];purchaseOrders:PurchaseOrder[];invoices:SupplierInvoice[];onSave:(item:SupplierPriceRequest)=>void;onUpdate:(item:SupplierPriceRequest)=>void;onSaveInvoice:(item:SupplierInvoice)=>void;onPdf:(title:string,customer:string,lines:string[],total:number)=>void};
 const gold='#D4AF62',panel={backgroundColor:'#1B1B1B',borderRadius:12,borderWidth:1,borderColor:'#383838',padding:13,marginBottom:12} as const;
 const input={backgroundColor:'#111',borderWidth:1,borderColor:'#3A3A3A',borderRadius:8,padding:10,color:'#FFF',marginBottom:8} as const;
-export default function SupplierProcurementWorkspace({suppliers,products,variants,requests,onSave,onUpdate}:Props){
+export default function SupplierProcurementWorkspace({suppliers,products,variants,requests,purchaseOrders,invoices,onSave,onUpdate,onSaveInvoice,onPdf}:Props){
  const [supplierId,setSupplierId]=useState('');
  const [productId,setProductId]=useState('');
  const [variantId,setVariantId]=useState('');
@@ -18,6 +19,9 @@ export default function SupplierProcurementWorkspace({suppliers,products,variant
  const [selectedId,setSelectedId]=useState('');
  const [prices,setPrices]=useState<Record<string,string>>({});
  const [validUntil,setValidUntil]=useState('');
+ const [selectedOrderId,setSelectedOrderId]=useState('');
+ const [invoiceNumber,setInvoiceNumber]=useState('');
+ const [invoiceDueDate,setInvoiceDueDate]=useState('');
  const selected=requests.find(item=>item.id===selectedId);
  const comparisons=useMemo(()=>compareSupplierOffers(requests),[requests]);
  const addLine=()=>{
@@ -75,5 +79,31 @@ export default function SupplierProcurementWorkspace({suppliers,products,variant
   <Text style={{color:gold,fontWeight:'900',fontSize:17,marginVertical:10}}>مقارنة أثمان الموردين</Text>
   {comparisons.map((row,index)=><View key={row.requestId+'-'+row.productId+'-'+(row.variantId||'')} style={[panel,{flexDirection:'row',alignItems:'center'}]}><View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'800'}}>{row.productName}</Text><Text style={{color:'#AAA',marginTop:3}}>{row.supplierName} • كمية {row.quantity}{row.leadTimeDays===undefined?'':' • التسليم '+row.leadTimeDays+' يوم'}</Text></View><Text style={{color:index===0?gold:'#FFF',fontWeight:'900'}}>{(row.unitCostCentimes/100).toFixed(2)} DH</Text></View>)}
   {comparisons.length===0?<Text style={{color:'#888',padding:12}}>سجل عروض الموردين باش تبان المقارنة.</Text>:null}
+
+  <View style={panel}>
+   <Text style={{color:gold,fontSize:18,fontWeight:'900',marginBottom:8}}>تسجيل فاتورة المورد</Text>
+   <Text style={{color:'#AAA',marginBottom:8}}>الفاتورة كتترابط بالكميات المستلمة من أمر الشراء، وما كتزيدش المخزون مرة ثانية.</Text>
+   {purchaseOrders.filter(order=>order.status==='partially_received'||order.status==='received').map(order=><AccessiblePressable key={order.id} accessibilityState={{selected:selectedOrderId===String(order.id)}} onPress={()=>setSelectedOrderId(String(order.id))} style={{padding:10,borderRadius:8,borderWidth:1,borderColor:selectedOrderId===String(order.id)?gold:'#444',marginBottom:6}}><Text style={{color:'#FFF',fontWeight:'800'}}>BC-{order.id} • {order.supplierName}</Text><Text style={{color:'#AAA',marginTop:3}}>{order.status==='received'?'مستلم بالكامل':'استلام جزئي'} • {order.lines.reduce((sum,line)=>sum+line.receivedQuantity,0)} وحدة مستلمة</Text></AccessiblePressable>)}
+   <TextInput value={invoiceNumber} onChangeText={setInvoiceNumber} placeholder="رقم فاتورة المورد" placeholderTextColor="#888" style={input}/>
+   <TextInput value={invoiceDueDate} onChangeText={setInvoiceDueDate} placeholder="تاريخ الاستحقاق YYYY-MM-DD (اختياري)" placeholderTextColor="#888" style={input}/>
+   {selectedOrderId?action('تسجيل فاتورة الكميات المستلمة',()=>{
+    const order=purchaseOrders.find(item=>String(item.id)===selectedOrderId);
+    const supplier=order&&suppliers.find(item=>item.name===order.supplierName);
+    if(!order||!supplier){Alert.alert('المورد غير موجود','راجع المورد المرتبط بأمر الشراء.');return;}
+    const receivedOrder={id:order.id,supplierId:String(supplier.id),status:order.status,lines:order.lines.map(line=>({productId:line.productId,variantId:line.variantId,productName:line.productName,quantity:line.quantity,receivedQuantity:line.receivedQuantity}))};
+    const already=invoices.filter(invoice=>invoice.purchaseOrderId===order.id);
+    const billed=new Map<string,number>();
+    for(const invoice of already)for(const line of invoice.lines){const key=line.productId+'::'+(line.variantId||'');billed.set(key,(billed.get(key)||0)+line.quantity);}
+    const invoiceLines=order.lines.map(line=>{const key=line.productId+'::'+(line.variantId||'');const quantity=line.receivedQuantity-(billed.get(key)||0);return quantity>0?{productId:line.productId,variantId:line.variantId,description:line.productName+(line.variantLabel?' • '+line.variantLabel:''),quantity,unitCostCentimes:Math.round(line.unitCost*100)}:null;}).filter((line):line is NonNullable<typeof line>=>line!==null);
+    try{
+     const invoice=createSupplierInvoice({id:'supplier-invoice-'+Date.now(),number:invoiceNumber.trim()||'FA-'+Date.now(),supplierId:String(supplier.id),purchaseOrder:receivedOrder,issuedAt:new Date().toISOString(),dueDate:invoiceDueDate.trim()||undefined,lines:invoiceLines,previousInvoices:invoices});
+     onSaveInvoice(invoice);setInvoiceNumber('');setInvoiceDueDate('');Alert.alert('تم تسجيل فاتورة المورد','تسجلات الفاتورة بلا ما يتعاود تحديث المخزون.');
+    }catch(error){Alert.alert('تعذر تسجيل فاتورة المورد',error instanceof Error?error.message:'راجع بيانات الفاتورة.');}
+   }):null}
+  </View>
+  <Text style={{color:gold,fontWeight:'900',fontSize:17,marginVertical:10}}>فواتير الموردين ({invoices.length})</Text>
+  {invoices.map(invoice=>{const supplier=suppliers.find(item=>String(item.id)===invoice.supplierId);return <View key={invoice.id} style={panel}><Text style={{color:'#FFF',fontWeight:'900'}}>{invoice.number} • {supplier?.name||invoice.supplierId}</Text><Text style={{color:'#AAA',marginTop:4}}>أمر الشراء BC-{invoice.purchaseOrderId} • {invoice.issuedAt.slice(0,10)}{invoice.dueDate?' • استحقاق '+invoice.dueDate:''}</Text><Text style={{color:gold,fontWeight:'900',marginTop:6}}>{(invoice.totalCentimes/100).toFixed(2)} DH</Text><AccessiblePressable onPress={()=>onPdf('Facture fournisseur '+invoice.number,supplier?.name||'',invoice.lines.map(line=>line.description+' × '+line.quantity+' — '+(line.unitCostCentimes/100).toFixed(2)+' DH'),invoice.totalCentimes/100)} style={{padding:8,marginTop:5}}><Text style={{color:gold}}>PDF</Text></AccessiblePressable></View>;})}
+  {invoices.length===0?<Text style={{color:'#888',padding:12}}>مازال ما تسجلات حتى فاتورة مورد.</Text>:null}
+
  </ScrollView>;
 }
