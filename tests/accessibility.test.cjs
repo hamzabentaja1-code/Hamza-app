@@ -589,3 +589,8 @@ test('stock count screen handles a matching count as an informational outcome', 
   assert.ok(app.includes("if(counted===expected){showAlert(language==='FR'?'Inventaire conforme':'الجرد مطابق'"));
   assert.ok(app.includes("setStockCountQuantity('');setStockCountNote('');return;"));
 });
+
+test('inventory history empty state is scoped to the active warehouse', () => {
+  const app = read('App.tsx');
+  assert.ok(app.includes("inventoryMovements.filter(m=>(m.warehouseId||DEFAULT_WAREHOUSE_ID)===activeWarehouseId).length===0&&<Text style={s.empty}>مازال ما تسجلات حتى حركة مخزون.</Text>"));
+});
