@@ -15,6 +15,27 @@ export function createCustomerOrder(input:Omit<CustomerOrder,'status'|'deliveryD
  if(!Number.isFinite(total)||Math.abs(total-input.total)>0.011)throw new Error('مجموع الطلب لا يطابق مجموع السطور');
  return {...input,lines,status:'draft',deliveryDocumentIds:[],invoiceDocumentIds:[]};
 }
+export type QuoteOrderSource={id:number;number?:string;productName:string;customerName:string;qty:number;unitPrice:number;total:number;date?:string;notes?:string;documentDiscount?:number;lines?:Array<{productId:number;productName:string;qty:number;unitPrice:number;total:number;variantId?:string;variantLabel?:string;trackStock?:boolean;lineType?:'section'}>};
+export function createCustomerOrderFromQuote(quote:QuoteOrderSource,id:number,number:string,date:string):CustomerOrder{
+ const sourceLines=quote.lines?.filter(line=>line.lineType!=='section')||[];
+ let lines:CustomerOrderLine[];
+ if(sourceLines.length){
+  const subtotalCentimes=sourceLines.reduce((sum,line)=>sum+Math.round(line.total*100),0);
+  const discountCentimes=Math.round((quote.documentDiscount||0)*100);
+  if(!Number.isSafeInteger(subtotalCentimes)||subtotalCentimes<0||!Number.isSafeInteger(discountCentimes)||discountCentimes<0||discountCentimes>subtotalCentimes)throw new Error('تخفيض الطلب غير صالح');
+  let remainingDiscount=discountCentimes;
+  lines=sourceLines.map((line,index)=>{
+   const gross=Math.round(line.total*100);
+   const allocated=index===sourceLines.length-1?remainingDiscount:subtotalCentimes?Math.min(remainingDiscount,Math.round(discountCentimes*gross/subtotalCentimes)):0;
+   remainingDiscount-=allocated;
+   return {productId:line.productId,productName:line.productName,qty:line.qty,unitPrice:(gross-allocated)/100/line.qty,variantId:line.variantId,variantLabel:line.variantLabel,fulfilledQty:0,trackStock:line.trackStock!==false};
+  });
+ }else{
+  if(!validQty(quote.qty))throw new Error('كمية الطلب غير صالحة');
+  lines=[{productId:0,productName:quote.productName,qty:quote.qty,unitPrice:quote.total/quote.qty,fulfilledQty:0,trackStock:false}];
+ }
+ return createCustomerOrder({id,number,customerName:quote.customerName,date,total:quote.total,sourceQuoteId:quote.id,lines,notes:quote.notes});
+}
 export function changeCustomerOrderStatus(order:CustomerOrder,status:CustomerOrderStatus):CustomerOrder{
  if(order.status==='cancelled'||order.status==='fulfilled')throw new Error('لا يمكن تغيير حالة طلب مغلق');
  if(status==='confirmed'&&order.status!=='draft')throw new Error('لا يمكن تأكيد الطلب مرة أخرى');
