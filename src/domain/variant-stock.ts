@@ -132,11 +132,12 @@ export function variantWarehouseBalance(
   variantId: string,
   movements: VariantStockMovement[],
   warehouseId: string = DEFAULT_VARIANT_WAREHOUSE_ID,
+  legacyDefaultBalance = 0,
 ): number {
-  if (!variantId.trim() || !warehouseId.trim()) throw new Error('النسخة أو المخزن غير صالح');
-  return movements
-    .filter(item => item.variantId === variantId && variantMovementWarehouseId(item) === warehouseId)
-    .reduce((sum, item) => sum + item.quantityDelta, 0);
+  if (!variantId.trim() || !warehouseId.trim() || !Number.isSafeInteger(legacyDefaultBalance) || legacyDefaultBalance < 0) throw new Error('النسخة أو المخزن غير صالح');
+  const rows = movements.filter(item => item.variantId === variantId && variantMovementWarehouseId(item) === warehouseId);
+  if (!rows.length && warehouseId === DEFAULT_VARIANT_WAREHOUSE_ID && !movements.some(item => item.variantId === variantId)) return legacyDefaultBalance;
+  return rows.reduce((sum, item) => sum + item.quantityDelta, 0);
 }
 
 /** Produces a complete variant-by-warehouse matrix, including zero balances. */
@@ -159,7 +160,7 @@ export function variantWarehouseStockMatrix(
     warehouseId: warehouse.id,
     warehouseName: warehouse.name,
     attributes: {...variant.attributes},
-    quantity: variantWarehouseBalance(variant.id, movements, warehouse.id),
+    quantity: variantWarehouseBalance(variant.id, movements, warehouse.id, warehouse.id === DEFAULT_VARIANT_WAREHOUSE_ID ? variant.stockQty : 0),
   })));
 }
 
