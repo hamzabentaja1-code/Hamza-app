@@ -1,7 +1,9 @@
 import React, {useMemo, useState} from 'react';
-import {Alert, Image, Pressable, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
+import {Alert, Image, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
 import {addPosLine, emptyPosCart, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
 import {TText as Text, TTextInput as TextInput} from './i18n';
+import AccessiblePressable from './AccessiblePressable';
+const Pressable = AccessiblePressable;
 
 type Product = {id:number; name:string; price:number; qty:number; photoData?:string};
 type Customer = {id:number; name:string};
