@@ -34,7 +34,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Basic free-text category, brand, unit and variant metadata in product cards, search, bulk import and CSV export
 - [x] Managed product category and brand dictionaries with quick selection and local backup/restore
 - [x] Product photo gallery supports up to four images, preview, per-image removal and persisted local product records
-- [ ] Variant stock matrix UI and integration with product forms, POS, sales, purchases and existing inventory ledger\n- [x] Variant stock domain: normalized attribute combinations, duplicate SKU protection, centime-safe prices, per-variant movement validation, no-negative-stock rule and aggregate balances (tests/variant-stock.test.cjs)
+- [ ] Variant stock matrix UI and integration with product forms, POS, sales, purchases and existing inventory ledger
+- [x] Variant stock domain: normalized attribute combinations, duplicate SKU protection, centime-safe prices, per-variant movement validation, no-negative-stock rule and aggregate balances (tests/variant-stock.test.cjs)
 - [x] Product purchase cost, sale price and unit margin when cost is recorded
 - [x] Weighted average cost updates on purchases when the previous stock cost is known
 - [x] Sale-time cost snapshots and tested gross-profit calculation; legacy sales without a cost are excluded
@@ -92,7 +93,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Bank account reconciliation against a statement balance with an auditable adjustment and reconciliation history
 - [x] POS card and bank-transfer sales are posted to the selected bank account; checkout validates the account before committing stock and payment ledgers
 - [x] Cash-to-bank and bank-to-cash transfers update both ledgers atomically with overdraft protection
-- [x] Cheque lifecycle workspace with incoming/outgoing records, audited state transitions, deposit/bounce/cancel handling, persisted event history and bank-ledger posting only on clearing\n- [x] Cheque lifecycle domain rules: centime-safe amounts, duplicate protection, strict dates, audited state transitions, bounced/redeposit flow and cleared-only bank effect (tests/cheques.test.cjs)
+- [x] Cheque lifecycle workspace with incoming/outgoing records, audited state transitions, deposit/bounce/cancel handling, persisted event history and bank-ledger posting only on clearing
+- [x] Cheque lifecycle domain rules: centime-safe amounts, duplicate protection, strict dates, audited state transitions, bounced/redeposit flow and cleared-only bank effect (tests/cheques.test.cjs)
 - [x] Partial customer invoice payments and supplier purchase payments with centime-safe allocation and balance recalculation
 - [x] Customer payments can be allocated automatically, oldest invoice first, across multiple outstanding invoices; one cash/bank ledger entry is recorded for the full receipt
 - [x] Supplier payments can be distributed oldest-first across multiple open purchases; one cash/bank movement is recorded and grouped reversal restores all allocations
