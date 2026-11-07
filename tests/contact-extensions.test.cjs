@@ -28,7 +28,9 @@ test('customer price groups persist through the app and flow from contact select
  const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
  const quote=fs.readFileSync(path.join(__dirname,'..','src','QuoteWorkspace.tsx'),'utf8');
  const pricing=fs.readFileSync(path.join(__dirname,'..','src','domain','document-pricing.ts'),'utf8');
- assert.match(app,/priceGroups,setPriceGroups/);\n assert.match(app,/priceGroupName,setPriceGroupName/);\n assert.match(app,/priceGroupDiscount,setPriceGroupDiscount/);
+ assert.match(app,/priceGroups,setPriceGroups/);
+ assert.match(app,/priceGroupName,setPriceGroupName/);
+ assert.match(app,/priceGroupDiscount,setPriceGroupDiscount/);
  assert.match(app,/priceGroupId:customerPriceGroupId/);
  assert.match(app,/writeAppData\(\{[\s\S]*?priceGroups\}/);
  assert.match(app,/<QuoteWorkspace[^>]*priceGroups=\{priceGroups\}/);
