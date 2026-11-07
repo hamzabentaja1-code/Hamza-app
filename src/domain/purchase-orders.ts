@@ -20,7 +20,32 @@ export type PurchaseReceipt = {
   received: PurchaseReceiptLine[];
   remaining: number;
 };
-function validDate(value: string): boolean {
+function validDate(value: string): boolean {\nfunction validateOrder(order: PurchaseOrder): void {
+  if (!Number.isSafeInteger(order.id) || order.id <= 0 || !order.supplierName.trim() ||
+      !validDate(order.createdAt) || !Array.isArray(order.lines) || order.lines.length === 0 ||
+      !['draft','ordered','partially_received','received','cancelled'].includes(order.status)) {
+    throw new Error('أمر الشراء المحفوظ غير صالح');
+  }
+  const ids = new Set<number>();
+  for (const line of order.lines) {
+    if (!Number.isSafeInteger(line.productId) || line.productId <= 0 || !line.productName.trim() ||
+        !Number.isSafeInteger(line.quantity) || line.quantity <= 0 ||
+        !Number.isSafeInteger(line.receivedQuantity) || line.receivedQuantity < 0 ||
+        line.receivedQuantity > line.quantity || !Number.isFinite(line.unitCost) || line.unitCost < 0 ||
+        ids.has(line.productId)) {
+      throw new Error('سطر أمر الشراء المحفوظ غير صالح');
+    }
+    ids.add(line.productId);
+  }
+  const allReceived = order.lines.every(line => line.receivedQuantity === line.quantity);
+  const anyReceived = order.lines.some(line => line.receivedQuantity > 0);
+  if ((order.status === 'received' && !allReceived) ||
+      (order.status === 'ordered' && anyReceived) ||
+      (order.status === 'partially_received' && (!anyReceived || allReceived))) {
+    throw new Error('حالة استلام أمر الشراء غير متطابقة مع الكميات');
+  }
+}
+
   return !!value.trim() && Number.isFinite(Date.parse(value));
 }
 export function createPurchaseOrder(input: {
@@ -49,7 +74,7 @@ export function receivePurchaseOrder(
   order: PurchaseOrder,
   receipt: {lines:PurchaseReceiptLine[]; date:string},
 ): PurchaseReceipt {
-  if(order.status==='cancelled'||order.status==='received') throw new Error('أمر الشراء ملغى أو مستلم بالكامل');
+  validateOrder(order);\n  if(order.status==='cancelled'||order.status==='received') throw new Error('أمر الشراء ملغى أو مستلم بالكامل');
   if(!validDate(receipt.date)||!Array.isArray(receipt.lines)||receipt.lines.length===0)
     throw new Error('بيانات استلام البضاعة غير صالحة');
   const requested=new Map<number,number>();
