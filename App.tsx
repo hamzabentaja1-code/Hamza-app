@@ -32,6 +32,7 @@ import {BankAccount, BankMovement, BankReconciliation, appendBankMovement, bankB
 import {createCashBankTransfer} from './src/domain/cash-bank-transfers';
 import {importBankStatement} from './src/domain/bank-statement-import';
 import {nextDocumentNumber} from './src/domain/document-numbering';
+import {applyInvoicePriceRules} from './src/domain/document-pricing';
 import {Technician, Equipment, WorkOrder, WorkTimeEntry} from './src/domain/field-operations';
 import {RecurringExpenseRule, generateDueRecurringExpenses} from './src/domain/recurring-expenses';
 import {PurchaseOrder, createPurchaseOrder, receivePurchaseOrder, cancelPurchaseOrder} from './src/domain/purchase-orders';
@@ -435,8 +436,10 @@ export default function App() {
   const addExpense=()=>{const a=Number(expenseAmount.replace(',','.'));const projectId=expenseProjectId?Number(expenseProjectId):undefined;if(!expenseTitle.trim()||!Number.isFinite(a)||a<=0||(projectId!==undefined&&!projects.some(p=>p.id===projectId))){showAlert('معلومات ناقصة','دخل وصف المصروف ومبلغ صحيح واختار مشروعاً صالحاً إن وجد.');return;}const record:Expense={id:Date.now(),title:expenseTitle.trim(),amount:a,date:new Date().toLocaleDateString('fr-MA'),category:expenseCategory.trim()||undefined,projectId};setExpenses(v=>[record,...v]);logActivity('تسجيل مصروف',record.title+' • '+record.amount.toFixed(2)+' DH');setExpenseTitle('');setExpenseAmount('');setExpenseCategory('');setExpenseProjectId('');};
   const addQuote=()=>{const p=products.find(x=>String(x.id)===quoteProduct);const c=customers.find(x=>String(x.id)===quoteCustomer);const q=Number(quoteQty);if(!p||!c||!Number.isInteger(q)||q<1){showAlert('معلومات ناقصة','اختار المنتج والزبون والكمية.');return;}const x:Quote={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,date:new Date().toLocaleDateString('fr-MA'),status:'معلق'};setQuotes(v=>[x,...v]);setQuoteQty('1');showAlert('تم حفظ عرض السعر',`${x.total.toFixed(2)} DH`);};
   const convertQuote=(quote:Quote,type:QuoteConversionType)=>{
+    let conversionQuote=quote;
+    if(type==='invoice'){try{conversionQuote=applyInvoicePriceRules(quote,products);}catch(error){showAlert('ثمن الفاتورة غير صالح',error instanceof Error?error.message:'راجع أثمنة الفاتورة.');return;}}
     const stockAlreadyDeducted=documents.some(d=>d.sourceQuoteId===quote.id);
-    const trackedQuoteLines=quote.lines?.filter(line=>line.trackStock!==false)||[];
+    const trackedQuoteLines=conversionQuote.lines?.filter(line=>line.trackStock!==false)||[];
     if(!stockAlreadyDeducted&&trackedQuoteLines.length){
       const insufficient=trackedQuoteLines.find(line=>inventoryBalanceForWarehouse(inventoryMovements,line.productId,activeWarehouseId)<line.qty);
       if(insufficient){showAlert('المخزون غير كافٍ',`الكمية المتوفرة في المخزن النشط غير كافية للمنتج ${products.find(p=>p.id===insufficient.productId)?.name||quote.productName}.`);return;}
@@ -445,13 +448,13 @@ export default function App() {
       const customer=customers.find(x=>x.name===quote.customerName);
       if(type==='invoice'&&customer?.creditLimitCentimes!==undefined){
         const currentBalance=balanceFor(customer.name)?.outstandingCentimes||0;
-        if(exceedsCustomerCreditLimit(currentBalance,Math.round(quote.total*100),customer.creditLimitCentimes)){
+        if(exceedsCustomerCreditLimit(currentBalance,Math.round(conversionQuote.total*100),customer.creditLimitCentimes)){
           showAlert('تجاوز سقف الدين',`الرصيد الحالي مع الفاتورة غادي يفوت سقف الدين المحدد للزبون: ${(customer.creditLimitCentimes/100).toFixed(2)} DH.`);
           return;
         }
       }
       const result=createConvertedDocument(
-        quote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),nextDocumentNumber(type==='invoice'?companyProfile.invoicePrefix:companyProfile.deliveryPrefix,documents),
+        conversionQuote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),nextDocumentNumber(type==='invoice'?companyProfile.invoicePrefix:companyProfile.deliveryPrefix,documents),
       );
       const dueDate=type==='invoice'&&customer?.paymentTermsDays!==undefined
         ?calculatePaymentDueDate(new Date().toISOString(),customer.paymentTermsDays):undefined;
