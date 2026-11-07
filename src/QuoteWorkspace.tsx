@@ -2,13 +2,14 @@ import React, {useContext, useMemo, useState} from 'react';
 import {Alert, ScrollView, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
 import {calculateQuote} from './domain/quote-calculator';
 import {nextDocumentNumber} from './domain/document-numbering';
+import {ContactPriceGroup, priceForContactGroup} from './domain/contact-extensions';
 import {TText as Text, TTextInput as TextInput, LanguageContext, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
 type Product = {id:number; name:string; price:number; qty:number; kind?:'product'|'service'; quotePrice?:number; invoicePrice?:number};
 type ProductVariant = {id:string;productId:number;attributes:Record<string,string>;stockQty:number;salePriceCentimes?:number;active:boolean};
-type Customer = {id:number; name:string};
+type Customer = {id:number; name:string; priceGroupId?:string};
 export type QuoteLine = {productId:number; productName:string; qty:number; unitPrice:number; total:number; trackStock?:boolean; variantId?:string; variantLabel?:string};
 export type QuoteRecord = {
   id:number; number?:string; productName:string; customerName:string; qty:number;
@@ -20,6 +21,7 @@ type Props = {
   products:Product[];
   variants:ProductVariant[];
   customers:Customer[];
+  priceGroups:ContactPriceGroup[];
   quotes:QuoteRecord[];
   quotePrefix:string;
   onSave:(quote:QuoteRecord)=>void;
@@ -37,7 +39,7 @@ const choice={borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marg
 const active={borderColor:gold,backgroundColor:'#302819'};
 const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
-export default function QuoteWorkspace({products,variants,customers,quotes,quotePrefix,onSave,onUpdate,onDelete,onPdf,onConvert}:Props) {
+export default function QuoteWorkspace({products,variants,customers,priceGroups,quotes,quotePrefix,onSave,onUpdate,onDelete,onPdf,onConvert}:Props) {
   const language=useContext(LanguageContext);
  const showAlert = (...args: Parameters<typeof Alert.alert>) => {
   const [title, message, buttons, options] = args;
@@ -60,6 +62,7 @@ export default function QuoteWorkspace({products,variants,customers,quotes,quote
   const [notes,setNotes]=useState('');
   const [validUntil,setValidUntil]=useState('');
   const selectedCustomer=customers.find(c=>String(c.id)===customerId);
+  const selectedPriceGroup=priceGroups.find(group=>group.id===selectedCustomer?.priceGroupId&&group.active);
   const selectedProduct=products.find(p=>String(p.id)===productId);
   const hasVariants=selectedProduct?variants.some(v=>v.productId===selectedProduct.id):false;
   const selectedVariants=selectedProduct?variants.filter(v=>v.productId===selectedProduct.id&&v.active):[];
@@ -93,7 +96,8 @@ export default function QuoteWorkspace({products,variants,customers,quotes,quote
     if(!selectedProduct){showAlert('اختار المنتج','حدد المنتج اللي بغيتي تزيد.');return;}
     if(!Number.isFinite(qty)||qty<=0){showAlert('كمية غير صحيحة','دخل كمية أكبر من صفر.');return;}
     if(hasVariants&&!selectedVariant){showAlert('اختار النسخة','هاد المنتج عندو تنويعات. اختار المقاس أو اللون قبل إضافته لعرض السعر.');return;}
-    const defaultPrice=selectedVariant?.salePriceCentimes===undefined?(selectedProduct.quotePrice??selectedProduct.price):selectedVariant.salePriceCentimes/100;
+    const basePrice=selectedVariant?.salePriceCentimes===undefined?(selectedProduct.quotePrice??selectedProduct.price):selectedVariant.salePriceCentimes/100;
+    const defaultPrice=priceForContactGroup(basePrice,selectedPriceGroup);
     const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):defaultPrice;
     if(!Number.isFinite(unitPrice)||unitPrice<0){showAlert('ثمن غير صحيح','دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.');return;}
     const line:QuoteLine={productId:selectedProduct.id,productName:selectedProduct.name,variantId:selectedVariant?.id,variantLabel:selectedVariant?Object.values(selectedVariant.attributes).join(' / '):undefined,qty,unitPrice,total:qty*unitPrice,trackStock:selectedProduct.kind!=='service'};
@@ -131,7 +135,7 @@ export default function QuoteWorkspace({products,variants,customers,quotes,quote
       <Text style={{color:gold,fontSize:19,fontWeight:'800',marginBottom:12}}>إنشاء عرض سعر متعدد المنتجات</Text>
       <Text style={{color:'#CCC',marginBottom:7}}>الزبون</Text>
       <TextInput value={customerSearch} onChangeText={setCustomerSearch} placeholder="بحث عن الزبون بالاسم" placeholderTextColor="#888" style={input}/>
-      {filteredCustomers.map(c=><Pressable key={c.id} accessibilityState={{selected:customerId===String(c.id)}} onPress={()=>setCustomerId(String(c.id))} style={[choice,customerId===String(c.id)&&active]}><Text style={{color:'#FFF',fontWeight:'700'}}>{c.name}</Text></Pressable>)}
+      {filteredCustomers.map(c=><Pressable key={c.id} accessibilityState={{selected:customerId===String(c.id)}} onPress={()=>setCustomerId(String(c.id))} style={[choice,customerId===String(c.id)&&active]}><Text style={{color:'#FFF',fontWeight:'700'}}>{c.name}{c.priceGroupId?' • '+(priceGroups.find(group=>group.id===c.priceGroupId)?.name||'مجموعة'):''}</Text></Pressable>)}
       {customers.length===0&&<Text style={{color:'#999',padding:8}}>زيد زبون أولاً من قسم الزبناء.</Text>}
       <Text style={{color:'#CCC',marginVertical:8}}>المنتج</Text>
       <TextInput value={productSearch} onChangeText={setProductSearch} placeholder="بحث عن المنتج بالاسم" placeholderTextColor="#888" style={input}/>
@@ -139,7 +143,7 @@ export default function QuoteWorkspace({products,variants,customers,quotes,quote
       {products.length===0&&<Text style={{color:'#999',padding:8}}>زيد المنتجات أولاً.</Text>}
       {selectedVariants.length>0&&<><Text style={{color:'#CCC',marginVertical:7}}>اختار النسخة (المقاس / اللون)</Text>{selectedVariants.map(v=><Pressable key={v.id} accessibilityState={{selected:variantId===v.id}} onPress={()=>{setVariantId(v.id);setCustomPrice((v.salePriceCentimes===undefined?(selectedProduct?.quotePrice??selectedProduct?.price??0):v.salePriceCentimes/100).toFixed(2));}} style={[choice,variantId===v.id&&active]}><Text style={{color:'#FFF'}}>{Object.values(v.attributes).join(' / ')} • المخزون: {v.stockQty} • {v.salePriceCentimes===undefined?(selectedProduct?.price??0).toFixed(2):(v.salePriceCentimes/100).toFixed(2)} DH</Text></Pressable>)}</>}
       {selectedProduct&&hasVariants&&selectedVariants.length===0?<Text style={{color:'#E28A78',padding:8}}>ما كايناش نسخ نشطة لهذا المنتج.</Text>:null}
-      {selectedProduct&&<TextInput value={customPrice} onChangeText={setCustomPrice} keyboardType="decimal-pad" placeholder="ثمن البيع لهذا العرض (DH)" placeholderTextColor="#888" style={input}/>}
+      {selectedProduct&&selectedCustomer&&selectedPriceGroup?<Text style={{color:gold,marginBottom:7}}>مجموعة {selectedPriceGroup.name}: تخفيض {selectedPriceGroup.discountPercent}% يطبق تلقائياً</Text>:null}{selectedProduct&&<TextInput value={customPrice} onChangeText={setCustomPrice} keyboardType="decimal-pad" placeholder="ثمن البيع لهذا العرض (DH)" placeholderTextColor="#888" style={input}/>}
       <View style={{flexDirection:'row',gap:8}}>
         <TextInput value={quantity} onChangeText={setQuantity} keyboardType="decimal-pad" placeholder="الكمية" placeholderTextColor="#888" style={[input,{flex:1}]}/>
         <Pressable onPress={addLine} style={[button,{flex:1,marginTop:0}]}><Text style={{color:'#151515',fontWeight:'900'}}>+ إضافة للسطر</Text></Pressable>
