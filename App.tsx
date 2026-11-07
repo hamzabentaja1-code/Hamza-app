@@ -470,12 +470,24 @@ export default function App() {
   const convertQuote=(quote:Quote,type:QuoteConversionType)=>{
     let conversionQuote=quote;
     if(type==='invoice'){try{conversionQuote=applyInvoicePriceRules(quote,products);}catch(error){showAlert('ثمن الفاتورة غير صالح',error instanceof Error?error.message:'راجع أثمنة الفاتورة.');return;}}
-    const stockAlreadyDeducted=documents.some(d=>d.sourceQuoteId===quote.id&&(d.type==='invoice'||d.type==='delivery'));
+    const stockAlreadyDeducted=documents.some(d=>d.sourceQuoteId===quote.id&&d.type==='delivery');
     const trackedQuoteLines=conversionQuote.lines?.filter(line=>line.trackStock!==false)||[];
-    if((type==='invoice'||type==='delivery')&&!stockAlreadyDeducted&&trackedQuoteLines.length){
-      const insufficient=trackedQuoteLines.find(line=>inventoryBalanceForWarehouse(inventoryMovements,line.productId,activeWarehouseId)<line.qty);
-      if(insufficient){showAlert('المخزون غير كافٍ',`الكمية المتوفرة في المخزن النشط غير كافية للمنتج ${products.find(p=>p.id===insufficient.productId)?.name||quote.productName}.`);return;}
+    if(type==='delivery'&&!stockAlreadyDeducted&&trackedQuoteLines.length){
+      const invalidVariantLine=trackedQuoteLines.find(line=>{
+        const activeVariants=productVariants.filter(v=>v.productId===line.productId&&v.active);
+        if(line.variantId)return !Number.isSafeInteger(line.qty)||!productVariants.some(v=>v.id===line.variantId&&v.productId===line.productId&&v.active);
+        return activeVariants.length>0;
+      });
+      if(invalidVariantLine){showAlert('اختار النسخة','خاصك تختار نسخة صحيحة ونشطة لكل منتج عندو تنويعات قبل إصدار سند الخروج.');return;}
+      const insufficient=trackedQuoteLines.find(line=>{
+        if(line.variantId){const variant=productVariants.find(v=>v.id===line.variantId);return !variant||variant.stockQty<line.qty;}
+        return inventoryBalanceForWarehouse(inventoryMovements,line.productId,activeWarehouseId)<line.qty;
+      });
+      if(insufficient){const variant=insufficient.variantId?productVariants.find(v=>v.id===insufficient.variantId):undefined;showAlert('المخزون غير كافٍ',variant?`المخزون غير كافٍ فالنسخة ${Object.values(variant.attributes).join(' / ')}. المتوفر: ${variant.stockQty}`:`الكمية المتوفرة في المخزن النشط غير كافية للمنتج ${products.find(p=>p.id===insufficient.productId)?.name||quote.productName}.`);return;}
     }
+    const conversionInputQuote=type==='delivery'&&conversionQuote.lines?.some(line=>!!line.variantId)
+      ?{...conversionQuote,lines:conversionQuote.lines.map(line=>line.variantId?{...line,trackStock:false}:line)}
+      :conversionQuote;
     try{
       const customer=customers.find(x=>x.name===quote.customerName);
       if(type==='invoice'&&customer?.creditLimitCentimes!==undefined){
@@ -486,7 +498,7 @@ export default function App() {
         }
       }
       const result=createConvertedDocument(
-        conversionQuote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),nextDocumentNumber(type==='invoice'?companyProfile.invoicePrefix:type==='delivery'?companyProfile.deliveryPrefix:companyProfile.proformaPrefix,documents),
+        conversionInputQuote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),nextDocumentNumber(type==='invoice'?companyProfile.invoicePrefix:type==='delivery'?companyProfile.deliveryPrefix:companyProfile.proformaPrefix,documents),
       );
       const dueDate=type==='invoice'&&customer?.paymentTermsDays!==undefined
         ?calculatePaymentDueDate(new Date().toISOString(),customer.paymentTermsDays):undefined;
@@ -494,8 +506,19 @@ export default function App() {
       let nextMovements=inventoryMovements;
       const updatedProducts=result.stockDeducted?result.updatedProducts as Product[]:undefined;
       if(updatedProducts){for(const previous of products){const next=updatedProducts.find(p=>p.id===previous.id);const delta=(next?.qty??previous.qty)-previous.qty;if(delta!==0)nextMovements=appendInventoryMovement(nextMovements,{id:(type==='delivery'?'delivery-':'invoice-sale-')+result.document.id+'-'+previous.id,productId:previous.id,productName:previous.name,kind:type==='delivery'?'delivery':'sale',quantityDelta:delta,date:new Date().toISOString(),sourceId:String(result.document.id),warehouseId:activeWarehouseId});}}
+      let nextVariants=productVariants;
+      let nextVariantMovements=variantStockMovements;
+      if(type==='delivery'&&!stockAlreadyDeducted){
+        for(const [index,line] of trackedQuoteLines.entries()){
+          if(!line.variantId)continue;
+          const applied=applyVariantStockMovement(nextVariants,{id:'quote-delivery-'+result.document.id+'-'+index,variantId:line.variantId,kind:'delivery',quantityDelta:-line.qty,date:new Date().toISOString().slice(0,10),reference:String(result.document.id),note:'سند خروج من عرض السعر '+(quote.number||quote.id)},nextVariantMovements);
+          nextVariants=applied.variants;
+          nextVariantMovements=[applied.movement,...nextVariantMovements];
+        }
+      }
       setDocuments(current=>[document,...current]);
       if(updatedProducts){setInventoryMovements(nextMovements);setProducts(updatedProducts);}
+      if(nextVariants!==productVariants){setProductVariants(nextVariants);setVariantStockMovements(nextVariantMovements);}
       logActivity(type==='invoice'?'إصدار فاتورة':'إصدار سند خروج',document.number+' • '+document.customerName);
       showAlert('تم التحويل',type==='invoice'?'تسجلات الفاتورة.':'تسجل سند الخروج وتحدّث المخزون.');
     }catch(error){
