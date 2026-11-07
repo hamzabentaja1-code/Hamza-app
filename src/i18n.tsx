@@ -1113,6 +1113,23 @@ const fr: Record<string, string> = {
   "فرّغ مخزون النسخة أو سجل جرداً حتى تصبح الكمية صفراً قبل إيقافها.": "Videz le stock de la variante ou faites un inventaire à zéro avant de la désactiver.",
   "تفعيل نسخة": "Activation d’une variante",
   "إيقاف نسخة": "Désactivation d’une variante",
+  "سجل التواصل": "Historique des contacts",
+  "سجل التواصل مع الزبناء والموردين": "Historique des échanges avec les clients et fournisseurs",
+  "اختار جهة الاتصال": "Choisir un contact",
+  "نوع التواصل": "Type d’échange",
+  "مكالمة": "Appel",
+  "رسالة": "Message",
+  "اجتماع": "Réunion",
+  "ملاحظة": "Note",
+  "ما كاين حتى جهة اتصال. زيد زبوناً أو مورداً أولاً.": "Aucun contact. Ajoutez d’abord un client ou un fournisseur.",
+  "ملخص المكالمة أو الرسالة أو الملاحظة": "Résumé de l’appel, du message ou de la note",
+  "حفظ المتابعة": "Enregistrer le suivi",
+  "سجل المتابعات (": "Historique des suivis (",
+  "ما كايناش متابعات مسجلة دابا.": "Aucun suivi enregistré pour le moment.",
+  "تعذر حفظ المتابعة": "Impossible d’enregistrer le suivi",
+  "حذف المتابعة؟": "Supprimer le suivi ?",
+  "إضافة متابعة تواصل": "Ajout d’un suivi de contact",
+  "حذف متابعة تواصل": "Suppression d’un suivi de contact",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
