@@ -898,6 +898,7 @@ const fr: Record<string, string> = {
   "الواردة غير المحصلة: ": "Chèques reçus non encaissés : ",
   "الصادرة غير المؤداة: ": "Chèques émis non payés : ",
 
+  " • الاستحقاق: ": " • Échéance : ",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
