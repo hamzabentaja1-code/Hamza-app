@@ -102,7 +102,8 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Agenda and reports
 - [x] Basic task list with assignments, priorities, due dates, estimated durations and status changes
-- [ ] Calendar view, recurring tasks, attachments, reminders and advanced task filters
+- [x] Unified agenda with date-range filtering for task due dates, scheduled work orders, recurring expense due dates and unpaid invoice due dates; overdue items are highlighted
+- [ ] Monthly calendar grid, recurring task rules, push notifications, attachments and advanced filters
 - [x] Basic sales/purchase/stock/cash/receivables/payables/gross-profit summary reports with PDF exports
 - [ ] Date-range filters, comparative periods, charts and advanced report exports
 
