@@ -62,7 +62,7 @@ const modules = [
 type CompanyProfile = {name:string;address:string;phone:string;email:string;ice:string;rc:string;taxId:string;bankName:string;bankAccount:string;bankRib:string;bankIban:string;quotePrefix:string;invoicePrefix:string;deliveryPrefix:string;purchasePrefix:string;proformaPrefix:string;creditNotePrefix:string;showTaxFields:boolean;taxRate:number;logoData?:string};
 const DEFAULT_EXPENSE_CATEGORIES=['نقل','مواد','أكل','كراء','اتصالات','أخرى'];
 const DEFAULT_COMPANY_PROFILE:CompanyProfile={name:'HamZa',address:'',phone:'',email:'',ice:'',rc:'',taxId:'',bankName:'',bankAccount:'',bankRib:'',bankIban:'',quotePrefix:'DEV',invoicePrefix:'FAC',deliveryPrefix:'BL',purchasePrefix:'BC',proformaPrefix:'PRO',creditNotePrefix:'AV',showTaxFields:false,taxRate:20};
-function normalizeProductVariants(value:unknown):ProductVariant[]{const variants=Array.isArray(value)?value as ProductVariant[]:[];return variants.map(variant=>variant.stockQty>0?{...variant,active:true}:variant);}
+function normalizeProductVariants(value:unknown):ProductVariant[]{const variants=Array.isArray(value)?value as ProductVariant[]:[];return variants.map(variant=>({...variant,active:variant.stockQty>0?true:variant.active!==false}));}
 function normalizeCompanyProfile(value:unknown):CompanyProfile{
   const source=value&&typeof value==='object'?value as Record<string,unknown>:{};
   const field=(key:string,fallback='')=>typeof source[key]==='string'?source[key] as string:fallback;
