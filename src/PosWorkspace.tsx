@@ -19,7 +19,10 @@ type Props = {
   onPark: (cart:PosCart)=>void;
   onResume: (id:string)=>PosCart|undefined;
   onDeleteParked: (id:string)=>void;
-  onCheckout: (data:{customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'; total:number})=>boolean|void;\n  onScanBarcode:()=>void;\n  scannedBarcode:string;\n  onBarcodeConsumed:()=>void;
+  onCheckout: (data:{customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'; total:number})=>boolean|void;
+  onScanBarcode:()=>void;
+  scannedBarcode:string;
+  onBarcodeConsumed:()=>void;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
