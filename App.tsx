@@ -7,6 +7,7 @@ import * as Sharing from 'expo-sharing';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as XLSX from 'xlsx';
 import QuoteWorkspace, {QuoteRecord, QuoteConversionType} from './src/QuoteWorkspace';
 import PosWorkspace from './src/PosWorkspace';
 import {PosCart} from './src/pos';
@@ -234,6 +235,7 @@ export default function App() {
     try{await Share.share({title:'HamZa products CSV',message:lines.join('\n')});}
     catch{showAlert('تعذر التصدير','ما قدرناش نشاركوا لائحة المنتجات.');}
   };
+  const exportReportXlsx=async(title:string,rows:string[][])=>{try{if(!FileSystem.cacheDirectory)throw new Error('مساحة الملفات المؤقتة غير متاحة');const workbook=XLSX.utils.book_new();const sheet=XLSX.utils.aoa_to_sheet(rows);sheet['!cols']=rows[0]?.map((_,index)=>({wch:Math.min(42,Math.max(14,...rows.slice(0,80).map(row=>String(row[index]??'').length+2)))}));XLSX.utils.book_append_sheet(workbook,sheet,'Report');const base64=XLSX.write(workbook,{bookType:'xlsx',type:'base64'});const safeName=title.replace(/[^a-zA-Z0-9\u0600-\u06FF_-]+/g,'_').slice(0,60)||'HamZa_Report';const uri=FileSystem.cacheDirectory+safeName+'-'+Date.now()+'.xlsx';await FileSystem.writeAsStringAsync(uri,base64,{encoding:FileSystem.EncodingType.Base64});await Sharing.shareAsync(uri,{mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',dialogTitle:title});}catch(error){showAlert('تعذر تصدير Excel',error instanceof Error?error.message:'ما قدرناش نوجدوا ملف Excel للمشاركة.');}};
   const isValidIsoDate=(value:string)=>{if(!value)return true;if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const [year,month,day]=value.split('-').map(Number);const date=new Date(Date.UTC(year,month-1,day));return date.getUTCFullYear()===year&&date.getUTCMonth()===month-1&&date.getUTCDate()===day;};
   const startEditProject=(project:Project)=>{setEditingProjectId(project.id);setProjectName(project.name);setProjectCustomer(project.customerName);setProjectBudget(String(project.budget));setProjectStartDate(project.startDate);setProjectDueDate(project.dueDate);setProjectNotes(project.notes);};
   const deleteSalesReturn=(item:SalesReturn)=>{
@@ -874,7 +876,7 @@ export default function App() {
         {cashMovements.length===0&&<Text style={s.empty}>الصندوق فارغ. سجل الرصيد الافتتاحي أولاً.</Text>}
         <Pressable style={s.action} onPress={()=>exportPdf('Journal de caisse','',cashMovements.map(item=>new Date(item.date).toLocaleDateString('fr-MA')+' — '+item.description+' — '+(item.kind==='cash_out'?'-':'+')+(item.amountCentimes/100).toFixed(2)+' DH'),cashOnHand/100)}><Text style={s.actionText}>تصدير سجل الصندوق PDF</Text></Pressable>
       </>
-      :screen==='تحليل الفترة'?<PeriodReportWorkspace sales={sales.map(x=>({date:x.date,amount:x.total}))} salesReturns={salesReturns.map(x=>({date:x.date,amount:x.total}))} purchases={purchases.map(x=>({date:x.date,amount:x.total}))} supplierReturns={supplierReturns.map(x=>({date:x.date,amount:x.amountCentimes/100}))} expenses={expenses.map(x=>({date:x.date,amount:x.amount}))} purchaseRows={purchases.map(x=>({date:x.date,supplierName:x.supplierName,amount:x.total}))} supplierReturnRows={supplierReturns.map(x=>({date:x.date,supplierName:x.supplierName,amount:x.amountCentimes/100}))} onExportPdf={(title,lines)=>exportPdf(title,'',lines,0,false)} onExportCsv={(title,rows)=>{const csv='\uFEFF'+rows.map(row=>row.map(cell=>'"'+String(cell??'').replace(/"/g,'""')+'"').join(';')).join('\n');Share.share({title,message:csv}).catch(()=>showAlert('تعذر تصدير التقرير','ما قدرناش نشاركوا تقرير CSV.'));}}/>
+      :screen==='تحليل الفترة'?<PeriodReportWorkspace sales={sales.map(x=>({date:x.date,amount:x.total}))} salesReturns={salesReturns.map(x=>({date:x.date,amount:x.total}))} purchases={purchases.map(x=>({date:x.date,amount:x.total}))} supplierReturns={supplierReturns.map(x=>({date:x.date,amount:x.amountCentimes/100}))} expenses={expenses.map(x=>({date:x.date,amount:x.amount}))} purchaseRows={purchases.map(x=>({date:x.date,supplierName:x.supplierName,amount:x.total}))} supplierReturnRows={supplierReturns.map(x=>({date:x.date,supplierName:x.supplierName,amount:x.amountCentimes/100}))} onExportPdf={(title,lines)=>exportPdf(title,'',lines,0,false)} onExportCsv={(title,rows)=>{const csv='\uFEFF'+rows.map(row=>row.map(cell=>'"'+String(cell??'').replace(/"/g,'""')+'"').join(';')).join('\n');Share.share({title,message:csv}).catch(()=>showAlert('تعذر تصدير التقرير','ما قدرناش نشاركوا تقرير CSV.'));}} onExportXlsx={exportReportXlsx}/>
       :screen==='التقارير'?<>
         <View style={s.panel}>
           <Text style={s.panelTitle}>تقرير النشاط التجاري</Text>
