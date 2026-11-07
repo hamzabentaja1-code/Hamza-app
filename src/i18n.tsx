@@ -726,6 +726,12 @@ const fr: Record<string, string> = {
   " مصروف مستحق.": " dépense(s) due(s).",
   "تاريخ الاستحقاق: ": "Date d’échéance : ",
 
+  "حذف ": "Supprimer ",
+  "إنقاص كمية ": "Diminuer la quantité de ",
+  "زيادة كمية ": "Augmenter la quantité de ",
+  " • افتراضي": " • Par défaut",
+  "، ": "; ",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
