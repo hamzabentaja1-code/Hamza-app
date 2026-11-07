@@ -10,6 +10,7 @@ const fr: Record<string, string> = {
   "تعذر إنشاء الطلب": "Impossible de créer la commande",
   "راجع عرض السعر.": "Vérifiez le devis.",
   "هاد العرض تحول من قبل لطلب زبون.": "Ce devis a déjà été converti en commande client.",
+  "خاص عرض السعر يكون مقبول قبل إنشاء الطلب.": "Le devis doit être accepté avant de créer la commande.",
   "تعذر تغيير حالة الطلب": "Impossible de modifier le statut de la commande",
   "راجع حالة الطلب.": "Vérifiez le statut de la commande.",
   "تعذر تسجيل التسليم": "Impossible d’enregistrer la livraison",
