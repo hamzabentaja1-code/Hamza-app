@@ -149,6 +149,12 @@ jobs:
           "$APKSIGNER" verify --verbose --print-certs "$APK"
           echo "APK_PATH=$APK" >> "$GITHUB_ENV"
 
+      - name: Set up Java 21 for APK inspection tools
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
       - name: Install JADX and APKTool for APK inspection
         shell: bash
         run: |
