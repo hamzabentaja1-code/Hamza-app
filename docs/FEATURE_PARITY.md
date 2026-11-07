@@ -17,7 +17,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Company banking details (bank name, account, RIB, IBAN) persisted and printed in Arabic/French PDFs
 - [x] Configurable yearly sequential series for quotes, invoices, delivery notes and purchase orders; existing legacy documents remain unchanged
 - [x] Local activity history for product changes, sales, purchases, invoices, customer payments and expenses; persisted and included in backup/restore
-- [ ] User accounts, roles and granular permissions
+- [x] Local user profiles, owner/admin/sales/warehouse/accountant/viewer roles, custom module allow-lists, read-only screen gating, active-profile switching and backup persistence
+- [ ] PIN/password authentication and server-side authorization (current profiles are not a security boundary on a shared/unlocked device)
 - [x] Arabic/French static label coverage and language preference persistence across primary workspaces
 - [ ] Dynamic-message localization audit and selectable light/dark theme
 - [ ] Document templates and custom fields
