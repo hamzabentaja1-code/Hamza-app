@@ -26,3 +26,21 @@ export function buildAgendaEvents(input:{
  for(const invoice of input.invoices){const date=invoice.dueDate?agendaDateKey(invoice.dueDate):null;const outstanding=invoice.total*100-(invoice.paidCentimes||0);if(date&&outstanding>0)events.push({id:'invoice-'+invoice.id,type:'invoice_due',title:invoice.number,date,subtitle:invoice.customerName+' • '+(outstanding/100).toFixed(2)+' DH',status:invoice.status,overdue:date<today});}
  return events.filter(e=>e.date>=from&&e.date<=to).sort((a,b)=>a.date.localeCompare(b.date)||a.title.localeCompare(b.title));
 }
+
+export type AgendaCalendarDay={date:string;day:number;inMonth:boolean;events:AgendaEvent[]};
+
+/** Build a Monday-first month grid with 35 or 42 stable day cells. */
+export function buildAgendaMonthGrid(year:number,month:number,events:AgendaEvent[],weekStartsOn=1):AgendaCalendarDay[]{
+ if(!Number.isInteger(year)||year<1900||year>2200||!Number.isInteger(month)||month<1||month>12||!Number.isInteger(weekStartsOn)||weekStartsOn<0||weekStartsOn>6)throw new Error('إعدادات التقويم غير صالحة');
+ const first=new Date(Date.UTC(year,month-1,1));
+ const offset=(first.getUTCDay()-weekStartsOn+7)%7;
+ const daysInMonth=new Date(Date.UTC(year,month,0)).getUTCDate();
+ const count=Math.ceil((offset+daysInMonth)/7)*7;
+ const byDate=new Map<string,AgendaEvent[]>();
+ for(const event of events){const date=agendaDateKey(event.date);if(!date)continue;const list=byDate.get(date)||[];list.push(event);byDate.set(date,list);}
+ return Array.from({length:count},(_,index)=>{
+  const date=new Date(Date.UTC(year,month-1,1-offset+index));
+  const key=date.toISOString().slice(0,10);
+  return {date:key,day:date.getUTCDate(),inMonth:date.getUTCMonth()===month-1,events:byDate.get(key)||[]};
+ });
+}
