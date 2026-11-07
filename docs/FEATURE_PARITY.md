@@ -27,7 +27,8 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Products and inventory
 - [x] Product catalog references, barcodes and up to four saved product photos
-- [ ] Service-only items and camera-based barcode scanning
+- [x] Service-only catalog items with no stock balance or stock movements, supported in direct sales, POS, quotes and invoice conversion
+- [ ] Camera-based barcode scanning
 - [x] Single product photo: choose, replace, remove, preview, and persist in local product data
 - [x] Product name search and product edit flow
 - [x] Basic free-text category, brand, unit and variant metadata in product cards, search, bulk import and CSV export
