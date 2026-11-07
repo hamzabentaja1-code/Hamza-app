@@ -5,16 +5,30 @@ export type SupplierReturnRecord = {
   id: number; purchaseId: number; supplierName: string; productName: string;
   qty: number; unitCost: number; amountCentimes: number; date: string; reason: string;
 };
+function validatePurchase(purchase: SupplierPurchaseForReturn): void {
+  if (!Number.isSafeInteger(purchase.id) || purchase.id <= 0 ||
+      !purchase.supplierName.trim() || !purchase.productName.trim() ||
+      !Number.isSafeInteger(purchase.qty) || purchase.qty < 1 ||
+      !Number.isFinite(purchase.unitCost) || purchase.unitCost < 0) {
+    throw new Error('عملية الشراء غير صالحة للمرتجع');
+  }
+}
 export function remainingSupplierReturnQuantity(
   purchase: SupplierPurchaseForReturn,
   returns: SupplierReturnRecord[],
 ): number {
-  if (!Number.isSafeInteger(purchase.qty) || purchase.qty < 1 ||
-      !Number.isFinite(purchase.unitCost) || purchase.unitCost < 0) {
-    throw new Error('عملية الشراء غير صالحة للمرتجع');
+  validatePurchase(purchase);
+  const relevant = returns.filter(item => item.purchaseId === purchase.id);
+  for (const item of relevant) {
+    if (!Number.isSafeInteger(item.id) || item.id <= 0 ||
+        !Number.isSafeInteger(item.qty) || item.qty < 1 ||
+        !Number.isSafeInteger(item.amountCentimes) || item.amountCentimes < 0 ||
+        !Number.isFinite(item.unitCost) || item.unitCost < 0 ||
+        !item.date.trim() || !Number.isFinite(Date.parse(item.date))) {
+      throw new Error('سجل مرتجعات المورد غير صالح');
+    }
   }
-  const returned = returns.filter(item => item.purchaseId === purchase.id)
-    .reduce((sum, item) => sum + item.qty, 0);
+  const returned = relevant.reduce((sum, item) => sum + item.qty, 0);
   if (!Number.isSafeInteger(returned) || returned < 0 || returned > purchase.qty) {
     throw new Error('كمية مرتجعات المورد غير صالحة');
   }
