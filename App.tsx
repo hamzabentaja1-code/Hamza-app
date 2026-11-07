@@ -53,6 +53,7 @@ import {RecurringExpenseRule, generateDueRecurringExpenses} from './src/domain/r
 import {PurchaseOrder, createPurchaseOrder, receivePurchaseOrder, cancelPurchaseOrder} from './src/domain/purchase-orders';
 import {exceedsCustomerCreditLimit, calculatePaymentDueDate} from './src/domain/credit-limits';
 import {PeriodReportLayout,DEFAULT_PERIOD_REPORT_LAYOUT,normalizePeriodReportLayout} from './src/domain/report-layout';
+import {contactChannelUrl,ContactChannel} from './src/domain/contact-channels';
 import {normalizeEquipmentCategories,addEquipmentCategory} from './src/domain/equipment-categories';
 import {contactChannelUrl} from './src/domain/contact-channels';
 
@@ -127,7 +128,7 @@ export default function App() {
       options,
     );
   };
-  const openContactChannel=async(value:string,channel:'whatsapp'|'call'|'email')=>{const raw=value.trim();if(channel==='email'){if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(raw)){showAlert('البريد الإلكتروني غير صالح','راجع البريد الإلكتروني المسجل.');return;}try{await Linking.openURL('mailto:'+raw);}catch(error){showAlert('تعذر فتح البريد الإلكتروني',error instanceof Error?error.message:'تحقق من تطبيق البريد.');}return;}try{await Linking.openURL(contactChannelUrl(raw,channel));}catch(error){showAlert(channel==='whatsapp'?'تعذر فتح واتساب':'تعذر بدء الاتصال',error instanceof Error?error.message:'تحقق من توفر التطبيق أو رقم الهاتف.');}};
+  const openContactChannel=async(value:string,channel:ContactChannel)=>{try{await Linking.openURL(contactChannelUrl(value,channel));}catch(error){showAlert(channel==='email'?'تعذر فتح البريد الإلكتروني':channel==='whatsapp'?'تعذر فتح واتساب':'تعذر بدء الاتصال',error instanceof Error?error.message:'تحقق من بيانات التواصل أو التطبيق.');}};
   const openBarcodeScanner=async(target:'product'|'pos'|'sale'|'purchase')=>{setBarcodeScannerTarget(target);barcodeScannerHandled.current=false;if(!cameraPermission?.granted){try{const permission=await requestCameraPermission();if(!permission.granted){showAlert('إذن الكاميرا مطلوب','خاصك تسمح للتطبيق يستعمل الكاميرا باش يمسح الباركود.');return;}}catch(error){showAlert('تعذر تشغيل الكاميرا',error instanceof Error?error.message:'راجع إذن الكاميرا.');return;}}setBarcodeScannerOpen(true);};
   const handleBarcodeScanned=(result:{data:string})=>{if(barcodeScannerHandled.current)return;const code=result.data.trim();if(!code)return;barcodeScannerHandled.current=true;setBarcodeScannerOpen(false);if(barcodeScannerTarget==='product')setProductBarcode(code);else if(barcodeScannerTarget==='pos')setPosScannedBarcode(code);else{const found=products.find(item=>item.barcode?.trim().toLocaleLowerCase()===code.toLocaleLowerCase()||item.reference?.trim().toLocaleLowerCase()===code.toLocaleLowerCase());if(!found){showAlert('منتج غير موجود','ما لقيناش منتج بالباركود أو المرجع: '+code);return;}if(barcodeScannerTarget==='sale')setSaleProduct(String(found.id));else setPurchaseProduct(String(found.id));}};
   const [companyProfile,setCompanyProfile]=useState<CompanyProfile>(DEFAULT_COMPANY_PROFILE);
