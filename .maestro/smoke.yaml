@@ -502,3 +502,31 @@ appId: com.hamza.app
 - assertVisible: "Demandes et ordres d'installation"
 - assertVisible: "Heures de travail et coût"
 - tapOn: "Accueil"
+
+# Arabic: recurring expense rules and due expense generation.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "المصاريف المتكررة"
+- tapOn: "المصاريف المتكررة"
+- assertVisible: "إضافة مصروف متكرر"
+- assertVisible: "الدورية"
+- assertVisible: "تسجيل المصاريف المستحقة حتى اليوم"
+- tapOn: "الرئيسية"
+
+# French: recurring expense scheduling is translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المصاريف المتكررة"
+- tapOn: "Dépenses récurrentes"
+- assertVisible: "Ajouter une dépense récurrente"
+- assertVisible: "Fréquence"
+- assertVisible: "Générer les dépenses échues jusqu'à aujourd'hui"
+- tapOn: "Accueil"
