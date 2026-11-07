@@ -75,3 +75,22 @@ test('movement validation rejects fractional quantities and invalid dates', () =
     ...opening, id: 'bad-date', date: 'not-a-date',
   }), /تاريخ الحركة غير صالح/);
 });
+
+
+test('customer return movements add stock and reversal removes it safely', () => {
+  let movements = appendInventoryMovement([], opening);
+  movements = appendInventoryMovement(movements, {
+    ...opening, id: 'sale-return-test', kind: 'sale', quantityDelta: -4,
+  });
+  movements = appendInventoryMovement(movements, {
+    ...opening, id: 'return-in-test', kind: 'return_in', quantityDelta: 2,
+  });
+  assert.equal(inventoryBalance(movements, 1), 8);
+  movements = appendInventoryMovement(movements, {
+    ...opening, id: 'return-out-test', kind: 'return_out', quantityDelta: -2,
+  });
+  assert.equal(inventoryBalance(movements, 1), 6);
+  assert.throws(() => appendInventoryMovement(movements, {
+    ...opening, id: 'return-out-too-much', kind: 'return_out', quantityDelta: -7,
+  }), /المخزون غير كافٍ/);
+});
