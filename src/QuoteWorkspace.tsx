@@ -126,7 +126,7 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
           </View>
         </View>
         <Text style={{color:gold,fontWeight:'800'}}>{Number.isFinite(line.total)?line.total.toFixed(2):'—'} DH</Text>
-        <Pressable onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
+        <Pressable accessibilityLabel={language==='AR'?'حذف '+line.productName:'Supprimer '+line.productName} accessibilityHint={language==='AR'?'إزالة هذا المنتج من عرض السعر':'Retirer ce produit du devis'} onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
       </View>)}
       <TextInput value={discount} onChangeText={setDiscount} keyboardType="decimal-pad" placeholder="تخفيض إجمالي (DH)" placeholderTextColor="#888" style={[input,{marginTop:12}]}/>
       <TextInput value={notes} onChangeText={setNotes} placeholder="ملاحظات (اختياري)" placeholderTextColor="#888" style={input}/>
