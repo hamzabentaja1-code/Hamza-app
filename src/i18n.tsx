@@ -1081,6 +1081,13 @@ const fr: Record<string, string> = {
   "المدير الرئيسي": "Administrateur principal",
   "مجموع مخزون النسخ: ": "Stock total des variantes : ",
   "متوفر فالمخزن: ": "Disponible dans l’entrepôt : ",
+  "زيد منتجاً واحداً على الأقل قبل تعليق البيع.": "Ajoutez au moins un produit avant de mettre la vente en attente.",
+  "المبيعات المعلقة (": "Ventes en attente (",
+  "استرجاع البيع": "Reprendre la vente",
+  "حذف البيع المعلق؟": "Supprimer la vente en attente ?",
+  "غادي يتحذف هاد البيع المعلق فقط.": "Seule cette vente en attente sera supprimée.",
+  "تعليق البيع والرجوع لاحقاً": "Mettre la vente en attente",
+  "السلة فارغة": "Le panier est vide",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
