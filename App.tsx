@@ -277,11 +277,15 @@ export default function App() {
     if(!product||product.kind==='service'||!Number.isSafeInteger(quantity)||quantity<1||!Number.isFinite(unitCost)||unitCost<0){
       showAlert('معلومات ناقصة','اختار منتجاً ودخل كمية وثمن شراء صالحين.');return;
     }
-    if(orderDraftLines.some(line=>line.productId===product.id)){
-      showAlert('المنتج مكرر','المنتج موجود بالفعل في قائمة الأمر.');return;
+    const variants=productVariants.filter(v=>v.productId===product.id&&v.active);
+    const variant=variants.find(v=>v.id===orderVariantId);
+    if(variants.length&&!variant){showAlert('اختار النسخة','هاد المنتج عندو تنويعات. اختار المقاس أو اللون قبل إضافة أمر الشراء.');return;}
+    const key=product.id+'::'+(variant?.id||'');
+    if(orderDraftLines.some(line=>line.productId+'::'+(line.variantId||'')===key)){
+      showAlert('المنتج مكرر','المنتج أو النسخة موجودة بالفعل في قائمة الأمر.');return;
     }
-    setOrderDraftLines(current=>[...current,{productId:product.id,productName:product.name,quantity,unitCost,receivedQuantity:0}]);
-    setOrderProductId('');setOrderQuantity('1');setOrderUnitCost('');
+    setOrderDraftLines(current=>[...current,{productId:product.id,productName:product.name,variantId:variant?.id,variantLabel:variant?Object.values(variant.attributes).join(' / '):undefined,quantity,unitCost,receivedQuantity:0}]);
+    setOrderProductId('');setOrderVariantId('');setOrderQuantity('1');setOrderUnitCost('');
   };
   const createOrder=()=>{
     const supplier=suppliers.find(x=>String(x.id)===orderSupplierId);
@@ -293,33 +297,45 @@ export default function App() {
       if(!product||!Number.isSafeInteger(quantity)||quantity<1||!Number.isFinite(unitCost)||unitCost<0){
         showAlert('معلومات ناقصة','راجع المنتج والكمية وثمن الشراء.');return;
       }
-      if(lines.some(line=>line.productId===product.id)){showAlert('المنتج مكرر','المنتج موجود بالفعل في قائمة الأمر.');return;}
-      lines.push({productId:product.id,productName:product.name,quantity,unitCost,receivedQuantity:0});
+      const variants=productVariants.filter(v=>v.productId===product.id&&v.active);
+      const variant=variants.find(v=>v.id===orderVariantId);
+      if(variants.length&&!variant){showAlert('اختار النسخة','هاد المنتج عندو تنويعات. اختار المقاس أو اللون قبل إضافة أمر الشراء.');return;}
+      if(lines.some(line=>line.productId===product.id&&(line.variantId||'')===(variant?.id||''))){showAlert('المنتج مكرر','المنتج أو النسخة موجودة بالفعل في قائمة الأمر.');return;}
+      lines.push({productId:product.id,productName:product.name,variantId:variant?.id,variantLabel:variant?Object.values(variant.attributes).join(' / '):undefined,quantity,unitCost,receivedQuantity:0});
     }
     if(lines.length===0){showAlert('معلومات ناقصة','أضف منتجاً واحداً على الأقل إلى أمر الشراء.');return;}
     try{
-      const order=createPurchaseOrder({id:Date.now(),number:nextDocumentNumber(companyProfile.purchasePrefix,purchaseOrders),supplierName:supplier.name,createdAt:new Date().toISOString(),expectedDate:orderExpectedDate.trim()||undefined,lines:lines.map(({productId,productName,quantity,unitCost})=>({productId,productName,quantity,unitCost}))});
-      setPurchaseOrders(current=>[order,...current]);setOrderDraftLines([]);setOrderSupplierId('');setOrderProductId('');setOrderQuantity('1');setOrderUnitCost('');setOrderExpectedDate('');
+      const order=createPurchaseOrder({id:Date.now(),number:nextDocumentNumber(companyProfile.purchasePrefix,purchaseOrders),supplierName:supplier.name,createdAt:new Date().toISOString(),expectedDate:orderExpectedDate.trim()||undefined,lines:lines.map(({productId,productName,quantity,unitCost,variantId,variantLabel})=>({productId,productName,quantity,unitCost,variantId,variantLabel}))});
+      setPurchaseOrders(current=>[order,...current]);setOrderDraftLines([]);setOrderSupplierId('');setOrderProductId('');setOrderVariantId('');setOrderQuantity('1');setOrderUnitCost('');setOrderExpectedDate('');
       showAlert('تم إنشاء أمر الشراء','الأمر محفوظ ولم تتم إضافة الكمية للمخزون حتى استلامها.');
     }catch(error){showAlert('تعذر إنشاء أمر الشراء',error instanceof Error?error.message:'راجع البيانات.');}
   };
-  const receiveOrder=(orderId:number,productId:number)=>{
+  const receiveOrder=(orderId:number,productId:number,variantId?:string)=>{
     const order=purchaseOrders.find(x=>x.id===orderId);
     const quantity=Number(receivingQuantity);
     if(!order){showAlert('أمر الشراء غير موجود');return;}
     try{
-      const line=order.lines.find(x=>x.productId===productId);
-      if(!line)throw new Error('المنتج غير موجود في أمر الشراء.');
+      const line=order.lines.find(x=>x.productId===productId&&(x.variantId||'')===(variantId||''));
+      if(!line)throw new Error('المنتج أو النسخة غير موجودة في أمر الشراء.');
       const product=products.find(x=>x.id===line.productId);
-      if(!product)throw new Error('المنتج المرتبط بأمر الشراء غير موجود.');if(product.kind==='service')throw new Error('الخدمات لا تستقبل في المخزون.');
-      const receipt=receivePurchaseOrder(order,{date:new Date().toISOString(),lines:[{productId:line.productId,quantity}]});
+      if(!product)throw new Error('المنتج المرتبط بأمر الشراء غير موجود.');
+      if(product.kind==='service')throw new Error('الخدمات لا تستقبل في المخزون.');
+      const receipt=receivePurchaseOrder(order,{date:new Date().toISOString(),lines:[{productId:line.productId,variantId:line.variantId,quantity}]});
       const id=Date.now();
-      const purchase:Purchase={id,productId:product.id,productName:product.name,supplierName:order.supplierName,qty:quantity,unitCost:line.unitCost,total:quantity*line.unitCost,date:new Date().toLocaleDateString('fr-MA'),paidCentimes:0,purchaseOrderId:order.id,warehouseId:activeWarehouseId};
-      if(!recordInventoryMovement({id:'po-receipt-'+id,productId:product.id,productName:product.name,kind:'purchase',quantityDelta:quantity,date:new Date().toISOString(),sourceId:String(order.id),note:'استلام أمر شراء رقم '+order.id,unitCost:line.unitCost,warehouseId:activeWarehouseId}))return;
+      const purchase:Purchase={id,productId:product.id,variantId:line.variantId,variantLabel:line.variantLabel,productName:product.name,supplierName:order.supplierName,qty:quantity,unitCost:line.unitCost,total:quantity*line.unitCost,date:new Date().toLocaleDateString('fr-MA'),paidCentimes:0,purchaseOrderId:order.id,warehouseId:activeWarehouseId};
+      if(line.variantId){
+        const variant=productVariants.find(v=>v.id===line.variantId);
+        if(!variant)throw new Error('نسخة المنتج المرتبطة بأمر الشراء لم تعد موجودة.');
+        if(!recordVariantMovement({id:'variant-po-receipt-'+id,variantId:variant.id,kind:'purchase',quantityDelta:quantity,date:new Date().toISOString().slice(0,10),reference:String(order.id),note:'استلام أمر شراء '+order.id}))return;
+        const costCentimes=Math.round(line.unitCost*100);
+        setProductVariants(current=>current.map(v=>v.id===variant.id?{...v,costPriceCentimes:v.costPriceCentimes===undefined?costCentimes:Math.round(((v.costPriceCentimes*v.stockQty)+(costCentimes*quantity))/(v.stockQty+quantity))}:v));
+      }else{
+        if(!recordInventoryMovement({id:'po-receipt-'+id,productId:product.id,productName:product.name,kind:'purchase',quantityDelta:quantity,date:new Date().toISOString(),sourceId:String(order.id),note:'استلام أمر شراء رقم '+order.id,unitCost:line.unitCost,warehouseId:activeWarehouseId}))return;
+        setProducts(current=>current.map(x=>{if(x.id!==product.id)return x;const previousGlobalQty=inventoryBalance(inventoryMovements,product.id);const nextQty=previousGlobalQty+quantity;const weighted=x.costPrice===undefined?(previousGlobalQty>0?undefined:line.unitCost):((x.costPrice*previousGlobalQty+line.unitCost*quantity)/nextQty);return {...x,qty:inventoryBalance(inventoryMovements,product.id)+quantity,costPrice:weighted===undefined?undefined:Number(weighted.toFixed(4))};}));
+      }
       setPurchaseOrders(current=>current.map(x=>x.id===order.id?receipt.order:x));
       setPurchases(current=>[purchase,...current]);
-      setProducts(current=>current.map(x=>{if(x.id!==product.id)return x;const previousGlobalQty=inventoryBalance(inventoryMovements,product.id);const nextQty=previousGlobalQty+quantity;const weighted=x.costPrice===undefined?(previousGlobalQty>0?undefined:line.unitCost):((x.costPrice*previousGlobalQty+line.unitCost*quantity)/nextQty);return {...x,qty:inventoryBalance(inventoryMovements,product.id)+quantity,costPrice:weighted===undefined?undefined:Number(weighted.toFixed(4))};}));
-      setReceivingOrderId(null);setReceivingProductId(null);setReceivingQuantity('1');
+      setReceivingOrderId(null);setReceivingProductId(null);setReceivingVariantId('');setReceivingQuantity('1');
       showAlert('تم استلام البضاعة',receipt.remaining>0?'تسجل الاستلام الجزئي وباقي كمية في الأمر.':'تم استلام أمر الشراء بالكامل.');
     }catch(error){showAlert('تعذر استلام البضاعة',error instanceof Error?error.message:'راجع الكمية والمخزون.');}
   };
@@ -650,14 +666,15 @@ export default function App() {
           <Text style={s.fieldLabel}>المورد</Text>
           <View style={s.row}>{suppliers.map(x=><Pressable key={x.id} accessibilityState={{selected:orderSupplierId===String(x.id)}} onPress={()=>setOrderSupplierId(String(x.id))} style={[s.choice,orderSupplierId===String(x.id)&&s.choiceActive]}><Text style={s.itemTitle}>{x.name}</Text></Pressable>)}</View>
           <Text style={s.fieldLabel}>المنتج</Text>
-          <View style={s.row}>{products.filter(x=>x.kind!=='service').map(x=><Pressable key={x.id} accessibilityState={{selected:orderProductId===String(x.id)}} onPress={()=>setOrderProductId(String(x.id))} style={[s.choice,orderProductId===String(x.id)&&s.choiceActive]}><Text style={s.itemTitle}>{x.name}</Text></Pressable>)}</View>
+          <View style={s.row}>{products.filter(x=>x.kind!=='service').map(x=><Pressable key={x.id} accessibilityState={{selected:orderProductId===String(x.id)}} onPress={()=>{setOrderProductId(String(x.id));setOrderVariantId('');}} style={[s.choice,orderProductId===String(x.id)&&s.choiceActive]}><Text style={s.itemTitle}>{x.name}</Text></Pressable>)}</View>
+          {orderProductId&&productVariants.some(v=>v.productId===Number(orderProductId)&&v.active)?<><Text style={s.fieldLabel}>نسخة المنتج (المقاس / اللون)</Text><View style={s.row}>{productVariants.filter(v=>v.productId===Number(orderProductId)&&v.active).map(v=><Pressable key={v.id} accessibilityState={{selected:orderVariantId===v.id}} onPress={()=>setOrderVariantId(v.id)} style={[s.choice,orderVariantId===v.id&&s.choiceActive]}><Text style={s.itemTitle}>{Object.values(v.attributes).join(' / ')} • مخزون {v.stockQty}</Text></Pressable>)}</View></>:null}
           <View style={s.row}>
             <TextInput value={orderQuantity} onChangeText={setOrderQuantity} keyboardType="number-pad" placeholder="الكمية المطلوبة" placeholderTextColor="#888" style={[s.input,s.half]}/>
             <TextInput value={orderUnitCost} onChangeText={setOrderUnitCost} keyboardType="decimal-pad" placeholder="ثمن الشراء للوحدة" placeholderTextColor="#888" style={[s.input,s.half]}/>
           </View>
           <TextInput value={orderExpectedDate} onChangeText={setOrderExpectedDate} placeholder="تاريخ التسليم المتوقع (YYYY-MM-DD)" placeholderTextColor="#888" style={s.input}/>
           <Pressable style={s.action} onPress={addOrderDraftLine}><Text style={s.actionText}>إضافة المنتج للأمر</Text></Pressable>
-          {orderDraftLines.map(line=><View key={line.productId} style={s.row}><Text style={s.itemSub}>{line.productName} × {line.quantity} • {line.unitCost.toFixed(2)} DH</Text><Pressable onPress={()=>setOrderDraftLines(current=>current.filter(x=>x.productId!==line.productId))}><Text style={s.delete}>حذف</Text></Pressable></View>)}
+          {orderDraftLines.map(line=><View key={line.productId+'::'+(line.variantId||'')} style={s.row}><Text style={s.itemSub}>{line.productName}{line.variantLabel?' • '+line.variantLabel:''} × {line.quantity} • {line.unitCost.toFixed(2)} DH</Text><Pressable onPress={()=>setOrderDraftLines(current=>current.filter(x=>x.productId+'::'+(x.variantId||'')!==line.productId+'::'+(line.variantId||'')))}><Text style={s.delete}>حذف</Text></Pressable></View>)}
           <Pressable style={s.action} onPress={createOrder}><Text style={s.actionText}>حفظ أمر الشراء</Text></Pressable>
           <Text style={s.itemSub}>إنشاء الأمر لا يغير المخزون؛ الكمية كتزاد غير من بعد تسجيل الاستلام.</Text>
         </View>
@@ -667,7 +684,7 @@ export default function App() {
             <Text style={s.itemTitle}>{order.number||('BC-'+order.id)} • {order.supplierName}</Text>
             <Text style={s.itemSub}>{order.createdAt.slice(0,10)} • {order.expectedDate||'بدون تاريخ تسليم'}</Text>
             <Text style={s.itemSub}>إجمالي الأمر: {order.lines.reduce((sum,line)=>sum+line.quantity*line.unitCost,0).toFixed(2)} DH</Text>
-            {order.lines.map(line=><View key={line.productId} style={{width:'100%',marginTop:8}}><Text style={s.itemSub}>{line.productName} • مطلوب {line.quantity} • مستلم {line.receivedQuantity} • باقي {line.quantity-line.receivedQuantity} • {(line.unitCost*line.quantity).toFixed(2)} DH</Text>{line.receivedQuantity<line.quantity&&order.status!=='cancelled'?<Pressable onPress={()=>{setReceivingOrderId(order.id);setReceivingProductId(line.productId);setReceivingQuantity(String(line.quantity-line.receivedQuantity));}}><Text style={s.gold}>استلام هذا المنتج</Text></Pressable>:null}{receivingOrderId===order.id&&receivingProductId===line.productId?<View><TextInput value={receivingQuantity} onChangeText={setReceivingQuantity} keyboardType="number-pad" placeholder="الكمية المستلمة الآن" placeholderTextColor="#888" style={s.input}/><Pressable style={s.action} onPress={()=>receiveOrder(order.id,line.productId)}><Text style={s.actionText}>تأكيد الاستلام وإضافة للمخزون</Text></Pressable></View>:null}</View>)}
+            {order.lines.map(line=><View key={line.productId+'::'+(line.variantId||'')} style={{width:'100%',marginTop:8}}><Text style={s.itemSub}>{line.productName}{line.variantLabel?' • '+line.variantLabel:''} • مطلوب {line.quantity} • مستلم {line.receivedQuantity} • باقي {line.quantity-line.receivedQuantity} • {(line.unitCost*line.quantity).toFixed(2)} DH</Text>{line.receivedQuantity<line.quantity&&order.status!=='cancelled'?<Pressable onPress={()=>{setReceivingOrderId(order.id);setReceivingProductId(line.productId);setReceivingVariantId(line.variantId||'');setReceivingQuantity(String(line.quantity-line.receivedQuantity));}}><Text style={s.gold}>استلام هذا المنتج</Text></Pressable>:null}{receivingOrderId===order.id&&receivingProductId===line.productId&&receivingVariantId===(line.variantId||'')?<View><TextInput value={receivingQuantity} onChangeText={setReceivingQuantity} keyboardType="number-pad" placeholder="الكمية المستلمة الآن" placeholderTextColor="#888" style={s.input}/><Pressable style={s.action} onPress={()=>receiveOrder(order.id,line.productId,line.variantId)}><Text style={s.actionText}>تأكيد الاستلام وإضافة للمخزون</Text></Pressable></View>:null}</View>)}
             <Text style={s.itemSub}>{order.status==='received'?'مستلم بالكامل':order.status==='partially_received'?'استلام جزئي':order.status==='cancelled'?'ملغى':'في انتظار الاستلام'}</Text>
           </View>
           <Pressable onPress={()=>exportPdf('Bon de commande '+(order.number||('BC-'+order.id)),order.supplierName,order.lines.map(line=>line.productName+' × '+line.quantity+' • '+line.unitCost.toFixed(2)+' DH'),order.lines.reduce((sum,line)=>sum+line.quantity*line.unitCost,0))}><Text style={s.gold}>PDF</Text></Pressable>
