@@ -65,15 +65,15 @@ test('French dictionary covers stock count validation and dynamic warehouse bala
 test('translates dynamic Arabic bulk-import, invoice, purchase and balance fragments', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'i18n.tsx'), 'utf8');
   const fragments = {
-    ' . راجع الصيغة والمرجع والباركود.': ' . Vérifiez le format, la référence et le code-barres.',
+    '. راجع الصيغة والمرجع والباركود.': '. Vérifiez le format, la référence et le code-barres.',
     'تزادو ': 'Ajoutés ',
-    ' هو ': ' est ',
-    ' درهم': ' DH',
-    ' • المؤدى ': ' • Payé ',
-    ' • الباقي ': ' • Restant ',
+    'هو ': 'est ',
+    'درهم': 'DH',
+    '• المؤدى ': '• Payé ',
+    '• الباقي ': '• Restant ',
     'أداء • ': 'Paiement • ',
-    ' • المرتجع ': ' • Retourné ',
-    ' • رصيد دائن ': ' • Solde créditeur ',
+    '• المرتجع ': '• Retourné ',
+    '• رصيد دائن ': '• Solde créditeur ',
   };
   for (const [arabic, french] of Object.entries(fragments)) {
     assert.ok(source.includes(JSON.stringify(arabic) + ': ' + JSON.stringify(french) + ','), 'missing dynamic translation: ' + arabic);
