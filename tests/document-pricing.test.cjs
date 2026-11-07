@@ -36,7 +36,7 @@ test('variant-specific quote prices are preserved instead of applying base produ
 });
 
 test('customer group discount is reapplied to configured invoice prices without double-discounting quote prices',()=>{
- const quote={total:87.5,priceGroupDiscountPercent:12.5,lines:[
+ const quote={total:175,priceGroupDiscountPercent:12.5,lines:[
   {productId:1,productName:'Camera',qty:1,unitPrice:87.5,total:87.5},
   {productId:2,productName:'Cable',qty:1,unitPrice:87.5,total:87.5}
  ]};
@@ -44,4 +44,9 @@ test('customer group discount is reapplied to configured invoice prices without 
  assert.equal(result.lines[0].unitPrice,87.5);
  assert.equal(result.lines[1].unitPrice,87.5);
  assert.equal(result.total,175);
+});
+
+test('rejects invalid persisted customer price-group percentages',()=>{
+ const quote={total:10,priceGroupDiscountPercent:95,lines:[{productId:1,productName:'Item',qty:1,unitPrice:10,total:10}]};
+ assert.throws(()=>applyInvoicePriceRules(quote,[{id:1,invoicePrice:10}]),/نسبة خصم مجموعة الأسعار غير صالحة/);
 });
