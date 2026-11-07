@@ -23,3 +23,27 @@ test('agenda rejects invalid and reversed date ranges',()=>{
  assert.throws(()=>buildAgendaEvents({fromDate:'bad',toDate:'2026-11-10',today:'2026-11-07',tasks:[],workOrders:[],recurringExpenses:[],invoices:[]}),/غير صالح/);
  assert.throws(()=>buildAgendaEvents({fromDate:'2026-11-10',toDate:'2026-11-01',today:'2026-11-07',tasks:[],workOrders:[],recurringExpenses:[],invoices:[]}),/غير صالح/);
 });
+
+
+const {buildAgendaMonthGrid}=require('../.test-build/agenda.js');
+test('builds a Monday-first month grid with events grouped by exact date',()=>{
+ const events=[
+  {id:'a',type:'task',title:'Task A',date:'2026-11-02',subtitle:'',status:'todo',overdue:false},
+  {id:'b',type:'invoice_due',title:'Invoice',date:'2026-11-02',subtitle:'',status:'unpaid',overdue:false},
+  {id:'c',type:'work_order',title:'Outside',date:'2026-12-01',subtitle:'',status:'scheduled',overdue:false},
+ ];
+ const days=buildAgendaMonthGrid(2026,11,events);
+ assert.equal(days.length,42);
+ assert.equal(days[0].date,'2026-10-26');
+ assert.equal(days[0].inMonth,false);
+ const second=days.find(x=>x.date==='2026-11-02');
+ assert.equal(second.inMonth,true);
+ assert.deepEqual(second.events.map(x=>x.id),['a','b']);
+ assert.equal(days.at(-1).date,'2026-12-06');
+});
+test('month grid handles 28-day and 31-day months and rejects invalid settings',()=>{
+ assert.equal(buildAgendaMonthGrid(2026,2,[]).length,28);
+ assert.equal(buildAgendaMonthGrid(2026,3,[]).length,42);
+ assert.throws(()=>buildAgendaMonthGrid(2026,13,[]),/التقويم غير صالحة/);
+ assert.throws(()=>buildAgendaMonthGrid(2026,1,[],7),/التقويم غير صالحة/);
+});
