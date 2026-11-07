@@ -4,7 +4,7 @@ import {Platform} from 'react-native';
 
 const STORAGE_KEY='hamza_scheduled_due_notification_ids_v1';
 export type LocalDueNotification={id:string;date:string;title:string;body:string};
-Notifications.setNotificationHandler({handleNotification:async()=>({shouldShowAlert:true,shouldPlaySound:false,shouldSetBadge:false})});
+Notifications.setNotificationHandler({handleNotification:async()=>({shouldShowAlert:true,shouldShowBanner:true,shouldShowList:true,shouldPlaySound:false,shouldSetBadge:false})});
 
 async function ensureChannel():Promise<void>{
  if(Platform.OS==='android')await Notifications.setNotificationChannelAsync('reminders',{name:'تذكيرات HamZa',importance:Notifications.AndroidImportance.DEFAULT,vibrationPattern:[0,180,100,180]});
