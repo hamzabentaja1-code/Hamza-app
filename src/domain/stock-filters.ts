@@ -10,7 +10,7 @@ export function filterStockProducts<T extends StockFilterProduct>(products:T[],o
  const query=(options.query||'').trim().toLocaleLowerCase();
  const category=options.category||'';
  const status=options.status||'all';
- const sort=options.sort||'name';
+ const sort=options.sort;
  const filtered=products.filter(product=>{
   if(query&&!([product.name,product.reference||'',product.barcode||'',product.category||'',product.brand||'',product.unit||'',product.variant||''].some(value=>value.toLocaleLowerCase().includes(query))))return false;
   if(category&&product.category!==category)return false;
@@ -20,5 +20,5 @@ export function filterStockProducts<T extends StockFilterProduct>(products:T[],o
   if(status==='out')return product.kind!=='service'&&product.stock<=0;
   return true;
  });
- return filtered.sort((a,b)=>sort==='quantity'?a.stock-b.stock:sort==='price'?a.price-b.price:a.name.localeCompare(b.name));
+ if(!sort)return filtered;\n return filtered.sort((a,b)=>sort==='quantity'?a.stock-b.stock:sort==='price'?a.price-b.price:a.name.localeCompare(b.name));
 }
