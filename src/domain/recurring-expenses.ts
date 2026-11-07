@@ -1,6 +1,6 @@
 export type RecurrenceFrequency='weekly'|'monthly'|'yearly';
 export type RecurringExpenseRule={id:string;title:string;amount:number;category?:string;frequency:RecurrenceFrequency;nextDueDate:string;active:boolean;projectId?:number};
-export type GeneratedExpense={id:number;title:string;amount:number;date:string;category?:string;projectId?:number;sourceRuleId:string;dueDate:string};
+export type GeneratedExpense={id:number;title:string;amount:number;date:string;category?:string;projectId?:number;sourceRuleId?:string;dueDate?:string};
 
 function parseDate(value:string):Date{
  if(!/^\d{4}-\d{2}-\d{2}$/.test(value))throw new Error('تاريخ المصروف المتكرر خاصو يكون YYYY-MM-DD');
