@@ -696,7 +696,7 @@ export default function App() {
     }catch(error){showAlert('تعذر تسجيل التسليم',error instanceof Error?error.message:'راجع الكميات والمخزون.');}
   };
   const invoiceCustomerOrder=(order:CustomerOrder)=>{
-    if(order.status==='draft'||order.status==='cancelled'){showAlert('الطلب غير جاهز','أكد الطلب قبل إصدار الفاتورة، والطلب الملغى لا يمكن فوترته.');return;}
+    if(order.status!=='fulfilled'){showAlert('الطلب غير جاهز','خاص جميع كميات الطلب تتسلم قبل إصدار الفاتورة.');return;}
     const quote=quotes.find(item=>item.id===order.sourceQuoteId);
     if(!quote){showAlert('تعذر إصدار الفاتورة','عرض السعر الأصلي غير موجود.');return;}
     const created=convertQuote(quote,'invoice');
