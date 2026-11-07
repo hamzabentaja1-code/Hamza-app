@@ -82,6 +82,17 @@ test('movement history is filtered and newest first', () => {
   assert.deepEqual(inventoryMovementsForProduct(movements, 1).map(x => x.id), ['count-2', 'opening-1']);
 });
 
+test('movement history can be scoped to one warehouse while legacy history stays compatible', () => {
+  const movements = appendInventoryMovement([], opening);
+  const second = appendInventoryMovement(movements, {
+    ...opening, id: 'warehouse-two-opening', warehouseId: 'w2', quantityDelta: 6,
+    date: '2026-11-02',
+  });
+  assert.deepEqual(inventoryMovementsForProduct(second, 1, DEFAULT_WAREHOUSE_ID).map(x => x.id), ['opening-1']);
+  assert.deepEqual(inventoryMovementsForProduct(second, 1, 'w2').map(x => x.id), ['warehouse-two-opening']);
+  assert.deepEqual(inventoryMovementsForProduct(second, 1).map(x => x.id), ['warehouse-two-opening', 'opening-1']);
+});
+
 test('movement validation rejects fractional quantities and invalid dates', () => {
   assert.throws(() => appendInventoryMovement([], { ...opening, id: 'fractional', quantityDelta: 1.5 }), /رقم صحيح/);
   assert.throws(() => appendInventoryMovement([], { ...opening, id: 'bad-date', date: 'not-a-date' }), /تاريخ الحركة غير صالح/);
