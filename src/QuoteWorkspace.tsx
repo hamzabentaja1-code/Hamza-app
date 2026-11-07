@@ -1,7 +1,7 @@
 import React, {useContext, useMemo, useState} from 'react';
 import {Alert, ScrollView, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
 import {calculateQuote} from './domain/quote-calculator';
-import {TText as Text, TTextInput as TextInput, LanguageContext} from './i18n';
+import {TText as Text, TTextInput as TextInput, LanguageContext, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
@@ -33,6 +33,15 @@ const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
 export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,onConvert}:Props) {
   const language=useContext(LanguageContext);
+ const showAlert = (...args: Parameters<typeof Alert.alert>) => {
+  const [title, message, buttons, options] = args;
+  const translatedButtons = buttons?.map(button => ({
+   ...button,
+   text: button.text ? (translateText(button.text, language) || button.text) : button.text,
+  }));
+  Alert.alert(translateText(title, language) || title, translateText(message, language) || message, translatedButtons, options);
+ };
+
   const [customerId,setCustomerId]=useState('');
   const [productId,setProductId]=useState('');
   const [customerSearch,setCustomerSearch]=useState('');
@@ -70,10 +79,10 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
   };
   const addLine=()=>{
     const qty=Number(quantity.replace(',','.'));
-    if(!selectedProduct){Alert.alert('اختار المنتج','حدد المنتج اللي بغيتي تزيد.');return;}
-    if(!Number.isFinite(qty)||qty<=0){Alert.alert('كمية غير صحيحة','دخل كمية أكبر من صفر.');return;}
+    if(!selectedProduct){showAlert('اختار المنتج','حدد المنتج اللي بغيتي تزيد.');return;}
+    if(!Number.isFinite(qty)||qty<=0){showAlert('كمية غير صحيحة','دخل كمية أكبر من صفر.');return;}
     const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):selectedProduct.price;
-    if(!Number.isFinite(unitPrice)||unitPrice<0){Alert.alert('ثمن غير صحيح','دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.');return;}
+    if(!Number.isFinite(unitPrice)||unitPrice<0){showAlert('ثمن غير صحيح','دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.');return;}
     const line:QuoteLine={productId:selectedProduct.id,productName:selectedProduct.name,qty,unitPrice,total:qty*unitPrice};
     setLines(current=>[...current,line]);
     setProductId('');
@@ -82,8 +91,8 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
     setQuantity('1');
   };
   const save=()=>{
-    if(!selectedCustomer){Alert.alert('اختار الزبون','خاصك تحدد الزبون قبل الحفظ.');return;}
-    if(!calculation){Alert.alert('راجع العرض','زيد منتج واحد على الأقل وتأكد من التخفيض.');return;}
+    if(!selectedCustomer){showAlert('اختار الزبون','خاصك تحدد الزبون قبل الحفظ.');return;}
+    if(!calculation){showAlert('راجع العرض','زيد منتج واحد على الأقل وتأكد من التخفيض.');return;}
     const now=Date.now();
     const record:QuoteRecord={
       id:now,productName:lines.map(x=>x.productName).join(', '),
@@ -95,7 +104,7 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
     };
     onSave(record);
     setLines([]);setDiscount('0');setNotes('');
-    Alert.alert('تم حفظ عرض السعر','تقدر دابا تصدره PDF.');
+    showAlert('تم حفظ عرض السعر','تقدر دابا تصدره PDF.');
   };
   const quoteLines=(quote:QuoteRecord)=>quote.lines?.length
     ? quote.lines.map(line=>`${line.productName} × ${line.qty} — ${line.total.toFixed(2)} DH`)
