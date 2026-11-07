@@ -1373,6 +1373,7 @@ const fr: Record<string, string> = {
   "اختيار ملف كشف البنك من الهاتف": "Choisir un relevé bancaire sur le téléphone",
   "اختيار ملف CSV من الهاتف": "Choisir un fichier CSV sur le téléphone",
   "تعذر قراءة ملف CSV.": "Impossible de lire le fichier CSV.",
+  "رصيد دائن متبقٍ": "Crédit client restant",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
