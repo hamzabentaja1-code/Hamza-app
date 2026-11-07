@@ -1150,6 +1150,9 @@ const fr: Record<string, string> = {
   "+ إضافة صورة أخرى (حتى 8 صور)": "+ Ajouter une autre image (jusqu’à 8)",
   "إلغاء": "Annuler",
   "معاينة الصورة ": "Aperçu de l’image "
+  "راجع الاسم والرصيد وسقف الدين وأجل الأداء.": "Vérifiez le nom, le solde initial, le plafond de crédit et le délai de paiement.",
+  "تعذر إضافة الصورة": "Impossible d’ajouter l’image",
+  "راجع الصورة أو الحد الأقصى للمرفقات.": "Vérifiez l’image ou la limite de pièces jointes.",
   "تعذر اختيار الصورة": "Impossible de sélectionner l’image",
   "حذف المرفق ": "Supprimer la pièce jointe ",
   " يوم": " jour",
