@@ -222,7 +222,8 @@ export default function App() {
   };
   const exportProductsCsv=async()=>{
     const quote=(value:unknown)=>{const text=String(value??'');return '"'+text.replace(/"/g,'""')+'"';};
-    const lines=[['Name','Reference','Barcode','Category','Cost price DH','Sale price DH','Quote price DH','Invoice price DH','Quantity','Brand','Unit','Variant','Kind'].join(';'),...products.map(p=>[p.name,p.reference||'',p.barcode||'',p.category||'',p.costPrice||0,p.price,p.quotePrice??'',p.invoicePrice??'',(productVariants.some(v=>v.productId===p.id)?totalVariantStock(productVariants,p.id):p.qty),p.brand||'',p.unit||'',p.variant||'',p.kind||'product'].map(quote).join(';'))];
+    const rows=products.flatMap(p=>{const variants=productVariants.filter(v=>v.productId===p.id);if(!variants.length)return [[p.name,p.reference||'',p.barcode||'',p.category||'',p.costPrice??'',p.price,p.quotePrice??'',p.invoicePrice??'',p.qty,p.brand||'',p.unit||'',p.variant||'',p.kind||'product','']];return variants.map(v=>[p.name,p.reference||'',p.barcode||'',p.category||'',v.costPriceCentimes===undefined?(p.costPrice??''):v.costPriceCentimes/100,v.salePriceCentimes===undefined?p.price:v.salePriceCentimes/100,p.quotePrice??'',p.invoicePrice??'',v.stockQty,p.brand||'',p.unit||'',Object.values(v.attributes).join(' / '),p.kind||'product',v.active?'active':'archived']);});
+    const lines=[['Name','Reference','Barcode','Category','Cost price DH','Sale price DH','Quote price DH','Invoice price DH','Quantity','Brand','Unit','Variant','Kind','Variant status'].join(';'),...rows.map(row=>row.map(quote).join(';'))];
     try{await Share.share({title:'HamZa products CSV',message:lines.join('\n')});}
     catch{showAlert('تعذر التصدير','ما قدرناش نشاركوا لائحة المنتجات.');}
   };
