@@ -36,5 +36,6 @@ test('customer and supplier extended identifiers and email fields persist throug
  assert.match(app,/isValidContactEmail\(customerEmail\)/);
  assert.match(app,/isValidContactEmail\(supplierEmail\)/);
  assert.match(app,/isValidContactEmail\(contactDraftEmail\)/);
- assert.match(app,/createBackup\(\{[\\s\\S]*?customers[\\s\\S]*?suppliers/);
+ assert.ok(app.includes('createBackup({products,customers'));
+ assert.ok(app.includes('suppliers,quotes,payments'));
 });
