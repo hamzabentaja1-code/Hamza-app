@@ -125,7 +125,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
 - [x] Product category dictionary and category selection
 - [x] Camera barcode scanning from POS with exact barcode lookup and cart insertion (tests/pos.test.cjs)
-- [ ] Advanced stock filters
+- [x] Advanced stock filters for in-stock, low-stock, out-of-stock and service-only products, with category filters, barcode/reference/name search and sorting by name, quantity or price; uses warehouse/variant-aware stock totals (tests/stock-filters.test.cjs)
 - [x] Parked POS sales persist across screens and app restarts and can be resumed or deleted
 - [ ] POS-linked returns and physical receipt-printer integration
 
@@ -135,7 +135,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Task create/read/update/delete with project link, assignee, priority, due date, estimated duration and status
 - [x] Technician profiles with phone, specialty and hourly rate; equipment records with reference, serial number, availability and assignment state
 - [x] Equipment category dictionaries support create/select/delete, reject deleting categories in use, and persist through local save and backup/restore (tests/equipment-categories.test.cjs)
-- [ ] Technician permissions
+- [x] Technician work-type permissions (installation, maintenance, repair and inspection) are configurable per technician and enforced when assigning work orders and recording work time; legacy technicians without a permission list retain unrestricted compatibility (tests/field-operations.test.cjs)
 - [x] Work-time entries with date, technician, hours, hourly rate and centime-safe cost totals per work order and technician
 - [ ] Settlement, attachments, photo evidence and advanced work-order history
 
