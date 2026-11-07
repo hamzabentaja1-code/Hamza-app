@@ -45,10 +45,13 @@ test('fulfillment rejects excess, duplicate documents and empty deliveries',()=>
  assert.throws(()=>fulfillCustomerOrder(partial,{'0':1},501),/مكرر/);
 });
 test('invoice and delivery documents link once and only to their source order',()=>{
- const order=base(),linked=linkCustomerOrderDocument(order,{id:700,type:'invoice',sourceOrderId:1});
+ const confirmed=changeCustomerOrderStatus(base(),'confirmed');
+ const delivered=fulfillCustomerOrder(confirmed,{'0':2,'1':1},699);
+ const linked=linkCustomerOrderDocument(delivered,{id:700,type:'invoice',sourceOrderId:1});
  assert.deepEqual(linked.invoiceDocumentIds,[700]);
  assert.throws(()=>linkCustomerOrderDocument(linked,{id:700,type:'invoice',sourceOrderId:1}),/مسبقاً/);
- assert.throws(()=>linkCustomerOrderDocument(order,{id:701,type:'delivery',sourceOrderId:9}),/لا تخص/);
+ assert.throws(()=>linkCustomerOrderDocument(base(),{id:701,type:'invoice',sourceOrderId:1}),/قبل إصدار الفاتورة/);
+ assert.throws(()=>linkCustomerOrderDocument(base(),{id:701,type:'delivery',sourceOrderId:9}),/لا تخص/);
 });
 
 test('customer orders are wired to quotes, invoice/delivery records, backup and translated accessible workspace',()=>{
