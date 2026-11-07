@@ -21,7 +21,9 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Automated scheduled backups and encrypted backup files
 
 ### Products and inventory
-- [ ] Product/service catalog with references, barcodes, photos and multiple images
+- [ ] Product/service catalog with references, barcodes and multiple images
+- [x] Single product photo: choose, replace, remove, preview, and persist in local product data
+- [x] Product name search and product edit flow
 - [ ] Categories, brands, units, variants
 - [ ] Purchase and sale prices; separate price rules for quotes/orders vs invoices
 - [ ] HT/TTC display mode and configurable tax rules where required
