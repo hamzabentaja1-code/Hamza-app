@@ -84,3 +84,14 @@ test('delivery-note movement deducts stock from the selected variant', () => {
   assert.equal(result.variants[0].stockQty,4);
   assert.throws(()=>applyVariantStockMovement(result.variants,{id:'delivery-2',variantId:'v-delivery',kind:'delivery',quantityDelta:1,date:'2026-11-07'},[result.movement]),/اتجاه كمية الحركة/);
 });
+
+
+test('variant stock selling value and potential profit use per-variant prices in centimes', () => {
+  const variants = [
+    {id:'v1',productId:3,attributes:{color:'blue'},stockQty:4,costPriceCentimes:5000,salePriceCentimes:8000,active:true},
+    {id:'v2',productId:3,attributes:{color:'red'},stockQty:2,costPriceCentimes:6000,active:true},
+    {id:'v3',productId:3,attributes:{color:'green'},stockQty:9,costPriceCentimes:1000,salePriceCentimes:2000,active:false},
+  ];
+  assert.equal(variantStockValueCentimes(variants,3,7000),46000);
+  assert.equal(variantStockProfitCentimes(variants,3,7000,4000),14000);
+});
