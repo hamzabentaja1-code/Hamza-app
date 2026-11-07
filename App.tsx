@@ -292,7 +292,68 @@ export default function App() {
    const openContactEditor=(kind:'customer'|'supplier',id:number)=>{const contact=kind==='customer'?customers.find(item=>item.id===id):suppliers.find(item=>item.id===id);if(!contact)return;setEditingContact({kind,id});setContactDraftName(contact.name);setContactDraftPhone(contact.phone||'');setContactDraftAddress(contact.address||'');setContactDraftIce(contact.ice||'');setContactDraftOpening(((contact.openingBalanceCentimes||0)/100).toFixed(2));setContactDraftLimit(contact.creditLimitCentimes===undefined?'':(contact.creditLimitCentimes/100).toFixed(2));setContactDraftTerms(contact.paymentTermsDays===undefined?'':String(contact.paymentTermsDays));setContactDraftFields((contact.customFields||[]).map(field=>field.name+'='+field.value).join(String.fromCharCode(10)));setContactDraftPriceGroup(kind==='customer'?(customers.find(item=>item.id===id)?.priceGroupId||''):'');};
    const saveContactEditor=()=>{const target=editingContact;if(!target)return;const opening=contactDraftOpening.trim()===''?0:Number(contactDraftOpening.replace(',','.'));const limit=contactDraftLimit.trim()===''?undefined:Number(contactDraftLimit.replace(',','.'));const terms=contactDraftTerms.trim()===''?undefined:Number(contactDraftTerms);if(!contactDraftName.trim()||!Number.isFinite(opening)||opening<0||(limit!==undefined&&(!Number.isFinite(limit)||limit<0))||(terms!==undefined&&(!Number.isSafeInteger(terms)||terms<0))){showAlert('معلومات غير صالحة','راجع الاسم والرصيد وسقف الدين وأجل الأداء.');return;}let customFields:ContactCustomField[]=[];try{if(contactDraftFields.trim())customFields=parseContactCustomFieldsText(contactDraftFields,'contact-field-'+target.id+'-'+Date.now());}catch(error){showAlert('حقل مخصص غير صالح',error instanceof Error?error.message:'راجع الحقول.');return;}const update=(item:Customer|Supplier)=>({...item,name:contactDraftName.trim(),phone:contactDraftPhone.trim(),address:contactDraftAddress.trim(),ice:contactDraftIce.trim(),openingBalanceCentimes:Math.round(opening*100),creditLimitCentimes:limit===undefined?undefined:Math.round(limit*100),paymentTermsDays:terms,customFields});if(target.kind==='customer')setCustomers(current=>current.map(item=>item.id===target.id?{...update(item),priceGroupId:contactDraftPriceGroup||undefined}:item));else setSuppliers(current=>current.map(item=>item.id===target.id?update(item):item));setEditingContact(null);};
   const addExistingContactImage=async()=>{const target=editingContact;if(!target)return;try{const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:false,quality:0.72,base64:true});if(result.canceled||!result.assets?.[0]?.base64)return;const asset=result.assets[0];const mimeType=asset.mimeType==='image/png'?'image/png':asset.mimeType==='image/webp'?'image/webp':'image/jpeg';const file:ContactAttachment={id:'contact-image-'+Date.now(),name:asset.fileName||('contact-'+Date.now()+'.'+(mimeType==='image/png'?'png':mimeType==='image/webp'?'webp':'jpg')),mimeType,dataUri:'data:'+mimeType+';base64,'+asset.base64,createdAt:new Date().toISOString()};if(target.kind==='customer'){const contact=customers.find(item=>item.id===target.id);if(!contact)return;const attachments=addContactAttachment(contact.attachments||[],file);setCustomers(current=>current.map(item=>item.id===target.id?{...item,attachments}:item));}else{const contact=suppliers.find(item=>item.id===target.id);if(!contact)return;const attachments=addContactAttachment(contact.attachments||[],file);setSuppliers(current=>current.map(item=>item.id===target.id?{...item,attachments}:item));}}catch(error){showAlert('تعذر إضافة الصورة',error instanceof Error?error.message:'راجع الصورة أو الحد الأقصى للمرفقات.');}};
-  const addExistingContactDocument=async()=>{const target=editingContact;if(!target)return;try{const result=await DocumentPicker.getDocumentAsync({type:['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','text/plain','text/csv'],copyToCacheDirectory:true,multiple:false});if(result.canceled||!result.assets?.[0])return;const asset=result.assets[0];if(asset.size!==undefined&&asset.size>4_000_000){showAlert('حجم الملف غير صالح','الحد الأقصى لحجم المستند هو 4 MB.');return;}const extension=asset.name.includes('.')?asset.name.split('.').pop()!.toLowerCase():'';const mimeByExtension:Record<string,string>={pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',txt:'text/plain',csv:'text/csv'};const mimeType=asset.mimeType||mimeByExtension[extension]||'application/octet-stream';const base64=await FileSystem.readAsStringAsync(asset.uri,{encoding:FileSystem.EncodingType.Base64});const decodedBytes=Math.max(0,Math.floor(base64.length*3/4)-(base64.endsWith('==')?2:base64.endsWith('=')?1:0));if(decodedBytes>4_000_000){showAlert('حجم الملف غير صالح','الحد الأقصى لحجم المستند هو 4 MB.');return;}const file:ContactAttachment={id:'contact-document-'+Date.now(),name:asset.name.slice(0,120),mimeType,dataUri:'data:'+mimeType+';base64,'+base64,createdAt:new Date().toISOString()};if(target.kind==='customer'){const contact=customers.find(item=>item.id===target.id);if(!contact)return;const attachments=addContactAttachment(contact.attachments||[],file);setCustomers(current=>current.map(item=>item.id===target.id?{...item,attachments}:item));}else{const contact=suppliers.find(item=>item.id===target.id);if(!contact)return;const attachments=addContactAttachment(contact.attachments||[],file);setSuppliers(current=>current.map(item=>item.id===target.id?{...item,attachments}:item));}}catch(error){showAlert('تعذر إرفاق المستند',error instanceof Error?error.message:'تحقق من نوع الملف وحجمه.');}};
+  const addExistingContactDocument = async () => {
+    const target = editingContact;
+    if (!target) return;
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'text/plain',
+          'text/csv',
+        ],
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+      if (result.canceled || !result.assets?.[0]) return;
+      const asset = result.assets[0];
+      if (typeof asset.size === 'number' && asset.size > 4_000_000) {
+        showAlert('حجم الملف غير صالح', 'الحد الأقصى لحجم المستند هو 4 MB.');
+        return;
+      }
+      const extension = asset.name.includes('.') ? asset.name.split('.').pop()!.toLowerCase() : '';
+      const mimeByExtension: Record<string, string> = {
+        pdf: 'application/pdf',
+        doc: 'application/msword',
+        docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        xls: 'application/vnd.ms-excel',
+        xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        txt: 'text/plain',
+        csv: 'text/csv',
+      };
+      const mimeType = asset.mimeType || mimeByExtension[extension] || 'application/octet-stream';
+      const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: FileSystem.EncodingType.Base64 });
+      const decodedBytes = Math.max(0, Math.floor(base64.length * 3 / 4) - (base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0));
+      if (decodedBytes > 4_000_000) {
+        showAlert('حجم الملف غير صالح', 'الحد الأقصى لحجم المستند هو 4 MB.');
+        return;
+      }
+      const file: ContactAttachment = {
+        id: 'contact-document-' + Date.now(),
+        name: asset.name.slice(0, 120),
+        mimeType,
+        dataUri: 'data:' + mimeType + ';base64,' + base64,
+        createdAt: new Date().toISOString(),
+      };
+      if (target.kind === 'customer') {
+        const contact = customers.find(item => item.id === target.id);
+        if (!contact) return;
+        const attachments = addContactAttachment(contact.attachments || [], file);
+        setCustomers(current => current.map(item => item.id === target.id ? { ...item, attachments } : item));
+      } else {
+        const contact = suppliers.find(item => item.id === target.id);
+        if (!contact) return;
+        const attachments = addContactAttachment(contact.attachments || [], file);
+        setSuppliers(current => current.map(item => item.id === target.id ? { ...item, attachments } : item));
+      }
+    } catch (error) {
+      showAlert('تعذر إرفاق المستند', error instanceof Error ? error.message : 'تحقق من نوع الملف وحجمه.');
+    }
+  };
   const openContactDocument=async(file:ContactAttachment)=>{try{const base64=file.dataUri.slice(file.dataUri.indexOf(',')+1);const extension=file.name.includes('.')?file.name.split('.').pop()!.replace(/[^a-zA-Z0-9]/g,'').slice(0,8):'pdf';const uri=(FileSystem.cacheDirectory||'')+'hamza-contact-'+file.id.replace(/[^a-zA-Z0-9-]/g,'')+'.'+extension;if(!FileSystem.cacheDirectory)throw new Error('مساحة الملفات المؤقتة غير متاحة');await FileSystem.writeAsStringAsync(uri,base64,{encoding:FileSystem.EncodingType.Base64});await Sharing.shareAsync(uri,{mimeType:file.mimeType,dialogTitle:file.name});}catch(error){showAlert('تعذر فتح المستند',error instanceof Error?error.message:'تعذر تجهيز الملف للمشاركة.');}};
   const removeExistingContactImage=(fileId:string)=>{const target=editingContact;if(!target)return;if(target.kind==='customer')setCustomers(current=>current.map(item=>item.id===target.id?{...item,attachments:removeContactAttachment(item.attachments||[],fileId)}:item));else setSuppliers(current=>current.map(item=>item.id===target.id?{...item,attachments:removeContactAttachment(item.attachments||[],fileId)}:item));};
   const addCustomer=()=>{const opening=customerOpeningBalance.trim()===''?0:Number(customerOpeningBalance.replace(',','.'));const limit=customerCreditLimit.trim()===''?undefined:Number(customerCreditLimit.replace(',','.'));const terms=customerPaymentTerms.trim()===''?undefined:Number(customerPaymentTerms);if(!customer.trim()||!Number.isFinite(opening)||opening<0||(limit!==undefined&&(!Number.isFinite(limit)||limit<0))||(terms!==undefined&&(!Number.isSafeInteger(terms)||terms<0))){showAlert('معلومات ناقصة','راجع اسم الزبون والرصيد الافتتاحي وسقف الدين وأجل الأداء.');return;}let customFields:ContactCustomField[]=[];try{if(customerCustomFieldsText.trim())customFields=parseContactCustomFieldsText(customerCustomFieldsText,'customer-field-'+Date.now());}catch(error){showAlert('حقل مخصص غير صالح',error instanceof Error?error.message:'راجع الحقل.');return;}let attachments:ContactAttachment[]=[];try{if(customerAttachment)attachments=addContactAttachment([],customerAttachment);}catch(error){showAlert('مرفق غير صالح',error instanceof Error?error.message:'راجع الصورة.');return;}setCustomers(v=>[{id:Date.now(),name:customer.trim(),phone:customerPhone.trim(),address:customerAddress.trim(),ice:customerIce.trim(),openingBalanceCentimes:Math.round(opening*100),creditLimitCentimes:limit===undefined?undefined:Math.round(limit*100),paymentTermsDays:terms,customFields,attachments,priceGroupId:customerPriceGroupId||undefined},...v]);setCustomer('');setCustomerPhone('');setCustomerAddress('');setCustomerIce('');setCustomerOpeningBalance('');setCustomerCreditLimit('');setCustomerPaymentTerms('');setCustomerCustomFieldsText('');setCustomerAttachment(null);setCustomerPriceGroupId('');};
