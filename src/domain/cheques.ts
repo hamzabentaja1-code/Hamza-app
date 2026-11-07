@@ -74,7 +74,7 @@ export function transitionCheque(
   if (!event.id.trim() || !validDate(event.date)) throw new Error('معرف وتاريخ حركة الشيك مطلوبان');
   if (event.date < cheque.updatedAt.slice(0, 10)) throw new Error('تاريخ حركة الشيك ما يقدرش يسبق آخر تحديث');
   if (!allowed[cheque.status].includes(next)) throw new Error('انتقال حالة الشيك غير مسموح');
-  if (next === 'deposited' && !cheque.bankAccountId) throw new Error('حدد الحساب البنكي قبل إيداع الشيك');
+  if ((next === 'deposited' || next === 'cleared') && !cheque.bankAccountId) throw new Error('حدد الحساب البنكي قبل إيداع أو تسوية الشيك');
   const updated = { ...cheque, status: next, updatedAt: event.date };
   return {
     cheque: updated,
