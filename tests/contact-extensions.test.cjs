@@ -11,7 +11,7 @@ test('multiple custom fields parse one name=value pair per line',()=>{
  const fields=ext.parseContactCustomFieldsText(['ICE=123','Secteur=Installation','Code=AB-7'].join(String.fromCharCode(10)),'contact');
  assert.deepEqual(fields.map(x=>[x.name,x.value]),[['ICE','123'],['Secteur','Installation'],['Code','AB-7']]);
  assert.throws(()=>ext.parseContactCustomFieldsText(['ICE=123','Sans valeur'].join(String.fromCharCode(10)),'c'),/الاسم=القيمة/);
- assert.throws(()=>ext.parseContactCustomFieldsText('ICE=1\\nice=2','c'),/موجود من قبل/);
+ assert.throws(()=>ext.parseContactCustomFieldsText(['ICE=1','ice=2'].join(String.fromCharCode(10)),'c'),/موجود من قبل/);
 });
 test('contact image attachments accept only bounded base64 images and can be removed',()=>{
  const file={id:'a1',name:'photo.png',mimeType:'image/png',dataUri:'data:image/png;base64,AA==',createdAt:'2026-01-01'};
