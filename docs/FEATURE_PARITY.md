@@ -30,14 +30,14 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Service-only catalog items with no stock balance or stock movements, supported in direct sales, POS, quotes and invoice conversion
 - [x] Variant management workspace with normalized size/color attributes, SKU/barcode uniqueness, per-variant stock and centime-safe cost/sale prices
 - [x] Variant stock movement validation for purchases, sales, returns and adjustments; variant records and movement history persist through local save and JSON backup/restore
-- [ ] Connect variant selection and stock deduction to POS, direct sales, purchase receiving, returns and product-level stock valuation
+- [x] Connect variant selection and stock deduction to POS, direct sales, manual purchases and customer returns; purchase-order receiving, supplier returns and product-level stock valuation remain pending
 - [ ] Camera-based barcode scanning
 - [x] Single product photo: choose, replace, remove, preview, and persist in local product data
 - [x] Product name search and product edit flow
 - [x] Basic free-text category, brand, unit and variant metadata in product cards, search, bulk import and CSV export
 - [x] Managed product category and brand dictionaries with quick selection and local backup/restore
 - [x] Product photo gallery supports up to four images, preview, per-image removal and persisted local product records
-- [ ] Variant stock matrix UI and integration with product forms, POS, sales, purchases and existing inventory ledger
+- [ ] Variant stock matrix in product form and full synchronization with legacy product-level stock valuation
 - [x] Variant stock domain: normalized attribute combinations, duplicate SKU protection, centime-safe prices, per-variant movement validation, no-negative-stock rule and aggregate balances (tests/variant-stock.test.cjs)
 - [x] Product purchase cost, sale price and unit margin when cost is recorded
 - [x] Weighted average cost updates on purchases when the previous stock cost is known
