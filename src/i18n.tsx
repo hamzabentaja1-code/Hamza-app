@@ -783,6 +783,9 @@ const fr: Record<string, string> = {
   "تم حفظ التصنيف": "Catégorie enregistrée",
   "تزاد التصنيف للقائمة.": "La catégorie a été ajoutée à la liste.",
 
+  "حفظ فئة جديدة": "Enregistrer une nouvelle catégorie",
+  "حفظ ماركة جديدة": "Enregistrer une nouvelle marque",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
