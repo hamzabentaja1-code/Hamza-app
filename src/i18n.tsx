@@ -1365,6 +1365,10 @@ const fr: Record<string, string> = {
   "أداء • ": "Paiement • ",
   "• المرتجع ": "• Retourné ",
   "• رصيد دائن ": "• Solde créditeur ",
+  "تم تسجيل الحركة": "Mouvement enregistré",
+  "معلومات غير صالحة": "Informations invalides",
+  "راجع الحقول.": "Vérifiez les champs.",
+  "تعذر تصدير التقرير": "Impossible d’exporter le rapport",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
