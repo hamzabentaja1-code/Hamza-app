@@ -86,7 +86,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Partial customer returns with optional restocking and net sales/profit adjustment
 - [x] Quote validity dates, accepted/rejected statuses, expired quote handling and confirmed deletion
 - [x] Proforma invoices can be created from quotes with their own number series and do not deduct stock
-- [ ] Customer order lifecycle
+- [x] Customer order lifecycle
 - [x] Automatic due-date reminders for unpaid invoices, supplier obligations and recurring expenses (local OS notifications, permission-gated)
 - [x] Numbered credit-note PDF records are generated for partial customer returns and their value is automatically applied oldest-first to the customer's unpaid invoices; unused amounts remain as a visible customer credit balance and appear in customer statements
 - [x] Configurable document numbering for quotes, invoices, delivery notes and purchase orders
@@ -97,11 +97,13 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Purchases
 - [x] Supplier purchase orders with expected delivery dates, partial/full goods receipts, stock updates and order PDF
 - [x] Supplier price requests with supplier-specific request lifecycle, offer capture, per-product/per-variant price comparison and local persistence (tests/supplier-procurement.test.cjs)
-- [ ] Supplier invoice entry linked to received purchase orders, payable reconciliation and invoice-level payment allocation
+- [x] Supplier invoice entry linked to received purchase orders; validates received/unbilled quantities, supplier identity, duplicate invoice numbers and editable invoice unit costs without double-counting stock (tests/supplier-procurement.test.cjs)
+- [ ] Supplier invoice-level payment allocation and payable reconciliation
 - [x] Supplier partial payment history with centime-safe allocation, receipts, and reversible payment entries
 - [x] Partial supplier returns with stock deduction, purchase linkage, supplier credit balances, account statement rows and reversal on delete
 - [x] Supplier purchase comparison by gross purchases, returns and net purchases within a selected date range
-- [ ] Link/convert purchase documents and update stock correctly
+- [x] Purchase-order receipt workflow converts ordered quantities into partial/full receipts, validates remaining quantities, updates product/variant stock and weighted-average cost, and prevents duplicate receipt quantities (tests/purchase-orders.test.cjs)
+- [ ] General conversion/linking between all purchase document types
 
 ### Cash, payments and banking
 - [x] Expenses with optional category, project association, PDF receipt and delete confirmation
@@ -145,7 +147,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Equipment category dictionaries support create/select/delete, reject deleting categories in use, and persist through local save and backup/restore (tests/equipment-categories.test.cjs)
 - [x] Technician work-type permissions (installation, maintenance, repair and inspection) are configurable per technician and enforced when assigning work orders and recording work time; legacy technicians without a permission list retain unrestricted compatibility (tests/field-operations.test.cjs)
 - [x] Work-time entries with date, technician, hours, hourly rate and centime-safe cost totals per work order and technician
-- [ ] Settlement, attachments, photo evidence and advanced work-order history
+- [x] Work-order settlement amount, partial/full payments, centime-safe balances and overpayment rejection (tests/field-operations.test.cjs)
+- [ ] Work-order attachments, photo evidence and advanced work-order history
 
 ### Agenda and reports
 - [x] Basic task list with assignments, priorities, due dates, estimated durations and status changes
