@@ -57,6 +57,7 @@ const fr: Record<string, string> = {
   "تاريخ التحويل غير صالح": "La date du transfert est invalide",
   "الكمية المعدودة خاصها تكون عدد صحيح صفر أو أكثر": "La quantité comptée doit être un entier supérieur ou égal à zéro",
   "الجرد مطابق للمخزون المسجل، ما كاين حتى فرق": "Le comptage correspond au stock enregistré : aucun écart",
+  "الكمية الفعلية مطابقة للمخزون المسجل، ما تسجلات حتى حركة.": "La quantité réelle correspond au stock enregistré ; aucun mouvement n’a été créé.",
   "سجل حركات المخزون (": "Historique des mouvements de stock (",
   "رصيد افتتاحي": "Stock initial",
   "رصيد افتتاحي عند إنشاء النسخة": "Stock initial lors de la création de la variante",
