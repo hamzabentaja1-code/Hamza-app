@@ -187,3 +187,14 @@ test('company banking details and document series are persisted and localized', 
     assert.ok(dictionary.includes('"' + label + '"'), 'missing French translation for ' + label);
   }
 });
+
+test('period analytics are connected to supplier purchase and return ledgers', () => {
+  const app = read('App.tsx');
+  const screen = read('src/PeriodReportWorkspace.tsx');
+  const analytics = read('src/domain/report-analytics.ts');
+  assert.match(app, /purchaseRows=\{purchases\.map/);
+  assert.match(app, /supplierReturnRows=\{supplierReturns\.map/);
+  assert.match(screen, /buildMonthlyTrend/);
+  assert.match(screen, /buildSupplierPurchaseComparison/);
+  assert.match(analytics, /netPurchases:row\.gross-row\.returned/);
+});
