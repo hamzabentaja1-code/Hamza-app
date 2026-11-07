@@ -1,4 +1,4 @@
-const test=require('node:test');const assert=require('node:assert/strict');
+const test=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const path=require('node:path');
 const ext=require('../.test-build/contact-extensions.js');
 test('custom contact fields are trimmed, unique and bounded',()=>{
  const fields=ext.addContactCustomField([],'  ICE secondaire ','123','f1');
