@@ -86,7 +86,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Proforma invoices can be created from quotes with their own number series and do not deduct stock
 - [ ] Customer order lifecycle
 - [x] Automatic due-date reminders for unpaid invoices, supplier obligations and recurring expenses (local OS notifications, permission-gated)
-- [x] Numbered credit-note PDF records are generated for partial customer returns; automatic invoice allocation remains pending
+- [x] Numbered credit-note PDF records are generated for partial customer returns and their value is automatically applied oldest-first to the customer's unpaid invoices; unused amounts remain as a visible customer credit balance and appear in customer statements
 - [x] Configurable document numbering for quotes, invoices, delivery notes and purchase orders
 - [ ] Advanced fees, document sections and in-document barcode entry
 - [x] Basic PDF generation and sharing for quotes, invoices, delivery notes, receipts and statements, with company profile branding
