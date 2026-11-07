@@ -1,6 +1,6 @@
 export type CustomerOrderStatus='draft'|'confirmed'|'partially_fulfilled'|'fulfilled'|'cancelled';
 export type CustomerOrderLine={productId:number;productName:string;qty:number;unitPrice:number;variantId?:string;variantLabel?:string;fulfilledQty:number;trackStock?:boolean};
-export type CustomerOrder={id:number;number:string;customerName:string;date:string;status:CustomerOrderStatus;lines:CustomerOrderLine[];total:number;sourceQuoteId?:number;deliveryDocumentIds:number[];invoiceDocumentIds:number;notes?:string};
+export type CustomerOrder={id:number;number:string;customerName:string;date:string;status:CustomerOrderStatus;lines:CustomerOrderLine[];total:number;sourceQuoteId?:number;deliveryDocumentIds:number[];invoiceDocumentIds:number[];notes?:string};
 export type OrderDocumentLink={id:number;type:'delivery'|'invoice';sourceOrderId:number};
 const validQty=(n:number)=>Number.isFinite(n)&&n>0&&Math.round(n*1000)===n*1000;
 export function createCustomerOrder(input:Omit<CustomerOrder,'status'|'deliveryDocumentIds'|'invoiceDocumentIds'>):CustomerOrder{
@@ -34,7 +34,7 @@ export function fulfillCustomerOrder(order:CustomerOrder,quantities:Record<strin
   return {...line,fulfilledQty:line.fulfilledQty+qty};
  });
  if(!lines.some((line,index)=>(quantities[String(index)]??0)>0))throw new Error('دخل كمية واحدة على الأقل للتسليم');
- const complete=lines.every(line=>line.trackStock===false||line.fulfilledQty===line.qty);
+ const complete=lines.every(line=>line.fulfilledQty===line.qty);
  return {...order,lines,status:complete?'fulfilled':'partially_fulfilled',deliveryDocumentIds:[...order.deliveryDocumentIds,deliveryDocumentId]};
 }
 export function linkCustomerOrderDocument(order:CustomerOrder,document:OrderDocumentLink):CustomerOrder{
