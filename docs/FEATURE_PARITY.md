@@ -110,7 +110,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Basic sales/purchase/stock/cash/receivables/payables/gross-profit summary reports with PDF exports
 - [x] Date-range report filters with previous equal-length period comparisons; net sales and net purchases account for returns and invalid legacy dates are reported
 - [x] Monthly sales/purchase trends with returns and expenses, plus supplier comparisons in period analysis
-- [ ] Advanced report exports (CSV/XLSX and configurable layouts)
+- [x] Detailed period-analysis PDF export includes period comparisons, monthly trends and supplier comparisons
+- [ ] CSV/XLSX export and configurable report layouts
 
 ## Acceptance tests required before calling a module complete
 - Create, read, update and delete (with confirmation) persist after app restart.
