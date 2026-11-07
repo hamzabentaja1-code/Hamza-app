@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('all primary workspaces use the shared accessible button wrapper', () => {
-  for (const file of ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx']) {
+  for (const file of ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx', 'src/CustomerOrdersWorkspace.tsx']) {
     const source = read(file);
     assert.match(source, /import AccessiblePressable from ['"].*AccessiblePressable['"]/,
       file + ' must import AccessiblePressable');
