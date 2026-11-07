@@ -27,6 +27,6 @@ export function calculatePaymentDueDate(issueDate:string,termsDays?:number):stri
   if(!Number.isSafeInteger(termsDays)||termsDays<0||!Number.isFinite(Date.parse(issueDate)))
     throw new Error('تاريخ الفاتورة أو أجل الأداء غير صالح');
   const date=new Date(issueDate);
-  date.setDate(date.getDate()+termsDays);
+  date.setUTCDate(date.getUTCDate()+termsDays);
   return date.toISOString().slice(0,10);
 }
