@@ -907,6 +907,8 @@ const fr: Record<string, string> = {
   "سجل حركات الشيكات": "Historique des mouvements de chèques",
   "مازال ما تسجلات حتى حركة شيك.": "Aucun mouvement de chèque enregistré.",
 
+  "تاريخ انتهاء العرض YYYY-MM-DD (اختياري)": "Date d’expiration du devis YYYY-MM-DD (facultatif)",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
