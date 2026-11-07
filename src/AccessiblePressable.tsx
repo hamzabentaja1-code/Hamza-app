@@ -14,7 +14,8 @@ function readableLabel(node: ReactNode): string {
 
 /** Shared screen-reader friendly button. Visible child text supplies its label. */
 export default function AccessiblePressable(props: PressableProps) {
-  const label = props.accessibilityLabel || readableLabel(props.children) || 'زر';
+  const childLabel = typeof props.children === 'function' ? '' : readableLabel(props.children);
+  const label = props.accessibilityLabel || childLabel || 'زر';
   return (
     <Pressable
       {...props}
