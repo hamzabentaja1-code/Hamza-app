@@ -1141,6 +1141,8 @@ const fr: Record<string, string> = {
   "حذف متابعة تواصل": "Suppression d’un suivi de contact",
   "معلومات سجل التواصل غير صالحة": "Les informations de suivi sont invalides",
   "واتساب": "WhatsApp",
+  "واتساب ": "WhatsApp ",
+  "اتصال ": "Appeler ",
   "اتصال": "Appeler",
   "رقم الهاتف غير صالح": "Numéro de téléphone invalide",
   "راجع رقم الهاتف المسجل لجهة الاتصال.": "Vérifiez le numéro enregistré pour ce contact.",
