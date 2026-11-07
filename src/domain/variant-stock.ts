@@ -18,6 +18,7 @@ export type VariantStockMovement = {
   date: string;
   reference?: string;
   note?: string;
+  warehouseId?: string;
 };
 
 const validDate = (value: string) => {
@@ -59,7 +60,7 @@ export function applyVariantStockMovement(
   history: VariantStockMovement[] = [],
 ): { variants: ProductVariant[]; movement: VariantStockMovement } {
   if (!movement.id.trim() || history.some(item => item.id === movement.id)) throw new Error('حركة المخزون مسجلة من قبل أو معرفها غير صالح');
-  if (!validDate(movement.date) || !Number.isSafeInteger(movement.quantityDelta) || movement.quantityDelta === 0) throw new Error('تاريخ أو كمية حركة النسخة غير صالحة');
+  if (!validDate(movement.date) || !Number.isSafeInteger(movement.quantityDelta) || movement.quantityDelta === 0 || (movement.warehouseId !== undefined && !movement.warehouseId.trim())) throw new Error('تاريخ أو كمية حركة النسخة غير صالحة');
   const variant = variants.find(item => item.id === movement.variantId && item.active);
   if (!variant) throw new Error('النسخة غير موجودة أو غير نشطة');
   if (!['opening','purchase','sale','delivery','return_in','return_out','adjustment','stock_count'].includes(movement.kind)) throw new Error('نوع حركة النسخة غير صالح');
@@ -98,4 +99,70 @@ export function variantStockProfitCentimes(
 ): number {
   return variants.filter(item => item.productId === productId && item.active)
     .reduce((sum, item) => sum + item.stockQty * ((item.salePriceCentimes ?? fallbackSalePriceCentimes) - (item.costPriceCentimes ?? fallbackCostPriceCentimes)), 0);
+}
+
+
+export const DEFAULT_VARIANT_WAREHOUSE_ID = 'warehouse-default';
+
+export type VariantWarehouseBalance = {
+  variantId: string;
+  productId: number;
+  warehouseId: string;
+  quantity: number;
+};
+
+function variantMovementWarehouseId(movement: VariantStockMovement): string {
+  return movement.warehouseId?.trim() || DEFAULT_VARIANT_WAREHOUSE_ID;
+}
+
+/** Returns a variant's balance in one warehouse from its movement ledger.
+ * Legacy movements without warehouseId belong to the default warehouse.
+ */
+export function variantWarehouseBalance(
+  variantId: string,
+  movements: VariantStockMovement[],
+  warehouseId: string = DEFAULT_VARIANT_WAREHOUSE_ID,
+): number {
+  if (!variantId.trim() || !warehouseId.trim()) throw new Error('النسخة أو المخزن غير صالح');
+  return movements
+    .filter(item => item.variantId === variantId && variantMovementWarehouseId(item) === warehouseId)
+    .reduce((sum, item) => sum + item.quantityDelta, 0);
+}
+
+/** Produces a complete variant-by-warehouse matrix, including zero balances. */
+export function variantWarehouseStockMatrix(
+  variants: ProductVariant[],
+  movements: VariantStockMovement[],
+  warehouses: Array<{id: string; name: string}>,
+  productId?: number,
+): Array<VariantWarehouseBalance & {warehouseName: string; attributes: VariantAttributes}> {
+  const selectedVariants = variants.filter(item =>
+    item.active && (productId === undefined || item.productId === productId)
+  );
+  if (warehouses.some(warehouse => !warehouse.id.trim() || !warehouse.name.trim()) ||
+      new Set(warehouses.map(warehouse => warehouse.id)).size !== warehouses.length) {
+    throw new Error('لائحة المخازن غير صالحة');
+  }
+  return selectedVariants.flatMap(variant => warehouses.map(warehouse => ({
+    variantId: variant.id,
+    productId: variant.productId,
+    warehouseId: warehouse.id,
+    warehouseName: warehouse.name,
+    attributes: {...variant.attributes},
+    quantity: variantWarehouseBalance(variant.id, movements, warehouse.id),
+  })));
+}
+
+/** Lists every warehouse balance for a single variant. */
+export function variantWarehouseBalances(
+  variantId: string,
+  movements: VariantStockMovement[],
+  warehouses: Array<{id: string; name: string}>,
+): Array<{warehouseId: string; warehouseName: string; quantity: number}> {
+  if (!warehouses.length) return [];
+  return warehouses.map(warehouse => ({
+    warehouseId: warehouse.id,
+    warehouseName: warehouse.name,
+    quantity: variantWarehouseBalance(variantId, movements, warehouse.id),
+  }));
 }
