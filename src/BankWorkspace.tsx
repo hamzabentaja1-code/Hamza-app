@@ -12,9 +12,10 @@ type Props={
  onTransfer:(input:{id:string;fromAccountId:string;toAccountId:string;amountCentimes:number;date:string;description:string})=>boolean;
  onReconcile:(input:{id:string;accountId:string;statementBalanceCentimes:number;date:string;note?:string})=>boolean;
  onCashTransfer:(input:{direction:'cash_to_bank'|'bank_to_cash';accountId:string;amountCentimes:number;date:string;description:string})=>boolean;
+ onImportStatement:(accountId:string,csv:string)=>{imported:number;matched:number;skipped:number}|null;
 };
 const GOLD='#D6AE55';
-export default function BankWorkspace({accounts,movements,reconciliations,activeAccountId,cashBalanceCentimes,onSelectAccount,onAddAccount,onMovement,onTransfer,onReconcile,onCashTransfer}:Props){
+export default function BankWorkspace({accounts,movements,reconciliations,activeAccountId,cashBalanceCentimes,onSelectAccount,onAddAccount,onMovement,onTransfer,onReconcile,onCashTransfer,onImportStatement}:Props){
  const language=useContext(LanguageContext);const t=(v:string)=>translateText(v,language)||v;
  const showAlert = (...args: Parameters<typeof Alert.alert>) => {
   const [title, message, buttons, options] = args;
@@ -29,7 +30,7 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
  const [amount,setAmount]=useState('');const [description,setDescription]=useState('');const [kind,setKind]=useState<'deposit'|'withdrawal'>('deposit');
  const [destination,setDestination]=useState('');const [transferAmount,setTransferAmount]=useState('');const [transferDescription,setTransferDescription]=useState('');
  const [cashTransferDirection,setCashTransferDirection]=useState<'cash_to_bank'|'bank_to_cash'>('cash_to_bank');const [cashTransferAmount,setCashTransferAmount]=useState('');const [cashTransferDescription,setCashTransferDescription]=useState('تحويل بين الصندوق والبنك');
- const [statement,setStatement]=useState('');const [reconcileNote,setReconcileNote]=useState('تسوية مع كشف الحساب');
+ const [statement,setStatement]=useState('');const [statementCsv,setStatementCsv]=useState('');const [reconcileNote,setReconcileNote]=useState('تسوية مع كشف الحساب');
  const active=accounts.find(a=>a.id===activeAccountId);
  const balance=active?bankBalance(movements,active.id):0;
  const add=()=>{const value=Number(opening.replace(',','.'));if(!name.trim()||!Number.isFinite(value)||value<0||!/^\d{0,4}$/.test(reference.trim())){showAlert(t('معلومات ناقصة'),t('دخل اسم الحساب ورصيد افتتاحي صحيح، وآخر 4 أرقام فقط للحساب.'));return;}
@@ -52,6 +53,11 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
  const reconcile=()=>{const value=Number(statement.replace(',','.'));if(!active||!Number.isFinite(value)||value<0){showAlert(t('معلومات ناقصة'),t('دخل الرصيد الموجود في كشف البنك بشكل صحيح.'));return;}
   const ok=onReconcile({id:'bank-reconcile-'+Date.now(),accountId:active.id,statementBalanceCentimes:Math.round(value*100),date:new Date().toISOString(),note:reconcileNote.trim()});
   if(ok)setStatement('');
+ };
+ const importStatement=()=>{
+  if(!active||!statementCsv.trim()){showAlert(t('معلومات ناقصة'),t('لصق محتوى كشف البنك بصيغة CSV أولاً.'));return;}
+  const result=onImportStatement(active.id,statementCsv);
+  if(result){showAlert(t('تم استيراد كشف البنك'),t('حركات جديدة: ')+result.imported+' • '+t('مطابقة موجودة: ')+result.matched+' • '+t('مكررة: ')+result.skipped);setStatementCsv('');}
  };
  return <View>
   <View style={styles.panel}><Text style={styles.title}>الحسابات البنكية</Text>
@@ -92,6 +98,11 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
     <TextInput value={statement} onChangeText={setStatement} keyboardType="decimal-pad" placeholder="الرصيد في كشف البنك DH" placeholderTextColor="#888" style={styles.input}/>
     <TextInput value={reconcileNote} onChangeText={setReconcileNote} placeholder="ملاحظة التسوية" placeholderTextColor="#888" style={styles.input}/>
     <AccessiblePressable style={styles.action} onPress={reconcile}><Text style={styles.actionText}>مطابقة كشف الحساب</Text></AccessiblePressable>
+   </View>
+   <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>استيراد كشف حساب CSV</Text>
+    <Text style={styles.note}>لصق السطور بهذا الترتيب: date;description;amount. المبلغ الموجب إيداع والسالب سحب. مثال: 2026-11-07;Client transfer;250.00</Text>
+    <TextInput value={statementCsv} onChangeText={setStatementCsv} multiline numberOfLines={7} textAlignVertical="top" placeholder={"date;description;amount\n2026-11-07;Client transfer;250.00\n2026-11-08;Bank fee;-12.50"} placeholderTextColor="#888" style={[styles.input,{minHeight:130,textAlign:'left'}]}/>
+    <AccessiblePressable style={styles.action} onPress={importStatement}><Text style={styles.actionText}>استيراد ومطابقة الحركات</Text></AccessiblePressable>
    </View>
    <Text style={styles.section}>سجل الحركات</Text>
    {movements.filter(m=>m.accountId===active.id).slice().sort((a,b)=>b.date.localeCompare(a.date)).map(m=><View key={m.id} style={styles.rowItem}><View style={{flex:1}}><Text style={styles.label}>{m.description}</Text><Text style={styles.note}>{new Date(m.date).toLocaleString(language==='AR'?'ar-MA':'fr-MA')} • {m.kind}</Text></View><Text style={styles.label}>{['opening','deposit','pos_card','pos_transfer','customer_payment','bank_transfer_in','cash_transfer_in','adjustment_in'].includes(m.kind)?'+':'-'}{(m.amountCentimes/100).toFixed(2)} DH</Text></View>)}
