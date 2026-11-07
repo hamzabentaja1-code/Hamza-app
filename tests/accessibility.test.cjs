@@ -202,7 +202,7 @@ test('period analytics are connected to supplier purchase and return ledgers', (
 test('customer payment screen offers automatic allocation across open invoices', () => {
   const app = read('App.tsx');
   const allocation = read('src/domain/multi-invoice-payment.ts');
-  assert.match(app, /allocatePaymentAcrossInvoices\(documents,cst\.name/);
+  assert.match(app, /allocatePaymentAcrossInvoices\(invoiceDocuments,cst\.name/);
   assert.match(app, /توزيع تلقائي على جميع الفواتير المستحقة/);
   assert.match(allocation, /sort\(\(a,b\)=>a\.document\.id-b\.document\.id\)/);
 });
@@ -381,7 +381,7 @@ test('quotes track expiry and accepted/rejected lifecycle with safe deletion', (
   assert.match(quote, /onUpdate\(\{\.\.\.q,status:'مقبول'\}\)/);
   assert.match(quote, /onUpdate\(\{\.\.\.q,status:'مرفوض'\}\)/);
   assert.match(quote, /ما يمكنش تحويل عرض مرفوض أو منتهي/);
-  assert.match(app, /onDelete=\{\(id\)=>\{const quote=quotes\.find/);
+  assert.match(app, /onDelete=\{\(id\)=>\{if\(documents\.some\(document=>document\.sourceQuoteId===id\)\).*const quote=quotes\.find/);
   assert.match(app, /documents\.some\(document=>document\.sourceQuoteId===id\)/);
 });
 
