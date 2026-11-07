@@ -1060,6 +1060,7 @@ const fr: Record<string, string> = {
   "تبديل المستخدم": "Changer d’utilisateur",
   "اختار الحساب اللي غادي تستعمل دابا.": "Choisissez le compte à utiliser maintenant.",
   "المستخدم": "Utilisateur",
+  "المستخدم: ": "Utilisateur : ",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
