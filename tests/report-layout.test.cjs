@@ -25,8 +25,8 @@ test('report workspace applies selected sections to visible output and PDF CSV X
  const workspace=fs.readFileSync(path.join(__dirname,'..','src','PeriodReportWorkspace.tsx'),'utf8');
  const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
  assert.match(workspace,/layout\.summary&&/);
- assert.match(workspace,/layout\.monthlyTrend\?/);
- assert.match(workspace,/layout\.supplierComparison\?/);
+ assert.match(workspace,/layout\.monthlyTrend&&/);
+ assert.match(workspace,/layout\.supplierComparison&&/);
  assert.match(workspace,/layout\.comparison\?/);
  assert.match(workspace,/onLayoutChange\(togglePeriodReportLayout\(layout,item\.key\)\)/);
  assert.match(app,/writeAppData\(\{[\s\S]*?contactInteractions,priceGroups,reportLayout\}\)/);
