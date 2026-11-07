@@ -121,8 +121,8 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
         <View style={{flex:1}}>
           <Text style={{color:'#FFF',fontWeight:'700'}}>{line.productName}</Text>
           <View style={{flexDirection:'row',gap:6,marginTop:6}}>
-            <TextInput value={String(line.qty)} onChangeText={v=>updateLine(index,{qty:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder="الكمية" placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
-            <TextInput value={String(line.unitPrice)} onChangeText={v=>updateLine(index,{unitPrice:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder="الثمن" placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
+            <TextInput value={String(line.qty)} onChangeText={v=>updateLine(index,{qty:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder={tr("الكمية")} placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
+            <TextInput value={String(line.unitPrice)} onChangeText={v=>updateLine(index,{unitPrice:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder={tr("الثمن")} placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
           </View>
         </View>
         <Text style={{color:gold,fontWeight:'800'}}>{Number.isFinite(line.total)?line.total.toFixed(2):'—'} DH</Text>
@@ -140,7 +140,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
     <Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>{tr('عروض الأسعار السابقة')} ({quotes.length})</Text>
     {quotes.map(q=><View key={q.id} style={[panel,{marginBottom:8}]}>
       <Text style={{color:'#FFF',fontWeight:'800'}}>{q.customerName}</Text>
-      <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {q.status}</Text>
+      <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {tr(q.status)}</Text>
       {quoteLines(q).map((line,i)=><Text key={i} style={{color:'#DDD',marginTop:5}}>{line}</Text>)}
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:8}}>

@@ -27,7 +27,7 @@ export default function PosWorkspace({language,products,customers,onCheckout}:Pr
   const discount=Number(discountText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:0};
   const totals=posTotals(currentCart);
-  const add=(p:PosProduct)=>{try{setCart(old=>addPosLine(old,p));setTerm('');}catch(e){Alert.alert(tr('المخزون غير كافٍ'),e instanceof Error?e.message:'تعذر إضافة المنتج');}};
+  const add=(p:PosProduct)=>{try{setCart(old=>addPosLine(old,p));setTerm('');}catch(e){Alert.alert(tr('المخزون غير كافٍ'),e instanceof Error?e.message:tr('تعذر إضافة المنتج'));}};
   const changeQty=(productId:string,delta:number)=>{setCart(old=>({...old,lines:old.lines.map(line=>line.productId===productId?{...line,quantity:line.quantity+delta}:line).filter(line=>line.quantity>0)}));};
   const remove=(productId:string)=>setCart(old=>({...old,lines:old.lines.filter(line=>line.productId!==productId)}));
   const checkout=()=>{
@@ -37,8 +37,8 @@ export default function PosWorkspace({language,products,customers,onCheckout}:Pr
     const lines:CheckoutLine[]=currentCart.lines.map(line=>({productId:Number(line.productId),name:line.name,quantity:line.quantity,unitPrice:line.unitPrice,discount:line.discount}));
     const name=customers.find(c=>String(c.id)===customerId)?.name||'زبون عابر';
     Alert.alert(tr('تأكيد البيع'),`${tr('المجموع النهائي:')} ${money(totals.total)}\n${tr('الزبون')}: ${name}\n${tr('طريقة الأداء')}: ${tr(method==='cash'?'نقداً':method==='card'?'بطاقة':'تحويل')}`,[
-      {text:'رجوع',style:'cancel'},
-      {text:'تأكيد',onPress:()=>{const accepted=onCheckout({customerName:name,lines,paymentMethod:method,total:totals.total});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');}}
+      {text:tr('رجوع'),style:'cancel'},
+      {text:tr('تأكيد'),onPress:()=>{const accepted=onCheckout({customerName:name,lines,paymentMethod:method,total:totals.total});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');}}
     ]);
   };
   return <View style={{gap:12}}>
@@ -76,7 +76,7 @@ export default function PosWorkspace({language,products,customers,onCheckout}:Pr
       </View>
       <Text style={{color:'#CCC',marginTop:12,marginBottom:6}}>{tr('طريقة الأداء')}</Text>
       <View style={{flexDirection:'row',gap:7}}>
-        {([{id:'cash',label:'نقداً'},{id:'card',label:'بطاقة'},{id:'transfer',label:'تحويل'}] as const).map(m=><Pressable key={m.id} onPress={()=>setMethod(m.id)} style={{flex:1,borderWidth:1,borderColor:method===m.id?GOLD:'#444',borderRadius:8,padding:10,alignItems:'center'}}><Text style={{color:'#FFF'}}>{m.label}</Text></Pressable>)}
+        {([{id:'cash',label:'نقداً'},{id:'card',label:'بطاقة'},{id:'transfer',label:'تحويل'}] as const).map(m=><Pressable key={m.id} onPress={()=>setMethod(m.id)} style={{flex:1,borderWidth:1,borderColor:method===m.id?GOLD:'#444',borderRadius:8,padding:10,alignItems:'center'}}><Text style={{color:'#FFF'}}{tr(m.label)}</Text></Pressable>)}
       </View>
       <TextInput value={discountText} onChangeText={setDiscountText} keyboardType="decimal-pad" placeholder={tr('تخفيض عام (DH)')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',marginTop:12,textAlign:'right'}}/>
       <View style={{backgroundColor:'#111',borderRadius:9,padding:12,marginTop:10,gap:6}}>

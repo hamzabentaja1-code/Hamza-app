@@ -204,7 +204,10 @@ const fr: Record<string, string> = {
   "سندات الخروج": "Bons de sortie",
   "سجل المبيعات القديم باقي محفوظ كما هو.": "L’historique des ventes précédent est conservé.",
   "ما كايناش ديون مسجلة حالياً.": "Aucune créance enregistrée actuellement.",
-  "شيك": "Chèque"
+  "شيك": "Chèque",
+  "تعذر إضافة المنتج": "Impossible d’ajouter le produit",
+  "الثمن": "Prix",
+  "معلق": "En attente"
 };
 
 export function translate(language: AppLanguage, value: string): string {
