@@ -1107,6 +1107,7 @@ const fr: Record<string, string> = {
   "خاصك تصفر مخزون النسخ أولاً قبل حذف المنتج.": "Videz d’abord le stock des variantes avant de supprimer le produit.",
   "المنتج مرتبط بأمر شراء مفتوح": "Le produit est lié à une commande d’achat ouverte",
   "كمل استلام أو ألغِ أمر الشراء قبل حذف المنتج.": "Terminez la réception ou annulez la commande avant de supprimer le produit.",
+  "حذف منتج": "Suppression de produit",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
