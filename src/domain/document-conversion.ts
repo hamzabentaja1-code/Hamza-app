@@ -16,7 +16,7 @@ export type QuoteForConversion = {
   lines?:ConversionLine[];
 };
 export type StockProduct = {id:number; qty:number};
-export type DocumentKind = 'invoice'|'delivery';
+export type DocumentKind = 'invoice'|'delivery'|'proforma';
 export type ConvertedDocument = {
   id:number;
   number:string;
@@ -52,7 +52,7 @@ export function convertQuote(
   }
   const lines=quote.lines?.length?quote.lines:[];
   let updatedProducts=products;
-  const stockAlreadyDeducted=documents.some(d=>d.sourceQuoteId===quote.id);
+  const stockAlreadyDeducted=documents.some(d=>d.sourceQuoteId===quote.id&&(d.type==='invoice'||d.type==='delivery'));
   const trackedLines=lines.filter(line=>line.trackStock!==false);
   const shouldDeductStock=!stockAlreadyDeducted&&trackedLines.length>0;
   if(type==='delivery'&&!lines.length)throw new Error('A new quote with linked products is required for a delivery note');
@@ -78,7 +78,7 @@ export function convertQuote(
   }];
   const document:ConvertedDocument={
     id,
-    number:documentNumber||((type==='invoice'?'FAC-':'BL-')+id),
+    number:documentNumber||((type==='invoice'?'FAC-':type==='delivery'?'BL-':'PRO-')+id),
     type,
     customerName:quote.customerName,
     total:quote.total,
