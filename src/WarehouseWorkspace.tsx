@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
-import {Alert, Text, TextInput, View, StyleSheet} from 'react-native';
+import {Alert, View, StyleSheet} from 'react-native';
+import {TText as Text, TTextInput as TextInput} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 import {Warehouse, InventoryMovement, inventoryBalance, inventoryBalanceForWarehouse} from './domain/inventory-ledger';
 
