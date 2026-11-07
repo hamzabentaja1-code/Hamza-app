@@ -157,12 +157,12 @@ test('warehouse balance helper returns each requested warehouse with its balance
 
 
 test('warehouse-tagged movements enforce stock per warehouse while preserving aggregate quantity', () => {
-  const initial = [createProductVariant(variant({id:'v-warehouse',sku:'SKU-WH',barcode:'WH-1',stockQty:5}))];
+  const initial = [createProductVariant(variant({id:'v-warehouse',sku:'SKU-WH',barcode:'WH-1',stockQty:0}))];
   const opening = {id:'wh-open',variantId:'v-warehouse',kind:'opening',quantityDelta:5,date:'2026-11-01',warehouseId:'warehouse-a'};
   const sold = applyVariantStockMovement(initial,opening);
-  assert.equal(sold.variants[0].stockQty,10);
+  assert.equal(sold.variants[0].stockQty,5);
   const sale = applyVariantStockMovement(sold.variants,{id:'wh-sale',variantId:'v-warehouse',kind:'sale',quantityDelta:-3,date:'2026-11-02',warehouseId:'warehouse-a'},[opening]);
-  assert.equal(sale.variants[0].stockQty,7);
+  assert.equal(sale.variants[0].stockQty,2);
   assert.throws(()=>applyVariantStockMovement(sale.variants,{id:'wh-over',variantId:'v-warehouse',kind:'sale',quantityDelta:-1,date:'2026-11-03',warehouseId:'warehouse-b'},[opening,{...sale.movement}]),/مخزون النسخة غير كافٍ في هذا المخزن/);
 });
 
@@ -170,4 +170,11 @@ test('legacy variants with no movement history retain their opening balance in t
   const initial=[createProductVariant(variant({id:'v-legacy',sku:'SKU-LEGACY',barcode:'WH-LEGACY',stockQty:4}))];
   const result=applyVariantStockMovement(initial,{id:'legacy-sale',variantId:'v-legacy',kind:'sale',quantityDelta:-2,date:'2026-11-07',warehouseId:DEFAULT_VARIANT_WAREHOUSE_ID});
   assert.equal(result.variants[0].stockQty,2);
+});
+
+
+test('legacy variant quantity appears in the default warehouse matrix when no movement history exists', () => {
+  const legacy = [createProductVariant(variant({id:'v-matrix-legacy',sku:'SKU-MATRIX-LEGACY',barcode:'WH-MATRIX-LEGACY',stockQty:6}))];
+  const matrix = variantWarehouseStockMatrix(legacy,[],[{id:DEFAULT_VARIANT_WAREHOUSE_ID,name:'الرئيسي'},{id:'warehouse-other',name:'الثاني'}]);
+  assert.deepEqual(matrix.map(row=>row.quantity),[6,0]);
 });
