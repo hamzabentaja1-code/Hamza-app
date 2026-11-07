@@ -1227,6 +1227,11 @@ const fr: Record<string, string> = {
   "حذف المتابعة": "Supprimer le suivi",
   "زبون": "Client",
   "مورد": "Fournisseur",
+  "المرفقات (الصور والمستندات)": "Pièces jointes (images et documents)",
+  "+ إضافة صورة أخرى (حتى 8 مرفقات)": "+ Ajouter une image (8 pièces jointes maximum)",
+  "حذف المرفق": "Supprimer la pièce jointe",
+  "فتح أو مشاركة المستند": "Ouvrir ou partager le document",
+  "إضافة صورة (حتى 8 مرفقات إجمالاً)": "Ajouter une image (8 pièces jointes au total maximum)",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
