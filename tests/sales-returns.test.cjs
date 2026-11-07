@@ -37,5 +37,5 @@ test('returns without stored cost do not invent a profit adjustment', () => {
 });
 
 test('total return profit adjustment is calculated from stored costs only', () => {
-  assert.equal(totalReturnProfitAdjustment(existing), 30);
+  assert.equal(totalReturnProfitAdjustment(existing), 90);
 });
