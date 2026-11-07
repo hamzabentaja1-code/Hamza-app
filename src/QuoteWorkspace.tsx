@@ -1,7 +1,7 @@
-import React, {useMemo, useState} from 'react';
+import React, {useContext, useMemo, useState} from 'react';
 import {Alert, ScrollView, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
 import {calculateQuote} from './domain/quote-calculator';
-import {TText as Text, TTextInput as TextInput} from './i18n';
+import {TText as Text, TTextInput as TextInput, LanguageContext} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
@@ -32,6 +32,7 @@ const active={borderColor:gold,backgroundColor:'#302819'};
 const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
 export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,onConvert}:Props) {
+  const language=useContext(LanguageContext);
   const [customerId,setCustomerId]=useState('');
   const [productId,setProductId]=useState('');
   const [customerSearch,setCustomerSearch]=useState('');
