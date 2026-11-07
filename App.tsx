@@ -103,6 +103,13 @@ export default function App() {
       imported.push({id:Date.now()+imported.length,name:productName,reference:reference||undefined,barcode:barcode||undefined,category:category||undefined,costPrice:cost,price:salePrice,qty:quantity});
     }
     if(!imported.length){Alert.alert('ما تزاد حتى منتج',`الأسطر المرفوضة: ${rejected}. راجع الصيغة والمرجع والباركود.`);return;}
+    try{
+      let nextMovements=inventoryMovements;
+      for(const product of imported){
+        if(product.qty>0)nextMovements=appendInventoryMovement(nextMovements,{id:'opening-'+product.id,productId:product.id,productName:product.name,kind:'opening',quantityDelta:product.qty,date:new Date().toISOString(),note:'رصيد افتتاحي مستورد مع لائحة المنتجات'});
+      }
+      setInventoryMovements(nextMovements);
+    }catch(error){Alert.alert('تعذر استيراد المخزون',error instanceof Error?error.message:'راجع كميات المنتجات المستوردة.');return;}
     setProducts(current=>[...imported,...current]);setProductBulkText('');
     Alert.alert('تم الاستيراد',`تزادو ${imported.length} منتج. الأسطر المرفوضة أو المكررة: ${rejected}.`);
   };
@@ -161,7 +168,7 @@ export default function App() {
     Alert.alert('تم تسجيل الأداء',invoice?'تحدّث الرصيد المتبقي ديال الفاتورة.':'تسجل الأداء كدفعة غير مخصصة لفاتورة.');
   };
   const exportBackup=async()=>{try{setBackupBusy(true);const json=await createBackup({products,customers,sales,purchases,expenses,suppliers,quotes,payments,documents,inventoryMovements,language});await Share.share({title:'HamZa backup',message:json});}catch(e){Alert.alert('خطأ','ما قدرناش نوجدوا النسخة الاحتياطية.');}finally{setBackupBusy(false);}};
-  const importBackup=()=>{Alert.alert('استرجاع البيانات','هاد العملية غادي تعوض البيانات الحالية بالنسخة اللي لصقتي. واش متأكد؟',[{text:'إلغاء',style:'cancel'},{text:'استرجاع',style:'destructive',onPress:async()=>{try{setBackupBusy(true);const d=await restoreBackup(backupText);setProducts(Array.isArray(d.products)?d.products as Product[]:[]);setCustomers(Array.isArray(d.customers)?d.customers as Customer[]:[]);setSales(Array.isArray(d.sales)?d.sales as Sale[]:[]);setPurchases(Array.isArray(d.purchases)?d.purchases as Purchase[]:[]);setExpenses(Array.isArray(d.expenses)?d.expenses as Expense[]:[]);setSuppliers(Array.isArray(d.suppliers)?d.suppliers as Supplier[]:[]);setQuotes(Array.isArray(d.quotes)?d.quotes as Quote[]:[]);setPayments(Array.isArray(d.payments)?d.payments as Payment[]:[]);setDocuments(Array.isArray(d.documents)?d.documents as CommercialDocument[]:[]);setInventoryMovements(Array.isArray(d.inventoryMovements)?d.inventoryMovements as InventoryMovement[]:[]);setLanguage(d.language==='FR'?'FR':'AR');setBackupText('');Alert.alert('تم الاسترجاع','ترجعات البيانات بنجاح.');}catch(e){Alert.alert('تعذر الاسترجاع',e instanceof Error?e.message:'النسخة غير صالحة.');}finally{setBackupBusy(false);}}}]);};
+  const importBackup=()=>{Alert.alert('استرجاع البيانات','هاد العملية غادي تعوض البيانات الحالية بالنسخة اللي لصقتي. واش متأكد؟',[{text:'إلغاء',style:'cancel'},{text:'استرجاع',style:'destructive',onPress:async()=>{try{setBackupBusy(true);const d=await restoreBackup(backupText);setProducts(Array.isArray(d.products)?d.products as Product[]:[]);setCustomers(Array.isArray(d.customers)?d.customers as Customer[]:[]);setSales(Array.isArray(d.sales)?d.sales as Sale[]:[]);setPurchases(Array.isArray(d.purchases)?d.purchases as Purchase[]:[]);setExpenses(Array.isArray(d.expenses)?d.expenses as Expense[]:[]);setSuppliers(Array.isArray(d.suppliers)?d.suppliers as Supplier[]:[]);setQuotes(Array.isArray(d.quotes)?d.quotes as Quote[]:[]);setPayments(Array.isArray(d.payments)?d.payments as Payment[]:[]);setDocuments(Array.isArray(d.documents)?d.documents as CommercialDocument[]:[]);const restoredProducts=Array.isArray(d.products)?d.products as Product[]:[];const restoredMovements=Array.isArray(d.inventoryMovements)?d.inventoryMovements as InventoryMovement[]:[];setInventoryMovements(restoredMovements.length?restoredMovements:restoredProducts.filter(p=>p.qty>0).map(p=>({id:'opening-'+p.id,productId:p.id,productName:p.name,kind:'opening' as const,quantityDelta:p.qty,date:new Date().toISOString(),note:'رصيد افتتاحي مسترجع من نسخة قديمة'})));setLanguage(d.language==='FR'?'FR':'AR');setBackupText('');Alert.alert('تم الاسترجاع','ترجعات البيانات بنجاح.');}catch(e){Alert.alert('تعذر الاسترجاع',e instanceof Error?e.message:'النسخة غير صالحة.');}finally{setBackupBusy(false);}}}]);};
   const exportPdf=async(title:string,customerName:string,lines:string[],total:number)=>{
     try{
       const rtl=language==='AR';
@@ -260,7 +267,6 @@ export default function App() {
           <Text style={s.panelText}>إجمالي المبيعات: {salesTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>إجمالي المشتريات: {purchaseTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>إجمالي المصاريف: {expenseTotal.toFixed(2)} DH</Text>
-          <Text style={s.panelText}>ديون الموردين المتبقية: {supplierPayablesTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>ديون الموردين المتبقية: {supplierPayablesTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>مجمل ربح المبيعات المحسوب بالتكلفة المسجلة: {grossProfit.toFixed(2)} DH</Text>
           <Text style={s.panelText}>الربح بعد المصاريف المسجلة: {(grossProfit-expenseTotal).toFixed(2)} DH</Text>
