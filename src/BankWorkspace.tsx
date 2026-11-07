@@ -13,9 +13,10 @@ type Props={
  onReconcile:(input:{id:string;accountId:string;statementBalanceCentimes:number;date:string;note?:string})=>boolean;
  onCashTransfer:(input:{direction:'cash_to_bank'|'bank_to_cash';accountId:string;amountCentimes:number;date:string;description:string})=>boolean;
  onImportStatement:(accountId:string,csv:string)=>{imported:number;matched:number;skipped:number}|null;
+ onPickStatementFile:(accountId:string)=>Promise<{imported:number;matched:number;skipped:number}|null>;
 };
 const GOLD='#D6AE55';
-export default function BankWorkspace({accounts,movements,reconciliations,activeAccountId,cashBalanceCentimes,onSelectAccount,onAddAccount,onMovement,onTransfer,onReconcile,onCashTransfer,onImportStatement}:Props){
+export default function BankWorkspace({accounts,movements,reconciliations,activeAccountId,cashBalanceCentimes,onSelectAccount,onAddAccount,onMovement,onTransfer,onReconcile,onCashTransfer,onImportStatement,onPickStatementFile}:Props){
  const language=useContext(LanguageContext);const t=(v:string)=>translateText(v,language)||v;
  const showAlert = (...args: Parameters<typeof Alert.alert>) => {
   const [title, message, buttons, options] = args;
@@ -54,6 +55,7 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
   const ok=onReconcile({id:'bank-reconcile-'+Date.now(),accountId:active.id,statementBalanceCentimes:Math.round(value*100),date:new Date().toISOString(),note:reconcileNote.trim()});
   if(ok)setStatement('');
  };
+ const pickStatementFile=async()=>{if(!active)return;const result=await onPickStatementFile(active.id);if(result){showAlert(t('تم استيراد كشف البنك'),t('حركات جديدة: ')+result.imported+' • '+t('مطابقة موجودة: ')+result.matched+' • '+t('مكررة: ')+result.skipped);setStatementCsv('');}};
  const importStatement=()=>{
   if(!active||!statementCsv.trim()){showAlert(t('معلومات ناقصة'),t('لصق محتوى كشف البنك بصيغة CSV أولاً.'));return;}
   const result=onImportStatement(active.id,statementCsv);
@@ -102,6 +104,7 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
    <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>استيراد كشف حساب CSV</Text>
     <Text style={styles.note}>لصق السطور بهذا الترتيب: date;description;amount. المبلغ الموجب إيداع والسالب سحب. مثال: 2026-11-07;Client transfer;250.00</Text>
     <TextInput value={statementCsv} onChangeText={setStatementCsv} multiline numberOfLines={7} textAlignVertical="top" placeholder={"date;description;amount\n2026-11-07;Client transfer;250.00\n2026-11-08;Bank fee;-12.50"} placeholderTextColor="#888" style={[styles.input,{minHeight:130,textAlign:'left'}]}/>
+    <AccessiblePressable style={styles.choice} onPress={pickStatementFile} accessibilityLabel={t('اختيار ملف كشف البنك من الهاتف')}><Text style={styles.label}>اختيار ملف CSV من الهاتف</Text></AccessiblePressable>
     <AccessiblePressable style={styles.action} onPress={importStatement}><Text style={styles.actionText}>استيراد ومطابقة الحركات</Text></AccessiblePressable>
    </View>
    <Text style={styles.section}>سجل الحركات</Text>
