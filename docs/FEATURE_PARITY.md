@@ -66,7 +66,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Basic multi-product quotes with conversion to invoices and delivery notes; duplicate conversion is prevented
 - [x] Invoice partial payments, paid/outstanding status and payment due dates
 - [x] Partial customer returns with optional restocking and net sales/profit adjustment
-- [ ] Customer orders, proforma invoices, formal credit-note documents and complete document lifecycle/reminders
+- [x] Quote validity dates, accepted/rejected statuses, expired quote handling and confirmed deletion
+- [ ] Customer orders, proforma invoices, formal credit-note documents and automatic reminders
 - [x] Configurable document numbering for quotes, invoices, delivery notes and purchase orders
 - [ ] Advanced fees, document sections and in-document barcode entry
 - [x] Basic PDF generation and sharing for quotes, invoices, delivery notes, receipts and statements, with company profile branding
