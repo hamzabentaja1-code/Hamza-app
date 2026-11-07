@@ -18,3 +18,17 @@ test('rejects invalid purchase and payment amounts', () => {
   assert.throws(() => calculateSupplierBalances([{ name: 'A' }], [{ supplierName: 'A', total: -1 }], []));
   assert.throws(() => calculateSupplierBalances([{ name: 'A' }], [], [{ supplierName: 'A', amount: -1 }]));
 });
+
+test('keeps decimal MAD balances exact to centimes', () => {
+  const result = calculateSupplierBalances(
+    [{ name: 'Supplier C' }],
+    [{ supplierName: 'Supplier C', total: 12.34 }, { supplierName: 'Supplier C', total: 1.11 }],
+    [{ supplierName: 'Supplier C', amount: 3.45 }],
+  );
+  assert.deepEqual(result[0], {
+    supplierName: 'Supplier C',
+    total: 13.45,
+    paid: 3.45,
+    outstanding: 10,
+  });
+});
