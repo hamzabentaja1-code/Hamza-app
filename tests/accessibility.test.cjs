@@ -232,3 +232,12 @@ test('product category and brand dictionaries persist and offer quick selection'
   assert.match(app, /productCategories\.map\(category/);
   assert.match(app, /productBrands\.map\(brand/);
 });
+
+test('product records support a four-photo gallery with accessible removal and preview', () => {
+  const app = read('App.tsx');
+  assert.match(app, /photos\?:string\[\]/);
+  assert.match(app, /allowsMultipleSelection:true,selectionLimit:4/);
+  assert.match(app, /setProductPhotos\(combined\)/);
+  assert.match(app, /معاينة صورة المنتج /);
+  assert.match(app, /حذف جميع الصور/);
+});
