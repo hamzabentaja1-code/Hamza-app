@@ -1088,6 +1088,11 @@ const fr: Record<string, string> = {
   "غادي يتحذف هاد البيع المعلق فقط.": "Seule cette vente en attente sera supprimée.",
   "تعليق البيع والرجوع لاحقاً": "Mettre la vente en attente",
   "السلة فارغة": "Le panier est vide",
+  "جرد النسخة": "Inventaire de la variante",
+  "دخل الكمية الفعلية كعدد صحيح موجب أو صفر.": "Saisissez la quantité réellement comptée sous forme d’un entier positif ou zéro.",
+  "الجرد مطابق": "Inventaire conforme",
+  "الكمية الفعلية مطابقة للمخزون المسجل.": "La quantité réelle correspond au stock enregistré.",
+  "الكمية الفعلية للنسخة": "Quantité réelle de la variante",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
