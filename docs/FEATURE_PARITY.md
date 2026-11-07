@@ -50,7 +50,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Sale-time cost snapshots and tested gross-profit calculation; legacy sales without a cost are excluded
 - [x] Inventory ledger unit tests for movements, duplicate protection, negative stock prevention and stock-count variance
 - [x] Separate product quote prices and invoice prices; invoice conversion recalculates line/document totals while preserving discounts
-- [ ] Separate price rules for purchase orders and advanced customer price groups
+- [x] Advanced customer price groups can be created, activated/deactivated, assigned to customers, persisted through backups and applied to quote/invoice line defaults (tests/contact-extensions.test.cjs)
+- [ ] Separate supplier-specific price rules for purchase orders and automatic supplier/product price lookup
 - [x] TTC-only PDF totals by default; optional HT/TVA/TTC breakdown with a configurable VAT rate in company settings
 - [x] Invoice and delivery-note conversions deduct stock only once per quote, regardless of conversion order; later document conversion does not double-deduct
 - [x] Persistent stock movement ledger for opening stock, purchases, manual sales, POS sales, delivery notes, product quantity corrections and physical stock counts
