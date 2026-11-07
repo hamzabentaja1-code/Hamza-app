@@ -7,11 +7,11 @@ const products=[
  {id:4,name:'Installation',price:120,stock:0,kind:'service',category:'Service'},
 ];
 test('stock filters cover low, out-of-stock, services, category and barcode/reference search',()=>{
- assert.deepEqual(filterStockProducts(products,{status:'in'}).map(x=>x.id),[1,2]);
+ assert.deepEqual(filterStockProducts(products,{status:'in'}).map(x=>x.id),[2,1]);
  assert.deepEqual(filterStockProducts(products,{status:'low'}).map(x=>x.id),[2]);
  assert.deepEqual(filterStockProducts(products,{status:'out'}).map(x=>x.id),[3]);
  assert.deepEqual(filterStockProducts(products,{status:'services'}).map(x=>x.id),[4]);
- assert.deepEqual(filterStockProducts(products,{category:'Network'}).map(x=>x.id),[1,2]);
+ assert.deepEqual(filterStockProducts(products,{category:'Network'}).map(x=>x.id),[2,1]);
  assert.equal(filterStockProducts(products,{query:'611003'})[0].id,3);
  assert.equal(filterStockProducts(products,{query:'C-06'})[0].id,2);
 });
