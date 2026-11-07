@@ -586,6 +586,6 @@ test('stock count product selector has a single selected-state prop and announce
 
 test('stock count screen handles a matching count as an informational outcome', () => {
   const app = read('App.tsx');
-  assert.match(app, /if\(counted===expected\)\{showAlert\(language==='FR'\?'Inventaire conforme':'الجرد مطابق'/);
-  assert.match(app, /setStockCountQuantity\(''\);setStockCountNote\(''\);return;/);
+  assert.ok(app.includes("if(counted===expected){showAlert(language==='FR'?'Inventaire conforme':'الجرد مطابق'"));
+  assert.ok(app.includes("setStockCountQuantity('');setStockCountNote('');return;"));
 });
