@@ -14,7 +14,7 @@ export type QuoteLine = {productId:number; productName:string; qty:number; unitP
 export type QuoteRecord = {
   id:number; number?:string; productName:string; customerName:string; qty:number;
   unitPrice:number; total:number; date:string; status:string;
-  lines?:QuoteLine[]; notes?:string; documentDiscount?:number; validUntil?:string;
+  lines?:QuoteLine[]; notes?:string; documentDiscount?:number; validUntil?:string; priceGroupDiscountPercent?:number;
 };
 export type QuoteConversionType = 'invoice' | 'delivery' | 'proforma';
 type Props = {
@@ -119,7 +119,7 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
       customerName:selectedCustomer.name,qty:lines.reduce((n,x)=>n+x.qty,0),
       unitPrice:0,total:calculation.totalCentimes/100,
       date:new Date().toLocaleDateString('fr-MA'),status:'معلق',
-      notes:notes.trim(),documentDiscount:calculation.discountCentimes/100,validUntil:validUntil||undefined,
+      notes:notes.trim(),documentDiscount:calculation.discountCentimes/100,validUntil:validUntil||undefined,priceGroupDiscountPercent:selectedPriceGroup?.discountPercent,
       lines:lines.map((line,index)=>({...line,total:calculation.lines[index].lineTotalCentimes/100})),
     };
     onSave(record);
