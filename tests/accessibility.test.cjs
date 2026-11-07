@@ -501,3 +501,9 @@ test('product deletion refuses to orphan non-zero variant inventory', () => {
   assert.match(app, /linkedVariants\.some\(v=>v\.stockQty>0\)/);
   assert.match(app, /setProductVariants\(current=>current\.map\(v=>v\.productId===p\.id\?\{\.\.\.v,active:false\}:v\)\)/);
 });
+
+
+test('product deletion protects open purchase orders', () => {
+  const app = read('App.tsx');
+  assert.match(app, /purchaseOrders\.some\(order=>order\.lines\.some\(line=>line\.productId===p\.id&&line\.receivedQuantity<line\.quantity\)\)/);
+});
