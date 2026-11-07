@@ -71,5 +71,7 @@ test('rejects supplier invoice linked to a different supplier or cancelled order
 test('supplier procurement variant price inputs use the same composite key for display and save',()=>{
  const fs=require('node:fs');
  const source=fs.readFileSync(require('node:path').join(__dirname,'../src/SupplierProcurementWorkspace.tsx'),'utf8');
- assert.match(source,/value=\{prices\[String\(line\.productId\)\+'::'\+\(line\.variantId\|\|' '\)\]\|\|''\}/);
+ const key="String(line.productId)+'::'+(line.variantId||'')";
+ assert.ok(source.includes("value={prices["+key+"]||''}"));
+ assert.ok(source.includes("["+key+"]:value"));
 });
