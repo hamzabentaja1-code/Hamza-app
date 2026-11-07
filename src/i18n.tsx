@@ -1078,6 +1078,9 @@ const fr: Record<string, string> = {
   "منع": "Interdire",
   " فقط.": " uniquement.",
   "حذف مستخدم": "Suppression d’utilisateur",
+  "المدير الرئيسي": "Administrateur principal",
+  "مجموع مخزون النسخ: ": "Stock total des variantes : ",
+  "متوفر فالمخزن: ": "Disponible dans l’entrepôt : ",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
