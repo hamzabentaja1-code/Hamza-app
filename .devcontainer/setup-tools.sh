@@ -33,6 +33,7 @@ chmod +x "$BIN_DIR/apktool"
 if ! command -v maestro >/dev/null 2>&1; then
   curl -Ls "https://get.maestro.mobile.dev" | bash
 fi
+export PATH="$HOME/.maestro/bin:$BIN_DIR:$PATH"
 
 echo "HamZa tools ready:"
 java -version
