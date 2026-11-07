@@ -1,7 +1,7 @@
 import React, {useContext, useMemo, useState} from 'react';
 import {Alert, Image, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
 import {addPosLine, emptyPosCart, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
-import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput} from './i18n';
+import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
@@ -19,6 +19,15 @@ const money=(value:number)=>value.toFixed(2)+' DH';
 
 export default function PosWorkspace({products,customers,bankAccountName,onCheckout}:Props){
   const language:AppLanguage=useContext(LanguageContext);
+ const showAlert = (...args: Parameters<typeof Alert.alert>) => {
+  const [title, message, buttons, options] = args;
+  const translatedButtons = buttons?.map(button => ({
+   ...button,
+   text: button.text ? (translateText(button.text, language) || button.text) : button.text,
+  }));
+  Alert.alert(translateText(title, language) || title, translateText(message, language) || message, translatedButtons, options);
+ };
+
   const [term,setTerm]=useState('');
   const [customerId,setCustomerId]=useState('');
   const [method,setMethod]=useState<'cash'|'card'|'transfer'>('cash');
@@ -29,16 +38,16 @@ export default function PosWorkspace({products,customers,bankAccountName,onCheck
   const discount=Number(discountText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:0};
   const totals=posTotals(currentCart);
-  const add=(p:PosProduct)=>{try{setCart(old=>addPosLine(old,p));setTerm('');}catch(e){Alert.alert('المخزون غير كافٍ',e instanceof Error?e.message:'تعذر إضافة المنتج');}};
+  const add=(p:PosProduct)=>{try{setCart(old=>addPosLine(old,p));setTerm('');}catch(e){showAlert('المخزون غير كافٍ',e instanceof Error?e.message:'تعذر إضافة المنتج');}};
   const changeQty=(productId:string,delta:number)=>{setCart(old=>({...old,lines:old.lines.map(line=>line.productId===productId?{...line,quantity:line.quantity+delta}:line).filter(line=>line.quantity>0)}));};
   const remove=(productId:string)=>setCart(old=>({...old,lines:old.lines.filter(line=>line.productId!==productId)}));
   const checkout=()=>{
-    if(!Number.isFinite(discount)||discount<0){Alert.alert('تخفيض غير صالح','دخل تخفيض صحيح.');return;}
+    if(!Number.isFinite(discount)||discount<0){showAlert('تخفيض غير صالح','دخل تخفيض صحيح.');return;}
     const validation=validateCheckout({...currentCart,paidAmount:totals.total});
-    if(validation.length){Alert.alert('راجع السلة',validation.join('\n'));return;}
+    if(validation.length){showAlert('راجع السلة',validation.join('\n'));return;}
     const lines:CheckoutLine[]=currentCart.lines.map(line=>({productId:Number(line.productId),name:line.name,quantity:line.quantity,unitPrice:line.unitPrice,discount:line.discount}));
     const name=customers.find(c=>String(c.id)===customerId)?.name||'زبون عابر';
-    Alert.alert('تأكيد البيع',`المجموع ${money(totals.total)}\nالزبون: ${name}\nطريقة الأداء: ${method==='cash'?'نقداً':method==='card'?'بطاقة':'تحويل'}`,[
+    showAlert('تأكيد البيع',`المجموع ${money(totals.total)}\nالزبون: ${name}\nطريقة الأداء: ${method==='cash'?'نقداً':method==='card'?'بطاقة':'تحويل'}`,[
       {text:'رجوع',style:'cancel'},
       {text:'تأكيد',onPress:()=>{const accepted=onCheckout({customerName:name,lines,paymentMethod:method,total:totals.total});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');}}
     ]);
