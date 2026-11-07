@@ -1,11 +1,11 @@
 import React, {useContext, useEffect, useMemo, useState} from 'react';
 import {Alert, Image, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
-import {addPosLine, emptyPosCart, findPosProduct, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
+import {addPosLine, emptyPosCart, findPosProduct, filterPosProducts, PosCart, PosProduct, PosStockFilter, posTotals, validateCheckout} from './pos';
 import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
-type Product = {id:number; name:string; price:number; qty:number; photoData?:string; kind?:'product'|'service';reference?:string;barcode?:string};
+type Product = {id:number; name:string; price:number; qty:number; photoData?:string; kind?:'product'|'service';reference?:string;barcode?:string;category?:string};
 type ProductVariant = {id:string;productId:number;attributes:Record<string,string>;stockQty:number;costPriceCentimes?:number;salePriceCentimes?:number;active:boolean};
 type Customer = {id:number; name:string};
 type ParkedCart = {id:string;createdAt:string;cart:PosCart};
@@ -39,12 +39,16 @@ export default function PosWorkspace({products,customers,variants,bankAccountNam
  };
 
   const [term,setTerm]=useState('');
+  const [stockFilter,setStockFilter]=useState<PosStockFilter>('all');
+  const [categoryFilter,setCategoryFilter]=useState('');
   const [customerId,setCustomerId]=useState('');
   const [method,setMethod]=useState<'cash'|'card'|'transfer'>('cash');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
-  const mapped:PosProduct[]=useMemo(()=>products.flatMap(p=>{const allVariants=variants.filter(v=>v.productId===p.id);const variantsForProduct=allVariants.filter(v=>v.active);if(!allVariants.length)return [{id:String(p.id),productId:p.id,name:p.name,reference:p.reference,barcode:p.barcode,salePrice:p.price,stock:p.qty,trackStock:p.kind!=='service'}];if(!variantsForProduct.length)return [];return variantsForProduct.map(v=>({id:String(p.id)+'::'+v.id,productId:p.id,variantId:v.id,variantLabel:Object.values(v.attributes).join(' / '),name:p.name+' • '+Object.values(v.attributes).join(' / '),reference:p.reference,barcode:p.barcode,salePrice:v.salePriceCentimes===undefined?p.price:v.salePriceCentimes/100,stock:v.stockQty,trackStock:true}));}),[products,variants]);
-  const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>p.name.toLocaleLowerCase().includes(q)||p.barcode?.toLocaleLowerCase()===q||p.reference?.toLocaleLowerCase()===q).slice(0,8);},[mapped,term]);
+  const mapped:PosProduct[]=useMemo(()=>products.flatMap(p=>{const allVariants=variants.filter(v=>v.productId===p.id);const variantsForProduct=allVariants.filter(v=>v.active);if(!allVariants.length)return [{id:String(p.id),productId:p.id,name:p.name,reference:p.reference,barcode:p.barcode,category:p.category,salePrice:p.price,stock:p.qty,trackStock:p.kind!=='service'}];if(!variantsForProduct.length)return [];return variantsForProduct.map(v=>({id:String(p.id)+'::'+v.id,productId:p.id,variantId:v.id,variantLabel:Object.values(v.attributes).join(' / '),name:p.name+' • '+Object.values(v.attributes).join(' / '),reference:p.reference,barcode:p.barcode,salePrice:v.salePriceCentimes===undefined?p.price:v.salePriceCentimes/100,stock:v.stockQty,trackStock:true}));}),[products,variants]);
+  const filteredMapped=useMemo(()=>filterPosProducts(mapped,categoryFilter,stockFilter),[mapped,categoryFilter,stockFilter]);
+  const categories=useMemo(()=>[...new Set(mapped.map(p=>p.category).filter((value):value is string=>!!value))].sort((a,b)=>a.localeCompare(b)),[mapped]);
+  const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return filteredMapped.filter(p=>p.name.toLocaleLowerCase().includes(q)||p.barcode?.toLocaleLowerCase()===q||p.reference?.toLocaleLowerCase()===q).slice(0,8);},[filteredMapped,term]);
   const discount=Number(discountText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:0};
   const totals=posTotals(currentCart);
@@ -73,11 +77,18 @@ export default function PosWorkspace({products,customers,variants,bankAccountNam
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>البحث عن منتج</Text>
       <View style={{flexDirection:'row',gap:8,alignItems:'center'}}><TextInput value={term} onChangeText={setTerm} placeholder="اسم المنتج أو الباركود..." placeholderTextColor="#888" style={{flex:1,backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'right'}}/><Pressable accessibilityLabel="مسح باركود المنتج" onPress={onScanBarcode} style={{backgroundColor:'#302819',borderWidth:1,borderColor:GOLD,borderRadius:9,padding:12}}><Text style={{color:GOLD,fontWeight:'900'}}>▦ مسح</Text></Pressable></View>
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginTop:10}}>
+        {([{key:'all',label:'كل المنتجات'},{key:'available',label:'المتوفر'},{key:'low',label:'مخزون منخفض (1–5)'},{key:'out',label:'نفد المخزون'},{key:'services',label:'الخدمات'}] as {key:PosStockFilter;label:string}[]).map(item=><Pressable key={item.key} accessibilityRole="button" accessibilityState={{selected:stockFilter===item.key}} onPress={()=>setStockFilter(item.key)} style={{padding:8,borderRadius:8,borderWidth:1,borderColor:stockFilter===item.key?GOLD:'#444',backgroundColor:stockFilter===item.key?'#302819':'#111'}}><Text style={{color:stockFilter===item.key?GOLD:'#DDD',fontSize:12,fontWeight:'700'}}>{item.label}</Text></Pressable>)}
+      </View>
+      {categories.length>0?<View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginTop:8}}>
+        <Pressable accessibilityRole="button" accessibilityState={{selected:!categoryFilter}} onPress={()=>setCategoryFilter('')} style={{padding:8,borderRadius:8,borderWidth:1,borderColor:!categoryFilter?GOLD:'#444'}}><Text style={{color:!categoryFilter?GOLD:'#DDD',fontSize:12}}>كل الأصناف</Text></Pressable>
+        {categories.map(category=><Pressable key={category} accessibilityRole="button" accessibilityState={{selected:categoryFilter===category}} onPress={()=>setCategoryFilter(categoryFilter===category?'':category)} style={{padding:8,borderRadius:8,borderWidth:1,borderColor:categoryFilter===category?GOLD:'#444'}}><Text style={{color:categoryFilter===category?GOLD:'#DDD',fontSize:12}}>{category}</Text></Pressable>)}
+      </View>:null}
       {matches.map(p=><Pressable key={p.id} onPress={()=>add(p)} style={{padding:11,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:10}}>
         <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{p.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{p.trackStock?'المتوفر: '+p.stock:'خدمة بدون مخزون'} • {money(p.salePrice)}</Text></View>
         <Text style={{color:GOLD,fontWeight:'900'}}>+ أضف</Text>
       </Pressable>)}
-      {!!term.trim()&&matches.length===0&&<Text style={{color:'#999',padding:10}}>ما لقيناش منتج بهاد الاسم.</Text>}
+      {!!term.trim()&&matches.length===0&&<Text style={{color:'#999',padding:10}}>ما لقيناش منتج بهاد الاسم أو الفلتر المختار.</Text>}
       {products.length===0&&<Text style={{color:'#999',padding:10}}>زيد المنتجات أولاً من قسم المنتجات.</Text>}{products.length>0&&mapped.length===0&&<Text style={{color:'#999',padding:10}}>ما كايناش منتجات أو نسخ نشطة للبيع.</Text>}
     </View>
     {parkedCarts.length>0?<View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#6A542A'}}>
