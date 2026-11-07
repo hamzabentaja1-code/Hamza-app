@@ -66,6 +66,16 @@ export function applyVariantStockMovement(
   if (!['opening','purchase','sale','delivery','return_in','return_out','adjustment','stock_count'].includes(movement.kind)) throw new Error('نوع حركة النسخة غير صالح');
   if ((movement.kind === 'sale' || movement.kind === 'delivery' || movement.kind === 'return_out') && movement.quantityDelta > 0) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
   if (!['sale','delivery','return_out','adjustment','stock_count'].includes(movement.kind) && movement.quantityDelta < 0) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
+  const warehouseId = movement.warehouseId?.trim();
+  if (warehouseId) {
+    const warehouseHistory = history.filter(item => item.variantId === variant.id && variantMovementWarehouseId(item) === warehouseId);
+    const warehouseBalance = warehouseHistory.length
+      ? warehouseHistory.reduce((sum, item) => sum + item.quantityDelta, 0)
+      : warehouseId === DEFAULT_VARIANT_WAREHOUSE_ID && history.every(item => item.variantId !== variant.id)
+        ? variant.stockQty
+        : 0;
+    if (warehouseBalance + movement.quantityDelta < 0) throw new Error('مخزون النسخة غير كافٍ في هذا المخزن');
+  }
   const nextQty = variant.stockQty + movement.quantityDelta;
   if (nextQty < 0) throw new Error('مخزون النسخة غير كافٍ');
   return {
