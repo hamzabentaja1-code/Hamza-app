@@ -1,11 +1,11 @@
-import React, {useContext, useMemo, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useState} from 'react';
 import {Alert, Image, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
-import {addPosLine, emptyPosCart, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
+import {addPosLine, emptyPosCart, findPosProduct, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
 import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
-type Product = {id:number; name:string; price:number; qty:number; photoData?:string; kind?:'product'|'service'};
+type Product = {id:number; name:string; price:number; qty:number; photoData?:string; kind?:'product'|'service';reference?:string;barcode?:string};
 type ProductVariant = {id:string;productId:number;attributes:Record<string,string>;stockQty:number;costPriceCentimes?:number;salePriceCentimes?:number;active:boolean};
 type Customer = {id:number; name:string};
 type ParkedCart = {id:string;createdAt:string;cart:PosCart};
@@ -19,12 +19,12 @@ type Props = {
   onPark: (cart:PosCart)=>void;
   onResume: (id:string)=>PosCart|undefined;
   onDeleteParked: (id:string)=>void;
-  onCheckout: (data:{customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'; total:number})=>boolean|void;
+  onCheckout: (data:{customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'; total:number})=>boolean|void;\n  onScanBarcode:()=>void;\n  scannedBarcode:string;\n  onBarcodeConsumed:()=>void;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PosWorkspace({products,customers,variants,bankAccountName,parkedCarts,onPark,onResume,onDeleteParked,onCheckout}:Props){
+export default function PosWorkspace({products,customers,variants,bankAccountName,parkedCarts,onPark,onResume,onDeleteParked,onCheckout,onScanBarcode,scannedBarcode,onBarcodeConsumed}:Props){
   const language:AppLanguage=useContext(LanguageContext);
  const showAlert = (...args: Parameters<typeof Alert.alert>) => {
   const [title, message, buttons, options] = args;
@@ -40,12 +40,13 @@ export default function PosWorkspace({products,customers,variants,bankAccountNam
   const [method,setMethod]=useState<'cash'|'card'|'transfer'>('cash');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
-  const mapped:PosProduct[]=useMemo(()=>products.flatMap(p=>{const allVariants=variants.filter(v=>v.productId===p.id);const variantsForProduct=allVariants.filter(v=>v.active);if(!allVariants.length)return [{id:String(p.id),productId:p.id,name:p.name,salePrice:p.price,stock:p.qty,trackStock:p.kind!=='service'}];if(!variantsForProduct.length)return [];return variantsForProduct.map(v=>({id:String(p.id)+'::'+v.id,productId:p.id,variantId:v.id,variantLabel:Object.values(v.attributes).join(' / '),name:p.name+' • '+Object.values(v.attributes).join(' / '),salePrice:v.salePriceCentimes===undefined?p.price:v.salePriceCentimes/100,stock:v.stockQty,trackStock:true}));}),[products,variants]);
-  const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>p.name.toLocaleLowerCase().includes(q)).slice(0,8);},[mapped,term]);
+  const mapped:PosProduct[]=useMemo(()=>products.flatMap(p=>{const allVariants=variants.filter(v=>v.productId===p.id);const variantsForProduct=allVariants.filter(v=>v.active);if(!allVariants.length)return [{id:String(p.id),productId:p.id,name:p.name,reference:p.reference,barcode:p.barcode,salePrice:p.price,stock:p.qty,trackStock:p.kind!=='service'}];if(!variantsForProduct.length)return [];return variantsForProduct.map(v=>({id:String(p.id)+'::'+v.id,productId:p.id,variantId:v.id,variantLabel:Object.values(v.attributes).join(' / '),name:p.name+' • '+Object.values(v.attributes).join(' / '),reference:p.reference,barcode:p.barcode,salePrice:v.salePriceCentimes===undefined?p.price:v.salePriceCentimes/100,stock:v.stockQty,trackStock:true}));}),[products,variants]);
+  const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>p.name.toLocaleLowerCase().includes(q)||p.barcode?.toLocaleLowerCase()===q||p.reference?.toLocaleLowerCase()===q).slice(0,8);},[mapped,term]);
   const discount=Number(discountText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:0};
   const totals=posTotals(currentCart);
   const add=(p:PosProduct)=>{try{setCart(old=>addPosLine(old,p));setTerm('');}catch(e){showAlert('المخزون غير كافٍ',e instanceof Error?e.message:'تعذر إضافة المنتج');}};
+  useEffect(()=>{if(!scannedBarcode)return;const found=findPosProduct(mapped,scannedBarcode);if(found)add(found);else setTerm(scannedBarcode);onBarcodeConsumed();},[scannedBarcode,mapped]);
   const changeQty=(productId:string,delta:number)=>{setCart(old=>({...old,lines:old.lines.map(line=>line.productId===productId?{...line,quantity:line.quantity+delta}:line).filter(line=>line.quantity>0)}));};
   const remove=(productId:string)=>setCart(old=>({...old,lines:old.lines.filter(line=>line.productId!==productId)}));
   const park=()=>{if(!currentCart.lines.length){showAlert('السلة فارغة','زيد منتجاً واحداً على الأقل قبل تعليق البيع.');return;}onPark(currentCart);setCart(emptyPosCart());setDiscountText('0');setCustomerId('');setMethod('cash');};
@@ -68,7 +69,7 @@ export default function PosWorkspace({products,customers,variants,bankAccountNam
     </View>
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>البحث عن منتج</Text>
-      <TextInput value={term} onChangeText={setTerm} placeholder="اسم المنتج..." placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'right'}}/>
+      <View style={{flexDirection:'row',gap:8,alignItems:'center'}}><TextInput value={term} onChangeText={setTerm} placeholder="اسم المنتج أو الباركود..." placeholderTextColor="#888" style={{flex:1,backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'right'}}/><Pressable accessibilityLabel="مسح باركود المنتج" onPress={onScanBarcode} style={{backgroundColor:'#302819',borderWidth:1,borderColor:GOLD,borderRadius:9,padding:12}}><Text style={{color:GOLD,fontWeight:'900'}}>▦ مسح</Text></Pressable></View>
       {matches.map(p=><Pressable key={p.id} onPress={()=>add(p)} style={{padding:11,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:10}}>
         <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{p.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{p.trackStock?'المتوفر: '+p.stock:'خدمة بدون مخزون'} • {money(p.salePrice)}</Text></View>
         <Text style={{color:GOLD,fontWeight:'900'}}>+ أضف</Text>
