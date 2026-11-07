@@ -7,7 +7,7 @@ export function createCustomerOrder(input:Omit<CustomerOrder,'status'|'deliveryD
  if(!Number.isSafeInteger(input.id)||input.id<=0||!input.number.trim()||!input.customerName.trim()||!input.date)throw new Error('معلومات الطلب الأساسية غير صالحة');
  if(!Array.isArray(input.lines)||input.lines.length===0)throw new Error('الطلب خاصو يحتوي على سطر واحد على الأقل');
  const lines=input.lines.map(line=>{
-  if(!line.productName.trim()||!validQty(line.qty)||!Number.isFinite(line.unitPrice)||line.unitPrice<0)throw new Error('بيانات سطر الطلب غير صالحة');
+  if(!Number.isSafeInteger(line.productId)||line.productId<0||(line.variantId&&line.productId===0)||!line.productName.trim()||!validQty(line.qty)||!Number.isFinite(line.unitPrice)||line.unitPrice<0)throw new Error('بيانات سطر الطلب غير صالحة');
   if(!Number.isFinite(line.fulfilledQty)||line.fulfilledQty<0||line.fulfilledQty>line.qty)throw new Error('الكمية المسلمة غير صالحة');
   return {...line};
  });
@@ -45,7 +45,7 @@ export function changeCustomerOrderStatus(order:CustomerOrder,status:CustomerOrd
 }
 export function fulfillCustomerOrder(order:CustomerOrder,quantities:Record<string,number>,deliveryDocumentId:number):CustomerOrder{
  if(order.status!=='confirmed'&&order.status!=='partially_fulfilled')throw new Error('أكد الطلب قبل تسجيل التسليم');
- if(!Number.isSafeInteger(deliveryDocumentId)||deliveryDocumentId<=0||order.deliveryDocumentIds.includes(deliveryDocumentId))throw new Error('رقم سند التسليم غير صالح أو مكرر');
+ if(!Number.isSafeInteger(deliveryDocumentId)||deliveryDocumentId<=0||order.deliveryDocumentIds.includes(deliveryDocumentId)||order.invoiceDocumentIds.includes(deliveryDocumentId))throw new Error('رقم سند التسليم غير صالح أو مكرر');
  const lines=order.lines.map((line,index)=>{
   const key=String(index),qty=quantities[key]??0;
   if(!validQty(qty)&&qty!==0)throw new Error('كمية التسليم غير صالحة');
@@ -60,8 +60,10 @@ export function fulfillCustomerOrder(order:CustomerOrder,quantities:Record<strin
 export function linkCustomerOrderDocument(order:CustomerOrder,document:OrderDocumentLink):CustomerOrder{
  if(!Number.isSafeInteger(document.id)||document.id<=0)throw new Error('رقم الوثيقة غير صالح');
  if(document.sourceOrderId!==order.id)throw new Error('الوثيقة لا تخص هذا الطلب');
+ if(order.deliveryDocumentIds.includes(document.id)||order.invoiceDocumentIds.includes(document.id))throw new Error('الوثيقة مربوطة مسبقاً');
+ if(document.type==='delivery'&&(order.status==='draft'||order.status==='cancelled'))throw new Error('أكد الطلب قبل ربط سند التسليم');
+ if(document.type==='invoice'&&order.status!=='fulfilled')throw new Error('خاص جميع كميات الطلب تتسلم قبل إصدار الفاتورة.');
  const ids=document.type==='delivery'?order.deliveryDocumentIds:order.invoiceDocumentIds;
- if(ids.includes(document.id))throw new Error('الوثيقة مربوطة مسبقاً');
  if(document.type==='delivery')return {...order,deliveryDocumentIds:[...ids,document.id]};
  return {...order,invoiceDocumentIds:[...ids,document.id]};
 }
