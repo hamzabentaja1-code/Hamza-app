@@ -14,7 +14,7 @@ test('all primary workspaces use the shared accessible button wrapper', () => {
     assert.match(source, /const Pressable = AccessiblePressable/,
       file + ' must route Pressable controls through AccessiblePressable');
   }
-  for (const file of ['src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx']) {
+  for (const file of ['src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx', 'src/RecurringExpensesWorkspace.tsx']) {
     assert.match(read(file), /<AccessiblePressable\b/,
       file + ' must use accessible controls for interactive choices');
   }
@@ -22,7 +22,7 @@ test('all primary workspaces use the shared accessible button wrapper', () => {
 
 test('primary workspace text inputs use translated accessible labels', () => {
   for (const file of ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx',
-    'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx']) {
+    'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx', 'src/RecurringExpensesWorkspace.tsx']) {
     const source = read(file);
     assert.match(source, /TTextInput as TextInput/,
       file + ' must use the shared translated TextInput');
@@ -81,4 +81,15 @@ test('quote and POS removal buttons announce the affected product and action', (
   assert.match(pos, /accessibilityLabel=\{language===\x27AR\x27\?\x27حذف \x27\+line\.name:\x27Supprimer \x27\+line\.name\}/);
   assert.match(pos, /إزالة هذا المنتج من سلة البيع/);
   assert.match(pos, /Retirer ce produit du panier/);
+});
+
+test('field operations and recurring expense selectors announce selected state', () => {
+  const field = read('src/FieldOperationsWorkspace.tsx');
+  assert.match(field, /accessibilityState=\{\{selected:orderCustomer===String\(x\.id\)\}\}/);
+  assert.match(field, /accessibilityState=\{\{selected:orderTechnician===x\.id\}\}/);
+  assert.match(field, /accessibilityState=\{\{checked:selectedEquipment\.includes\(x\.id\)\}\}/);
+  assert.match(field, /accessibilityState=\{\{selected:timeOrder===x\.id\}\}/);
+  const recurring = read('src/RecurringExpensesWorkspace.tsx');
+  assert.match(recurring, /accessibilityState=\{\{selected:frequency===x\.id\}\}/);
+  assert.match(recurring, /accessibilityState=\{\{selected:projectId===String\(x\.id\)\}\}/);
 });
