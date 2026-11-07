@@ -47,7 +47,7 @@ test('bank workspace can import a CSV file selected from the phone',()=>{
 
 test('bank statement import fuzzy-matches a unique same-date same-amount description',()=>{
  const existing=[{id:'manual-credit',accountId:'bank-a',kind:'deposit',amountCentimes:50000,date:'2026-11-02T00:00:00.000Z',description:'Client transfer reference 001'}];
- const result=importBankStatement(existing,'bank-a','date;description;amount\\n2026-11-02;Client transfer;500.00');
+ const result=importBankStatement(existing,'bank-a','date;description;amount\n2026-11-02;Client transfer;500.00');
  assert.equal(result.imported,0);assert.equal(result.matched,1);assert.equal(result.movements.length,1);
 });
 test('bank statement import does not fuzzy-match ambiguous same-value candidates',()=>{
@@ -55,6 +55,6 @@ test('bank statement import does not fuzzy-match ambiguous same-value candidates
   {id:'manual-a',accountId:'bank-a',kind:'deposit',amountCentimes:50000,date:'2026-11-02T00:00:00.000Z',description:'Client transfer A'},
   {id:'manual-b',accountId:'bank-a',kind:'deposit',amountCentimes:50000,date:'2026-11-02T00:00:00.000Z',description:'Client transfer B'}
  ];
- const result=importBankStatement(existing,'bank-a','date;description;amount\\n2026-11-02;Client transfer;500.00');
+ const result=importBankStatement(existing,'bank-a','date;description;amount\n2026-11-02;Client transfer;500.00');
  assert.equal(result.imported,1);assert.equal(result.matched,0);assert.equal(result.movements.length,3);
 });
