@@ -1,5 +1,6 @@
-import React, {ReactNode, isValidElement} from 'react';
+import React, {ReactNode, isValidElement, useContext} from 'react';
 import {Pressable, PressableProps} from 'react-native';
+import {AppLanguage, LanguageContext, translateText} from './i18n';
 
 function readableLabel(node: ReactNode): string {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
@@ -14,8 +15,9 @@ function readableLabel(node: ReactNode): string {
 
 /** Shared screen-reader friendly button. Visible child text supplies its label. */
 export default function AccessiblePressable(props: PressableProps) {
+  const language: AppLanguage = useContext(LanguageContext);
   const childLabel = typeof props.children === 'function' ? '' : readableLabel(props.children);
-  const label = props.accessibilityLabel || childLabel || 'زر';
+  const label = props.accessibilityLabel || translateText(childLabel, language) || (language === 'AR' ? 'زر' : 'Bouton');
   return (
     <Pressable
       {...props}
