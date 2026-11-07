@@ -1196,6 +1196,13 @@ const fr: Record<string, string> = {
   "نسبة خصم مجموعة الأسعار غير صالحة": "Le taux de remise du groupe est invalide",
 
   "معلومات غير مكتملة": "Informations incomplètes",
+  "الكل": "Tous",
+  "مخزون منخفض": "Stock faible",
+  "نفد المخزون": "Rupture de stock",
+  "الخدمات": "Services",
+  "كل الأصناف": "Toutes les catégories",
+  "ترتيب: ": "Trier : ",
+  "لا توجد منتجات مطابقة للفلتر.": "Aucun produit ne correspond aux filtres.",
   "مسح الباركود": "Scanner le code-barres",
   "وجه الكاميرا نحو الرمز حتى يتم التعرف عليه": "Pointez la caméra vers le code pour le détecter",
   "إغلاق الماسح": "Fermer le scanner",
