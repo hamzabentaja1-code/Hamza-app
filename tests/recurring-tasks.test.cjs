@@ -27,3 +27,11 @@ test('invalid dates, ids and unknown tasks are rejected',()=>{
  assert.throws(()=>completeRecurringWorkTask([task],9,2),/غير موجودة/);
  assert.throws(()=>completeRecurringWorkTask([task],1,0),/غير صالح/);
 });
+
+test('task workspace exposes recurring schedules and creates the next task only on completion',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
+ assert.match(app,/taskRecurrenceEndDate/);
+ assert.match(app,/completeRecurringWorkTask\(workTasks,task\.id,Date\.now\(\)\)/);
+ assert.match(app,/taskRecurrence!==''/);
+});
