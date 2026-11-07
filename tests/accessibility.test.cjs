@@ -613,3 +613,21 @@ test('small footer text meets WCAG AA contrast against the dark app background',
   const contrast = (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
   assert.ok(contrast >= 4.5, 'footer text contrast must meet WCAG AA for normal text');
 });
+
+test('all literal Arabic alert titles and messages in app workspaces have French translations',()=>{
+ const fs=require('node:fs');const path=require('node:path');
+ const files=['App.tsx',...fs.readdirSync(path.join(__dirname,'..','src')).filter(name=>name.endsWith('Workspace.tsx')).map(name=>'src/'+name)];
+ const dictionary=fs.readFileSync(path.join(__dirname,'..','src','i18n.tsx'),'utf8');
+ const missing=[];
+ for(const file of files){
+  const source=fs.readFileSync(path.join(__dirname,'..',file),'utf8');
+  const pattern=/(?:showAlert|Alert\\.alert)\\(\\s*'([^']+)'(?:\\s*,\\s*'([^']+)')?/g;
+  let match;
+  while((match=pattern.exec(source))){
+   for(const value of match.slice(1).filter(Boolean)){
+    if(/[ء-ي]/.test(value)&&!dictionary.includes('"'+value.replace(/\\\\/g,'\\\\\\\\')+'"'))missing.push(file+': '+value);
+   }
+  }
+ }
+ assert.deepEqual(missing,[]);
+});
