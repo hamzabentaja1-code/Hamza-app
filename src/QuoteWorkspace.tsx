@@ -57,6 +57,13 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
     } catch { return null; }
   },[lines,discount]);
 
+  const updateLine=(index:number, patch:Partial<Pick<QuoteLine,'qty'|'unitPrice'>>)=>{
+    setLines(current=>current.map((line,i)=>{
+      if(i!==index) return line;
+      const next={...line,...patch};
+      return {...next,total:next.qty*next.unitPrice};
+    }));
+  };
   const addLine=()=>{
     const qty=Number(quantity.replace(',','.'));
     if(!selectedProduct){Alert.alert('اختار المنتج','حدد المنتج اللي بغيتي تزيد.');return;}
@@ -108,8 +115,14 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
       </View>
       <Text style={{color:gold,fontWeight:'800',marginVertical:8}}>المنتجات المضافة ({lines.length})</Text>
       {lines.map((line,index)=><View key={index} style={{flexDirection:'row',alignItems:'center',gap:8,borderBottomWidth:1,borderColor:'#333',paddingVertical:9}}>
-        <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{line.productName}</Text><Text style={{color:'#999',fontSize:12}}>{line.qty} × {line.unitPrice.toFixed(2)} DH</Text></View>
-        <Text style={{color:gold,fontWeight:'800'}}>{line.total.toFixed(2)} DH</Text>
+        <View style={{flex:1}}>
+          <Text style={{color:'#FFF',fontWeight:'700'}}>{line.productName}</Text>
+          <View style={{flexDirection:'row',gap:6,marginTop:6}}>
+            <TextInput value={String(line.qty)} onChangeText={v=>updateLine(index,{qty:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder="الكمية" placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
+            <TextInput value={String(line.unitPrice)} onChangeText={v=>updateLine(index,{unitPrice:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder="الثمن" placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
+          </View>
+        </View>
+        <Text style={{color:gold,fontWeight:'800'}}>{Number.isFinite(line.total)?line.total.toFixed(2):'—'} DH</Text>
         <Pressable onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
       </View>)}
       <TextInput value={discount} onChangeText={setDiscount} keyboardType="decimal-pad" placeholder="تخفيض إجمالي (DH)" placeholderTextColor="#888" style={[input,{marginTop:12}]}/>
