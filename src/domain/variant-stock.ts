@@ -13,7 +13,7 @@ export type ProductVariant = {
 export type VariantStockMovement = {
   id: string;
   variantId: string;
-  kind: 'opening' | 'purchase' | 'sale' | 'delivery' | 'return_in' | 'return_out' | 'adjustment' | 'stock_count';
+  kind: 'opening' | 'purchase' | 'sale' | 'delivery' | 'return_in' | 'return_out' | 'adjustment' | 'stock_count' | 'transfer_in' | 'transfer_out';
   quantityDelta: number;
   date: string;
   reference?: string;
@@ -63,9 +63,9 @@ export function applyVariantStockMovement(
   if (!validDate(movement.date) || !Number.isSafeInteger(movement.quantityDelta) || movement.quantityDelta === 0 || (movement.warehouseId !== undefined && !movement.warehouseId.trim())) throw new Error('تاريخ أو كمية حركة النسخة غير صالحة');
   const variant = variants.find(item => item.id === movement.variantId && item.active);
   if (!variant) throw new Error('النسخة غير موجودة أو غير نشطة');
-  if (!['opening','purchase','sale','delivery','return_in','return_out','adjustment','stock_count'].includes(movement.kind)) throw new Error('نوع حركة النسخة غير صالح');
-  if ((movement.kind === 'sale' || movement.kind === 'delivery' || movement.kind === 'return_out') && movement.quantityDelta > 0) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
-  if (!['sale','delivery','return_out','adjustment','stock_count'].includes(movement.kind) && movement.quantityDelta < 0) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
+  if (!['opening','purchase','sale','delivery','return_in','return_out','adjustment','stock_count','transfer_in','transfer_out'].includes(movement.kind)) throw new Error('نوع حركة النسخة غير صالح');
+  if ((movement.kind === 'sale' || movement.kind === 'delivery' || movement.kind === 'return_out' || movement.kind === 'transfer_out') && movement.quantityDelta > 0) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
+  if (!['sale','delivery','return_out','transfer_out','adjustment','stock_count'].includes(movement.kind) && movement.quantityDelta < 0) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
   const warehouseId = movement.warehouseId?.trim();
   if (warehouseId) {
     const warehouseHistory = history.filter(item => item.variantId === variant.id && variantMovementWarehouseId(item) === warehouseId);
@@ -176,4 +176,54 @@ export function variantWarehouseBalances(
     warehouseName: warehouse.name,
     quantity: variantWarehouseBalance(variantId, movements, warehouse.id),
   }));
+}
+
+
+export type VariantWarehouseTransferInput = {
+  id: string;
+  variantId: string;
+  fromWarehouseId: string;
+  toWarehouseId: string;
+  quantity: number;
+  date: string;
+  reference?: string;
+  note?: string;
+};
+
+/** Creates a paired, atomic transfer while preserving the variant's aggregate stock. */
+export function transferVariantStockBetweenWarehouses(
+  variants: ProductVariant[],
+  history: VariantStockMovement[],
+  input: VariantWarehouseTransferInput,
+): {variants: ProductVariant[]; movements: [VariantStockMovement, VariantStockMovement]} {
+  if (!input.id.trim() || !input.fromWarehouseId.trim() || !input.toWarehouseId.trim() ||
+      input.fromWarehouseId === input.toWarehouseId || !Number.isSafeInteger(input.quantity) ||
+      input.quantity <= 0 || !validDate(input.date)) {
+    throw new Error('بيانات تحويل مخزون النسخة غير صالحة');
+  }
+  if (history.some(item => item.id === input.id + ':out' || item.id === input.id + ':in')) {
+    throw new Error('تحويل مخزون النسخة مسجل من قبل');
+  }
+  const source: VariantStockMovement = {
+    id: input.id + ':out', variantId: input.variantId, kind: 'transfer_out',
+    quantityDelta: -input.quantity, date: input.date, warehouseId: input.fromWarehouseId,
+    reference: input.reference, note: input.note,
+  };
+  const destination: VariantStockMovement = {
+    id: input.id + ':in', variantId: input.variantId, kind: 'transfer_in',
+    quantityDelta: input.quantity, date: input.date, warehouseId: input.toWarehouseId,
+    reference: input.reference, note: input.note,
+  };
+  const afterSource = applyVariantStockMovement(variants, source, history);
+  const afterDestination = applyVariantStockMovement(
+    afterSource.variants, destination, [...history, afterSource.movement],
+  );
+  if (afterDestination.variants.find(item => item.id === input.variantId)?.stockQty !==
+      variants.find(item => item.id === input.variantId)?.stockQty) {
+    throw new Error('تحويل المخزون يجب أن يحافظ على الكمية الإجمالية');
+  }
+  return {
+    variants: afterDestination.variants,
+    movements: [afterSource.movement, afterDestination.movement],
+  };
 }
