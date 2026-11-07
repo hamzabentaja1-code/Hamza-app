@@ -1196,6 +1196,11 @@ const fr: Record<string, string> = {
   "نسبة خصم مجموعة الأسعار غير صالحة": "Le taux de remise du groupe est invalide",
 
   "معلومات غير مكتملة": "Informations incomplètes",
+  "تصدير التقرير Excel (XLSX)": "Exporter le rapport Excel (XLSX)",
+  "تعذر تصدير Excel": "Impossible d’exporter Excel",
+  "ما قدرناش نوجدوا ملف Excel للمشاركة.": "Impossible de préparer le fichier Excel pour le partage.",
+  "تصدير التقرير CSV": "Exporter le rapport CSV",
+  "تصدير التقرير PDF": "Exporter le rapport PDF",
   "حجم الملف غير صالح": "Taille de fichier invalide",
   "الحد الأقصى لحجم المستند هو 4 MB.": "La taille maximale d’un document est de 4 Mo.",
   "تعذر إرفاق المستند": "Impossible de joindre le document",
