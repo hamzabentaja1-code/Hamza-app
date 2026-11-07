@@ -34,7 +34,7 @@ export function calculateSupplierReturn(
     throw new Error('بيانات المرتجع غير صالحة');
   }
   const amountCentimes = Math.round(input.qty * purchase.unitCost * 100);
-  if (!Number.isSafeInteger(amountCentimes) || amountCentimes <= 0) {
+  if (!Number.isSafeInteger(amountCentimes) || amountCentimes < 0) {
     throw new Error('قيمة المرتجع غير صالحة');
   }
   return {
