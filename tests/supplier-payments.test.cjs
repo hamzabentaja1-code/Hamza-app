@@ -25,3 +25,17 @@ test('supplier payment reversal restores the outstanding amount', () => {
 test('supplier payment reversal cannot exceed paid amount', () => {
   assert.throws(() => reverseSupplierPayment({ total: 100, paidCentimes: 2000 }, 2001), /عكس الأداء/);
 });
+
+test('supplier payment allocation accounts for supplier returns', () => {
+  const result = allocateSupplierPayment(
+    { total: 100, paidCentimes: 2000, returnedCentimes: 3000 },
+    4000,
+  );
+  assert.deepEqual(result, { paidCentimes: 6000, remainingCentimes: 1000 });
+});
+test('supplier return credit prevents payment beyond net purchase value', () => {
+  assert.throws(() => allocateSupplierPayment(
+    { total: 100, paidCentimes: 8000, returnedCentimes: 3000 },
+    1,
+  ), /الأداء أكبر/);
+});
