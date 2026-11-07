@@ -1,4 +1,5 @@
 name: Verify HamZa code without APK build
+# This workflow intentionally validates source only and never builds an APK.
 
 on:
   push:
