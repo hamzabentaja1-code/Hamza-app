@@ -149,7 +149,7 @@ test('dynamic product, quote, POS and agenda labels have French translations', (
 test('primary screens have no untranslated static Arabic labels', () => {
   const files = ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx',
     'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx',
-    'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx', 'src/AccessiblePressable.tsx', 'src/ChequeWorkspace.tsx', 'src/VariantWorkspace.tsx', 'src/UserAccessWorkspace.tsx'];
+    'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx', 'src/AccessiblePressable.tsx', 'src/ChequeWorkspace.tsx', 'src/VariantWorkspace.tsx', 'src/UserAccessWorkspace.tsx', 'src/ContactHistoryWorkspace.tsx'];
   const dictionary = read('src/i18n.tsx');
   const keys = new Set([...dictionary.matchAll(/^\s*"((?:[^"\\]|\\.)*)"\s*:/gm)].map(match => match[1]));
   for (const file of files) {
@@ -534,4 +534,15 @@ test('variants with stock cannot be archived and restored stocked variants are r
   assert.match(app, /active:variant\.stockQty>0\?true:variant\.active!==false/);
   assert.match(app, /createdVariant\.stockQty>0\?\{\.\.\.createdVariant,active:true\}:createdVariant/);
   assert.match(app, /movement\.quantityDelta>0\?\{\.\.\.v,active:true\}:v/);
+});
+
+
+test('contact history is persisted, accessible and attributed to the selected contact', () => {
+  const app = read('App.tsx');
+  const workspace = read('src/ContactHistoryWorkspace.tsx');
+  assert.match(app, /contactInteractions/);
+  assert.match(app, /createContactInteraction\(input\)/);
+  assert.match(workspace, /accessibilityState=\{\{selected:/);
+  assert.match(workspace, /filterContactInteractions\(entries/);
+  assert.match(workspace, /onDelete\(entry\.id\)/);
 });
