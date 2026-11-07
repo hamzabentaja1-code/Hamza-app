@@ -591,9 +591,9 @@ export default function App() {
   };
   const addExpense=()=>{const a=Number(expenseAmount.replace(',','.'));const projectId=expenseProjectId?Number(expenseProjectId):undefined;if(!expenseTitle.trim()||!Number.isFinite(a)||a<=0||(projectId!==undefined&&!projects.some(p=>p.id===projectId))){showAlert('معلومات ناقصة','دخل وصف المصروف ومبلغ صحيح واختار مشروعاً صالحاً إن وجد.');return;}const record:Expense={id:Date.now(),title:expenseTitle.trim(),amount:a,date:new Date().toLocaleDateString('fr-MA'),category:expenseCategory.trim()||undefined,projectId};setExpenses(v=>[record,...v]);logActivity('تسجيل مصروف',record.title+' • '+record.amount.toFixed(2)+' DH');setExpenseTitle('');setExpenseAmount('');setExpenseCategory('');setExpenseProjectId('');};
   const addQuote=()=>{const p=products.find(x=>String(x.id)===quoteProduct);const c=customers.find(x=>String(x.id)===quoteCustomer);const q=Number(quoteQty);if(!p||!c||!Number.isInteger(q)||q<1){showAlert('معلومات ناقصة','اختار المنتج والزبون والكمية.');return;}const x:Quote={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,date:new Date().toLocaleDateString('fr-MA'),status:'معلق'};setQuotes(v=>[x,...v]);setQuoteQty('1');showAlert('تم حفظ عرض السعر',`${x.total.toFixed(2)} DH`);};
-  const convertQuote=(quote:Quote,type:QuoteConversionType)=>{
+  const convertQuote=(quote:Quote,type:QuoteConversionType,applyConfiguredInvoicePricing=true)=>{
     let conversionQuote=quote;
-    if(type==='invoice'){try{conversionQuote=applyInvoicePriceRules(quote,products);}catch(error){showAlert('ثمن الفاتورة غير صالح',error instanceof Error?error.message:'راجع أثمنة الفاتورة.');return;}}
+    if(type==='invoice'&&applyConfiguredInvoicePricing){try{conversionQuote=applyInvoicePriceRules(quote,products);}catch(error){showAlert('ثمن الفاتورة غير صالح',error instanceof Error?error.message:'راجع أثمنة الفاتورة.');return;}}
     const stockAlreadyDeducted=documents.some(d=>d.sourceQuoteId===quote.id&&(d.type==='invoice'||d.type==='delivery'));
     const trackedQuoteLines=conversionQuote.lines?.filter(line=>line.trackStock!==false)||[];
     if((type==='invoice'||type==='delivery')&&!stockAlreadyDeducted&&trackedQuoteLines.length){
@@ -697,7 +697,7 @@ export default function App() {
     if(order.status!=='fulfilled'){showAlert('الطلب غير جاهز','خاص جميع كميات الطلب تتسلم قبل إصدار الفاتورة.');return;}
     const quote=quotes.find(item=>item.id===order.sourceQuoteId);
     if(!quote){showAlert('تعذر إصدار الفاتورة','عرض السعر الأصلي غير موجود.');return;}
-    const created=convertQuote(quote,'invoice');
+    const created=convertQuote(quote,'invoice',false);
     if(created){try{const linked=linkCustomerOrderDocument(order,{id:created.id,type:'invoice',sourceOrderId:order.id});setCustomerOrders(current=>current.map(item=>item.id===order.id?linked:item));}catch(error){showAlert('الفاتورة صدرت لكن تعذر ربطها بالطلب',error instanceof Error?error.message:'راجع سجل الطلب.');}}
   };
   const addPayment=()=>{
