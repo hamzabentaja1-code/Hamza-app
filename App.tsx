@@ -195,7 +195,7 @@ export default function App() {
       }
       setInventoryMovements(nextMovements);
     }catch(error){showAlert('تعذر استيراد المخزون',error instanceof Error?error.message:'راجع كميات المنتجات المستوردة.');return;}
-    setProducts(current=>[...imported,...current]);setProductBulkText('');
+    setProducts(current=>[...imported,...current]);setProductCategories(current=>[...new Set([...current,...imported.map(p=>p.category).filter((x):x is string=>!!x)])]);setProductBrands(current=>[...new Set([...current,...imported.map(p=>p.brand).filter((x):x is string=>!!x)])]);setProductBulkText('');
     showAlert('تم الاستيراد',`تزادو ${imported.length} منتج. الأسطر المرفوضة أو المكررة: ${rejected}.`);
   };
   const exportProductsCsv=async()=>{
