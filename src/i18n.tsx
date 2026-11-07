@@ -803,7 +803,6 @@ const fr: Record<string, string> = {
   "تسجيل شراء": "Enregistrement d’un achat",
   "إصدار فاتورة": "Émission d’une facture",
   "إصدار سند خروج": "Émission d’un bon de sortie",
-  "تسجيل أداء زبون": "Enregistrement d’un paiement client",
   "تسجيل مصروف": "Enregistrement d’une dépense",
 
 };
