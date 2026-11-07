@@ -1243,6 +1243,7 @@ const fr: Record<string, string> = {
   "الأقسام المختارة فقط هي التي ستظهر في التقرير PDF وCSV وExcel. الإعدادات محفوظة على الهاتف.": "Seules les sections sélectionnées apparaîtront dans les rapports PDF, CSV et Excel. Les paramètres sont enregistrés sur le téléphone.",
   "ملخص الفترة الحالية": "Résumé de la période actuelle",
   "فئات المعدات": "Catégories d’équipement",
+  "حذف فئة ": "Supprimer la catégorie ",
   "اسم فئة جديدة": "Nom de la nouvelle catégorie",
   "إضافة فئة": "Ajouter une catégorie",
   "بدون فئة": "Sans catégorie",
