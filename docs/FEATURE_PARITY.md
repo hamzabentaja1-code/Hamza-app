@@ -20,7 +20,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Local user profiles, owner/admin/sales/warehouse/accountant/viewer roles, custom module allow-lists, read-only screen gating, active-profile switching, per-action activity attribution and backup persistence
 - [ ] PIN/password authentication and server-side authorization (current profiles are not a security boundary on a shared/unlocked device)
 - [x] Arabic/French static label coverage and language preference persistence across primary workspaces
-- [ ] Full dynamic-message localization audit and selectable light/dark theme (shared longest-fragment translation helper is implemented and unit-tested; root layout direction now switches RTL for Arabic and LTR for French)
+- [ ] Remaining non-alert dynamic-message localization audit and selectable light/dark theme (alert titles/messages now have automated French-coverage checks across 13 primary workspaces; other dynamic UI text and theme remain open)
 - [ ] Document templates and custom fields
 - [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
 - [x] Serialized local-storage writes to prevent overlapping state saves from overwriting newer snapshots
@@ -84,7 +84,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Partial customer returns with optional restocking and net sales/profit adjustment
 - [x] Quote validity dates, accepted/rejected statuses, expired quote handling and confirmed deletion
 - [x] Proforma invoices can be created from quotes with their own number series and do not deduct stock
-- [ ] Customer orders and automatic reminders
+- [ ] Customer order lifecycle
+- [x] Automatic due-date reminders for unpaid invoices, supplier obligations and recurring expenses (local OS notifications, permission-gated)
 - [x] Numbered credit-note PDF records are generated for partial customer returns; automatic invoice allocation remains pending
 - [x] Configurable document numbering for quotes, invoices, delivery notes and purchase orders
 - [ ] Advanced fees, document sections and in-document barcode entry
@@ -118,7 +119,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Automated due-date reminders for unpaid invoices and supplier obligations
 - [x] Manual statement-balance reconciliation with stored difference and adjustment entry
 - [x] Pasted CSV bank statement import with exact matching against existing ledger rows and idempotent duplicate protection
-- [ ] Native bank file selection and fuzzy/automatic transaction matching beyond exact matches
+- [x] Native Android file selection for CSV bank statements
+- [x] Conservative fuzzy bank-statement matching by account, date, direction and amount; only unique high-confidence description matches are auto-linked, while ambiguous candidates remain unmatched
 
 ### POS
 - [x] Product name search and stock-aware cart with quantity controls
