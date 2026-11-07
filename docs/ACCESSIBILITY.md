@@ -8,7 +8,7 @@
 - Button accessibility hints are translated with the selected app language.
 - A control's visible child text is used as its screen-reader label; callers can override it with `accessibilityLabel`.
 - Disabled state is exposed to assistive technology.
-- Product, customer, POS payment-method, bank movement-type and bank-transfer destination choices expose their selected state.
+- Product, customer, POS payment-method, bank movement-type and bank-transfer destination choices expose their selected state. Warehouse selectors, technician/customer/equipment selections, time-entry selectors, recurring-expense frequency/project choices and agenda event actions use the same accessible controls.
 - Expense project assignment, return restocking mode, project status, task project/priority, and payment customer/document/method choices expose selected state.
 - Image-only product preview controls and the language switch have explicit labels.
 - Quote-line and POS-cart removal actions announce the affected product and explain the removal action in Arabic or French.
@@ -18,7 +18,7 @@
 
 ## Automated regression coverage
 
-The static accessibility regression suite (tests/accessibility.test.cjs) checks that the primary workspaces use the shared accessible controls and translated text inputs, and that selected states and translated hints remain wired into the wrappers. It is included in the normal test:quote script.
+The static accessibility regression suite (tests/accessibility.test.cjs) checks that the primary workspaces use the shared accessible controls and translated text inputs, and that selected states and translated hints remain wired into the wrappers across warehouse, bank, field operations, recurring expenses and agenda workspaces. It is included in the normal test:quote script.
 
 ## Device verification still required
 
