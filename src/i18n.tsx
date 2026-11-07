@@ -1295,6 +1295,10 @@ const fr: Record<string, string> = {
   "نوع العمل: ": "Type de travail : ",
   "ما كاين حتى تقني عندو صلاحية لهذا النوع من العمل.": "Aucun technicien n’est autorisé pour ce type de travail.",
   "التقني غير مخول لهذا النوع من الأعمال": "Le technicien n’est pas autorisé pour ce type de travail.",
+  "RC": "RC",
+  "IF": "IF",
+  "بريد": "E-mail",
+  "Email: ": "E-mail : ",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
