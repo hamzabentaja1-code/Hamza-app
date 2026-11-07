@@ -1,6 +1,7 @@
 import React, {useMemo, useState} from 'react';
 import {View, ScrollView, StyleSheet, Alert, Text, TextInput, Pressable} from 'react-native';
 import {ContactInteraction, ContactInteractionKind, ContactType, filterContactInteractions} from './domain/contact-history';
+import {getLayoutDirection} from './i18n';
 
 type Contact={id:number;name:string};
 type Props={
@@ -34,7 +35,7 @@ export default function ContactHistoryWorkspace({customers,suppliers,entries,onA
   {text:t.cancel,style:'cancel'},
   {text:t.delete,style:'destructive',onPress:()=>onDelete(entry.id)}
  ]);
- return <ScrollView contentContainerStyle={s.body}>
+ return <ScrollView style={{direction:getLayoutDirection(language)}} contentContainerStyle={[s.body,{direction:getLayoutDirection(language)}]}>
   <View style={s.panel}>
    <Text style={s.title}>{t.title}</Text>
    <View style={s.row}>

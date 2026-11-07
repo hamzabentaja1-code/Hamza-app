@@ -1,7 +1,7 @@
 import React, {useMemo, useState} from 'react';
 import {Alert, Image, Pressable, Text, TextInput, View} from 'react-native';
 import {addPosLine, emptyPosCart, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
-import {translate} from './i18n';
+import {translate, getLayoutDirection} from './i18n';
 
 type Product = {id:number; name:string; price:number; qty:number; photoData?:string};
 type Customer = {id:number; name:string};
@@ -41,14 +41,14 @@ export default function PosWorkspace({language,products,customers,onCheckout}:Pr
       {text:tr('تأكيد'),onPress:()=>{const accepted=onCheckout({customerName:name,lines,paymentMethod:method,total:totals.total});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');}}
     ]);
   };
-  return <View style={{gap:12}}>
+  return <View style={{gap:12,direction:getLayoutDirection(language)}}>
     <View style={{backgroundColor:'#211D14',borderColor:'#5D4A25',borderWidth:1,borderRadius:14,padding:14}}>
       <Text style={{color:GOLD,fontSize:19,fontWeight:'900'}}>{tr('نقطة البيع POS')}</Text>
       <Text style={{color:'#DDD',marginTop:5}}>{tr('قلب على المنتج بالاسم، زيدو للسلة، وكمّل البيع.')}</Text>
     </View>
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>{tr('البحث عن منتج')}</Text>
-      <TextInput value={term} onChangeText={setTerm} placeholder={tr('اسم المنتج...')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'right'}}/>
+      <TextInput value={term} onChangeText={setTerm} placeholder={tr('اسم المنتج...')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto'}}/>
       {matches.map(p=><Pressable key={p.id} onPress={()=>add(p)} style={{padding:11,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:10}}>
         <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{p.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{tr('المتوفر:')} {p.stock} • {money(p.salePrice)}</Text></View>
         <Text style={{color:GOLD,fontWeight:'900'}}>{tr('+ أضف')}</Text>

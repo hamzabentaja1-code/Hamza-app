@@ -1,7 +1,7 @@
 import React, {useMemo, useState} from 'react';
 import {Alert, Pressable, ScrollView, Text, TextInput, View} from 'react-native';
 import {calculateQuote} from './domain/quote-calculator';
-import {translate} from './i18n';
+import {translate, getLayoutDirection} from './i18n';
 
 type Product = {id:number; name:string; price:number; qty:number};
 type Customer = {id:number; name:string};
@@ -24,7 +24,7 @@ type Props = {
 
 const gold='#D6AE55';
 const panel={backgroundColor:'#1B1B1B',padding:15,borderRadius:13,borderWidth:1,borderColor:'#444'} as const;
-const input={backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRadius:9,padding:11,color:'#FFF',marginBottom:9,textAlign:'right' as const};
+const input={backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRadius:9,padding:11,color:'#FFF',marginBottom:9,textAlign:'auto' as const};
 const button={backgroundColor:gold,borderRadius:9,padding:12,alignItems:'center' as const,marginTop:5};
 const choice={borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marginBottom:6};
 const active={borderColor:gold,backgroundColor:'#302819'};

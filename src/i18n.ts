@@ -1,4 +1,5 @@
 export type AppLanguage = 'AR' | 'FR';
+export type LayoutDirection = 'rtl' | 'ltr';
 
 const fr: Record<string, string> = {
   "الرئيسية": "Accueil",
@@ -129,7 +130,7 @@ const fr: Record<string, string> = {
   "مازال ما كاين حتى عرض سعر.": "Aucun devis pour le moment.",
   "إدخال جماعي للمنتجات": "Importation groupée de produits",
   "كل سطر منتج واحد، والفاصل هو ; أو Tab. الترتيب: الاسم؛ المرجع؛ الباركود؛ الصنف؛ ثمن الشراء؛ ثمن البيع؛ الكمية. ثمن الشراء والمرجع والباركود والصنف اختياريين، وثمن البيع والكمية ضروريين.": "Une ligne par produit, séparée par ; ou Tab. Ordre : nom ; référence ; code-barres ; catégorie ; prix d’achat ; prix de vente ; quantité. Le prix d’achat et les références sont facultatifs.",
-  "الاسم;المرجع;الباركود;الصنف;ثمن الشراء;ثمن البيع;الكمية\nRouteur;R-01;61100001;Réseau;150;220;5": "Nom;Référence;Code-barres;Catégorie;Prix achat;Prix vente;Quantité\nRouteur;R-01;61100001;Réseau;150;220;5",
+  "الاسم;المرجع;الباركود;الصنف;ثمن الشراء;ثمن البيع;الكمية\nRouteur;R-01;61100001;Réseau;150;220;5": "Nom;Référence;Code-barres;Catégorie;Prix d’achat;Prix de vente;Quantité\nRouteur;R-01;61100001;Réseau;150;220;5",
   "استيراد اللائحة وإضافة المنتجات": "Importer la liste et ajouter les produits",
   "تصدير لائحة المنتجات CSV": "Exporter la liste des produits CSV",
   "لائحة المنتجات": "Liste des produits",
@@ -207,9 +208,21 @@ const fr: Record<string, string> = {
   "شيك": "Chèque",
   "تعذر إضافة المنتج": "Impossible d’ajouter le produit",
   "الثمن": "Prix",
-  "معلق": "En attente"
+  "معلق": "En attente",
+  "الكمية:": "Quantité :",
+  "+ تسجيل المصروف": "+ Enregistrer la dépense",
+  "صدر نسخة JSON فيها المنتجات والزبناء والموردين والمبيعات والمشتريات والمصاريف والعروض والأداءات. خزن الملف فمكان آمن.": "Exportez une sauvegarde JSON contenant les produits, clients, fournisseurs, ventes, achats, dépenses, devis et paiements. Conservez le fichier en lieu sûr.",
+  "حل ملف النسخة الاحتياطية، نسخ المحتوى كامل، ولصقو هنا. الاسترجاع كيعوض البيانات الحالية.": "Ouvrez le fichier de sauvegarde, copiez tout son contenu et collez-le ici. La restauration remplacera les données actuelles.",
+  "المخزون غير كافٍ": "Stock insuffisant",
+  "تخفيض غير صالح": "Remise invalide",
+  "دخل تخفيض صحيح.": "Saisissez une remise valide.",
+  "راجع السلة": "Vérifiez le panier"
 };
 
 export function translate(language: AppLanguage, value: string): string {
   return language === 'FR' ? (fr[value] ?? value) : value;
+}
+
+export function getLayoutDirection(language: AppLanguage): LayoutDirection {
+  return language === 'AR' ? 'rtl' : 'ltr';
 }
