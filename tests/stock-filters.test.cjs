@@ -7,6 +7,7 @@ const products=[
  {id:4,name:'Installation',price:120,stock:0,kind:'service',category:'Service'},
 ];
 test('stock filters cover low, out-of-stock, services, category and barcode/reference search',()=>{
+ assert.deepEqual(filterStockProducts(products,{status:'in'}).map(x=>x.id),[1,2]);
  assert.deepEqual(filterStockProducts(products,{status:'low'}).map(x=>x.id),[2]);
  assert.deepEqual(filterStockProducts(products,{status:'out'}).map(x=>x.id),[3]);
  assert.deepEqual(filterStockProducts(products,{status:'services'}).map(x=>x.id),[4]);
