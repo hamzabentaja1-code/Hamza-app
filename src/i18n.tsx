@@ -1376,6 +1376,14 @@ const fr: Record<string, string> = {
   "رصيد دائن متبقٍ": "Crédit client restant",
   "رصيد دائن متبقٍ غير مستعمل: ": "Crédit client non imputé : ",
   "بحث عن المنتج بالاسم أو المرجع أو الباركود": "Rechercher un produit par nom, référence ou code-barres",
+  "إضافة رسوم أو خدمة خارج كتالوج المنتجات": "Ajouter des frais ou un service hors catalogue",
+  "وصف الرسوم أو الخدمة": "Description des frais ou du service",
+  "المبلغ DH": "Montant DH",
+  "إضافة رسوم": "Ajouter des frais",
+  "وصف الرسوم مطلوب": "Description des frais requise",
+  "كتب وصف الخدمة أو الرسوم الإضافية.": "Saisissez la description du service ou des frais supplémentaires.",
+  "مبلغ غير صالح": "Montant invalide",
+  "دخل مبلغاً أكبر من صفر.": "Saisissez un montant supérieur à zéro.",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
