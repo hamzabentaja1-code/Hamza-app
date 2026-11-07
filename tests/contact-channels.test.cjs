@@ -6,6 +6,10 @@ test('Moroccan phone numbers normalize to international WhatsApp and call URLs',
  assert.equal(contactChannelUrl('+212 6 12 34 56 78','call'),'tel:+212612345678');
  assert.equal(contactChannelUrl('00212612345678','whatsapp'),'https://wa.me/212612345678');
 });
+test('email contact URLs validate and produce mailto links',()=>{
+ assert.equal(contactChannelUrl('  hamza@example.com ','email'),'mailto:hamza@example.com');
+ assert.throws(()=>contactChannelUrl('bad-email','email'),/البريد الإلكتروني غير صالح/);
+});
 test('contact channel URL generation rejects short or oversized phone numbers',()=>{
  assert.throws(()=>contactChannelUrl('123','whatsapp'),/رقم الهاتف غير صالح/);
  assert.throws(()=>contactChannelUrl('1'.repeat(16),'call'),/رقم الهاتف غير صالح/);
