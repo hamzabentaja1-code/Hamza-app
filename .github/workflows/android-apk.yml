@@ -6,6 +6,10 @@ on:
     paths-ignore:
       - '.devcontainer/**'
       - '.github/workflows/**'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '.devcontainer/**'
   workflow_dispatch:
 
 permissions:
