@@ -661,3 +661,9 @@ test('quote section headings are non-stock zero-value lines preserved in documen
  const app=read('App.tsx');
  assert.match(app,/line\.lineType==='section'\?'── '\+line\.productName\+' ──'/);
 });
+
+test('quote editor refuses section-only documents',()=>{
+ const quote=read('src/QuoteWorkspace.tsx');
+ assert.match(quote,/!lines\.some\(line=>line\.lineType!=='section'\)/);
+ assert.match(quote,/زيد منتجاً أو رسماً إضافياً قبل حفظ العرض/);
+});
