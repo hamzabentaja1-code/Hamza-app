@@ -2,7 +2,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {summarizeSupplierInvoicePayments,addSupplierInvoicePayment,reverseSupplierInvoicePayment}=require('../.test-build/supplier-invoice-payments.js');
 const invoice={id:'inv-1',supplierId:'sup-1',totalCentimes:12550};
-const payment=(id,amount,method='cash')=>({id,invoiceId:invoice.id,supplierId:invoice.supplierId,amountCentimes:amount,date:'2026-11-07T10:00:00.000Z',method});
+const payment=(id,amount,method='cash')=>({id,invoiceId:invoice.id,supplierId:invoice.supplierId,amountCentimes:amount,date:'2026-11-07T10:00:00.000Z',method,bankAccountId:method==='bank'?'bank-1':undefined});
 test('summarizes unpaid, partial and fully paid supplier invoices in centimes',()=>{
  assert.deepEqual(summarizeSupplierInvoicePayments(invoice,[]),{invoiceId:'inv-1',totalCentimes:12550,paidCentimes:0,outstandingCentimes:12550,status:'unpaid'});
  const partial=addSupplierInvoicePayment(invoice,[],payment('p1',5000));
