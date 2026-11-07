@@ -122,6 +122,10 @@ const fr: Record<string, string> = {
   "تعذر تسجيل الأداء": "Impossible d’enregistrer le paiement",
   "تم تسجيل الأداء": "Paiement enregistré",
   "تعذر عكس الأداء": "Impossible d’annuler le paiement",
+  "تأكيد عكس الأداء": "Confirmer l’annulation du paiement",
+  "غادي يتلغى الأداء ويرجع يتزاد المبلغ للصندوق أو البنك حسب طريقة الأداء.": "Le paiement sera annulé et le montant sera recrédité à la caisse ou à la banque selon le mode de paiement.",
+  "إلغاء": "Annuler",
+  "عكس الأداء": "Annuler le paiement",
 
   "راجع بيانات الفاتورة.": "Vérifiez les données de la facture.",
   "فواتير الموردين": "Factures fournisseurs",
