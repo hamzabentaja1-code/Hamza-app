@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, ScrollView, StyleSheet} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import {TText as Text, TTextInput as TextInput} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 import {BankAccount} from './domain/banking';
@@ -51,7 +51,7 @@ export default function ChequeWorkspace({cheques,events,bankAccounts,onAdd,onTra
   const incoming=cheques.filter(x=>x.direction==='incoming');
   const outgoing=cheques.filter(x=>x.direction==='outgoing');
   const pending=cheques.filter(x=>!['cleared','cancelled'].includes(x.status));
-  return <ScrollView keyboardShouldPersistTaps="handled">
+  return <View>
     <View style={s.summary}>
       <Text style={s.summaryText}>الشيكات الواردة: {incoming.length} • الصادرة: {outgoing.length}</Text>
       <Text style={s.summaryText}>قيد المعالجة: {pending.length} • الحركات المسجلة: {events.length}</Text>
@@ -93,7 +93,7 @@ export default function ChequeWorkspace({cheques,events,bankAccounts,onAdd,onTra
       {event.note?<Text style={s.meta}>{event.note}</Text>:null}
     </View>;})}
     {events.length===0?<Text style={s.empty}>مازال ما تسجلات حتى حركة شيك.</Text>:null}
-  </ScrollView>;
+  </View>;
 }
 
 const s=StyleSheet.create({
