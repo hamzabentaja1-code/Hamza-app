@@ -73,7 +73,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Basic customer/supplier statement PDF exports from invoices, purchases and recorded payments
 - [x] One validated custom name/value field and one optional JPG/PNG/WebP image attachment can be saved on newly created customer/supplier contacts, shown in contact cards and preserved through JSON backup/restore
 - [x] Customer price groups support named active/disabled groups, 0–90% discounts, customer assignment, automatic quote-line pricing, and preservation of the group discount when configured invoice prices override quote prices
-- [ ] Multiple editable custom fields, saved-attachment gallery/preview/removal, non-image document attachments, and editing custom fields/attachments on existing contacts
+- [x] Multiple custom fields can be entered at contact creation as name=value lines; saved customer/supplier image attachments render thumbnails and can be removed individually
+- [ ] Edit existing contact details/custom fields, add multiple attachments after contact creation, non-image document attachments, and in-app image zoom/full-screen preview
 
 ### Sales documents
 - [x] Basic multi-product quotes with conversion to invoices and delivery notes; duplicate conversion is prevented
