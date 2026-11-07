@@ -53,10 +53,10 @@ export function transferStock(input: {
 }, movements: StockMovement[]): StockMovement[] {
   if (!input.id.trim()) throw new Error("معرف التحويل إجباري");
   if (input.fromWarehouseId === input.toWarehouseId) throw new Error("اختار مخزنين مختلفين");
+  if (movements.some(m => m.transferId === input.id)) throw new Error("هاد التحويل مسجل من قبل");
   if (movements.some(m => m.id === input.id + "-out" || m.id === input.id + "-in")) throw new Error("معرف التحويل مستعمل من قبل");
   const error = validateStockIssue(movements, input.productId, input.fromWarehouseId, input.quantity);
   if (error) throw new Error(error);
-  if (movements.some(m => m.transferId === input.id)) throw new Error("هاد التحويل مسجل من قبل");
   const common = { productId: input.productId, quantity: Math.abs(input.quantity), transferId: input.id, createdAt: input.createdAt, reference: input.reference };
   return [...movements,
     { ...common, id: input.id + "-out", warehouseId: input.fromWarehouseId, kind: "transfer_out" },
