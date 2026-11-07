@@ -1,5 +1,5 @@
 export type Technician={id:string;name:string;phone?:string;specialty?:string;hourlyRate:number;active:boolean};
-export type Equipment={id:string;name:string;reference?:string;serialNumber?:string;status:'available'|'assigned'|'maintenance';notes?:string};
+export type Equipment={id:string;name:string;category?:string;reference?:string;serialNumber?:string;status:'available'|'assigned'|'maintenance';notes?:string};
 export type WorkOrderStatus='requested'|'scheduled'|'in_progress'|'completed'|'cancelled';
 export type WorkOrderPriority='low'|'normal'|'high'|'urgent';
 export type WorkOrder={id:string;number:string;title:string;customerName:string;projectId?:number;description:string;status:WorkOrderStatus;priority:WorkOrderPriority;scheduledAt?:string;technicianId?:string;equipmentIds:string[];createdAt:string;notes?:string};
