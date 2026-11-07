@@ -1266,6 +1266,7 @@ const fr: Record<string, string> = {
   "اسم فئة المعدات مطلوب وأقصاه 48 حرفاً": "Le nom de la catégorie d’équipement est obligatoire et limité à 48 caractères",
   "فئة المعدات موجودة من قبل": "Cette catégorie d’équipement existe déjà",
 
+  "متوفر بالمخزون": "En stock",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
