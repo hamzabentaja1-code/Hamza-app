@@ -71,7 +71,8 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Cash, payments and banking
 - [x] Expenses with optional category, project association, PDF receipt and delete confirmation
 - [x] Recurring weekly/monthly/yearly expense rules, due-date generation, missed-period catch-up, duplicate prevention and pause/resume
-- [ ] Expense category dictionaries and OS push notifications
+- [x] Persistent custom expense category dictionary with quick selection and backup/restore support
+- [ ] OS push notifications for recurring expenses and due items
 - [x] Basic single-cashbox ledger with opening balance, cash income/expense entries, non-negative balance validation and PDF journal
 - [x] Cash POS checkouts are posted into the cash register ledger
 - [x] Multiple bank accounts with opening balances, deposits, withdrawals and account-level balances
