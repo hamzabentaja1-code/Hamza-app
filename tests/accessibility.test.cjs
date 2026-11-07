@@ -594,3 +594,19 @@ test('inventory history empty state is scoped to the active warehouse', () => {
   const app = read('App.tsx');
   assert.ok(app.includes("inventoryMovements.filter(m=>(m.warehouseId||DEFAULT_WAREHOUSE_ID)===activeWarehouseId).length===0&&<Text style={s.empty}>مازال ما تسجلات حتى حركة مخزون.</Text>"));
 });
+
+test('small footer text meets WCAG AA contrast against the dark app background', () => {
+  const app = read('App.tsx');
+  const footer = app.match(/footer:\{[^}]+\}/)?.[0] || '';
+  assert.match(footer, /color:'#999'/);
+  assert.match(footer, /fontSize:12/);
+  const luminance = (hex) => {
+    const rgb = hex.match(/[0-9A-Fa-f]{2}/g).map(value => parseInt(value, 16) / 255);
+    const linear = rgb.map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+  };
+  const foreground = luminance('999999');
+  const background = luminance('101010');
+  const contrast = (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
+  assert.ok(contrast >= 4.5, 'footer text contrast must meet WCAG AA for normal text');
+});
