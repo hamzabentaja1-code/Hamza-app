@@ -119,6 +119,19 @@ export function applyStockCount(count: StockCount, movements: StockMovement[]): 
       });
     }
   }
+  // Persist a zero-quantity marker when every counted line matches, so the
+  // same physical count cannot be applied repeatedly without changing stock.
+  if (adjustments.length === 0) {
+    const first = count.lines[0];
+    const id = count.id + "-verified";
+    if (ids.has(id)) throw new Error("معرف حركة الجرد مستعمل من قبل");
+    adjustments.push({
+      id, productId: first.productId, warehouseId: count.warehouseId,
+      kind: "adjustment", quantity: 0, stockCountId: count.id,
+      reference: count.reference ?? count.id, createdAt: count.createdAt,
+      note: "تأكيد جرد بلا فروقات",
+    });
+  }
   return [...movements, ...adjustments];
 }
 

@@ -61,3 +61,14 @@ test('stock count rejects duplicate products and negative or invalid counts', ()
     lines: [{ productId: 'p1', countedQuantity: -1 }],
   }, base), /صفر/);
 });
+
+test('a count with no differences is still recorded and cannot be replayed', () => {
+  const count = createStockCount({
+    id: 'count-empty-diff', warehouseId: 'w1', createdAt: '2026-02-02',
+    lines: [{ productId: 'p1', countedQuantity: 12 }],
+  }, base);
+  const next = applyStockCount(count, base);
+  assert.equal(warehouseStock(next, 'p1', 'w1'), 12);
+  assert.equal(next.filter(m => m.stockCountId === count.id).length, 1);
+  assert.throws(() => applyStockCount(count, next), /تطبق/);
+});
