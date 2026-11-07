@@ -18,3 +18,21 @@ test('reminder generation rejects invalid dates and horizons',()=>{
  assert.throws(()=>buildDueReminders({...base,today:'bad'}),/تاريخ التذكيرات/);
  assert.throws(()=>buildDueReminders({...base,horizonDays:0}),/نطاق التذكيرات/);
 });
+
+test('local reminders are opt-in, persisted and scheduled from invoice, supplier and recurring-expense due dates',()=>{
+ const fs=require('node:fs');const path=require('node:path');const root=path.join(__dirname,'..');
+ const app=fs.readFileSync(path.join(root,'App.tsx'),'utf8');
+ const service=fs.readFileSync(path.join(root,'src','local-notifications.ts'),'utf8');
+ const config=JSON.parse(fs.readFileSync(path.join(root,'app.json'),'utf8'));
+ const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
+ assert.ok(pkg.dependencies['expo-notifications']);
+ assert.ok(config.expo.plugins.some(plugin=>Array.isArray(plugin)&&plugin[0]==='expo-notifications'&&plugin[1].enableRemoteNotifications===false));
+ assert.match(app,/notificationsEnabled,setNotificationsEnabled/);
+ assert.match(app,/buildDueReminders\(/);
+ assert.match(app,/syncScheduledDueNotifications\(dueReminders\)/);
+ assert.match(app,/requestLocalNotificationPermission\(\)/);
+ assert.match(app,/cancelScheduledDueNotifications\(\)/);
+ assert.match(app,/createBackup\([\s\S]*?notificationsEnabled/);
+ assert.match(service,/scheduleNotificationAsync/);
+ assert.match(service,/cancelScheduledNotificationAsync/);
+});
