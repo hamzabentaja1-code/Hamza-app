@@ -37,8 +37,8 @@ test('contact custom fields and saved image gallery are integrated for customers
  const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
  assert.ok(app.includes('parseContactCustomFieldsText(customerCustomFieldsText'));
  assert.ok(app.includes('parseContactCustomFieldsText(supplierCustomFieldsText'));
- assert.ok(app.includes('x.attachments.map(file'));
- assert.ok(app.includes('c.attachments.map(file'));
+ assert.ok(app.includes("x.attachments.filter(file=>file.mimeType.startsWith('image/')).map(file"));
+ assert.ok(app.includes("c.attachments.filter(file=>file.mimeType.startsWith('image/')).map(file"));
  assert.ok(app.includes('removeContactAttachment'));
  assert.ok(app.includes('Image source={{uri:file.dataUri}}'));
  assert.ok(app.includes("openContactEditor('customer',c.id)"));
