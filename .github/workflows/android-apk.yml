@@ -22,7 +22,7 @@ concurrency:
 jobs:
   build:
     # Release APKs are only built on main or by an explicit manual dispatch after feature work is approved.
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/hamza-a11y-ci-validation'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
