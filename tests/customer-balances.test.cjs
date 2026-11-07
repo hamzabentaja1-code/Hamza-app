@@ -31,3 +31,29 @@ test('adds opening customer balances even when there are no invoices',()=>{
 test('rejects invalid customer opening balances',()=>{
  assert.throws(()=>calculateCustomerBalances([],[{customerName:'A',openingBalanceCentimes:-1}]),/invalid/);
 });
+
+test('applies customer credit notes oldest unpaid invoice first and retains unused credit',()=>{
+ const result=calculateCustomerBalances([
+  {type:'invoice',customerName:'Amina',total:100,paidCentimes:0,date:'2026-01-01'},
+  {type:'invoice',customerName:'Amina',total:80,paidCentimes:2000,date:'2026-02-01'},
+  {type:'invoice',customerName:'Youssef',total:50,paidCentimes:0,date:'2026-01-03'},
+ ],[],[
+  {id:1,customerName:'Amina',total:120,date:'2026-03-01'},
+  {id:2,customerName:'Amina',total:20,date:'2026-03-02'},
+ ]);
+ const amina=result.find(x=>x.customerName==='Amina');
+ assert.equal(amina.outstandingCentimes,2000);
+ assert.equal(amina.creditBalanceCentimes,0);
+ assert.equal(result.find(x=>x.customerName==='Youssef').outstandingCentimes,5000);
+});
+test('keeps credit notes as customer credit when no invoice is outstanding',()=>{
+ const result=calculateCustomerBalances([{type:'invoice',customerName:'Amina',total:25,paidCentimes:2500}],[],[
+  {customerName:'Amina',total:40,date:'2026-04-01'}
+ ]);
+ const amina=result[0];
+ assert.equal(amina.outstandingCentimes,0);
+ assert.equal(amina.creditBalanceCentimes,4000);
+});
+test('rejects invalid customer credit notes',()=>{
+ assert.throws(()=>calculateCustomerBalances([],[],[{customerName:'Amina',total:-1}]),/credit note is invalid/);
+});
