@@ -570,3 +570,16 @@ test('application root and contact editor modal follow Arabic RTL and French LTR
  assert.match(app,/<SafeAreaView style=\{\[s\.safe,\{direction:language==='AR'\?'rtl':'ltr'\}\]\}>/);
  assert.match(app,/direction:language==='AR'\?'rtl':'ltr'/);
 });
+
+test('stock count product selector has a single selected-state prop and announces its current balance', () => {
+  const app = read('App.tsx');
+  const start = app.indexOf("screen==='جرد وحركات المخزون'");
+  assert.notEqual(start, -1, 'stock count screen must exist');
+  const end = app.indexOf('</Pressable>', start);
+  assert.notEqual(end, -1, 'stock count product selector must close');
+  const selector = app.slice(start, end);
+  assert.equal((selector.match(/accessibilityState=/g) || []).length, 1,
+    'stock count selector must not define duplicate accessibilityState props');
+  assert.match(selector, /accessibilityLabel=\{\(language==='FR'\?'Produit ':'المنتج '\)/);
+  assert.match(selector, /inventoryBalanceForWarehouse\(inventoryMovements,p\.id,activeWarehouseId\)/);
+});
