@@ -92,7 +92,7 @@ appId: com.hamza.app
     direction: DOWN
     timeout: 10000
 - tapOn: "قلب على قسم..."
-- inputText: "المخزون"
+- inputText: "Stock"
 - tapOn: "المخزون"
 - assertVisible: "إضافة منتج جديد"
 - tapOn: "الرئيسية"
