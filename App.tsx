@@ -21,6 +21,7 @@ import {allocateSupplierPayment, reverseSupplierPayment} from './src/domain/supp
 import {calculateSupplierReturn, remainingSupplierReturnQuantity, SupplierReturnRecord} from './src/domain/supplier-returns';
 import {CashMovement, appendCashMovement, cashBalance} from './src/domain/cashbook';
 import {PurchaseOrder, createPurchaseOrder, receivePurchaseOrder, cancelPurchaseOrder} from './src/domain/purchase-orders';
+import {exceedsCustomerCreditLimit, calculatePaymentDueDate} from './src/domain/credit-limits';
 
 const GOLD = '#D6AE55';
 const htmlSafe=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
@@ -45,7 +46,7 @@ type SupplierPayment = {id:number; purchaseId:number; supplierName:string; amoun
 type Expense = {id:number; title:string; amount:number; date:string; projectId?:number; category?:string};
 type Supplier = {id:number; name:string; phone?:string; address?:string; ice?:string; openingBalanceCentimes?:number; creditLimitCentimes?:number; paymentTermsDays?:number};
 type Quote = QuoteRecord;
-type CommercialDocument = ConvertedDocument & {paidCentimes?:number};
+type CommercialDocument = ConvertedDocument & {paidCentimes?:number; dueDate?:string};
 type Payment = {id:number; customerName:string; amount:number; method:string; date:string; note:string; documentId?:number};
 type ProjectStatus = 'planned'|'active'|'completed'|'cancelled';
 type Project = {id:number; name:string; customerName:string; budget:number; spent:number; status:ProjectStatus; startDate:string; dueDate:string; notes:string};
@@ -317,10 +318,21 @@ export default function App() {
   const addQuote=()=>{const p=products.find(x=>String(x.id)===quoteProduct);const c=customers.find(x=>String(x.id)===quoteCustomer);const q=Number(quoteQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert('معلومات ناقصة','اختار المنتج والزبون والكمية.');return;}const x:Quote={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,date:new Date().toLocaleDateString('fr-MA'),status:'معلق'};setQuotes(v=>[x,...v]);setQuoteQty('1');Alert.alert('تم حفظ عرض السعر',`${x.total.toFixed(2)} DH`);};
   const convertQuote=(quote:Quote,type:QuoteConversionType)=>{
     try{
+      const customer=customers.find(x=>x.name===quote.customerName);
+      if(type==='invoice'&&customer?.creditLimitCentimes!==undefined){
+        const currentBalance=balanceFor(customer.name)?.outstandingCentimes||0;
+        if(exceedsCustomerCreditLimit(currentBalance,Math.round(quote.total*100),customer.creditLimitCentimes)){
+          Alert.alert('تجاوز سقف الدين',`الرصيد الحالي مع الفاتورة غادي يفوت سقف الدين المحدد للزبون: ${(customer.creditLimitCentimes/100).toFixed(2)} DH.`);
+          return;
+        }
+      }
       const result=createConvertedDocument(
         quote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),
       );
-      setDocuments(current=>[result.document,...current]);
+      const dueDate=type==='invoice'&&customer?.paymentTermsDays!==undefined
+        ?calculatePaymentDueDate(new Date().toISOString(),customer.paymentTermsDays):undefined;
+      const document:CommercialDocument={...result.document,...(dueDate?{dueDate}:{})};
+      setDocuments(current=>[document,...current]);
       if(type==='delivery'){const updated=result.updatedProducts as Product[];try{let nextMovements=inventoryMovements;for(const previous of products){const next=updated.find(p=>p.id===previous.id);const delta=(next?.qty??previous.qty)-previous.qty;if(delta!==0)nextMovements=appendInventoryMovement(nextMovements,{id:'delivery-'+result.document.id+'-'+previous.id,productId:previous.id,productName:previous.name,kind:'delivery',quantityDelta:delta,date:new Date().toISOString(),sourceId:String(result.document.id)});}setInventoryMovements(nextMovements);setProducts(updated);}catch(error){Alert.alert('حركة المخزون',error instanceof Error?error.message:'تعذر تسجيل حركات سند الخروج.');return;}}
       Alert.alert('تم التحويل',type==='invoice'?'تسجلات الفاتورة.':'تسجل سند الخروج وتحدّث المخزون.');
     }catch(error){
