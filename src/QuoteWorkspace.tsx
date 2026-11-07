@@ -6,13 +6,13 @@ import {TText as Text, TTextInput as TextInput, LanguageContext, translateText} 
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
-type Product = {id:number; name:string; price:number; qty:number; kind?:'product'|'service'};
+type Product = {id:number; name:string; price:number; qty:number; kind?:'product'|'service'; quotePrice?:number; invoicePrice?:number};
 type Customer = {id:number; name:string};
 export type QuoteLine = {productId:number; productName:string; qty:number; unitPrice:number; total:number; trackStock?:boolean};
 export type QuoteRecord = {
   id:number; number?:string; productName:string; customerName:string; qty:number;
   unitPrice:number; total:number; date:string; status:string;
-  lines?:QuoteLine[]; notes?:string;
+  lines?:QuoteLine[]; notes?:string; documentDiscount?:number;
 };
 export type QuoteConversionType = 'invoice' | 'delivery';
 type Props = {
@@ -83,7 +83,7 @@ export default function QuoteWorkspace({products,customers,quotes,quotePrefix,on
     const qty=Number(quantity.replace(',','.'));
     if(!selectedProduct){showAlert('اختار المنتج','حدد المنتج اللي بغيتي تزيد.');return;}
     if(!Number.isFinite(qty)||qty<=0){showAlert('كمية غير صحيحة','دخل كمية أكبر من صفر.');return;}
-    const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):selectedProduct.price;
+    const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):(selectedProduct.quotePrice??selectedProduct.price);
     if(!Number.isFinite(unitPrice)||unitPrice<0){showAlert('ثمن غير صحيح','دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.');return;}
     const line:QuoteLine={productId:selectedProduct.id,productName:selectedProduct.name,qty,unitPrice,total:qty*unitPrice,trackStock:selectedProduct.kind!=='service'};
     setLines(current=>[...current,line]);
