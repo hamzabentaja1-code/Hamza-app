@@ -50,7 +50,7 @@ export function createCheque(
   if (!Number.isSafeInteger(input.amountCentimes) || input.amountCentimes <= 0) {
     throw new Error('مبلغ الشيك خاصو يكون موجب وبالسنتيم');
   }
-  if (!validDate(input.issueDate) || !validDate(input.createdAt) || (input.dueDate && !validDate(input.dueDate))) {
+  if (!validDate(input.issueDate) || !Number.isFinite(Date.parse(input.createdAt)) || (input.dueDate && !validDate(input.dueDate))) {
     throw new Error('تاريخ الشيك غير صالح');
   }
   if (input.dueDate && input.dueDate < input.issueDate) throw new Error('تاريخ الاستحقاق ما يقدرش يسبق تاريخ الشيك');
