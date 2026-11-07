@@ -547,6 +547,9 @@ test('contact history is persisted, accessible and attributed to the selected co
   assert.match(workspace, /accessibilityState=\{\{selected:/);
   assert.match(workspace, /filterContactInteractions\(entries/);
   assert.match(workspace, /onDelete\(entry\.id\)/);
+  assert.match(workspace, /const showAlert = \(title:string, message:string, buttons\?/);
+  assert.match(workspace, /buttons\?\.map\(button=>\(\{\.\.\.button,text:button\.text\?t\(button\.text\):button\.text\}\)\)/);
+  assert.equal((workspace.match(/Alert\.alert\(/g)||[]).length,1,'contact history native alerts must pass through the translation wrapper');
 });
 
 
