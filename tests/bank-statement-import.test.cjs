@@ -1,7 +1,7 @@
 const test=require('node:test');const assert=require('node:assert/strict');
 const {parseBankStatementCsv,importBankStatement}=require('../.test-build/bank-statement-import.js');
 test('parses semicolon CSV with headers and signed MAD amounts',()=>{
- const rows=parseBankStatementCsv('date;description;amount\n2026-11-01;Virement reçu;1250,50\n02/11/2026;Frais bancaires;-15.25');
+ const rows=parseBankStatementCsv('date;description;amount\n2026-11-01;Virement reçu;1.250,50\n02/11/2026;Frais bancaires;-15.25');
  assert.equal(rows.length,2);assert.equal(rows[0].amountCentimes,125050);assert.equal(rows[1].amountCentimes,-1525);
  assert.equal(rows[1].date,'2026-11-02T00:00:00.000Z');
 });
