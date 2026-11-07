@@ -12,7 +12,8 @@ test('creates valid cheque records in recorded state with centime-safe amounts',
   const cheque = createCheque(base());
   assert.equal(cheque.status, 'recorded');
   assert.equal(cheque.updatedAt, cheque.createdAt);
-  assert.equal(cheque.amountCentimes, 125050);\n  assert.equal(createCheque(base({createdAt:'2026-11-01T12:30:00.000Z'})).status, 'recorded');
+  assert.equal(cheque.amountCentimes, 125050);
+  assert.equal(createCheque(base({createdAt:'2026-11-01T12:30:00.000Z'})).status, 'recorded');
 });
 
 test('rejects duplicate cheque IDs and duplicate numbers per direction', () => {
@@ -25,7 +26,8 @@ test('rejects duplicate cheque IDs and duplicate numbers per direction', () => {
 test('rejects invalid amounts, dates and due dates', () => {
   assert.throws(() => createCheque(base({amountCentimes:0})), /مبلغ الشيك/);
   assert.throws(() => createCheque(base({amountCentimes:1.2})), /مبلغ الشيك/);
-  assert.throws(() => createCheque(base({issueDate:'bad'})), /تاريخ الشيك/);\n  assert.throws(() => createCheque(base({issueDate:'2026-02-31'})), /تاريخ الشيك/);
+  assert.throws(() => createCheque(base({issueDate:'bad'})), /تاريخ الشيك/);
+  assert.throws(() => createCheque(base({issueDate:'2026-02-31'})), /تاريخ الشيك/);
   assert.throws(() => createCheque(base({dueDate:'2026-10-31'})), /تاريخ الاستحقاق/);
 });
 
