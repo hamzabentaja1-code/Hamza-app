@@ -36,3 +36,13 @@ test('local reminders are opt-in, persisted and scheduled from invoice, supplier
  assert.match(service,/scheduleNotificationAsync/);
  assert.match(service,/cancelScheduledNotificationAsync/);
 });
+
+test('due reminder notification text follows the selected French or Arabic language',()=>{
+ const invoice={id:4,number:'FAC-4',customerName:'Client',total:120,paidCentimes:2000,dueDate:'2026-11-09'};
+ const french=buildDueReminders({...base,language:'FR',invoices:[invoice]})[0];
+ const arabic=buildDueReminders({...base,language:'AR',invoices:[invoice]})[0];
+ assert.equal(french.title,'Échéance de facture : FAC-4');
+ assert.match(french.body,/Reste 100\.00 DH/);
+ assert.equal(arabic.title,'أجل فاتورة: FAC-4');
+ assert.match(arabic.body,/المتبقي 100\.00 DH/);
+});
