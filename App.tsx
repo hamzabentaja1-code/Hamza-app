@@ -578,7 +578,7 @@ export default function App() {
         <Text style={s.section}>أوامر الشراء ({purchaseOrders.length})</Text>
         {purchaseOrders.map(order=><View key={order.id} style={s.listItem}>
           <View style={{flex:1}}>
-            <Text style={s.itemTitle}>#{order.id} • {order.supplierName}</Text>
+            <Text style={s.itemTitle}>{order.number||('BC-'+order.id)} • {order.supplierName}</Text>
             <Text style={s.itemSub}>{order.createdAt.slice(0,10)} • {order.expectedDate||'بدون تاريخ تسليم'}</Text>
             <Text style={s.itemSub}>إجمالي الأمر: {order.lines.reduce((sum,line)=>sum+line.quantity*line.unitCost,0).toFixed(2)} DH</Text>
             {order.lines.map(line=><View key={line.productId} style={{width:'100%',marginTop:8}}><Text style={s.itemSub}>{line.productName} • مطلوب {line.quantity} • مستلم {line.receivedQuantity} • باقي {line.quantity-line.receivedQuantity} • {(line.unitCost*line.quantity).toFixed(2)} DH</Text>{line.receivedQuantity<line.quantity&&order.status!=='cancelled'?<Pressable onPress={()=>{setReceivingOrderId(order.id);setReceivingProductId(line.productId);setReceivingQuantity(String(line.quantity-line.receivedQuantity));}}><Text style={s.gold}>استلام هذا المنتج</Text></Pressable>:null}{receivingOrderId===order.id&&receivingProductId===line.productId?<View><TextInput value={receivingQuantity} onChangeText={setReceivingQuantity} keyboardType="number-pad" placeholder="الكمية المستلمة الآن" placeholderTextColor="#888" style={s.input}/><Pressable style={s.action} onPress={()=>receiveOrder(order.id,line.productId)}><Text style={s.actionText}>تأكيد الاستلام وإضافة للمخزون</Text></Pressable></View>:null}</View>)}
