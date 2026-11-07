@@ -37,6 +37,12 @@
           "cameraPermission": "السماح لـ HamZa باستعمال الكاميرا لمسح الباركود.",
           "barcodeScannerEnabled": true
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "enableRemoteNotifications": false
+        }
       ]
     ],
     "android": {
