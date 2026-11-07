@@ -1392,6 +1392,20 @@ const fr: Record<string, string> = {
   "كتب عنواناً للقسم قبل إضافته.": "Saisissez un titre avant d’ajouter la section.",
   "العرض فارغ": "Devis vide",
   "زيد منتجاً أو رسماً إضافياً قبل حفظ العرض.": "Ajoutez un produit ou des frais avant d’enregistrer le devis.",
+  "الأسطر المرفوضة:": "Lignes rejetées :",
+  "تزادو": "Ajoutés",
+  "منتج. الأسطر المرفوضة أو المكررة:": "produit. Lignes rejetées ou en double :",
+  "هو": "est",
+  "المخزون غير كافٍ فالنسخة": "Stock insuffisant dans la variante",
+  "الكمية المتوفرة في المخزن النشط غير كافية للمنتج": "Quantité disponible insuffisante pour ce produit dans l’entrepôt actif",
+  "• الاستحقاق": "• Échéance",
+  "• المؤدى": "• Payé",
+  "• الباقي": "• Restant",
+  "أداء •": "Paiement •",
+  "إشعار دائن": "Avoir",
+  "• رصيد": "• Crédit",
+  "• المرتجع": "• Retourné",
+  "• رصيد دائن": "• Crédit client",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
