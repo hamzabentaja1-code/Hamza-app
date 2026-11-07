@@ -31,6 +31,7 @@ export type ExistingDocument = {sourceQuoteId:number; type:DocumentKind};
 export type ConversionResult = {
   document:ConvertedDocument;
   updatedProducts:StockProduct[];
+  stockDeducted:boolean;
 };
 
 /** Creates a quote-derived document and returns the stock snapshot.
@@ -50,7 +51,9 @@ export function convertQuote(
   }
   const lines=quote.lines?.length?quote.lines:[];
   let updatedProducts=products;
-  if(type==='delivery') {
+  const stockAlreadyDeducted=documents.some(d=>d.sourceQuoteId===quote.id);
+  const shouldDeductStock=!stockAlreadyDeducted;
+  if(shouldDeductStock&&(type==='delivery'||lines.length>0)) {
     if(!lines.length||lines.some(line=>!line.productId)) {
       throw new Error('A new quote with linked products is required for a delivery note');
     }
@@ -81,5 +84,5 @@ export function convertQuote(
     sourceQuoteId:quote.id,
     lines:documentLines,
   };
-  return {document,updatedProducts};
+  return {document,updatedProducts,stockDeducted:shouldDeductStock&&lines.length>0};
 }
