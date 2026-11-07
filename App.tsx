@@ -126,8 +126,12 @@ export default function App() {
   const convertQuote=(quote:Quote,type:QuoteConversionType)=>{
     try{
       if(type==='delivery'){
-        const available=warehouseStock(stockMovements,String(quote.productId),activeWarehouseId);
-        if(quote.qty>available)throw new Error('الكمية المطلوبة أكبر من مخزون المستودع المحدد. المتوفر: '+available);
+        const deliveryLines=quote.lines?.length?quote.lines:[{productId:products.find(p=>p.name===quote.productName)?.id||0,qty:quote.qty}];
+        const insufficient=deliveryLines.find(line=>{
+          const product=products.find(p=>p.id===line.productId);
+          return !product||line.qty>warehouseStock(stockMovements,String(line.productId),activeWarehouseId);
+        });
+        if(insufficient)throw new Error('الكمية المطلوبة أكبر من مخزون المستودع المحدد.');
       }
       const result=createConvertedDocument(
         quote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),
