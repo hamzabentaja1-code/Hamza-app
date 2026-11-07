@@ -75,3 +75,10 @@ test('supplier procurement variant price inputs use the same composite key for d
  assert.ok(source.includes("value={prices["+key+"]||''}"));
  assert.ok(source.includes("["+key+"]:value"));
 });
+
+test('supplier invoice editor displays and saves the editable invoice unit cost',()=>{
+ const fs=require('node:fs');
+ const source=fs.readFileSync(require('node:path').join(__dirname,'../src/SupplierProcurementWorkspace.tsx'),'utf8');
+ assert.ok(source.includes('value={invoiceUnitCosts[key]??String(line.unitCost)}'));
+ assert.ok(source.includes('unitCostCentimes:(()=>{const raw=(invoiceUnitCosts[key]??String(line.unitCost))'));
+});
