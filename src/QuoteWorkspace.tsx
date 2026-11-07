@@ -12,7 +12,7 @@ export type QuoteLine = {productId:number; productName:string; qty:number; unitP
 export type QuoteRecord = {
   id:number; number?:string; productName:string; customerName:string; qty:number;
   unitPrice:number; total:number; date:string; status:string;
-  lines?:QuoteLine[]; notes?:string; documentDiscount?:number;
+  lines?:QuoteLine[]; notes?:string; documentDiscount?:number; validUntil?:string;
 };
 export type QuoteConversionType = 'invoice' | 'delivery';
 type Props = {
@@ -21,6 +21,8 @@ type Props = {
   quotes:QuoteRecord[];
   quotePrefix:string;
   onSave:(quote:QuoteRecord)=>void;
+  onUpdate:(quote:QuoteRecord)=>void;
+  onDelete:(id:number)=>void;
   onPdf:(title:string, customerName:string, lines:string[], total:number)=>void;
   onConvert:(quote:QuoteRecord,type:QuoteConversionType)=>void;
 };
@@ -33,7 +35,7 @@ const choice={borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marg
 const active={borderColor:gold,backgroundColor:'#302819'};
 const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
-export default function QuoteWorkspace({products,customers,quotes,quotePrefix,onSave,onPdf,onConvert}:Props) {
+export default function QuoteWorkspace({products,customers,quotes,quotePrefix,onSave,onUpdate,onDelete,onPdf,onConvert}:Props) {
   const language=useContext(LanguageContext);
  const showAlert = (...args: Parameters<typeof Alert.alert>) => {
   const [title, message, buttons, options] = args;
@@ -53,6 +55,7 @@ export default function QuoteWorkspace({products,customers,quotes,quotePrefix,on
   const [discount,setDiscount]=useState('0');
   const [lines,setLines]=useState<QuoteLine[]>([]);
   const [notes,setNotes]=useState('');
+  const [validUntil,setValidUntil]=useState('');
   const selectedCustomer=customers.find(c=>String(c.id)===customerId);
   const selectedProduct=products.find(p=>String(p.id)===productId);
   const filteredCustomers=customers.filter(c=>c.name.toLocaleLowerCase().includes(customerSearch.trim().toLocaleLowerCase()));
@@ -95,17 +98,19 @@ export default function QuoteWorkspace({products,customers,quotes,quotePrefix,on
   const save=()=>{
     if(!selectedCustomer){showAlert('اختار الزبون','خاصك تحدد الزبون قبل الحفظ.');return;}
     if(!calculation){showAlert('راجع العرض','زيد منتج واحد على الأقل وتأكد من التخفيض.');return;}
+    if(validUntil&&!/^\\d{4}-\\d{2}-\\d{2}$/.test(validUntil)){showAlert('تاريخ غير صالح','استعمل صيغة YYYY-MM-DD لتاريخ انتهاء العرض.');return;}
+    if(validUntil&&validUntil<new Date().toISOString().slice(0,10)){showAlert('تاريخ غير صالح','تاريخ انتهاء العرض خاصو يكون اليوم أو تاريخ فالمستقبل.');return;}
     const now=Date.now();
     const record:QuoteRecord={
       id:now,number:nextDocumentNumber(quotePrefix,quotes),productName:lines.map(x=>x.productName).join(', '),
       customerName:selectedCustomer.name,qty:lines.reduce((n,x)=>n+x.qty,0),
       unitPrice:0,total:calculation.totalCentimes/100,
       date:new Date().toLocaleDateString('fr-MA'),status:'معلق',
-      notes:notes.trim(),documentDiscount:calculation.discountCentimes/100,
+      notes:notes.trim(),documentDiscount:calculation.discountCentimes/100,validUntil:validUntil||undefined,
       lines:lines.map((line,index)=>({...line,total:calculation.lines[index].lineTotalCentimes/100})),
     };
     onSave(record);
-    setLines([]);setDiscount('0');setNotes('');
+    setLines([]);setDiscount('0');setNotes('');setValidUntil('');
     showAlert('تم حفظ عرض السعر','تقدر دابا تصدره PDF.');
   };
   const quoteLines=(quote:QuoteRecord)=>quote.lines?.length
@@ -141,6 +146,7 @@ export default function QuoteWorkspace({products,customers,quotes,quotePrefix,on
         <Pressable accessibilityLabel={language==='AR'?'حذف '+line.productName:'Supprimer '+line.productName} accessibilityHint={language==='AR'?'إزالة هذا المنتج من عرض السعر':'Retirer ce produit du devis'} onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
       </View>)}
       <TextInput value={discount} onChangeText={setDiscount} keyboardType="decimal-pad" placeholder="تخفيض إجمالي (DH)" placeholderTextColor="#888" style={[input,{marginTop:12}]}/>
+      <TextInput value={validUntil} onChangeText={setValidUntil} placeholder="تاريخ انتهاء العرض YYYY-MM-DD (اختياري)" placeholderTextColor="#888" style={input}/>
       <TextInput value={notes} onChangeText={setNotes} placeholder="ملاحظات (اختياري)" placeholderTextColor="#888" style={input}/>
       <View style={{backgroundColor:'#111',borderRadius:9,padding:12,marginVertical:8}}>
         <Text style={{color:'#DDD'}}>المجموع قبل التخفيض: {calculation?money(calculation.subtotalCentimes):'0.00 DH'}</Text>
@@ -152,13 +158,16 @@ export default function QuoteWorkspace({products,customers,quotes,quotePrefix,on
     <Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>عروض الأسعار السابقة ({quotes.length})</Text>
     {quotes.map(q=><View key={q.id} style={[panel,{marginBottom:8}]}>
       <Text style={{color:'#FFF',fontWeight:'800'}}>{q.number||('DEV-'+q.id)} • {q.customerName}</Text>
-      <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {q.status}</Text>
+      <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {q.validUntil&&q.validUntil<new Date().toISOString().slice(0,10)&&q.status==='معلق'?'منتهي':q.status}{q.validUntil?' • صالح حتى '+q.validUntil:''}</Text>
       {quoteLines(q).map((line,i)=><Text key={i} style={{color:'#DDD',marginTop:5}}>{line}</Text>)}
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:8}}>
         <Pressable onPress={()=>onPdf('Devis '+(q.number||('DEV-'+q.id)),q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[])],q.total)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'delivery')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>سند خروج</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'invoice')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>فاتورة</Text></Pressable>
+        {q.status!=='مقبول'?<Pressable onPress={()=>onUpdate({...q,status:'مقبول'})} style={{padding:9,borderWidth:1,borderColor:'#4D9D82',borderRadius:8}}><Text style={{color:'#4D9D82',fontWeight:'800'}}>قبول العرض</Text></Pressable>:null}
+        {q.status!=='مرفوض'?<Pressable onPress={()=>onUpdate({...q,status:'مرفوض'})} style={{padding:9,borderWidth:1,borderColor:'#B76C5A',borderRadius:8}}><Text style={{color:'#B76C5A',fontWeight:'800'}}>رفض العرض</Text></Pressable>:null}
+        <Pressable onPress={()=>showAlert('حذف عرض السعر؟',q.number||q.customerName,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>onDelete(q.id)}])} style={{padding:9,borderWidth:1,borderColor:'#B76C5A',borderRadius:8}}><Text style={{color:'#B76C5A',fontWeight:'800'}}>حذف</Text></Pressable>
       </View>
     </View>)}
     {quotes.length===0&&<Text style={{color:'#999',textAlign:'center',padding:12}}>مازال ما كاين حتى عرض سعر.</Text>}
