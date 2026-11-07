@@ -163,7 +163,7 @@ A screen appearing is not proof that its controls work. A module is marked compl
 - [x] Selected-state announcements for product, customer, supplier, POS payment-method, bank movement-type and bank-transfer destination choices
 - [x] Explicit labels for image previews and language switch
 - [x] Automated static accessibility regression tests cover primary workspaces and shared control wrappers (tests/accessibility.test.cjs)
-- [x] Static French-dictionary coverage audit reports no missing static Arabic labels in App, quote, POS, warehouse, bank, field-operations, recurring-expense, agenda, period-report and shared accessibility controls
+- [x] Static French-dictionary coverage audit reports no missing static Arabic labels in App, quote, POS, variants, user access, warehouse, bank, field-operations, recurring-expense, agenda, period-report and shared accessibility controls
 - [x] Main app, quote, POS, warehouse, bank, field-operations and recurring-expense alerts translate titles, messages and confirmation-button labels using the selected language
 - [ ] Manual TalkBack verification in Arabic and French at normal and enlarged font sizes
 - [ ] Android emulator, APK inspection, MobSF and all-module smoke tests (intentionally deferred; APK build is manual-only until the feature scope is complete)
