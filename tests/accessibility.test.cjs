@@ -363,12 +363,12 @@ test('PDFs use TTC-only by default and allow optional HT/TVA/TTC breakdown', () 
   assert.match(app, /kind:cheque\.direction==='incoming'\?'deposit':'withdrawal'/);
   assert.match(workspace, /onAdd: \(input: NewCheque\) => boolean/);
   assert.match(workspace, /onTransition: \(cheque: ChequeRecord, next: ChequeStatus/);
-  assert.match(domain, /status: 'cleared'/);
+  assert.match(domain, /clearedChequeBankEffect/);
   const dictionary = read('src/i18n.tsx');
   for (const label of ['إضافة شيك','رقم الشيك','اسم الزبون أو المورد','المبلغ بالدرهم',
     'تاريخ الشيك YYYY-MM-DD','تاريخ الاستحقاق (اختياري)','الحساب البنكي المرتبط',
     'حفظ الشيك','سجل الشيكات','إيداع','تأكيد التحصيل / الأداء','تسجيل رفض الشيك','إلغاء الشيك',
-    'مازال ما تسجل حتى شيك.','مسجل','مودع','مقبوض / مؤدى','مرفوض','ملغى']) {
+    'مازال ما تسجل حتى شيك.','سجل حركات الشيكات','مازال ما تسجلات حتى حركة شيك.','إيداع الشيك','تقديم الشيك للبنك','إنشاء','مسجل','مودع','مقبوض / مؤدى','مرفوض','ملغى']) {
     assert.ok(dictionary.includes('"'+label+'"'), 'missing French cheque translation: '+label);
   }
 });
