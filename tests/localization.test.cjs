@@ -110,7 +110,7 @@ test('all Arabic alert titles and messages in primary workspaces have French tra
     'src/ChequeWorkspace.tsx', 'src/VariantWorkspace.tsx', 'src/UserAccessWorkspace.tsx',
     'src/ContactHistoryWorkspace.tsx'];
   const dictionarySource = fs.readFileSync(path.join(__dirname, '..', 'src', 'i18n.tsx'), 'utf8');
-  const keys = new Set([...dictionarySource.matchAll(/^\\s*"((?:\\\\.|[^"\\\\])*)"\\s*:/gm)].map(match => match[1]));
+  const keys = new Set([...dictionarySource.matchAll(/^\s*"((?:\\.|[^"\\])*)"\s*:/gm)].map(match => match[1]));
   for (const file of files) {
     const source = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
     for (let position = 0; (position = source.indexOf('showAlert(', position)) >= 0;) {
@@ -120,17 +120,17 @@ test('all Arabic alert titles and messages in primary workspaces have French tra
         const char = source[end];
         if (quote) {
           if (escaped) escaped = false;
-          else if (char === '\\\\') escaped = true;
+          else if (char === '\\') escaped = true;
           else if (char === quote) quote = null;
           continue;
         }
-        if (char === "'" || char === '"' || char === '`') quote = char;
+        if (char === "'" || char === '"' || char === '\`') quote = char;
         else if (char === '(') depth++;
         else if (char === ')') depth--;
         else if (char === ',' && depth === 1) commas.push(end);
       }
       const firstTwoArguments = source.slice(start, commas[1] ?? end - 1);
-      for (const match of firstTwoArguments.matchAll(/'([^'\\\\]*(?:\\\\.[^'\\\\]*)*)'|"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/g)) {
+      for (const match of firstTwoArguments.matchAll(/'([^'\\]*(?:\\.[^'\\]*)*)'|"([^"\\]*(?:\\.[^"\\]*)*)"/g)) {
         const value = match[1] ?? match[2];
         if (/[\\u0600-\\u06FF]/.test(value)) {
           assert.ok(keys.has(value), file + ' has an untranslated alert string: ' + value);
