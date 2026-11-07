@@ -44,6 +44,9 @@ export function createProductVariant(variant: ProductVariant, existing: ProductV
   if (variant.sku?.trim() && existing.some(item => item.productId === variant.productId && item.sku?.trim().toLowerCase() === variant.sku?.trim().toLowerCase())) {
     throw new Error('مرجع النسخة مسجل من قبل');
   }
+  if (variant.barcode?.trim() && existing.some(item => item.barcode?.trim() === variant.barcode?.trim())) {
+    throw new Error('باركود النسخة مسجل من قبل');
+  }
   if (existing.some(item => item.productId === variant.productId && attributeKey(item.attributes) === attributeKey(variant.attributes))) {
     throw new Error('نفس خصائص النسخة مسجلة من قبل');
   }
@@ -59,8 +62,9 @@ export function applyVariantStockMovement(
   if (!validDate(movement.date) || !Number.isSafeInteger(movement.quantityDelta) || movement.quantityDelta === 0) throw new Error('تاريخ أو كمية حركة النسخة غير صالحة');
   const variant = variants.find(item => item.id === movement.variantId && item.active);
   if (!variant) throw new Error('النسخة غير موجودة أو غير نشطة');
-  const expectedSign = movement.kind === 'sale' || movement.kind === 'return_out' ? -1 : 1;
-  if (Math.sign(movement.quantityDelta) !== expectedSign) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
+  if (!['opening','purchase','sale','return_in','return_out','adjustment'].includes(movement.kind)) throw new Error('نوع حركة النسخة غير صالح');
+  if ((movement.kind === 'sale' || movement.kind === 'return_out') && movement.quantityDelta > 0) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
+  if (!['sale','return_out','adjustment'].includes(movement.kind) && movement.quantityDelta < 0) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
   const nextQty = variant.stockQty + movement.quantityDelta;
   if (nextQty < 0) throw new Error('مخزون النسخة غير كافٍ');
   return {
