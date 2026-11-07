@@ -22,7 +22,7 @@ test('all primary workspaces use the shared accessible button wrapper', () => {
 
 test('primary workspace text inputs use translated accessible labels', () => {
   for (const file of ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx',
-    'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx', 'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx', 'src/ChequeWorkspace.tsx', 'src/VariantWorkspace.tsx']) {
+    'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx', 'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx', 'src/CustomerOrdersWorkspace.tsx', 'src/ChequeWorkspace.tsx', 'src/VariantWorkspace.tsx']) {
     const source = read(file);
     assert.match(source, /TTextInput as TextInput/,
       file + ' must use the shared translated TextInput');
