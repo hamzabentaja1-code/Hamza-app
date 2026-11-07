@@ -14,12 +14,23 @@ test('builds active recurring expense reminders and ignores inactive or out-of-w
  const reminders=buildDueReminders({...base,recurringExpenses:[{id:'r1',title:'كراء',amount:2000,nextDueDate:'2026-11-10',active:true},{id:'r2',title:'قديم',amount:100,nextDueDate:'2026-11-08',active:false},{id:'r3',title:'بعيد',amount:100,nextDueDate:'2027-12-01',active:true}]});
  assert.deepEqual(reminders.map(x=>x.id),['recurring-r1']);
 });
+test('builds reminders for upcoming open tasks and ignores completed tasks',()=>{
+ const reminders=buildDueReminders({...base,tasks:[
+  {id:11,title:'Installation visit',assignee:'Tech A',dueDate:'2026-11-08',status:'todo'},
+  {id:12,title:'Completed task',assignee:'Tech B',dueDate:'2026-11-09',status:'done'},
+  {id:13,title:'Far task',assignee:'Tech C',dueDate:'2027-12-01',status:'doing'}
+ ]});
+ assert.equal(reminders.length,1);assert.equal(reminders[0].id,'task-11');assert.equal(reminders[0].kind,'task');
+ assert.equal(reminders[0].title,'موعد مهمة: Installation visit');assert.equal(reminders[0].body,'المسؤول: Tech A');
+ const french=buildDueReminders({...base,language:'FR',tasks:[{id:14,title:'Visit',assignee:'Tech D',dueDate:'2026-11-09',status:'doing'}]})[0];
+ assert.equal(french.title,'Échéance de tâche : Visit');assert.equal(french.body,'Responsable : Tech D');
+});
 test('reminder generation rejects invalid dates and horizons',()=>{
  assert.throws(()=>buildDueReminders({...base,today:'bad'}),/تاريخ التذكيرات/);
  assert.throws(()=>buildDueReminders({...base,horizonDays:0}),/نطاق التذكيرات/);
 });
 
-test('local reminders are opt-in, persisted and scheduled from invoice, supplier and recurring-expense due dates',()=>{
+test('local reminders are opt-in, persisted and scheduled from invoice, supplier, recurring-expense and task due dates',()=>{
  const fs=require('node:fs');const path=require('node:path');const root=path.join(__dirname,'..');
  const app=fs.readFileSync(path.join(root,'App.tsx'),'utf8');
  const service=fs.readFileSync(path.join(root,'src','local-notifications.ts'),'utf8');
