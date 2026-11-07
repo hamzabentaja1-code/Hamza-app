@@ -1,5 +1,5 @@
 name: Verify HamZa code without APK build
-# This workflow intentionally validates source only and never builds an APK; includes localization and accessibility regression checks.
+# This workflow intentionally validates source only and never builds an APK; includes localization, inventory and accessibility regression checks.
 
 on:
   push:
