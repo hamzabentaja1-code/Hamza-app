@@ -9,7 +9,7 @@ sudo apt-get update
 sudo apt-get install -y --no-install-recommends curl wget unzip zip jq adb
 
 # JADX: Android APK/Dex decompiler
-JADX_VERSION="1.5.3"
+JADX_VERSION="1.5.6"
 JADX_ARCHIVE="$TOOLS_DIR/jadx-$JADX_VERSION.zip"
 if [[ ! -x "$TOOLS_DIR/jadx/bin/jadx" ]]; then
   curl -fL "https://github.com/skylot/jadx/releases/download/v$JADX_VERSION/jadx-$JADX_VERSION.zip" -o "$JADX_ARCHIVE"
@@ -21,7 +21,7 @@ ln -sf "$TOOLS_DIR/jadx/bin/jadx" "$BIN_DIR/jadx"
 ln -sf "$TOOLS_DIR/jadx/bin/jadx-gui" "$BIN_DIR/jadx-gui"
 
 # APKTool: APK resource and manifest inspection
-APKTOOL_VERSION="2.11.1"
+APKTOOL_VERSION="3.0.3"
 curl -fL "https://github.com/iBotPeaches/Apktool/releases/download/v$APKTOOL_VERSION/apktool_$APKTOOL_VERSION.jar" -o "$TOOLS_DIR/apktool.jar"
 cat > "$BIN_DIR/apktool" <<'WRAPPER'
 #!/usr/bin/env bash
