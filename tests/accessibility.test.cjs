@@ -144,3 +144,20 @@ test('dynamic product, quote, POS and agenda labels have French translations', (
     assert.ok(translations.includes('"' + label + '"'), 'missing French translation for dynamic label ' + label);
   }
 });
+
+test('primary screens have no untranslated static Arabic labels', () => {
+  const files = ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx',
+    'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx',
+    'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx'];
+  const dictionary = read('src/i18n.tsx');
+  const keys = new Set([...dictionary.matchAll(/^\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*:/gm)].map(match => match[1]));
+  for (const file of files) {
+    const source = read(file);
+    const labels = [...source.matchAll(/(['"])([^'"\\\\\\n]{2,})\\1/g)]
+      .map(match => match[2])
+      .filter(value => /[\\u0600-\\u06FF]/.test(value) && !/[\\x60{}]/.test(value));
+    for (const label of new Set(labels)) {
+      assert.ok(keys.has(label), file + ' has an untranslated Arabic label: ' + label);
+    }
+  }
+});
