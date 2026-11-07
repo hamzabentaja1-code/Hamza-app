@@ -1,6 +1,19 @@
-export type PosProduct = { id: string; name: string; reference?: string; barcode?: string; salePrice: number; stock?: number; trackStock?: boolean; productId?: number; variantId?: string; variantLabel?: string };
+export type PosProduct = { id: string; name: string; reference?: string; barcode?: string; category?:string; salePrice: number; stock?: number; trackStock?: boolean; productId?: number; variantId?: string; variantLabel?: string };
 export type PosLine = { productId: string; sourceProductId?: number; variantId?: string; variantLabel?: string; name: string; quantity: number; unitPrice: number; discount: number };
 export type PosCart = { customerId?: string; lines: PosLine[]; globalDiscount: number; paymentMethod: "cash" | "card" | "transfer" | "credit"; paidAmount: number };
+
+export type PosStockFilter='all'|'available'|'low'|'out'|'services';
+export function filterPosProducts(products:PosProduct[],category:string,stockFilter:PosStockFilter):PosProduct[]{
+ return products.filter(product=>{
+  if(category&&product.category!==category)return false;
+  const stock=product.stock??0;
+  if(stockFilter==='services')return product.trackStock===false;
+  if(stockFilter==='available')return product.trackStock===false||stock>0;
+  if(stockFilter==='low')return product.trackStock!==false&&stock>0&&stock<=5;
+  if(stockFilter==='out')return product.trackStock!==false&&stock<=0;
+  return true;
+ });
+}
 
 export function findPosProduct(products: PosProduct[], term: string): PosProduct | undefined {
   const q = term.trim().toLocaleLowerCase();
