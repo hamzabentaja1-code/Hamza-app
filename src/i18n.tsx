@@ -25,6 +25,7 @@ const fr: Record<string, string> = {
   "تأكيد الجرد وتحديث المخزون": "Confirmer l’inventaire et mettre à jour le stock",
   "سجل حركات المخزون (": "Historique des mouvements de stock (",
   "رصيد افتتاحي": "Stock initial",
+  "رصيد افتتاحي عند إنشاء النسخة": "Stock initial lors de la création de la variante",
   "شراء": "Achat",
   "بيع": "Vente",
   "سند خروج": "Bon de sortie",
