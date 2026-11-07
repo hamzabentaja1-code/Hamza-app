@@ -35,7 +35,7 @@ export type ConversionResult = {
 };
 
 /** Creates a quote-derived document and returns the stock snapshot.
- * Delivery notes post stock once; invoices never change stock.
+ * The first invoice or delivery note posts stock; its paired document never deducts twice.
  */
 export function convertQuote(
   quote:QuoteForConversion,
