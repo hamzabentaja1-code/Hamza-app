@@ -53,6 +53,7 @@ const fr: Record<string, string> = {
   'تم تسجيل الجرد':'Inventaire enregistré','تعذر تسجيل الجرد':'Impossible d’enregistrer l’inventaire',
   'تعذر تسجيل الأداء':'Impossible d’enregistrer le paiement','تم تسجيل الأداء':'Paiement enregistré',
   'تم التحويل':'Conversion effectuée','تعذر التحويل':'Conversion impossible','تم الاستيراد':'Importation terminée',
+  'اختار المنتج':'Choisir un produit','حدد المنتج اللي بغيتي تزيد.':'Sélectionnez le produit à ajouter.','كمية غير صحيحة':'Quantité incorrecte','دخل كمية أكبر من صفر.':'Saisissez une quantité supérieure à zéro.','ثمن غير صحيح':'Prix incorrect','دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.':'Saisissez un prix de vente valide ou conservez le prix initial.','اختار الزبون':'Choisir un client','خاصك تحدد الزبون قبل الحفظ.':'Vous devez choisir un client avant l’enregistrement.','راجع العرض':'Vérifier le devis','زيد منتج واحد على الأقل وتأكد من التخفيض.':'Ajoutez au moins un produit et vérifiez la remise.','بحث عن الزبون بالاسم':'Rechercher un client par nom','بحث عن المنتج بالاسم':'Rechercher un produit par nom','ثمن البيع لهذا العرض (DH)':'Prix de vente de ce devis (DH)','الثمن':'Prix','تخفيض إجمالي (DH)':'Remise totale (DH)','ملاحظات (اختياري)':'Notes (facultatif)','المخزون غير كافٍ':'Stock insuffisant','تعذر إضافة المنتج':'Impossible d’ajouter le produit','تخفيض غير صالح':'Remise invalide','دخل تخفيض صحيح.':'Saisissez une remise valide.','راجع السلة':'Vérifier le panier','زبون عابر':'Client de passage','تأكيد البيع':'Confirmer la vente','اسم المنتج...':'Nom du produit...','تخفيض عام (DH)':'Remise globale (DH)',
   'تم الاسترجاع':'Restauration terminée','تعذر الاسترجاع':'Restauration impossible','خطأ':'Erreur','تنبيه':'Attention',
   'حركة المخزون':'Mouvement de stock','المبلغ كبير':'Montant trop élevé','الفاتورة غير موجودة':'Facture introuvable',
   'طريقة الأداء: ':'Mode de paiement : ','مجموع المبيعات':'Total des ventes','ملخص النشاط':'Résumé de l’activité',
@@ -77,7 +78,7 @@ export function TText(props: TextProps) {
   const children = React.Children.map(props.children, child =>
     typeof child === 'string' ? translateText(child, language) : child,
   );
-  return <NativeText {...props} style={[props.style, {writingDirection: language === 'AR' ? 'rtl' : 'ltr'}]}>{children}</NativeText>;
+  return <NativeText {...props} style={[props.style, {writingDirection: language === 'AR' ? 'rtl' : 'ltr', textAlign: language === 'FR' ? 'left' : undefined}]}>{children}</NativeText>;
 }
 
 export function TTextInput(props: TextInputProps) {
