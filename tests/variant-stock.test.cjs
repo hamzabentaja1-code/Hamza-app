@@ -178,3 +178,36 @@ test('legacy variant quantity appears in the default warehouse matrix when no mo
   const matrix = variantWarehouseStockMatrix(legacy,[],[{id:DEFAULT_VARIANT_WAREHOUSE_ID,name:'الرئيسي'},{id:'warehouse-other',name:'الثاني'}]);
   assert.deepEqual(matrix.map(row=>row.quantity),[6,0]);
 });
+
+
+const {transferVariantStockBetweenWarehouses} = require('../.test-build/variant-stock.js');
+
+test('variant warehouse transfer creates paired movements and preserves aggregate stock', () => {
+  const initial=[createProductVariant(variant({id:'v-transfer',sku:'SKU-TRANSFER',barcode:'WH-TRANSFER',stockQty:8}))];
+  const history=[
+    {id:'open-a',variantId:'v-transfer',kind:'opening',quantityDelta:8,date:'2026-11-01',warehouseId:'warehouse-a'},
+  ];
+  const result=transferVariantStockBetweenWarehouses(initial,history,{
+    id:'transfer-1',variantId:'v-transfer',fromWarehouseId:'warehouse-a',
+    toWarehouseId:'warehouse-b',quantity:3,date:'2026-11-07',
+  });
+  assert.equal(result.variants[0].stockQty,8);
+  assert.deepEqual(result.movements.map(m=>[m.kind,m.quantityDelta,m.warehouseId]),[
+    ['transfer_out',-3,'warehouse-a'],
+    ['transfer_in',3,'warehouse-b'],
+  ]);
+  const all=[...history,...result.movements];
+  assert.equal(variantWarehouseBalance('v-transfer',all,'warehouse-a'),5);
+  assert.equal(variantWarehouseBalance('v-transfer',all,'warehouse-b'),3);
+});
+
+test('variant warehouse transfer rejects insufficient source stock, same warehouse and duplicates atomically', () => {
+  const initial=[createProductVariant(variant({id:'v-transfer-guard',sku:'SKU-TRANSFER-G',barcode:'WH-TRANSFER-G',stockQty:2}))];
+  const history=[{id:'open-g',variantId:'v-transfer-guard',kind:'opening',quantityDelta:2,date:'2026-11-01',warehouseId:'warehouse-a'}];
+  const input={id:'transfer-guard',variantId:'v-transfer-guard',fromWarehouseId:'warehouse-a',toWarehouseId:'warehouse-b',quantity:3,date:'2026-11-07'};
+  assert.throws(()=>transferVariantStockBetweenWarehouses(initial,history,input),/مخزون النسخة غير كافٍ/);
+  assert.throws(()=>transferVariantStockBetweenWarehouses(initial,history,{...input,toWarehouseId:'warehouse-a'}),/غير صالحة/);
+  const valid=transferVariantStockBetweenWarehouses(initial,history,{...input,quantity:1});
+  assert.throws(()=>transferVariantStockBetweenWarehouses(initial,[...history,...valid.movements],{...input,quantity:1}),/مسجل من قبل/);
+  assert.equal(initial[0].stockQty,2);
+});
