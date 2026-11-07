@@ -199,7 +199,7 @@ export default function App() {
   const grossProfit=profitSummary.grossProfit-totalReturnProfitAdjustment(salesReturns);
   const untrackedSalesCount=profitSummary.untrackedSalesCount;
   const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const supplierReturnTotal=useMemo(()=>supplierReturns.reduce((sum,x)=>sum+x.amountCentimes,0)/100,[supplierReturns]); const netPurchaseTotal=purchaseTotal-supplierReturnTotal; const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
-  const customerBalances=useMemo(()=>calculateCustomerBalances(documents,customers.map(c=>({customerName:c.name,openingBalanceCentimes:c.openingBalanceCentimes})),salesReturns.map(item=>({id:item.id,customerName:item.customerName,total:item.total,date:item.date}))),[documents,customers]);
+  const customerBalances=useMemo(()=>calculateCustomerBalances(documents,customers.map(c=>({customerName:c.name,openingBalanceCentimes:c.openingBalanceCentimes})),salesReturns.map(item=>({id:item.id,customerName:item.customerName,total:item.total,date:item.date}))),[documents,customers,salesReturns]);
   const supplierBalances=useMemo(()=>calculateSupplierBalances(purchases,suppliers.map(x=>({supplierName:x.name,openingBalanceCentimes:x.openingBalanceCentimes})),supplierReturns),[purchases,suppliers,supplierReturns]);
   const supplierPayablesTotal=supplierBalances.reduce((sum,x)=>sum+x.outstandingCentimes,0)/100;
   const balanceFor=(customerName:string)=>customerBalances.find(x=>x.customerName===customerName);
@@ -709,6 +709,8 @@ export default function App() {
       ...customerPayments.map(p=>language==='FR'?`Paiement • ${p.date} • ${p.method} • ${p.amount.toFixed(2)} DH${p.documentId?' • Facture '+p.documentId:''}`:`أداء • ${p.date} • ${p.method} • ${p.amount.toFixed(2)} درهم${p.documentId?' • الفاتورة '+p.documentId:''}`),
       ...salesReturns.filter(item=>item.customerName===customerName).map(item=>language==='FR'?`Avoir ${item.number||item.id} • ${item.date} • ${item.productName} × ${item.qty} • Crédit ${(item.total).toFixed(2)} DH`:`إشعار دائن ${item.number||item.id} • ${item.date} • ${item.productName} × ${item.qty} • رصيد ${(item.total).toFixed(2)} درهم`),
     ];
+    const remainingCredit=balanceFor(customerName)?.creditBalanceCentimes||0;
+    if(remainingCredit>0)lines.push(language==='FR'?('Avoir disponible non imputé : '+(remainingCredit/100).toFixed(2)+' DH'):('رصيد دائن متبقٍ غير مستعمل: '+(remainingCredit/100).toFixed(2)+' درهم'));
     if(!lines.length)lines.push(language==='FR'?'Aucune facture ou paiement enregistré.':'ما كايناش فواتير أو أداءات مسجلة.');
     exportPdf('كشف حساب الزبون',customerName,lines,(balanceFor(customerName)?.outstandingCentimes||0)/100);
   };
