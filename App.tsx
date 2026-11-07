@@ -76,7 +76,7 @@ type SalesReturn = {id:number; number?:string; saleId:number; productId?:number;
 type Purchase = {id:number; productId?:number; variantId?:string; variantLabel?:string; productName:string; supplierName:string; qty:number; unitCost:number; total:number; date:string; paidCentimes?:number; returnedCentimes?:number; purchaseOrderId?:number; warehouseId?:string};
 type SupplierPayment = {id:number; purchaseId:number; supplierName:string; amountCentimes:number; method:string; date:string; note:string; bankAccountId?:string; transactionId?:string};
 type Expense = {id:number; title:string; amount:number; date:string; projectId?:number; category?:string; sourceRuleId?:string; dueDate?:string};
-type ActivityEntry = {id:string; action:string; details:string; date:string};
+type ActivityEntry = {id:string; action:string; details:string; date:string; userId?:string; userName?:string};
 type Supplier = {id:number; name:string; phone?:string; address?:string; ice?:string; openingBalanceCentimes?:number; creditLimitCentimes?:number; paymentTermsDays?:number};
 type Quote = QuoteRecord;
 type CommercialDocument = ConvertedDocument & {paidCentimes?:number; dueDate?:string};
@@ -171,7 +171,7 @@ export default function App() {
   const openInvoiceCount=useMemo(()=>documents.filter(d=>d.type==='invoice'&&(d.total*100-(d.paidCentimes||0))>0).length,[documents]);
   const lowStockProducts=useMemo(()=>products.filter(p=>{const hasVariants=productVariants.some(v=>v.productId===p.id);const quantity=hasVariants?totalVariantStock(productVariants,p.id):p.qty;return p.kind!=='service'&&quantity>0&&quantity<=5;}),[products,productVariants]);
   const outOfStockCount=useMemo(()=>products.filter(p=>{const hasVariants=productVariants.some(v=>v.productId===p.id);return p.kind!=='service'&&(hasVariants?totalVariantStock(productVariants,p.id):p.qty)<=0;}).length,[products,productVariants]);
-  const logActivity=(action:string,details:string)=>setActivityLog(current=>[{id:'activity-'+Date.now()+'-'+current.length,action,details,date:new Date().toISOString()},...current].slice(0,1000));
+  const logActivity=(action:string,details:string)=>{const actor=users.find(user=>user.id===activeUserId);setActivityLog(current=>[{id:'activity-'+Date.now()+'-'+current.length,action,details,date:new Date().toISOString(),userId:activeUserId,userName:actor?.name},...current].slice(0,1000));};
   const quoteTotal=useMemo(()=>quotes.reduce((sum,q)=>sum+q.total,0),[quotes]);
   const recordInventoryMovement=(movement:InventoryMovement)=>{try{const next=appendInventoryMovement(inventoryMovements,{...movement,warehouseId:movement.warehouseId||activeWarehouseId});setInventoryMovements(next);return true;}catch(error){showAlert('حركة المخزون',error instanceof Error?error.message:'تعذر تسجيل حركة المخزون.');return false;}};
   const recordVariantMovement=(movement:VariantStockMovement)=>{try{const result=applyVariantStockMovement(productVariants,movement,variantStockMovements);setProductVariants(result.variants);setVariantStockMovements(current=>[result.movement,...current]);return true;}catch(error){showAlert('حركة مخزون النسخة',error instanceof Error?error.message:'تعذر تسجيل حركة النسخة.');return false;}};
@@ -633,7 +633,7 @@ export default function App() {
   };
   const activeUser=users.find(user=>user.id===activeUserId)||users[0];
   const go=(s:string)=>{if(!hasModuleAccess(activeUser,s)){showAlert('ما عندكش الصلاحية','هاد القسم ما مسموحش للحساب الحالي.');return;}setScreen(s);setSearch('');};
-  const selectActiveUser=(id:string)=>{setActiveUserId(id);const next=users.find(user=>user.id===id);if(!hasModuleAccess(next,screen))setScreen('الرئيسية');};
+  const selectActiveUser=(id:string)=>{const previous=users.find(user=>user.id===activeUserId);const next=users.find(user=>user.id===id);if(next&&next.id!==activeUserId)logActivity('تبديل المستخدم',(previous?.name||'')+' → '+next.name);setActiveUserId(id);if(!hasModuleAccess(next,screen))setScreen('الرئيسية');};
   const promptUserSwitch=()=>showAlert('تبديل المستخدم','اختار الحساب اللي غادي تستعمل دابا.',users.filter(user=>user.active).map(user=>({text:user.name,onPress:()=>selectActiveUser(user.id)})));
   if(!loaded)return <SafeAreaView style={s.safe}><StatusBar style="light"/><ActivityIndicator color={GOLD} style={{flex:1}}/></SafeAreaView>;
   <LanguageContext.Provider value={language}><SafeAreaView style={s.safe}><StatusBar style="light"/><View style={s.header}><View><Text style={s.brand}>HamZa</Text><Text style={s.sub}>Gestion commerciale</Text></View><Pressable accessibilityLabel={language==='AR'?'تبديل المستخدم':'Changer d’utilisateur'} onPress={promptUserSwitch} style={s.lang}><Text style={s.gold}>{activeUser?.name||'المستخدم'}</Text></Pressable><Pressable accessibilityLabel={language==='AR'?'تغيير لغة التطبيق إلى الفرنسية':'Changer la langue de l’application en arabe'} accessibilityHint={language==='AR'?'التبديل إلى اللغة الفرنسية':'Passer en arabe'} onPress={()=>setLanguage(language==='AR'?'FR':'AR')} style={s.lang}><Text style={s.gold}>{language}</Text></Pressable></View>
@@ -830,6 +830,7 @@ export default function App() {
           <View style={{flex:1}}>
             <Text style={s.itemTitle}>{entry.action}</Text>
             <Text style={s.itemSub}>{entry.details}</Text>
+            <Text style={s.itemSub}>{entry.userName?('المستخدم: '+entry.userName):'مستخدم غير محدد'}</Text>
             <Text style={s.itemSub}>{new Date(entry.date).toLocaleString(language==='FR'?'fr-MA':'ar-MA')}</Text>
           </View>
         </View>)}
