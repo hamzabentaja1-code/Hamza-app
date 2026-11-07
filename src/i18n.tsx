@@ -96,7 +96,6 @@ const fr: Record<string, string> = {
   "تأكيد تحويل الصندوق والبنك": "Confirmer le transfert caisse-banque",
   "تحويل الصندوق والبنك": "Transfert caisse-banque",
   "معرف التحويل والحساب البنكي مطلوبان": "L’identifiant du transfert et le compte bancaire sont obligatoires",
-  "مبلغ التحويل خاصو يكون موجب وبالسنتيم": "Le montant du transfert doit être positif et exprimé en centimes",
   "تاريخ ووصف التحويل مطلوبان": "La date et la description du transfert sont obligatoires",
   "الرئيسية": "Accueil",
   "المنتجات": "Produits",
