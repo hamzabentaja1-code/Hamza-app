@@ -30,6 +30,13 @@
         {
           "iCloudContainerEnvironment": "Production"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "السماح لـ HamZa باستعمال الكاميرا لمسح الباركود.",
+          "barcodeScannerEnabled": true
+        }
       ]
     ],
     "android": {
