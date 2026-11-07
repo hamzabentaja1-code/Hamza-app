@@ -365,8 +365,8 @@ export default function App() {
     try{
       const permission=await ImagePicker.requestMediaLibraryPermissionsAsync();
       if(!permission.granted){Alert.alert('الصلاحية مطلوبة','اسمح بالوصول إلى الصور لاختيار شعار الشركة.');return;}
-      const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,aspect:[1,1],quality:0.75});
-      if(!result.canceled&&result.assets[0]?.uri)setCompanyProfile(current=>({...current,logoData:result.assets[0].uri}));
+      const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,aspect:[1,1],quality:0.75,base64:true});
+      if(!result.canceled&&result.assets[0]?.uri){const asset=result.assets[0];const logoData=asset.base64?`data:${asset.mimeType||'image/jpeg'};base64,${asset.base64}`:asset.uri;setCompanyProfile(current=>({...current,logoData}));}
     }catch(error){Alert.alert('تعذر اختيار الشعار',error instanceof Error?error.message:'وقع خطأ أثناء اختيار الصورة.');}
   };
   const exportPdf=async(title:string,customerName:string,lines:string[],total:number)=>{
