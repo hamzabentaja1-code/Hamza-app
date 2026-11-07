@@ -1,5 +1,6 @@
 import React, {useContext} from 'react';
 import {Text as NativeText, TextInput as NativeTextInput, TextProps, TextInputProps} from 'react-native';
+import {translateWithDictionary} from './domain/localization';
 
 export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
@@ -1151,13 +1152,7 @@ const fr: Record<string, string> = {
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
-  if (value === undefined || language === 'AR') return value;
-  if (fr[value]) return fr[value];
-  let result = value;
-  for (const [ar, translated] of Object.entries(fr).sort((a,b)=>b[0].length-a[0].length)) {
-    result = result.split(ar).join(translated);
-  }
-  return result;
+  return translateWithDictionary(value, language, fr);
 }
 
 export function TText(props: TextProps) {
