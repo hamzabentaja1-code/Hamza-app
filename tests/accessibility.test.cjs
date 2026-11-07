@@ -93,3 +93,16 @@ test('field operations and recurring expense selectors announce selected state',
   assert.match(recurring, /accessibilityState=\{\{selected:frequency===x\.id\}\}/);
   assert.match(recurring, /accessibilityState=\{\{selected:projectId===String\(x\.id\)\}\}/);
 });
+
+
+test('agenda month navigation and day cells are accessible and translated', () => {
+  const agenda = read('src/AgendaWorkspace.tsx');
+  assert.match(agenda, /accessibilityLabel=\{t\('الشهر السابق'\)\}/);
+  assert.match(agenda, /accessibilityLabel=\{t\('الشهر التالي'\)\}/);
+  assert.match(agenda, /accessibilityState=\{\{selected:fromDate===day\.date&&toDate===day\.date\}\}/);
+  assert.match(agenda, /accessibilityHint=\{t\('اضغط لعرض مواعيد هذا اليوم'\)\}/);
+  const translations = read('src/i18n.tsx');
+  for (const label of ['الشهر السابق','الشهر التالي','الاثنين','الأحد','اضغط لعرض مواعيد هذا اليوم']) {
+    assert.ok(translations.includes('"'+label+'"'), 'missing French translation for '+label);
+  }
+});
