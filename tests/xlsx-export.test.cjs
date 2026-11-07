@@ -14,3 +14,13 @@ test('period report exposes an XLSX export action and shares a generated workboo
  assert.ok(report.includes('onExportXlsx('));
  assert.ok(report.includes('تصدير التقرير Excel (XLSX)'));
 });
+
+test('XLSX package creates a readable workbook with report rows',()=>{
+ const XLSX=require('xlsx');
+ const workbook=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(workbook,XLSX.utils.aoa_to_sheet([['Metric','Value'],['Net sales',125.5]]),'Report');
+ const base64=XLSX.write(workbook,{bookType:'xlsx',type:'base64'});
+ const restored=XLSX.read(base64,{type:'base64'});
+ const rows=XLSX.utils.sheet_to_json(restored.Sheets.Report,{header:1});
+ assert.deepEqual(rows,[['Metric','Value'],['Net sales',125.5]]);
+});
