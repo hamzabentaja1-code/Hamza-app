@@ -76,7 +76,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Atomic internal bank transfers with paired entries, duplicate/overdraft protection and unchanged combined bank balance
 - [x] Bank account reconciliation against a statement balance with an auditable adjustment and reconciliation history
 - [x] POS card and bank-transfer sales are posted to the selected bank account; checkout validates the account before committing stock and payment ledgers
-- [ ] Cash-to-bank transfers, cheque/draft lifecycle and bank statement file import
+- [x] Cash-to-bank and bank-to-cash transfers update both ledgers atomically with overdraft protection
+- [ ] Cheque/draft lifecycle and bank statement file import
 - [x] Partial customer invoice payments and supplier purchase payments with centime-safe allocation and balance recalculation
 - [ ] Payment across multiple invoices/purchases, cheques, drafts, unpaid items and automated due-date reminders
 - [x] Manual statement-balance reconciliation with stored difference and adjustment entry
