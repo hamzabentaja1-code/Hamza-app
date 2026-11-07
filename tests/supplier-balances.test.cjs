@@ -9,8 +9,8 @@ test('groups supplier debts and partial payments in integer centimes', () => {
     { supplierName: 'Supplier B', total: 300, paidCentimes: 30000 },
   ]);
   assert.deepEqual(result, [
-    { supplierName: 'Supplier A', purchaseCount: 2, totalCentimes: 60000, paidCentimes: 12500, openingBalanceCentimes: 0, outstandingCentimes: 47500 },
-    { supplierName: 'Supplier B', purchaseCount: 1, totalCentimes: 30000, paidCentimes: 30000, openingBalanceCentimes: 0, outstandingCentimes: 0 },
+    { supplierName: 'Supplier A', purchaseCount: 2, totalCentimes: 60000, paidCentimes: 12500, openingBalanceCentimes: 0, returnedCentimes: 0, outstandingCentimes: 47500 },
+    { supplierName: 'Supplier B', purchaseCount: 1, totalCentimes: 30000, paidCentimes: 30000, openingBalanceCentimes: 0, returnedCentimes: 0, outstandingCentimes: 0 },
   ]);
 });
 
@@ -29,4 +29,12 @@ test('rejects invalid supplier opening balances', () => {
   assert.throws(() => calculateSupplierBalances([], [
     { supplierName: 'Supplier D', openingBalanceCentimes: -1 },
   ]));
+});
+
+test('subtracts supplier returns from debts and can show a supplier credit',()=>{
+ const result=calculateSupplierBalances([{supplierName:'A',total:100,paidCentimes:10000}],[],[
+  {supplierName:'A',amountCentimes:2500},
+ ]);
+ assert.equal(result[0].returnedCentimes,2500);
+ assert.equal(result[0].outstandingCentimes,-2500);
 });
