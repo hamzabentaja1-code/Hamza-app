@@ -87,6 +87,8 @@ const fr: Record<string, string> = {
   "دخل اسم الحساب ورصيد افتتاحي صحيح، وآخر 4 أرقام فقط للحساب.": "Saisissez le nom du compte, un solde initial valide et uniquement les 4 derniers chiffres.",
   "مبلغ التحويل خاصو يكون موجب وبالسنتيم": "Le montant du virement doit être positif et exprimé en centimes",
   "رصيد كشف البنك خاصو يكون صفر أو أكثر وبالسنتيم": "Le solde du relevé doit être positif ou nul et exprimé en centimes",
+  "الحساب البنكي الذي سيستقبل الأداء: ": "Compte bancaire qui recevra le paiement : ",
+  "ما تختارش حساب بنكي. دخل لقسم الحسابات البنكية واختار الحساب أولاً.": "Aucun compte bancaire sélectionné. Ouvrez Comptes bancaires et choisissez d’abord un compte.",
   "الرئيسية": "Accueil",
   "المنتجات": "Produits",
   "نقطة البيع": "Point de vente",
