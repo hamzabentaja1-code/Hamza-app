@@ -384,3 +384,14 @@ test('quotes track expiry and accepted/rejected lifecycle with safe deletion', (
   assert.match(quote, /ما يمكنش تحويل عرض مرفوض أو منتهي/);
   assert.match(app, /onDelete=\{\(id\)=>\{const quote=quotes\.find/);
 });
+
+test('proforma invoices have their own series and document screen without affecting stock', () => {
+  const app = read('App.tsx');
+  const quote = read('src/QuoteWorkspace.tsx');
+  const conversion = read('src/domain/document-conversion.ts');
+  assert.match(app, /proformaPrefix:'PRO'/);
+  assert.match(app, /screen==='الفواتير الأولية'/);
+  assert.match(app, /type==='delivery'\?companyProfile\.deliveryPrefix:companyProfile\.proformaPrefix/);
+  assert.match(quote, /onConvert\(q,'proforma'\)/);
+  assert.match(conversion, /type!=='proforma'&&/);
+});
