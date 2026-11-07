@@ -13,6 +13,9 @@ test('report layout defaults to all sections and normalizes partial or corrupt s
 test('report layout cannot disable the final remaining section or comparison without summary',()=>{
  let current={summary:true,comparison:false,monthlyTrend:false,supplierComparison:false};
  assert.deepEqual(layout.togglePeriodReportLayout(current,'summary'),current);
+ const summaryOff=layout.togglePeriodReportLayout({summary:true,comparison:true,monthlyTrend:true,supplierComparison:false},'summary');
+ assert.deepEqual(summaryOff,{summary:false,comparison:false,monthlyTrend:true,supplierComparison:false});
+ assert.deepEqual(layout.togglePeriodReportLayout(summaryOff,'summary'),{summary:true,comparison:true,monthlyTrend:true,supplierComparison:false});
  current={summary:false,comparison:true,monthlyTrend:true,supplierComparison:false};
  assert.deepEqual(layout.togglePeriodReportLayout(current,'comparison'),current);
  assert.deepEqual(layout.togglePeriodReportLayout(current,'monthlyTrend'),{summary:false,comparison:true,monthlyTrend:false,supplierComparison:false});
