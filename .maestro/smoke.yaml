@@ -109,7 +109,7 @@ appId: com.hamza.app
 - assertVisible: "إضافة مخزن"
 - assertVisible: "المخزون حسب المخزن"
 - tapOn: "الرئيسية"
-lVisible:
+- scrollUntilVisible:
     element:
       text: "قلب على قسم..."
     direction: DOWN
