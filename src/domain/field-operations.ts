@@ -30,6 +30,8 @@ export function createWorkTimeEntry(entry:Omit<WorkTimeEntry,'costCentimes'>,ord
  if(!entry.id.trim()||!validDate(entry.date)||!Number.isFinite(entry.hours)||entry.hours<=0||entry.hours>24)throw new Error('تاريخ وساعات العمل غير صالحة');
  if(order.id!==entry.workOrderId||!['in_progress','completed'].includes(order.status))throw new Error('أمر العمل غير مفتوح لتسجيل الساعات');
  if(technician.id!==entry.technicianId||!technician.active)throw new Error('التقني غير صالح أو غير نشط');
+ if(order.technicianId&&order.technicianId!==technician.id)throw new Error('التقني غير مخول لهذا أمر العمل');
+ if(order.category&&!technicianCanPerform(technician,order.category))throw new Error('التقني غير مخول لهذا النوع من الأعمال');
  if(!Number.isFinite(entry.hourlyRate)||entry.hourlyRate<0)throw new Error('سعر ساعة العمل غير صالح');
  return {...entry,costCentimes:Math.round(entry.hours*entry.hourlyRate*100)};
 }
