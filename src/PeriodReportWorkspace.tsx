@@ -66,15 +66,15 @@ export default function PeriodReportWorkspace({sales,salesReturns,purchases,supp
    {analytics.trend.map(row=><View key={row.month} style={styles.metric}>
     <Text style={styles.label}>{row.month}</Text>
     <Text style={styles.note}>المبيعات: {money(row.sales)} • المشتريات: {money(row.purchases)}</Text>
-    <View style={styles.track}><View style={[styles.bar,{width:(row.sales/maxMonthly*100)+'%'}]}/></View>
-    <View style={styles.track}><View style={[styles.purchaseBar,{width:(row.purchases/maxMonthly*100)+'%'}]}/></View>
+    <View style={styles.track}><View style={[styles.bar,{width:((row.sales/maxMonthly*100)+'%') as `${number}%`}]}/></View>
+    <View style={styles.track}><View style={[styles.purchaseBar,{width:((row.purchases/maxMonthly*100)+'%') as `${number}%`}]}/></View>
     <Text style={styles.note}>مرتجعات المبيعات: {money(row.salesReturns)} • مرتجعات الموردين: {money(row.supplierReturns)} • المصاريف: {money(row.expenses)}</Text>
    </View>)}
    <Text style={styles.section}>مقارنة الموردين حسب صافي المشتريات</Text>
    {analytics.suppliers.map(row=><View key={row.supplierName} style={styles.metric}>
     <Text style={styles.label}>{row.supplierName}</Text>
     <Text style={styles.value}>{money(row.netPurchases)}</Text>
-    <View style={styles.track}><View style={[styles.purchaseBar,{width:(Math.max(0,row.netPurchases)/maxSupplier*100)+'%'}]}/></View>
+    <View style={styles.track}><View style={[styles.purchaseBar,{width:((Math.max(0,row.netPurchases)/maxSupplier*100)+'%') as `${number}%`}]}/></View>
     <Text style={styles.note}>عدد المشتريات: {row.purchaseCount} • الإجمالي: {money(row.grossPurchases)} • المرتجعات: {money(row.returns)}</Text>
    </View>)}
    {analytics.suppliers.length===0?<Text style={styles.note}>لا توجد مشتريات موردين في الفترة المحددة.</Text>:null}
