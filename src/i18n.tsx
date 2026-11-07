@@ -1248,6 +1248,7 @@ const fr: Record<string, string> = {
   "إضافة فئة": "Ajouter une catégorie",
   "بدون فئة": "Sans catégorie",
   "حذف الفئة؟": "Supprimer la catégorie ?",
+  "حذف فئة ": "Supprimer la catégorie ",
   "الفئة مستعملة": "Catégorie utilisée",
   "ما يمكنش تحذف فئة مرتبطة بمعدة.": "Impossible de supprimer une catégorie liée à un équipement.",
   "اسم فئة المعدات مطلوب": "Le nom de la catégorie d’équipement est obligatoire",
