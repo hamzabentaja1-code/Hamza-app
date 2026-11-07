@@ -890,6 +890,14 @@ const fr: Record<string, string> = {
   "إضافة شيك": "Ajouter un chèque",
   "ملاحظات (اختياري)": "Notes (facultatif)",
 
+
+  "الشيكات الواردة: ": "Chèques reçus : ",
+  "الصادرة: ": "Émis : ",
+  "قيد المعالجة: ": "En cours : ",
+  "الحركات المسجلة: ": "Mouvements enregistrés : ",
+  "الواردة غير المحصلة: ": "Chèques reçus non encaissés : ",
+  "الصادرة غير المؤداة: ": "Chèques émis non payés : ",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
