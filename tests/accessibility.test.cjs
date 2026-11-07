@@ -261,3 +261,10 @@ test('supplier payments can be allocated across purchases and reversed as one tr
   assert.match(app, /دفعة موزعة/);
   assert.match(domain, /sort\(\(a,b\)=>a\.purchase\.id-b\.purchase\.id\)/);
 });
+
+
+test('stock count UI accepts whole units only before submitting', () => {
+  const app = read('App.tsx');
+  assert.match(app, /Number\\.isSafeInteger\\(counted\\)/);
+  assert.match(app, /keyboardType="number-pad" placeholder="الكمية المعدودة فعلياً"/);
+});
