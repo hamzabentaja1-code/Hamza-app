@@ -302,7 +302,11 @@ const fr: Record<string, string> = {
   "الوحدة: ": "Unité : ",
   "الموديل: ": "Modèle : ",
   "كل سطر منتج واحد، والفاصل هو ; أو Tab. الترتيب: الاسم؛ المرجع؛ الباركود؛ الصنف؛ ثمن الشراء؛ ثمن البيع؛ الكمية؛ العلامة التجارية؛ الوحدة؛ الموديل. الحقول الإضافية اختيارية.": "Une ligne par produit, séparateur ; ou Tab. Ordre : nom ; référence ; code-barres ; catégorie ; prix d’achat ; prix de vente ; quantité ; marque ; unité ; modèle. Les champs supplémentaires sont facultatifs.",
-  "الاسم;المرجع;الباركود;الصنف;ثمن الشراء;ثمن البيع;الكمية;العلامة التجارية;الوحدة;الموديل\nRouteur;R-01;61100001;Réseau;150;220;5;TP-Link;Pièce;Archer C6": "Nom;Référence;Code-barres;Catégorie;Prix d’achat;Prix de vente;Quantité;Marque;Unité;Modèle\nRouteur;R-01;61100001;Réseau;150;220;5;TP-Link;Pièce;Archer C6"
+  "الاسم;المرجع;الباركود;الصنف;ثمن الشراء;ثمن البيع;الكمية;العلامة التجارية;الوحدة;الموديل\nRouteur;R-01;61100001;Réseau;150;220;5;TP-Link;Pièce;Archer C6": "Nom;Référence;Code-barres;Catégorie;Prix d’achat;Prix de vente;Quantité;Marque;Unité;Modèle\nRouteur;R-01;61100001;Réseau;150;220;5;TP-Link;Pièce;Archer C6",
+  "سمح للتطبيق بالوصول للصور لاختيار شعار الشركة.": "Autorisez l’accès aux photos pour choisir le logo de l’entreprise.",
+  "إضافة شعار الشركة": "Ajouter le logo de l’entreprise",
+  "تغيير شعار الشركة": "Modifier le logo de l’entreprise",
+  "حذف الشعار": "Supprimer le logo"
 };
 
 export function translate(language: AppLanguage, value: string): string {
