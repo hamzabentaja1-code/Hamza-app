@@ -844,6 +844,13 @@ const fr: Record<string, string> = {
 
   "الخدمات لا تستقبل في المخزون.": "Les services ne sont pas gérés dans le stock.",
 
+  "ثمن خاص بالديفي (اختياري)": "Prix spécifique au devis (facultatif)",
+  "ثمن خاص بالفاتورة (اختياري)": "Prix spécifique à la facture (facultatif)",
+  "ثمن الفاتورة غير صالح": "Prix de facture invalide",
+  "راجع أثمنة الفاتورة.": "Vérifiez les prix de la facture.",
+  "سطر العرض يحتوي على كمية أو ثمن غير صالح": "Une ligne du devis contient une quantité ou un prix invalide",
+  "ثمن الفاتورة غير صالح للمنتج ": "Prix de facture invalide pour le produit ",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
