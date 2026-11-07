@@ -25,7 +25,7 @@ function validDate(value: string): boolean {
 }
 function validateOrder(order: PurchaseOrder): void {
   if (!Number.isSafeInteger(order.id) || order.id <= 0 || !order.supplierName.trim() ||
-      !validDate(order.createdAt) || !Array.isArray(order.lines) || order.lines.length === 0 ||
+      !validDate(order.createdAt) || (order.expectedDate!==undefined && !validDate(order.expectedDate)) || !Array.isArray(order.lines) || order.lines.length === 0 ||
       !['draft','ordered','partially_received','received','cancelled'].includes(order.status)) {
     throw new Error('أمر الشراء المحفوظ غير صالح');
   }
