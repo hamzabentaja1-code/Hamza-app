@@ -87,3 +87,11 @@ test('translates dynamic Arabic bulk-import, invoice, purchase and balance fragm
     'فاتورة FAC-0001 • المجموع 120 • Payé 40 • Restant 80 DH',
   );
 });
+
+
+test('French dictionary covers remaining static alert messages', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'i18n.tsx'), 'utf8');
+  for (const key of ['تم تسجيل الحركة', 'معلومات غير صالحة', 'راجع الحقول.', 'تعذر تصدير التقرير']) {
+    assert.ok(source.includes(JSON.stringify(key) + ':'), 'missing translation for ' + key);
+  }
+});
