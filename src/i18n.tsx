@@ -1242,6 +1242,18 @@ const fr: Record<string, string> = {
   "مقارنة الموردين": "Comparaison des fournisseurs",
   "الأقسام المختارة فقط هي التي ستظهر في التقرير PDF وCSV وExcel. الإعدادات محفوظة على الهاتف.": "Seules les sections sélectionnées apparaîtront dans les rapports PDF, CSV et Excel. Les paramètres sont enregistrés sur le téléphone.",
   "ملخص الفترة الحالية": "Résumé de la période actuelle",
+  "فئات المعدات": "Catégories d’équipement",
+  "اسم فئة جديدة": "Nom de la nouvelle catégorie",
+  "إضافة فئة": "Ajouter une catégorie",
+  "بدون فئة": "Sans catégorie",
+  "حذف الفئة؟": "Supprimer la catégorie ?",
+  "الفئة مستعملة": "Catégorie utilisée",
+  "ما يمكنش تحذف فئة مرتبطة بمعدة.": "Impossible de supprimer une catégorie liée à un équipement.",
+  "اسم فئة المعدات مطلوب": "Le nom de la catégorie d’équipement est obligatoire",
+  "اسم فئة المعدات مطلوب وأقصاه 48 حرفاً": "Le nom de la catégorie d’équipement est obligatoire et limité à 48 caractères",
+  "فئة المعدات موجودة من قبل": "Cette catégorie d’équipement existe déjà",
+  "المعدة غير موجودة أو غير متاحة": "L’équipement est introuvable ou indisponible",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
