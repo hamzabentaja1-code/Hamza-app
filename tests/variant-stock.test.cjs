@@ -95,3 +95,62 @@ test('variant stock selling value and potential profit use per-variant prices in
   assert.equal(variantStockValueCentimes(variants,3,7000),46000);
   assert.equal(variantStockProfitCentimes(variants,3,7000,4000),14000);
 });
+
+
+const {
+  DEFAULT_VARIANT_WAREHOUSE_ID,
+  variantWarehouseBalance,
+  variantWarehouseBalances,
+  variantWarehouseStockMatrix,
+} = require('../.test-build/variant-stock.js');
+
+test('variant balances are separated by warehouse and legacy movements use the default warehouse', () => {
+  const history = [
+    {id:'legacy-open',variantId:'v-1',kind:'opening',quantityDelta:8,date:'2026-11-01'},
+    {id:'purchase-a',variantId:'v-1',kind:'purchase',quantityDelta:5,date:'2026-11-02',warehouseId:'warehouse-a'},
+    {id:'sale-a',variantId:'v-1',kind:'sale',quantityDelta:-2,date:'2026-11-03',warehouseId:'warehouse-a'},
+    {id:'purchase-b',variantId:'v-1',kind:'purchase',quantityDelta:4,date:'2026-11-04',warehouseId:'warehouse-b'},
+    {id:'sale-b',variantId:'v-1',kind:'sale',quantityDelta:-1,date:'2026-11-05',warehouseId:'warehouse-b'},
+  ];
+  assert.equal(variantWarehouseBalance('v-1',history),8);
+  assert.equal(variantWarehouseBalance('v-1',history,DEFAULT_VARIANT_WAREHOUSE_ID),8);
+  assert.equal(variantWarehouseBalance('v-1',history,'warehouse-a'),3);
+  assert.equal(variantWarehouseBalance('v-1',history,'warehouse-b'),3);
+  assert.equal(variantWarehouseBalance('v-1',history,'warehouse-empty'),0);
+});
+
+test('variant stock matrix includes zero balances and excludes inactive variants', () => {
+  const variants = [
+    createProductVariant(variant()),
+    createProductVariant(variant({id:'v-2',sku:'TSHIRT-RED-L',barcode:'654321',attributes:{color:'red',size:'L'},active:false,stockQty:0})),
+  ];
+  const history = [
+    {id:'a1',variantId:'v-1',kind:'opening',quantityDelta:4,date:'2026-11-01',warehouseId:'warehouse-a'},
+    {id:'a2',variantId:'v-1',kind:'sale',quantityDelta:-1,date:'2026-11-02',warehouseId:'warehouse-a'},
+  ];
+  const matrix = variantWarehouseStockMatrix(variants,history,[
+    {id:'warehouse-a',name:'المخزن الأول'},
+    {id:'warehouse-b',name:'المخزن الثاني'},
+  ],10);
+  assert.equal(matrix.length,2);
+  assert.deepEqual(matrix.map(row=>row.quantity),[3,0]);
+  assert.equal(matrix[0].warehouseName,'المخزن الأول');
+  assert.deepEqual(matrix[0].attributes,{color:'black',size:'m'});
+});
+
+test('variant warehouse helpers reject invalid warehouse lists and identifiers', () => {
+  assert.throws(()=>variantWarehouseBalance('',[]),/غير صالح/);
+  assert.throws(()=>variantWarehouseStockMatrix([],[],[{id:'x',name:'A'},{id:'x',name:'B'}]),/غير صالحة/);
+  assert.throws(()=>variantWarehouseStockMatrix([],[],[{id:'',name:'A'}]),/غير صالحة/);
+});
+
+test('warehouse balance helper returns each requested warehouse with its balance', () => {
+  const balances = variantWarehouseBalances('v-1',[
+    {id:'m1',variantId:'v-1',kind:'purchase',quantityDelta:7,date:'2026-11-01',warehouseId:'warehouse-a'},
+    {id:'m2',variantId:'v-1',kind:'sale',quantityDelta:-2,date:'2026-11-02',warehouseId:'warehouse-a'},
+  ],[{id:'warehouse-a',name:'A'},{id:'warehouse-b',name:'B'}]);
+  assert.deepEqual(balances,[
+    {warehouseId:'warehouse-a',warehouseName:'A',quantity:5},
+    {warehouseId:'warehouse-b',warehouseName:'B',quantity:0},
+  ]);
+});
