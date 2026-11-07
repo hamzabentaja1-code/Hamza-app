@@ -963,6 +963,7 @@ const fr: Record<string, string> = {
   "مقبول": "Accepté",
   "المتوفر: ": "Disponible : ",
 
+  "تصدير التقرير CSV": "Exporter le rapport CSV",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
