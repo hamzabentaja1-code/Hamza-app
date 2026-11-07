@@ -14,5 +14,6 @@ export function normalizePeriodReportLayout(value:unknown):PeriodReportLayout{
 export function togglePeriodReportLayout(layout:PeriodReportLayout,key:PeriodReportLayoutKey):PeriodReportLayout{
  if(layout[key]&&Object.values(layout).filter(Boolean).length===1)return layout;
  if(key==='comparison'&&!layout.summary)return layout;
+ if(key==='summary')return {...layout,summary:!layout.summary,comparison:!layout.summary};
  return {...layout,[key]:!layout[key]};
 }
