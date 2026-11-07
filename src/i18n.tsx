@@ -1254,7 +1254,6 @@ const fr: Record<string, string> = {
   "اسم فئة المعدات مطلوب": "Le nom de la catégorie d’équipement est obligatoire",
   "اسم فئة المعدات مطلوب وأقصاه 48 حرفاً": "Le nom de la catégorie d’équipement est obligatoire et limité à 48 caractères",
   "فئة المعدات موجودة من قبل": "Cette catégorie d’équipement existe déjà",
-  "المعدة غير موجودة أو غير متاحة": "L’équipement est introuvable ou indisponible",
 
 };
 
