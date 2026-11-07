@@ -1145,6 +1145,8 @@ const fr: Record<string, string> = {
   "تعذر اختيار الصورة": "Impossible de sélectionner l’image",
   "راجع صلاحية الصور.": "Vérifiez l’autorisation d’accès aux photos.",
   "حقل مخصص غير صالح": "Champ personnalisé invalide",
+  "راجع الحقل.": "Vérifiez le champ.",
+  "راجع الصورة.": "Vérifiez l’image.",
   "اسم الحقل مطلوب ولا يتجاوز 40 حرفاً": "Le nom du champ est obligatoire et ne doit pas dépasser 40 caractères",
   "قيمة الحقل مطلوبة ولا تتجاوز 240 حرفاً": "La valeur du champ est obligatoire et ne doit pas dépasser 240 caractères",
   "الحد الأقصى هو 20 حقلاً مخصصاً": "La limite est de 20 champs personnalisés",
