@@ -1,19 +1,16 @@
-import React, {useContext, useMemo, useState} from 'react';
-import {View, ScrollView, StyleSheet, Alert} from 'react-native';
-import {TText as Text, TTextInput as TextInput, LanguageContext, translateText} from './i18n';
-import AccessiblePressable from './AccessiblePressable';
+import React, {useMemo, useState} from 'react';
+import {View, ScrollView, StyleSheet, Alert, Pressable, Text, TextInput} from 'react-native';
 import {ContactInteraction, ContactInteractionKind, ContactType, filterContactInteractions} from './domain/contact-history';
 
-const Pressable=AccessiblePressable;
 type Contact={id:number;name:string};
 type Props={customers:Contact[];suppliers:Contact[];entries:ContactInteraction[];onAdd:(input:{contactType:ContactType;contactId:number;contactName:string;kind:ContactInteractionKind;summary:string})=>void;onDelete:(id:number)=>void};
 const labels:Record<ContactInteractionKind,string>={call:'مكالمة',message:'رسالة',meeting:'اجتماع',note:'ملاحظة'};
 export default function ContactHistoryWorkspace({customers,suppliers,entries,onAdd,onDelete}:Props){
- const language=useContext(LanguageContext);const [contactType,setContactType]=useState<ContactType>('customer');const [contactId,setContactId]=useState('');const [kind,setKind]=useState<ContactInteractionKind>('note');const [summary,setSummary]=useState('');
+const [contactType,setContactType]=useState<ContactType>('customer');const [contactId,setContactId]=useState('');const [kind,setKind]=useState<ContactInteractionKind>('note');const [summary,setSummary]=useState('');
  const contacts=contactType==='customer'?customers:suppliers;const selected=contacts.find(x=>String(x.id)===contactId);
  const visible=useMemo(()=>contactId?filterContactInteractions(entries,contactType,Number(contactId)):filterContactInteractions(entries),[entries,contactId,contactType]);
- const add=()=>{if(!selected){Alert.alert(translateText('اختار جهة الاتصال',language)||'اختار جهة الاتصال');return;}try{onAdd({contactType,contactId:selected.id,contactName:selected.name,kind,summary});setSummary('');}catch(e){Alert.alert(translateText('تعذر حفظ المتابعة',language)||'تعذر حفظ المتابعة',translateText(e instanceof Error?e.message:'راجع المعلومات.',language)||'راجع المعلومات.');}};
- const remove=(entry:ContactInteraction)=>Alert.alert(translateText('حذف المتابعة؟',language)||'حذف المتابعة؟',entry.contactName+' • '+entry.summary,[{text:translateText('إلغاء',language)||'إلغاء',style:'cancel'},{text:translateText('حذف',language)||'حذف',style:'destructive',onPress:()=>onDelete(entry.id)}]);
+ const add=()=>{if(!selected){Alert.alert('اختار جهة الاتصال');return;}try{onAdd({contactType,contactId:selected.id,contactName:selected.name,kind,summary});setSummary('');}catch(e){Alert.alert('تعذر حفظ المتابعة',(e instanceof Error?e.message:'راجع المعلومات.'));}};
+ const remove=(entry:ContactInteraction)=>Alert.alert('حذف المتابعة؟',entry.contactName+' • '+entry.summary,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>onDelete(entry.id)}]);
  return <ScrollView contentContainerStyle={s.body}>
   <View style={s.panel}><Text style={s.title}>سجل التواصل مع الزبناء والموردين</Text>
    <View style={s.row}><Pressable accessibilityState={{selected:contactType==='customer'}} onPress={()=>{setContactType('customer');setContactId('');}} style={[s.choice,contactType==='customer'&&s.active]}><Text style={s.choiceText}>الزبناء</Text></Pressable><Pressable accessibilityState={{selected:contactType==='supplier'}} onPress={()=>{setContactType('supplier');setContactId('');}} style={[s.choice,contactType==='supplier'&&s.active]}><Text style={s.choiceText}>الموردون</Text></Pressable></View>
@@ -24,7 +21,7 @@ export default function ContactHistoryWorkspace({customers,suppliers,entries,onA
    <Pressable accessibilityRole="button" onPress={add} style={s.action}><Text style={s.actionText}>حفظ المتابعة</Text></Pressable>
   </View>
   <View style={s.panel}><Text style={s.title}>سجل المتابعات ({visible.length})</Text>
-   {visible.map(entry=><View key={entry.id} style={s.entry}><View style={{flex:1}}><Text style={s.entryTitle}>{entry.contactName} • {entry.contactType==='customer'?'زبون':'مورد'} • {labels[entry.kind]}</Text><Text style={s.note}>{entry.summary}</Text><Text style={s.date}>{new Date(entry.createdAt).toLocaleString(language==='FR'?'fr-MA':'ar-MA')}</Text></View><Pressable onPress={()=>remove(entry)}><Text style={s.delete}>حذف</Text></Pressable></View>)}
+   {visible.map(entry=><View key={entry.id} style={s.entry}><View style={{flex:1}}><Text style={s.entryTitle}>{entry.contactName} • {entry.contactType==='customer'?'زبون':'مورد'} • {labels[entry.kind]}</Text><Text style={s.note}>{entry.summary}</Text><Text style={s.date}>{new Date(entry.createdAt).toLocaleString('ar-MA')}</Text></View><Pressable onPress={()=>remove(entry)}><Text style={s.delete}>حذف</Text></Pressable></View>)}
    {visible.length===0?<Text style={s.note}>ما كايناش متابعات مسجلة دابا.</Text>:null}
   </View>
  </ScrollView>;
