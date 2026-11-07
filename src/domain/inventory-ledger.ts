@@ -166,7 +166,10 @@ export function createStockCount(
 export function inventoryMovementsForProduct(
   movements: InventoryMovement[],
   productId: number,
+  warehouseId?: string,
 ): InventoryMovement[] {
-  return movements.filter(item => item.productId === productId)
-    .slice().sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  return movements.filter(item =>
+    item.productId === productId &&
+    (warehouseId === undefined || movementWarehouseId(item) === warehouseId)
+  ).slice().sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
 }
