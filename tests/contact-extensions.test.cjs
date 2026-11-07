@@ -32,12 +32,12 @@ test('price groups validate names and apply centime-safe discounts',()=>{
 
 test('contact custom fields and saved image gallery are integrated for customers and suppliers',()=>{
  const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
- assert.match(app,/parseContactCustomFieldsText\\(customerCustomFieldsText/);
- assert.match(app,/parseContactCustomFieldsText\\(supplierCustomFieldsText/);
- assert.match(app,/x\\.attachments\\.map\\(file/);
- assert.match(app,/c\\.attachments\\.map\\(file/);
- assert.match(app,/removeContactAttachment/);
- assert.match(app,/Image source=\\{\\{uri:file\\.dataUri\\}\\}/);
+ assert.ok(app.includes('parseContactCustomFieldsText(customerCustomFieldsText'));
+ assert.ok(app.includes('parseContactCustomFieldsText(supplierCustomFieldsText'));
+ assert.ok(app.includes('x.attachments.map(file'));
+ assert.ok(app.includes('c.attachments.map(file'));
+ assert.ok(app.includes('removeContactAttachment'));
+ assert.ok(app.includes('Image source={{uri:file.dataUri}}'));
 });
 test('customer price groups persist through the app and flow from contact selection into quotes and invoices',()=>{
  const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
