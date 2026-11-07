@@ -11,12 +11,13 @@ type CheckoutLine = {productId:number; name:string; quantity:number; unitPrice:n
 type Props = {
   products: Product[];
   customers: Customer[];
+  bankAccountName?: string;
   onCheckout: (data:{customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'; total:number})=>boolean|void;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PosWorkspace({products,customers,onCheckout}:Props){
+export default function PosWorkspace({products,customers,bankAccountName,onCheckout}:Props){
   const language:AppLanguage=useContext(LanguageContext);
   const [term,setTerm]=useState('');
   const [customerId,setCustomerId]=useState('');
@@ -79,6 +80,7 @@ export default function PosWorkspace({products,customers,onCheckout}:Props){
       <View style={{flexDirection:'row',gap:7}}>
         {([{id:'cash',label:'نقداً'},{id:'card',label:'بطاقة'},{id:'transfer',label:'تحويل'}] as const).map(m=><Pressable key={m.id} accessibilityState={{selected:method===m.id}} onPress={()=>setMethod(m.id)} style={{flex:1,borderWidth:1,borderColor:method===m.id?GOLD:'#444',borderRadius:8,padding:10,alignItems:'center'}}><Text style={{color:'#FFF'}}>{m.label}</Text></Pressable>)}
       </View>
+      {method!=='cash'&&<Text style={{color:bankAccountName?'#D6AE55':'#E28A78',fontSize:12,marginTop:6}}>{bankAccountName?'الحساب البنكي الذي سيستقبل الأداء: '+bankAccountName:'ما تختارش حساب بنكي. دخل لقسم الحسابات البنكية واختار الحساب أولاً.'}</Text>}
       <TextInput value={discountText} onChangeText={setDiscountText} keyboardType="decimal-pad" placeholder="تخفيض عام (DH)" placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',marginTop:12,textAlign:'right'}}/>
       <View style={{backgroundColor:'#111',borderRadius:9,padding:12,marginTop:10,gap:6}}>
         <Text style={{color:'#DDD'}}>المجموع قبل التخفيض: {money(totals.subtotal)}</Text>
