@@ -108,7 +108,7 @@ test('all Arabic alert titles and messages in primary workspaces have French tra
     'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx',
     'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx',
     'src/ChequeWorkspace.tsx', 'src/VariantWorkspace.tsx', 'src/UserAccessWorkspace.tsx',
-    'src/ContactHistoryWorkspace.tsx'];
+    'src/ContactHistoryWorkspace.tsx', 'src/CustomerOrdersWorkspace.tsx'];
   const dictionarySource = fs.readFileSync(path.join(__dirname, '..', 'src', 'i18n.tsx'), 'utf8');
   const keys = new Set([...dictionarySource.matchAll(/^\s*"((?:\\.|[^"\\])*)"\s*:/gm)].map(match => match[1]));
   for (const file of files) {
