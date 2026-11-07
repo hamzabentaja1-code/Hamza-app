@@ -190,8 +190,8 @@ export default function App() {
     return true;
   };
   const go=(s:string)=>{setScreen(s);setSearch('');};
-  if(!loaded)return <LanguageContext.Provider value={language}><SafeAreaView style={s.safe}><StatusBar style="light"/><ActivityIndicator color={GOLD} style={{flex:1}}/></SafeAreaView>;
-  return <SafeAreaView style={s.safe}><StatusBar style="light"/><View style={s.header}><View><Text style={s.brand}>HamZa</Text><Text style={s.sub}>Gestion commerciale</Text></View><Pressable onPress={()=>setLanguage(language==='AR'?'FR':'AR')} style={s.lang}><Text style={s.gold}>{language}</Text></Pressable></View>
+  if(!loaded)return <SafeAreaView style={s.safe}><StatusBar style="light"/><ActivityIndicator color={GOLD} style={{flex:1}}/></SafeAreaView>;
+  <LanguageContext.Provider value={language}><SafeAreaView style={s.safe}><StatusBar style="light"/><View style={s.header}><View><Text style={s.brand}>HamZa</Text><Text style={s.sub}>Gestion commerciale</Text></View><Pressable onPress={()=>setLanguage(language==='AR'?'FR':'AR')} style={s.lang}><Text style={s.gold}>{language}</Text></Pressable></View>
     <ScrollView contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
       <View style={s.topline}><Pressable onPress={()=>go('الرئيسية')}><Text style={s.back}>⌂ الرئيسية</Text></Pressable><Text style={s.heading}>{screen}</Text></View>
       {screen==='الرئيسية'?<>
