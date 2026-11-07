@@ -449,5 +449,5 @@ test('POS parked sales can be resumed or deleted and are persisted by the app', 
   assert.match(pos, /onResume\(item\.id\)/);
   assert.match(pos, /onDeleteParked\(item\.id\)/);
   assert.match(app, /parkedPosCarts/);
-  assert.match(app, /parkedPosCarts,activeUserId/);
+  assert.match(app, /users,activeUserId,parkedPosCarts/);
 });
