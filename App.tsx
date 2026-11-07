@@ -125,6 +125,10 @@ export default function App() {
   const addQuote=()=>{const p=products.find(x=>String(x.id)===quoteProduct);const c=customers.find(x=>String(x.id)===quoteCustomer);const q=Number(quoteQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert(tr('معلومات ناقصة'),tr('اختار المنتج والزبون والكمية.'));return;}const x:Quote={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,date:new Date().toLocaleDateString('fr-MA'),status:'معلق'};setQuotes(v=>[x,...v]);setQuoteQty('1');Alert.alert(tr('تم حفظ عرض السعر'),`${x.total.toFixed(2)} DH`);};
   const convertQuote=(quote:Quote,type:QuoteConversionType)=>{
     try{
+      if(type==='delivery'){
+        const available=warehouseStock(stockMovements,String(quote.productId),activeWarehouseId);
+        if(quote.qty>available)throw new Error('الكمية المطلوبة أكبر من مخزون المستودع المحدد. المتوفر: '+available);
+      }
       const result=createConvertedDocument(
         quote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),
       );
@@ -246,7 +250,7 @@ export default function App() {
       </>:screen==='المخزون'?<>
         <View style={s.panel}>
           <Text style={s.panelTitle}>{tr('المخازن')}</Text>
-          <View style={s.row}>{warehouses.filter(w=>w.active).map(w=><Pressable key={w.id} onPress={()=>{setActiveWarehouseId(w.id);setStockCountInputs({});}} style={[s.choice,{flex:1},activeWarehouseId===w.id&&s.choiceActive]}><Text style={s.itemTitle}>{w.name}</Text><Text style={s.itemSub}>{w.id}</Text></Pressable>)}</View>
+          <View style={s.row}>{warehouses.filter(w=>w.active).map(w=><Pressable key={w.id} onPress={()=>{setActiveWarehouseId(w.id);setStockCountInputs({});setTransferTargetId('');setTransferProductId('');}} style={[s.choice,{flex:1},activeWarehouseId===w.id&&s.choiceActive]}><Text style={s.itemTitle}>{w.name}</Text><Text style={s.itemSub}>{w.id}</Text></Pressable>)}</View>
           <TextInput value={warehouseName} onChangeText={setWarehouseName} placeholder={tr('اسم المخزن الجديد')} placeholderTextColor="#888" style={s.input}/>
           <TextInput value={warehouseAddress} onChangeText={setWarehouseAddress} placeholder={tr('عنوان المخزن (اختياري)')} placeholderTextColor="#888" style={s.input}/>
           <Pressable style={s.action} onPress={addWarehouse}><Text style={s.actionText}>{tr('+ إضافة مخزن')}</Text></Pressable>
