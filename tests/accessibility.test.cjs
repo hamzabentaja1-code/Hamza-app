@@ -149,7 +149,7 @@ test('dynamic product, quote, POS and agenda labels have French translations', (
 test('primary screens have no untranslated static Arabic labels', () => {
   const files = ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx',
     'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx',
-    'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx', 'src/AccessiblePressable.tsx'];
+    'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx', 'src/AccessiblePressable.tsx', 'src/ChequeWorkspace.tsx'];
   const dictionary = read('src/i18n.tsx');
   const keys = new Set([...dictionary.matchAll(/^\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*:/gm)].map(match => match[1]));
   for (const file of files) {
@@ -347,4 +347,28 @@ test('PDFs use TTC-only by default and allow optional HT/TVA/TTC breakdown', () 
   assert.ok(app.includes('إظهار TTC فقط (افتراضي)'));
   assert.ok(app.includes('إظهار HT و TVA و TTC'));
   assert.ok(app.includes('labels.vat'));
+});
+
+\ntest('cheque workspace persists lifecycle records and posts cleared cheques to the bank ledger', () => {
+  const app = read('App.tsx');
+  const workspace = read('src/ChequeWorkspace.tsx');
+  const domain = read('src/domain/cheques.ts');
+  assert.match(app, /import ChequeWorkspace from ['"]\.\/src\/ChequeWorkspace['"]/);
+  assert.match(app, /const \[cheques,setCheques\]=useState<ChequeRecord\[\]>\(\[\]\)/);
+  assert.match(app, /const \[chequeEvents,setChequeEvents\]=useState<ChequeEvent\[\]>\(\[\]\)/);
+  assert.match(app, /cheques,chequeEvents/);
+  assert.match(app, /createCheque\(input,cheques\)/);
+  assert.match(app, /transitionCheque\(cheque,next,event\)/);
+  assert.match(app, /id:'cheque-clear-'\+cheque\.id/);
+  assert.match(app, /kind:cheque\.direction==='incoming'\?'deposit':'withdrawal'/);
+  assert.match(workspace, /onAdd: \(input: NewCheque\) => boolean/);
+  assert.match(workspace, /onTransition: \(cheque: ChequeRecord, next: ChequeStatus/);
+  assert.match(domain, /status: 'cleared'/);
+  const dictionary = read('src/i18n.tsx');
+  for (const label of ['إضافة شيك','رقم الشيك','اسم الزبون أو المورد','المبلغ بالدرهم',
+    'تاريخ الشيك YYYY-MM-DD','تاريخ الاستحقاق (اختياري)','الحساب البنكي المرتبط',
+    'حفظ الشيك','سجل الشيكات','إيداع','تأكيد التحصيل / الأداء','تسجيل رفض الشيك','إلغاء الشيك',
+    'مازال ما تسجل حتى شيك.','مسجل','مودع','مقبوض / مؤدى','مرفوض','ملغى']) {
+    assert.ok(dictionary.includes('"'+label+'"'), 'missing French cheque translation: '+label);
+  }
 });
