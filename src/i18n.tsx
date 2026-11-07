@@ -1374,6 +1374,7 @@ const fr: Record<string, string> = {
   "اختيار ملف CSV من الهاتف": "Choisir un fichier CSV sur le téléphone",
   "تعذر قراءة ملف CSV.": "Impossible de lire le fichier CSV.",
   "رصيد دائن متبقٍ": "Crédit client restant",
+  "رصيد دائن متبقٍ غير مستعمل: ": "Crédit client non imputé : ",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
