@@ -1,5 +1,5 @@
 export type PosProduct = { id: string; name: string; reference?: string; barcode?: string; salePrice: number; stock?: number; trackStock?: boolean; productId?: number; variantId?: string; variantLabel?: string };
-export type PosLine = { productId: string; name: string; quantity: number; unitPrice: number; discount: number };
+export type PosLine = { productId: string; sourceProductId?: number; variantId?: string; variantLabel?: string; name: string; quantity: number; unitPrice: number; discount: number };
 export type PosCart = { customerId?: string; lines: PosLine[]; globalDiscount: number; paymentMethod: "cash" | "card" | "transfer" | "credit"; paidAmount: number };
 
 export function findPosProduct(products: PosProduct[], term: string): PosProduct | undefined {
@@ -19,7 +19,7 @@ export function addPosLine(cart: PosCart, product: PosProduct, quantity = 1): Po
   }
   const lines = existing
     ? cart.lines.map(l => l.productId === product.id ? { ...l, quantity: nextQuantity } : l)
-    : [...cart.lines, { productId: product.id, name: product.name, quantity, unitPrice: product.salePrice, discount: 0 }];
+    : [...cart.lines, { productId: product.id, sourceProductId: product.productId, variantId: product.variantId, variantLabel: product.variantLabel, name: product.name, quantity, unitPrice: product.salePrice, discount: 0 }];
   return { ...cart, lines };
 }
 
