@@ -129,9 +129,11 @@ export default function App() {
     try{await Share.share({title:'HamZa products CSV',message:lines.join('\n')});}
     catch{Alert.alert('تعذر التصدير','ما قدرناش نشاركوا لائحة المنتجات.');}
   };
+  const isValidIsoDate=(value:string)=>{if(!value)return true;if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(value))return false;const date=new Date(value+'T00:00:00');return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value;};
   const addProject=()=>{
     const budget=Number(projectBudget.replace(',','.'));
     if(!projectName.trim()||!Number.isFinite(budget)||budget<0){Alert.alert('معلومات ناقصة','دخل اسم المشروع وميزانية صحيحة أو صفر.');return;}
+    if(!isValidIsoDate(projectStartDate)||!isValidIsoDate(projectDueDate)){Alert.alert('تاريخ غير صالح','استعمل صيغة YYYY-MM-DD لتاريخ المشروع.');return;}
     if(projectStartDate&&projectDueDate&&projectDueDate<projectStartDate){Alert.alert('تاريخ غير صالح','تاريخ نهاية المشروع خاصو يكون من بعد تاريخ البداية.');return;}
     const project:Project={id:Date.now(),name:projectName.trim(),customerName:projectCustomer.trim(),budget,spent:0,status:'planned',startDate:projectStartDate,dueDate:projectDueDate,notes:projectNotes.trim()};
     setProjects(current=>[project,...current]);setProjectName('');setProjectCustomer('');setProjectBudget('');setProjectStartDate('');setProjectDueDate('');setProjectNotes('');
@@ -140,6 +142,7 @@ export default function App() {
     const duration=taskDuration.trim()===''?0:Number(taskDuration.replace(',','.'));
     const projectId=taskProjectId?Number(taskProjectId):undefined;
     if(!taskTitle.trim()||!Number.isFinite(duration)||duration<0||(projectId!==undefined&&!projects.some(p=>p.id===projectId))){Alert.alert('معلومات ناقصة','دخل عنوان المهمة ومدة صحيحة واختار مشروعاً صالحاً إن وجد.');return;}
+    if(!isValidIsoDate(taskDueDate)){Alert.alert('تاريخ غير صالح','استعمل صيغة YYYY-MM-DD لموعد المهمة.');return;}
     const task:WorkTask={id:Date.now(),title:taskTitle.trim(),projectId,assignee:taskAssignee.trim(),priority:taskPriority,dueDate:taskDueDate,durationHours:duration,status:'todo'};
     setWorkTasks(current=>[task,...current]);setTaskTitle('');setTaskProjectId('');setTaskAssignee('');setTaskPriority('medium');setTaskDueDate('');setTaskDuration('');
   };
