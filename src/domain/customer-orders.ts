@@ -21,7 +21,7 @@ export function createCustomerOrderFromQuote(quote:QuoteOrderSource,id:number,nu
  let lines:CustomerOrderLine[];
  if(sourceLines.length){
   const subtotalCentimes=sourceLines.reduce((sum,line)=>sum+Math.round(line.total*100),0);
-  const discountCentimes=Math.round((quote.documentDiscount||0)*100);
+  const discountCentimes=quote.documentDiscount===undefined?Math.max(0,subtotalCentimes-Math.round(quote.total*100)):Math.round(quote.documentDiscount*100);
   if(!Number.isSafeInteger(subtotalCentimes)||subtotalCentimes<0||!Number.isSafeInteger(discountCentimes)||discountCentimes<0||discountCentimes>subtotalCentimes)throw new Error('تخفيض الطلب غير صالح');
   let remainingDiscount=discountCentimes;
   lines=sourceLines.map((line,index)=>{
