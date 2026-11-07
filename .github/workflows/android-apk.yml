@@ -2,7 +2,7 @@ name: Build HamZa Android APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, hamza-a11y-ci-validation]
     paths-ignore:
       - '.devcontainer/**'
       - '.github/workflows/**'
