@@ -21,6 +21,14 @@ test('contact attachments accept bounded images and office documents and can be 
  assert.equal(ext.normalizeContactAttachments([{...file,dataUri:'file:///secret'}]).length,0);
  const pdf={...file,id:'pdf1',name:'contract.pdf',mimeType:'application/pdf',dataUri:'data:application/pdf;base64,JVBERi0x'};
  assert.equal(ext.addContactAttachment(saved,pdf).length,2);
+ const office={...file,id:'docx1',name:'offer.docx',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',dataUri:'data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,UEsDBA=='};
+ const sheet={...file,id:'csv1',name:'items.csv',mimeType:'text/csv',dataUri:'data:text/csv;base64,bmFtZSxwcmljZQ=='};
+ assert.equal(ext.addContactAttachment([pdf],office).length,2);
+ assert.equal(ext.addContactAttachment([pdf,office],sheet).length,3);
+ assert.equal(ext.normalizeContactAttachments([{...office,mimeType:'application/octet-stream',dataUri:'data:application/octet-stream;base64,AA=='}]).length,0);
+ assert.equal(ext.normalizeContactAttachments([{...pdf,dataUri:'data:application/pdf;base64,'+'A'.repeat(5_500_001)}]).length,0);
+ assert.throws(()=>ext.addContactAttachment([pdf,office,sheet],{...file,id:'bad',mimeType:'application/zip',name:'archive.zip',dataUri:'data:application/zip;base64,AA=='}),/المرفق غير صالح/);
+ assert.throws(()=>ext.addContactAttachment(Array.from({length:8},(_,i)=>({...file,id:'f'+i})),{...file,id:'ninth'}),/8 مرفقات/);
  assert.equal(ext.normalizeContactAttachments([{...pdf,dataUri:'data:image/png;base64,AA=='}]).length,0);
  assert.equal(ext.normalizeContactAttachments([{...pdf,dataUri:'data:application/pdf;base64,'+'A'.repeat(5_500_001)}]).length,0);
 });
@@ -47,6 +55,11 @@ test('contact custom fields and saved image gallery are integrated for customers
  assert.ok(app.includes('const addExistingContactImage=async()=>'));
  assert.ok(app.includes('const addExistingContactDocument=async()=>'));
  assert.ok(app.includes('DocumentPicker.getDocumentAsync'));
+ assert.ok(app.includes('decodedBytes>4_000_000'));
+ assert.ok(app.includes('mimeByExtension[extension]'));
+ assert.ok(app.includes("filter(file=>!file.mimeType.startsWith('image/')).map(file"));
+ assert.ok(app.includes('onPress={()=>openContactDocument(file)}'));
+ assert.ok(app.includes('onPress={()=>addExistingContactDocument()}') || app.includes('onPress={addExistingContactDocument}'));
  assert.ok(app.includes('FileSystem.readAsStringAsync'));
  assert.ok(app.includes('openContactDocument'));
  assert.ok(app.includes('expo-document-picker'));
