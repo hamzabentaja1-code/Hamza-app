@@ -1,0 +1,57 @@
+name: Verify HamZa code without APK build
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+    paths:
+      - 'App.tsx'
+      - 'src/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - '.maestro/**'
+      - '.github/workflows/verify-code.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'App.tsx'
+      - 'src/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - '.maestro/**'
+      - '.github/workflows/verify-code.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hamza-code-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Domain tests and TypeScript (no Android build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run domain and workflow tests
+        run: npm run test:quote
+
+      - name: TypeScript validation
+        run: npx tsc --noEmit

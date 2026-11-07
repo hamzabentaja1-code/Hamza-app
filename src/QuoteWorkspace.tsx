@@ -1,6 +1,9 @@
-import React, {useMemo, useState} from 'react';
-import {Alert, Pressable, ScrollView, Text, TextInput, View} from 'react-native';
+import React, {useContext, useMemo, useState} from 'react';
+import {Alert, ScrollView, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
 import {calculateQuote} from './domain/quote-calculator';
+import {TText as Text, TTextInput as TextInput, LanguageContext} from './i18n';
+import AccessiblePressable from './AccessiblePressable';
+const Pressable = AccessiblePressable;
 
 type Product = {id:number; name:string; price:number; qty:number};
 type Customer = {id:number; name:string};
@@ -29,6 +32,7 @@ const active={borderColor:gold,backgroundColor:'#302819'};
 const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
 export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,onConvert}:Props) {
+  const language=useContext(LanguageContext);
   const [customerId,setCustomerId]=useState('');
   const [productId,setProductId]=useState('');
   const [customerSearch,setCustomerSearch]=useState('');
@@ -102,11 +106,11 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
       <Text style={{color:gold,fontSize:19,fontWeight:'800',marginBottom:12}}>إنشاء عرض سعر متعدد المنتجات</Text>
       <Text style={{color:'#CCC',marginBottom:7}}>الزبون</Text>
       <TextInput value={customerSearch} onChangeText={setCustomerSearch} placeholder="بحث عن الزبون بالاسم" placeholderTextColor="#888" style={input}/>
-      {filteredCustomers.map(c=><Pressable key={c.id} onPress={()=>setCustomerId(String(c.id))} style={[choice,customerId===String(c.id)&&active]}><Text style={{color:'#FFF',fontWeight:'700'}}>{c.name}</Text></Pressable>)}
+      {filteredCustomers.map(c=><Pressable key={c.id} accessibilityState={{selected:customerId===String(c.id)}} onPress={()=>setCustomerId(String(c.id))} style={[choice,customerId===String(c.id)&&active]}><Text style={{color:'#FFF',fontWeight:'700'}}>{c.name}</Text></Pressable>)}
       {customers.length===0&&<Text style={{color:'#999',padding:8}}>زيد زبون أولاً من قسم الزبناء.</Text>}
       <Text style={{color:'#CCC',marginVertical:8}}>المنتج</Text>
       <TextInput value={productSearch} onChangeText={setProductSearch} placeholder="بحث عن المنتج بالاسم" placeholderTextColor="#888" style={input}/>
-      {filteredProducts.map(p=><Pressable key={p.id} onPress={()=>{setProductId(String(p.id));setCustomPrice(p.price.toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text></Pressable>)}
+      {filteredProducts.map(p=><Pressable key={p.id} accessibilityState={{selected:productId===String(p.id)}} onPress={()=>{setProductId(String(p.id));setCustomPrice(p.price.toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text></Pressable>)}
       {products.length===0&&<Text style={{color:'#999',padding:8}}>زيد المنتجات أولاً.</Text>}
       {selectedProduct&&<TextInput value={customPrice} onChangeText={setCustomPrice} keyboardType="decimal-pad" placeholder="ثمن البيع لهذا العرض (DH)" placeholderTextColor="#888" style={input}/>}
       <View style={{flexDirection:'row',gap:8}}>
@@ -123,7 +127,7 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
           </View>
         </View>
         <Text style={{color:gold,fontWeight:'800'}}>{Number.isFinite(line.total)?line.total.toFixed(2):'—'} DH</Text>
-        <Pressable onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
+        <Pressable accessibilityLabel={language==='AR'?'حذف '+line.productName:'Supprimer '+line.productName} accessibilityHint={language==='AR'?'إزالة هذا المنتج من عرض السعر':'Retirer ce produit du devis'} onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
       </View>)}
       <TextInput value={discount} onChangeText={setDiscount} keyboardType="decimal-pad" placeholder="تخفيض إجمالي (DH)" placeholderTextColor="#888" style={[input,{marginTop:12}]}/>
       <TextInput value={notes} onChangeText={setNotes} placeholder="ملاحظات (اختياري)" placeholderTextColor="#888" style={input}/>

@@ -1,6 +1,9 @@
-import React, {useMemo, useState} from 'react';
-import {Alert, Image, Pressable, Text, TextInput, View} from 'react-native';
+import React, {useContext, useMemo, useState} from 'react';
+import {Alert, Image, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
 import {addPosLine, emptyPosCart, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
+import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput} from './i18n';
+import AccessiblePressable from './AccessiblePressable';
+const Pressable = AccessiblePressable;
 
 type Product = {id:number; name:string; price:number; qty:number; photoData?:string};
 type Customer = {id:number; name:string};
@@ -8,12 +11,14 @@ type CheckoutLine = {productId:number; name:string; quantity:number; unitPrice:n
 type Props = {
   products: Product[];
   customers: Customer[];
+  bankAccountName?: string;
   onCheckout: (data:{customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'; total:number})=>boolean|void;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PosWorkspace({products,customers,onCheckout}:Props){
+export default function PosWorkspace({products,customers,bankAccountName,onCheckout}:Props){
+  const language:AppLanguage=useContext(LanguageContext);
   const [term,setTerm]=useState('');
   const [customerId,setCustomerId]=useState('');
   const [method,setMethod]=useState<'cash'|'card'|'transfer'>('cash');
@@ -60,21 +65,22 @@ export default function PosWorkspace({products,customers,onCheckout}:Props){
         return <View key={line.productId} style={{paddingVertical:10,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:8}}>
           {product?.photoData?<Image source={{uri:product.photoData}} style={{width:42,height:42,borderRadius:7}}/>:null}
           <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{line.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{money(line.unitPrice)} × {line.quantity}</Text></View>
-          <Pressable onPress={()=>changeQty(line.productId,-1)} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>−</Text></Pressable>
+          <Pressable accessibilityLabel={language==='AR'?'إنقاص كمية '+line.name:'Diminuer la quantité de '+line.name} onPress={()=>changeQty(line.productId,-1)} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>−</Text></Pressable>
           <Text style={{color:'#FFF'}}>{line.quantity}</Text>
-          <Pressable onPress={()=>{const p=mapped.find(x=>x.id===line.productId);if(p)add(p);}} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>+</Text></Pressable>
-          <Pressable onPress={()=>remove(line.productId)} style={{padding:5}}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
+          <Pressable accessibilityLabel={language==='AR'?'زيادة كمية '+line.name:'Augmenter la quantité de '+line.name} onPress={()=>{const p=mapped.find(x=>x.id===line.productId);if(p)add(p);}} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>+</Text></Pressable>
+          <Pressable accessibilityLabel={language==='AR'?'حذف '+line.name:'Supprimer '+line.name} accessibilityHint={language==='AR'?'إزالة هذا المنتج من سلة البيع':'Retirer ce produit du panier'} onPress={()=>remove(line.productId)} style={{padding:5}}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
         </View>;
       })}
       <Text style={{color:'#CCC',marginTop:12,marginBottom:6}}>الزبون</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:6}}>
-        <Pressable onPress={()=>setCustomerId('')} style={{borderWidth:1,borderColor:customerId===''?GOLD:'#444',borderRadius:8,padding:9}}><Text style={{color:'#FFF'}}>زبون عابر</Text></Pressable>
-        {customers.map(c=><Pressable key={c.id} onPress={()=>setCustomerId(String(c.id))} style={{borderWidth:1,borderColor:customerId===String(c.id)?GOLD:'#444',borderRadius:8,padding:9}}><Text style={{color:'#FFF'}}>{c.name}</Text></Pressable>)}
+        <Pressable accessibilityState={{selected:customerId===''}} onPress={()=>setCustomerId('')} style={{borderWidth:1,borderColor:customerId===''?GOLD:'#444',borderRadius:8,padding:9}}><Text style={{color:'#FFF'}}>زبون عابر</Text></Pressable>
+        {customers.map(c=><Pressable key={c.id} accessibilityState={{selected:customerId===String(c.id)}} onPress={()=>setCustomerId(String(c.id))} style={{borderWidth:1,borderColor:customerId===String(c.id)?GOLD:'#444',borderRadius:8,padding:9}}><Text style={{color:'#FFF'}}>{c.name}</Text></Pressable>)}
       </View>
       <Text style={{color:'#CCC',marginTop:12,marginBottom:6}}>طريقة الأداء</Text>
       <View style={{flexDirection:'row',gap:7}}>
-        {([{id:'cash',label:'نقداً'},{id:'card',label:'بطاقة'},{id:'transfer',label:'تحويل'}] as const).map(m=><Pressable key={m.id} onPress={()=>setMethod(m.id)} style={{flex:1,borderWidth:1,borderColor:method===m.id?GOLD:'#444',borderRadius:8,padding:10,alignItems:'center'}}><Text style={{color:'#FFF'}}>{m.label}</Text></Pressable>)}
+        {([{id:'cash',label:'نقداً'},{id:'card',label:'بطاقة'},{id:'transfer',label:'تحويل'}] as const).map(m=><Pressable key={m.id} accessibilityState={{selected:method===m.id}} onPress={()=>setMethod(m.id)} style={{flex:1,borderWidth:1,borderColor:method===m.id?GOLD:'#444',borderRadius:8,padding:10,alignItems:'center'}}><Text style={{color:'#FFF'}}>{m.label}</Text></Pressable>)}
       </View>
+      {method!=='cash'&&<Text style={{color:bankAccountName?'#D6AE55':'#E28A78',fontSize:12,marginTop:6}}>{bankAccountName?'الحساب البنكي الذي سيستقبل الأداء: '+bankAccountName:'ما تختارش حساب بنكي. دخل لقسم الحسابات البنكية واختار الحساب أولاً.'}</Text>}
       <TextInput value={discountText} onChangeText={setDiscountText} keyboardType="decimal-pad" placeholder="تخفيض عام (DH)" placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',marginTop:12,textAlign:'right'}}/>
       <View style={{backgroundColor:'#111',borderRadius:9,padding:12,marginTop:10,gap:6}}>
         <Text style={{color:'#DDD'}}>المجموع قبل التخفيض: {money(totals.subtotal)}</Text>

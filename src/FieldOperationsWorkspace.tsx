@@ -1,0 +1,98 @@
+import React,{useContext,useState} from 'react';
+import {Alert,View,StyleSheet} from 'react-native';
+import {TText as Text,TTextInput as TextInput,LanguageContext,translateText} from './i18n';
+import AccessiblePressable from './AccessiblePressable';
+import {Technician,Equipment,WorkOrder,WorkTimeEntry,createWorkOrder,createWorkTimeEntry,transitionWorkOrderStatus,workOrderHours,workOrderTimeCost} from './domain/field-operations';
+
+type Props={
+ technicians:Technician[];equipment:Equipment[];orders:WorkOrder[];timeEntries:WorkTimeEntry[];
+ customers:{id:number;name:string}[];projects:{id:number;name:string}[];
+ onAddTechnician:(item:Technician)=>void;onAddEquipment:(item:Equipment)=>void;
+ onCreateOrder:(item:WorkOrder)=>void;onChangeOrder:(item:WorkOrder)=>void;onAddTimeEntry:(item:WorkTimeEntry)=>void;
+};
+const GOLD='#D6AE55';
+const statusLabel=(s:WorkOrder['status'])=>s==='requested'?'طلب جديد':s==='scheduled'?'مبرمج':s==='in_progress'?'قيد الإنجاز':s==='completed'?'مكتمل':'ملغى';
+export default function FieldOperationsWorkspace({technicians,equipment,orders,timeEntries,customers,projects,onAddTechnician,onAddEquipment,onCreateOrder,onChangeOrder,onAddTimeEntry}:Props){
+ const language=useContext(LanguageContext);const t=(v:string)=>translateText(v,language)||v;
+ const [techName,setTechName]=useState('');const [techPhone,setTechPhone]=useState('');const [techSpecialty,setTechSpecialty]=useState('');const [techRate,setTechRate]=useState('0');
+ const [equipmentName,setEquipmentName]=useState('');const [equipmentRef,setEquipmentRef]=useState('');const [equipmentSerial,setEquipmentSerial]=useState('');
+ const [orderTitle,setOrderTitle]=useState('');const [orderCustomer,setOrderCustomer]=useState('');const [orderProject,setOrderProject]=useState('');const [orderTechnician,setOrderTechnician]=useState('');const [orderDate,setOrderDate]=useState('');const [orderDescription,setOrderDescription]=useState('');
+ const [selectedEquipment,setSelectedEquipment]=useState<string[]>([]);
+ const [timeOrder,setTimeOrder]=useState('');const [timeTechnician,setTimeTechnician]=useState('');const [timeHours,setTimeHours]=useState('');const [timeDate,setTimeDate]=useState(new Date().toISOString().slice(0,10));const [timeNote,setTimeNote]=useState('');
+ const addTech=()=>{const rate=Number(techRate.replace(',','.'));if(!techName.trim()||!Number.isFinite(rate)||rate<0){Alert.alert(t('معلومات ناقصة'),t('دخل اسم التقني وسعر ساعة صحيح.'));return;}
+  onAddTechnician({id:'tech-'+Date.now(),name:techName.trim(),phone:techPhone.trim()||undefined,specialty:techSpecialty.trim()||undefined,hourlyRate:rate,active:true});setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('0');
+ };
+ const addEquip=()=>{if(!equipmentName.trim()){Alert.alert(t('معلومات ناقصة'),t('دخل اسم المعدة.'));return;}
+  onAddEquipment({id:'equipment-'+Date.now(),name:equipmentName.trim(),reference:equipmentRef.trim()||undefined,serialNumber:equipmentSerial.trim()||undefined,status:'available'});setEquipmentName('');setEquipmentRef('');setEquipmentSerial('');
+ };
+ const createOrder=()=>{const customer=customers.find(x=>String(x.id)===orderCustomer);if(!customer||!orderTitle.trim()){Alert.alert(t('معلومات ناقصة'),t('اختار الزبون ودخل عنوان أمر العمل.'));return;}
+  if(orderDate.trim()&&!Number.isFinite(Date.parse(orderDate))){Alert.alert(t('تاريخ غير صالح'),t('تاريخ أمر العمل غير صالح'));return;}const now=new Date().toISOString();const scheduledAt=orderDate.trim()?new Date(orderDate).toISOString():undefined;
+  try{const order=createWorkOrder({id:'work-order-'+Date.now(),number:'WO-'+Date.now(),title:orderTitle.trim(),customerName:customer.name,projectId:orderProject?Number(orderProject):undefined,description:orderDescription.trim(),status:scheduledAt?'scheduled':'requested',priority:'normal',scheduledAt,technicianId:orderTechnician||undefined,equipmentIds:selectedEquipment,createdAt:now},technicians,equipment);onCreateOrder(order);setOrderTitle('');setOrderCustomer('');setOrderProject('');setOrderTechnician('');setOrderDate('');setOrderDescription('');setSelectedEquipment([]);}
+  catch(error){Alert.alert(t('أمر العمل'),error instanceof Error?(t(error.message)||error.message):t('تعذر إنشاء أمر العمل.'));}
+ };
+ const changeStatus=(order:WorkOrder,next:WorkOrder['status'])=>{try{onChangeOrder(transitionWorkOrderStatus(order,next));}catch(error){Alert.alert(t('حالة أمر العمل'),error instanceof Error?(t(error.message)||error.message):t('انتقال الحالة غير مسموح.'));}};
+ const addTime=()=>{const order=orders.find(x=>x.id===timeOrder);const technician=technicians.find(x=>x.id===timeTechnician);const hours=Number(timeHours.replace(',','.'));if(!order||!technician){Alert.alert(t('معلومات ناقصة'),t('اختار أمر العمل والتقني.'));return;}
+  if(!Number.isFinite(Date.parse(timeDate))){Alert.alert(t('تاريخ غير صالح'),t('تاريخ وساعات العمل غير صالحة'));return;}try{const entry=createWorkTimeEntry({id:'work-time-'+Date.now(),workOrderId:order.id,technicianId:technician.id,date:new Date(timeDate).toISOString(),hours,hourlyRate:technician.hourlyRate,notes:timeNote.trim()||undefined},order,technician);onAddTimeEntry(entry);setTimeHours('');setTimeNote('');}
+  catch(error){Alert.alert(t('ساعات العمل'),error instanceof Error?(t(error.message)||error.message):t('تعذر تسجيل ساعات العمل.'));}
+ };
+ return <View>
+  <View style={styles.panel}><Text style={styles.title}>التقنيون</Text>
+   <TextInput value={techName} onChangeText={setTechName} placeholder="اسم التقني" placeholderTextColor="#888" style={styles.input}/>
+   <TextInput value={techPhone} onChangeText={setTechPhone} placeholder="الهاتف (اختياري)" placeholderTextColor="#888" style={styles.input}/>
+   <TextInput value={techSpecialty} onChangeText={setTechSpecialty} placeholder="التخصص" placeholderTextColor="#888" style={styles.input}/>
+   <TextInput value={techRate} onChangeText={setTechRate} keyboardType="decimal-pad" placeholder="ثمن ساعة العمل DH" placeholderTextColor="#888" style={styles.input}/>
+   <AccessiblePressable style={styles.action} onPress={addTech}><Text style={styles.actionText}>إضافة تقني</Text></AccessiblePressable>
+   {technicians.map(x=><Text key={x.id} style={styles.note}>{x.name} • {x.specialty||'بدون تخصص'} • {x.hourlyRate.toFixed(2)} DH/ساعة {x.active?'':'• غير نشط'}</Text>)}
+  </View>
+  <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>المعدات</Text>
+   <TextInput value={equipmentName} onChangeText={setEquipmentName} placeholder="اسم المعدة" placeholderTextColor="#888" style={styles.input}/>
+   <TextInput value={equipmentRef} onChangeText={setEquipmentRef} placeholder="المرجع (اختياري)" placeholderTextColor="#888" style={styles.input}/>
+   <TextInput value={equipmentSerial} onChangeText={setEquipmentSerial} placeholder="الرقم التسلسلي (اختياري)" placeholderTextColor="#888" style={styles.input}/>
+   <AccessiblePressable style={styles.action} onPress={addEquip}><Text style={styles.actionText}>إضافة معدة</Text></AccessiblePressable>
+   {equipment.map(x=><Text key={x.id} style={styles.note}>{x.name} • {x.reference||x.serialNumber||'بدون مرجع'} • {x.status==='available'?'متاحة':x.status==='assigned'?'مخصصة':'صيانة'}</Text>)}
+  </View>
+  <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>طلبات وأوامر التركيب</Text>
+   <TextInput value={orderTitle} onChangeText={setOrderTitle} placeholder="عنوان أمر العمل" placeholderTextColor="#888" style={styles.input}/>
+   <Text style={styles.note}>الزبون</Text>
+   {customers.map(x=><AccessiblePressable key={x.id} accessibilityState={{selected:orderCustomer===String(x.id)}} onPress={()=>setOrderCustomer(String(x.id))} style={[styles.choice,orderCustomer===String(x.id)&&styles.selected]}><Text style={styles.label}>{x.name}</Text></AccessiblePressable>)}
+   <Text style={styles.note}>المشروع (اختياري)</Text>
+   {projects.map(x=><AccessiblePressable key={x.id} accessibilityState={{selected:orderProject===String(x.id)}} onPress={()=>setOrderProject(String(x.id))} style={[styles.choice,orderProject===String(x.id)&&styles.selected]}><Text style={styles.label}>{x.name}</Text></AccessiblePressable>)}
+   <Text style={styles.note}>التقني المسؤول</Text>
+   {technicians.filter(x=>x.active).map(x=><AccessiblePressable key={x.id} accessibilityState={{selected:orderTechnician===x.id}} onPress={()=>setOrderTechnician(x.id)} style={[styles.choice,orderTechnician===x.id&&styles.selected]}><Text style={styles.label}>{x.name}</Text></AccessiblePressable>)}
+   <TextInput value={orderDate} onChangeText={setOrderDate} placeholder="موعد التركيب (YYYY-MM-DD) اختياري" placeholderTextColor="#888" style={styles.input}/>
+   <TextInput value={orderDescription} onChangeText={setOrderDescription} placeholder="تفاصيل وملاحظات" placeholderTextColor="#888" style={styles.input}/>
+   <Text style={styles.note}>المعدات المتاحة</Text>
+   {equipment.filter(x=>x.status==='available').map(x=><AccessiblePressable key={x.id} accessibilityState={{checked:selectedEquipment.includes(x.id)}} onPress={()=>setSelectedEquipment(current=>current.includes(x.id)?current.filter(id=>id!==x.id):[...current,x.id])} style={[styles.choice,selectedEquipment.includes(x.id)&&styles.selected]}><Text style={styles.label}>{x.name}</Text></AccessiblePressable>)}
+   <AccessiblePressable style={styles.action} onPress={createOrder}><Text style={styles.actionText}>إنشاء أمر العمل</Text></AccessiblePressable>
+  </View>
+  <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>ساعات العمل والتكلفة</Text>
+   {orders.filter(x=>['in_progress','completed'].includes(x.status)).map(x=><AccessiblePressable key={x.id} accessibilityState={{selected:timeOrder===x.id}} onPress={()=>setTimeOrder(x.id)} style={[styles.choice,timeOrder===x.id&&styles.selected]}><Text style={styles.label}>{x.number} • {x.title}</Text></AccessiblePressable>)}
+   {technicians.filter(x=>x.active).map(x=><AccessiblePressable key={x.id} accessibilityState={{selected:timeTechnician===x.id}} onPress={()=>setTimeTechnician(x.id)} style={[styles.choice,timeTechnician===x.id&&styles.selected]}><Text style={styles.label}>{x.name}</Text></AccessiblePressable>)}
+   <TextInput value={timeHours} onChangeText={setTimeHours} keyboardType="decimal-pad" placeholder="عدد الساعات" placeholderTextColor="#888" style={styles.input}/>
+   <TextInput value={timeDate} onChangeText={setTimeDate} placeholder="تاريخ العمل YYYY-MM-DD" placeholderTextColor="#888" style={styles.input}/>
+   <TextInput value={timeNote} onChangeText={setTimeNote} placeholder="ملاحظات" placeholderTextColor="#888" style={styles.input}/>
+   <AccessiblePressable style={styles.action} onPress={addTime}><Text style={styles.actionText}>تسجيل ساعات العمل</Text></AccessiblePressable>
+  </View>
+  <Text style={styles.section}>سجل أوامر العمل</Text>
+  {orders.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(order=><View key={order.id} style={styles.order}>
+   <Text style={styles.label}>{order.number} • {order.title}</Text><Text style={styles.note}>{order.customerName} • {statusLabel(order.status)} • {order.scheduledAt||'غير مبرمج'}</Text>
+   <Text style={styles.note}>التقني: {technicians.find(x=>x.id===order.technicianId)?.name||'غير محدد'} • المعدات: {order.equipmentIds.length}</Text>
+   <Text style={styles.note}>الوقت: {workOrderHours(timeEntries,order.id).toFixed(2)} ساعة • التكلفة: {(workOrderTimeCost(timeEntries,order.id)/100).toFixed(2)} DH</Text>
+   <View style={styles.row}>
+    {order.status==='requested'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'scheduled')}><Text style={styles.actionText}>برمجة</Text></AccessiblePressable>}
+    {order.status==='scheduled'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'in_progress')}><Text style={styles.actionText}>بدء العمل</Text></AccessiblePressable>}
+    {order.status==='in_progress'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'completed')}><Text style={styles.actionText}>إكمال</Text></AccessiblePressable>}
+    {!['completed','cancelled'].includes(order.status)&&<AccessiblePressable style={styles.smallDanger} onPress={()=>changeStatus(order,'cancelled')}><Text style={styles.actionText}>إلغاء</Text></AccessiblePressable>}
+   </View>
+  </View>)}
+ </View>;
+}
+const styles=StyleSheet.create({
+ panel:{backgroundColor:'#1B1B1B',padding:16,borderRadius:14,borderWidth:1,borderColor:'#444'},
+ title:{color:GOLD,fontSize:18,fontWeight:'800',marginBottom:12},note:{color:'#BBB',fontSize:12,marginVertical:4},label:{color:'#FFF',fontWeight:'700'},
+ input:{backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRadius:9,padding:12,color:'#FFF',marginBottom:10,textAlign:'right'},
+ action:{marginTop:4,backgroundColor:GOLD,borderRadius:9,padding:13,alignItems:'center'},actionText:{color:'#151515',fontWeight:'900'},
+ choice:{borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marginBottom:6},selected:{borderColor:GOLD,backgroundColor:'#302819'},
+ section:{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:20,marginBottom:10},order:{backgroundColor:'#1B1B1B',borderRadius:10,padding:13,marginBottom:8,borderWidth:1,borderColor:'#333'},
+ row:{flexDirection:'row',gap:8,marginTop:8},smallAction:{backgroundColor:GOLD,borderRadius:7,padding:9,flex:1,alignItems:'center'},smallDanger:{backgroundColor:'#8B3A31',borderRadius:7,padding:9,flex:1,alignItems:'center'},
+});
