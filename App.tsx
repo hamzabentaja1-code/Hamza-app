@@ -277,7 +277,7 @@ export default function App() {
     }
     if(lines.length===0){showAlert('معلومات ناقصة','أضف منتجاً واحداً على الأقل إلى أمر الشراء.');return;}
     try{
-      const order=createPurchaseOrder({id:Date.now(),supplierName:supplier.name,createdAt:new Date().toISOString(),expectedDate:orderExpectedDate.trim()||undefined,lines:lines.map(({productId,productName,quantity,unitCost})=>({productId,productName,quantity,unitCost}))});
+      const order=createPurchaseOrder({id:Date.now(),number:nextDocumentNumber(companyProfile.purchasePrefix,purchaseOrders),supplierName:supplier.name,createdAt:new Date().toISOString(),expectedDate:orderExpectedDate.trim()||undefined,lines:lines.map(({productId,productName,quantity,unitCost})=>({productId,productName,quantity,unitCost}))});
       setPurchaseOrders(current=>[order,...current]);setOrderDraftLines([]);setOrderSupplierId('');setOrderProductId('');setOrderQuantity('1');setOrderUnitCost('');setOrderExpectedDate('');
       showAlert('تم إنشاء أمر الشراء','الأمر محفوظ ولم تتم إضافة الكمية للمخزون حتى استلامها.');
     }catch(error){showAlert('تعذر إنشاء أمر الشراء',error instanceof Error?error.message:'راجع البيانات.');}
@@ -584,7 +584,7 @@ export default function App() {
             {order.lines.map(line=><View key={line.productId} style={{width:'100%',marginTop:8}}><Text style={s.itemSub}>{line.productName} • مطلوب {line.quantity} • مستلم {line.receivedQuantity} • باقي {line.quantity-line.receivedQuantity} • {(line.unitCost*line.quantity).toFixed(2)} DH</Text>{line.receivedQuantity<line.quantity&&order.status!=='cancelled'?<Pressable onPress={()=>{setReceivingOrderId(order.id);setReceivingProductId(line.productId);setReceivingQuantity(String(line.quantity-line.receivedQuantity));}}><Text style={s.gold}>استلام هذا المنتج</Text></Pressable>:null}{receivingOrderId===order.id&&receivingProductId===line.productId?<View><TextInput value={receivingQuantity} onChangeText={setReceivingQuantity} keyboardType="number-pad" placeholder="الكمية المستلمة الآن" placeholderTextColor="#888" style={s.input}/><Pressable style={s.action} onPress={()=>receiveOrder(order.id,line.productId)}><Text style={s.actionText}>تأكيد الاستلام وإضافة للمخزون</Text></Pressable></View>:null}</View>)}
             <Text style={s.itemSub}>{order.status==='received'?'مستلم بالكامل':order.status==='partially_received'?'استلام جزئي':order.status==='cancelled'?'ملغى':'في انتظار الاستلام'}</Text>
           </View>
-          <Pressable onPress={()=>exportPdf('Bon de commande',order.supplierName,order.lines.map(line=>line.productName+' × '+line.quantity+' • '+line.unitCost.toFixed(2)+' DH'),order.lines.reduce((sum,line)=>sum+line.quantity*line.unitCost,0))}><Text style={s.gold}>PDF</Text></Pressable>
+          <Pressable onPress={()=>exportPdf('Bon de commande '+(order.number||('BC-'+order.id)),order.supplierName,order.lines.map(line=>line.productName+' × '+line.quantity+' • '+line.unitCost.toFixed(2)+' DH'),order.lines.reduce((sum,line)=>sum+line.quantity*line.unitCost,0))}><Text style={s.gold}>PDF</Text></Pressable>
           {order.status!=='received'&&order.status!=='cancelled'?<Pressable onPress={()=>showAlert('إلغاء أمر الشراء؟','سيتم إلغاء الكميات التي لم يتم استلامها فقط.',[{text:'إلغاء',style:'cancel'},{text:'تأكيد',style:'destructive',onPress:()=>cancelOrder(order.id)}])}><Text style={s.delete}>إلغاء</Text></Pressable>:null}
         </View>)}
         {purchaseOrders.length===0?<Text style={s.empty}>مازال ما أنشأتي حتى أمر شراء.</Text>:null}
