@@ -25,7 +25,7 @@ const modules = [
 ];
 type Product = {id:number; name:string; price:number; qty:number; costPrice?:number; reference?:string; barcode?:string; category?:string; photoData?:string};
 type Customer = {id:number; name:string; phone?:string; address?:string; ice?:string};
-type Sale = {id:number; productName:string; customerName:string; qty:number; unitPrice:number; total:number; date:string; paymentMethod?:string; discount?:number};
+type Sale = {id:number; productName:string; customerName:string; qty:number; unitPrice:number; total:number; date:string; paymentMethod?:string; discount?:number; costPrice?:number};
 type Purchase = {id:number; productName:string; supplierName:string; qty:number; unitCost:number; total:number; date:string};
 type Expense = {id:number; title:string; amount:number; date:string};
 type Supplier = {id:number; name:string; phone?:string; address?:string; ice?:string};
@@ -54,6 +54,9 @@ export default function App() {
   const stockValue=useMemo(()=>products.reduce((a,p)=>a+p.price*p.qty,0),[products]);
   const potentialStockProfit=useMemo(()=>products.reduce((sum,p)=>sum+(p.price-(p.costPrice||0))*p.qty,0),[products]);
   const salesTotal=useMemo(()=>sales.reduce((a,x)=>a+x.total,0),[sales]);
+  const trackedSales=sales.filter(x=>typeof x.costPrice==='number'&&Number.isFinite(x.costPrice)&&x.costPrice>=0);
+  const grossProfit=useMemo(()=>trackedSales.reduce((sum,x)=>sum+x.total-(x.costPrice||0)*x.qty,0),[sales]);
+  const untrackedSalesCount=sales.length-trackedSales.length;
   const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
   const customerBalances=useMemo(()=>calculateCustomerBalances(documents),[documents]);
   const balanceFor=(customerName:string)=>customerBalances.find(x=>x.customerName===customerName);
@@ -99,9 +102,9 @@ export default function App() {
     catch{Alert.alert('تعذر التصدير','ما قدرناش نشاركوا لائحة المنتجات.');}
   };
   const addCustomer=()=>{if(!customer.trim()){Alert.alert('معلومات ناقصة','دخل اسم الزبون.');return;}setCustomers(v=>[{id:Date.now(),name:customer.trim(),phone:customerPhone.trim(),address:customerAddress.trim(),ice:customerIce.trim()},...v]);setCustomer('');setCustomerPhone('');setCustomerAddress('');setCustomerIce('');};
-  const addSale=()=>{const p=products.find(x=>String(x.id)===saleProduct);const c=customers.find(x=>String(x.id)===saleCustomer);const q=Number(saleQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert('معلومات ناقصة','اختار منتج وزبون ودخل كمية صحيحة.');return;}if(q>p.qty){Alert.alert('المخزون غير كافٍ',`المتوفر هو ${p.qty} فقط.`);return;}const sale:Sale={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,date:new Date().toLocaleDateString('fr-MA')};setSales(v=>[sale,...v]);setProducts(v=>v.map(x=>x.id===p.id?{...x,qty:x.qty-q}:x));setSaleQty('1');Alert.alert('تم تسجيل البيع',`المجموع: ${sale.total.toFixed(2)} DH`);};
+  const addSale=()=>{const p=products.find(x=>String(x.id)===saleProduct);const c=customers.find(x=>String(x.id)===saleCustomer);const q=Number(saleQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert('معلومات ناقصة','اختار منتج وزبون ودخل كمية صحيحة.');return;}if(q>p.qty){Alert.alert('المخزون غير كافٍ',`المتوفر هو ${p.qty} فقط.`);return;}const sale:Sale={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,costPrice:p.costPrice||0,date:new Date().toLocaleDateString('fr-MA')};setSales(v=>[sale,...v]);setProducts(v=>v.map(x=>x.id===p.id?{...x,qty:x.qty-q}:x));setSaleQty('1');Alert.alert('تم تسجيل البيع',`المجموع: ${sale.total.toFixed(2)} DH`);};
   const addSupplier=()=>{if(!supplierName.trim()){Alert.alert('معلومات ناقصة','دخل اسم المورد.');return;}setSuppliers(v=>[{id:Date.now(),name:supplierName.trim(),phone:supplierPhone.trim(),address:supplierAddress.trim(),ice:supplierIce.trim()},...v]);setSupplierName('');setSupplierPhone('');setSupplierAddress('');setSupplierIce('');};
-  const addPurchase=()=>{const p=products.find(x=>String(x.id)===purchaseProduct);const sup=suppliers.find(x=>String(x.id)===purchaseSupplier);const q=Number(purchaseQty),cost=Number(purchaseCost.replace(',','.'));if(!p||!sup||!Number.isInteger(q)||q<1||!Number.isFinite(cost)||cost<0){Alert.alert('معلومات ناقصة','اختار المنتج والمورد ودخل الكمية وثمن الشراء.');return;}const item:Purchase={id:Date.now(),productName:p.name,supplierName:sup.name,qty:q,unitCost:cost,total:q*cost,date:new Date().toLocaleDateString('fr-MA')};setPurchases(v=>[item,...v]);setProducts(v=>v.map(x=>x.id===p.id?{...x,qty:x.qty+q}:x));setPurchaseQty('1');setPurchaseCost('');Alert.alert('تم تسجيل الشراء',`المجموع: ${item.total.toFixed(2)} DH`);};
+  const addPurchase=()=>{const p=products.find(x=>String(x.id)===purchaseProduct);const sup=suppliers.find(x=>String(x.id)===purchaseSupplier);const q=Number(purchaseQty),cost=Number(purchaseCost.replace(',','.'));if(!p||!sup||!Number.isInteger(q)||q<1||!Number.isFinite(cost)||cost<0){Alert.alert('معلومات ناقصة','اختار المنتج والمورد ودخل الكمية وثمن الشراء.');return;}const item:Purchase={id:Date.now(),productName:p.name,supplierName:sup.name,qty:q,unitCost:cost,total:q*cost,date:new Date().toLocaleDateString('fr-MA')};setPurchases(v=>[item,...v]);setProducts(v=>v.map(x=>{if(x.id!==p.id)return x;const nextQty=x.qty+q;const weightedCost=nextQty>0?(((x.costPrice||0)*x.qty)+(cost*q))/nextQty:cost;return {...x,qty:nextQty,costPrice:Number(weightedCost.toFixed(4))};}));setPurchaseQty('1');setPurchaseCost('');Alert.alert('تم تسجيل الشراء',`المجموع: ${item.total.toFixed(2)} DH`);};
   const addExpense=()=>{const a=Number(expenseAmount.replace(',','.'));if(!expenseTitle.trim()||!Number.isFinite(a)||a<=0){Alert.alert('معلومات ناقصة','دخل وصف المصروف ومبلغ صحيح.');return;}setExpenses(v=>[{id:Date.now(),title:expenseTitle.trim(),amount:a,date:new Date().toLocaleDateString('fr-MA')},...v]);setExpenseTitle('');setExpenseAmount('');};
   const addQuote=()=>{const p=products.find(x=>String(x.id)===quoteProduct);const c=customers.find(x=>String(x.id)===quoteCustomer);const q=Number(quoteQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert('معلومات ناقصة','اختار المنتج والزبون والكمية.');return;}const x:Quote={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,date:new Date().toLocaleDateString('fr-MA'),status:'معلق'};setQuotes(v=>[x,...v]);setQuoteQty('1');Alert.alert('تم حفظ عرض السعر',`${x.total.toFixed(2)} DH`);};
   const convertQuote=(quote:Quote,type:QuoteConversionType)=>{
@@ -155,7 +158,7 @@ export default function App() {
     const subtotal=data.lines.reduce((sum,line)=>sum+line.quantity*line.unitPrice-line.discount,0);
     const globalDiscount=Math.max(0,subtotal-data.total);
     const today=new Date().toLocaleDateString('fr-MA');
-    const records=data.lines.map((line,index)=>{const raw=line.quantity*line.unitPrice-line.discount;const share=subtotal>0?globalDiscount*(raw/subtotal):0;return {id:Date.now()+index,productName:line.name,customerName:data.customerName,qty:line.quantity,unitPrice:line.unitPrice,total:Math.max(0,raw-share),discount:line.discount+share,date:today,paymentMethod:data.paymentMethod};});
+    const records=data.lines.map((line,index)=>{const raw=line.quantity*line.unitPrice-line.discount;const share=subtotal>0?globalDiscount*(raw/subtotal):0;const product=products.find(p=>p.id===line.productId);return {id:Date.now()+index,productName:line.name,customerName:data.customerName,qty:line.quantity,unitPrice:line.unitPrice,total:Math.max(0,raw-share),discount:line.discount+share,costPrice:product?.costPrice||0,date:today,paymentMethod:data.paymentMethod};});
     setSales(current=>[...records,...current]);
     setProducts(current=>current.map(product=>{const sold=data.lines.filter(line=>line.productId===product.id).reduce((sum,line)=>sum+line.quantity,0);return sold?{...product,qty:product.qty-sold}:product;}));
     const methodLabel=data.paymentMethod==='cash'?'نقداً':data.paymentMethod==='card'?'بطاقة':'تحويل';
@@ -229,8 +232,11 @@ export default function App() {
           <Text style={s.panelText}>إجمالي المبيعات: {salesTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>إجمالي المشتريات: {purchaseTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>إجمالي المصاريف: {expenseTotal.toFixed(2)} DH</Text>
-          <Text style={s.panelText}>الصافي الأولي: {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text>
-          <Pressable style={s.action} onPress={()=>exportPdf('Rapport d’activité','',['Ventes: '+salesTotal.toFixed(2)+' DH','Achats: '+purchaseTotal.toFixed(2)+' DH','Dépenses: '+expenseTotal.toFixed(2)+' DH','Résultat initial: '+(salesTotal-purchaseTotal-expenseTotal).toFixed(2)+' DH'],salesTotal-purchaseTotal-expenseTotal)}><Text style={s.actionText}>تصدير تقرير النشاط PDF</Text></Pressable>
+          <Text style={s.panelText}>مجمل ربح المبيعات المحسوب بالتكلفة المسجلة: {grossProfit.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>الربح بعد المصاريف المسجلة: {(grossProfit-expenseTotal).toFixed(2)} DH</Text>
+          <Text style={s.panelText}>مبيعات قديمة بلا تكلفة محفوظة: {untrackedSalesCount} (ما داخلاش فحساب الربح)</Text>
+          <Text style={s.panelText}>الصافي الأولي النقدي (المبيعات - المشتريات - المصاريف): {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text>
+          <Pressable style={s.action} onPress={()=>exportPdf('Rapport d’activité','',['Ventes: '+salesTotal.toFixed(2)+' DH','Achats: '+purchaseTotal.toFixed(2)+' DH','Dépenses: '+expenseTotal.toFixed(2)+' DH','Marge brute suivie: '+grossProfit.toFixed(2)+' DH','Ventes historiques sans coût: '+untrackedSalesCount,'Résultat de trésorerie initial: '+(salesTotal-purchaseTotal-expenseTotal).toFixed(2)+' DH'],grossProfit-expenseTotal)}><Text style={s.actionText}>تصدير تقرير النشاط PDF</Text></Pressable>
         </View>
         <View style={[s.panel,{marginTop:12}]}>
           <Text style={s.panelTitle}>تقرير ديون الزبناء</Text>
