@@ -631,3 +631,12 @@ test('all literal Arabic alert titles and messages in app workspaces have French
  }
  assert.deepEqual(missing,[]);
 });
+
+test('quote product search matches names, references and barcodes and shows identifiers',()=>{
+ const quote=read('src/QuoteWorkspace.tsx');
+ assert.match(quote,/p\.name,p\.reference\|\|''\,p\.barcode\|\|''/);
+ assert.match(quote,/بحث عن المنتج بالاسم أو المرجع أو الباركود/);
+ assert.match(quote,/p\.barcode\?'باركود: '\+p\.barcode/);
+ const dictionary=read('src/i18n.tsx');
+ assert.ok(dictionary.includes('"بحث عن المنتج بالاسم أو المرجع أو الباركود"'));
+});
