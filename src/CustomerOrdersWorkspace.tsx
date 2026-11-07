@@ -1,5 +1,5 @@
 import React,{useMemo,useState} from 'react';
-import {ScrollView,TextInput as NativeTextInput,View} from 'react-native';
+import {ScrollView,View} from 'react-native';
 import {TText as Text,TTextInput as TextInput} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 import {CustomerOrder,CustomerOrderStatus} from './domain/customer-orders';
