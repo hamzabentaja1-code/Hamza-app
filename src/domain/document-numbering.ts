@@ -23,7 +23,7 @@ export function nextDocumentNumber(
   for (const document of existing) {
     if (typeof document.number !== 'string' || !document.number.startsWith(start)) continue;
     const suffix = document.number.slice(start.length);
-    if (!/^\\d{4,}$/.test(suffix)) continue;
+    if (!/^\d{4,}$/.test(suffix)) continue;
     const sequence = Number(suffix);
     if (Number.isSafeInteger(sequence)) highest = Math.max(highest, sequence);
   }
