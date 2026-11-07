@@ -62,6 +62,7 @@ test('customer orders are wired to quotes, invoice/delivery records, backup and 
  assert.match(app,/createOrderFromQuote/);
  assert.match(app,/fulfillCustomerOrder\(order,quantities,Date\.now\(\)\)/);
  assert.match(app,/linkCustomerOrderDocument\(nextOrder/);
+ assert.match(app,/convertQuote\(quote,'invoice',false\)/);
  assert.match(app,/customerOrders,/, 'orders are included in local persistence and backup payloads');
  assert.match(app,/setCustomerOrders\(Array\.isArray\(d\.customerOrders\)/);
  assert.match(app,/screen==='طلبات الزبناء'/);
