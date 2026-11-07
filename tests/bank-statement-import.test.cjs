@@ -20,3 +20,13 @@ test('bank statement import rejects malformed rows, invalid dates and overdrafts
  assert.throws(()=>parseBankStatementCsv('date;description;amount\n2026-02-30;Bad;1'));
  assert.equal(existing.length,1);
 });
+
+test('keeps identical repeated statement rows and remains idempotent on re-import',()=>{
+ const csv='date;description;amount\\n2026-11-02;Same credit;25\\n2026-11-02;Same credit;25';
+ const first=importBankStatement([],'bank-a',csv);
+ assert.equal(first.imported,2);
+ const second=importBankStatement(first.movements,'bank-a',csv);
+ assert.equal(second.imported,0);
+ assert.equal(second.matched,2);
+ assert.equal(second.movements.length,2);
+});
