@@ -1330,6 +1330,12 @@ const fr: Record<string, string> = {
   "IF": "IF",
   "بريد": "E-mail",
   "Email: ": "E-mail : ",
+  "حفظ ثمن المورد لهذا المنتج": "Enregistrer le prix de ce fournisseur pour ce produit",
+  "الثمن المحفوظ للمورد: ": "Prix enregistré pour ce fournisseur : ",
+  "تم حفظ ثمن المورد": "Prix fournisseur enregistré",
+  "سيتم اقتراح هذا الثمن تلقائياً عند اختيار نفس المورد والمنتج.": "Ce prix sera proposé automatiquement lorsque vous sélectionnerez le même fournisseur et le même produit.",
+  "اختار المورد والمنتج ودخل ثمن شراء صالح.": "Sélectionnez un fournisseur et un produit, puis saisissez un prix d’achat valide.",
+  "حدد المقاس أو اللون قبل حفظ ثمن المورد.": "Sélectionnez la taille ou la couleur avant d’enregistrer le prix fournisseur.",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
