@@ -101,7 +101,8 @@ test('movement validation rejects fractional quantities, invalid dates and incor
   assert.throws(() => appendInventoryMovement([], { ...opening, id: 'positive-transfer-out', kind: 'transfer_out', quantityDelta: 1 }), /خاصو ينقص المخزون/);
   assert.throws(() => appendInventoryMovement([], { ...opening, id: 'negative-transfer-in', kind: 'transfer_in', quantityDelta: -1 }), /خاصو يزيد المخزون/);
   assert.doesNotThrow(() => appendInventoryMovement([], { ...opening, id: 'positive-adjustment', kind: 'adjustment', quantityDelta: 2 }));
-  assert.doesNotThrow(() => appendInventoryMovement([], { ...opening, id: 'negative-adjustment', kind: 'adjustment', quantityDelta: -2 }));
+  const stocked = appendInventoryMovement([], opening);
+  assert.doesNotThrow(() => appendInventoryMovement(stocked, { ...opening, id: 'negative-adjustment', kind: 'adjustment', quantityDelta: -2 }));
 });
 
 test('customer return movements add stock and reversal removes it safely', () => {
