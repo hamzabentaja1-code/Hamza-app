@@ -14,6 +14,23 @@ export type StockMovement = {
 };
 
 export type Warehouse = { id: string; name: string; address?: string; active: boolean };
+
+export const DEFAULT_WAREHOUSE: Warehouse = { id: "main", name: "المخزن الرئيسي", active: true };
+
+export function normalizeWarehouses(value: unknown): Warehouse[] {
+  if (!Array.isArray(value)) return [{ ...DEFAULT_WAREHOUSE }];
+  const seen = new Set<string>();
+  const normalized = value.filter((item): item is Record<string, unknown> =>
+    typeof item === "object" && item !== null && !Array.isArray(item)
+  ).map(item => ({
+    id: typeof item.id === "string" ? item.id.trim() : "",
+    name: typeof item.name === "string" ? item.name.trim() : "",
+    address: typeof item.address === "string" ? item.address : undefined,
+    active: item.active !== false,
+  })).filter(item => item.id && item.name && !seen.has(item.id) && (seen.add(item.id), true));
+  if (!normalized.some(item => item.id === DEFAULT_WAREHOUSE.id)) normalized.unshift({ ...DEFAULT_WAREHOUSE });
+  return normalized.length ? normalized : [{ ...DEFAULT_WAREHOUSE }];
+}
 export type StockCountLine = {
   productId: string;
   expectedQuantity: number;
@@ -152,8 +169,11 @@ export function inventoryValue(movements: StockMovement[], productId: string, wa
   return Math.max(0, value);
 }
 
-export function validateWarehouse(warehouse: Partial<Warehouse>): string[] {
+export function validateWarehouse(warehouse: Partial<Warehouse>, existing: Warehouse[] = []): string[] {
   const errors: string[] = [];
+  if (!warehouse.id?.trim()) errors.push("معرف المخزن إجباري");
   if (!warehouse.name?.trim()) errors.push("اسم المخزن إجباري");
+  if (warehouse.id && existing.some(item => item.id === warehouse.id)) errors.push("معرف المخزن مستعمل من قبل");
+  if (warehouse.name && existing.some(item => item.name.trim().toLocaleLowerCase() === warehouse.name!.trim().toLocaleLowerCase())) errors.push("اسم المخزن مسجل من قبل");
   return errors;
 }

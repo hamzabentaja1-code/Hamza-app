@@ -233,7 +233,7 @@ const fr: Record<string, string> = {
   "دخل اسم الزبون.": "Saisissez le nom du client.",
   "دخل اسم المورد.": "Saisissez le nom du fournisseur.",
   "اختار المنتج والزبون والكمية.": "Sélectionnez le produit, le client et la quantité.",
-  "تم التحويل": "Conversion effectuée",
+  "تم التحويل": "Transfert effectué",
   "تسجلات الفاتورة.": "La facture a été enregistrée.",
   "تسجل سند الخروج وتحدّث المخزون.": "Le bon de sortie a été enregistré et le stock mis à jour.",
   "اختار الزبون ودخل مبلغ صحيح.": "Sélectionnez un client et saisissez un montant valide.",
@@ -306,7 +306,26 @@ const fr: Record<string, string> = {
   "سمح للتطبيق بالوصول للصور لاختيار شعار الشركة.": "Autorisez l’accès aux photos pour choisir le logo de l’entreprise.",
   "إضافة شعار الشركة": "Ajouter le logo de l’entreprise",
   "تغيير شعار الشركة": "Modifier le logo de l’entreprise",
-  "حذف الشعار": "Supprimer le logo"
+  "حذف الشعار": "Supprimer le logo",
+  "المخازن": "Entrepôts",
+  "اسم المخزن الجديد": "Nom du nouvel entrepôt",
+  "عنوان المخزن (اختياري)": "Adresse de l’entrepôt (facultatif)",
+  "+ إضافة مخزن": "+ Ajouter un entrepôt",
+  "تحويل بين المخازن": "Transfert entre entrepôts",
+  "المخزن المصدر:": "Entrepôt source :",
+  "المخزن المستهدف": "Entrepôt de destination",
+  "الكمية المراد تحويلها": "Quantité à transférer",
+  "تأكيد التحويل": "Confirmer le transfert",
+  "المخزن المحدد:": "Entrepôt sélectionné :",
+  "تعذر إضافة المخزن": "Impossible d’ajouter l’entrepôt",
+  "تمت إضافة المخزن": "Entrepôt ajouté",
+  "تسجل تحويل المخزون بنجاح.": "Le transfert de stock a été enregistré.",
+  "تعذر تحويل المخزون": "Impossible de transférer le stock",
+  "اختار المنتج والمخزن المستهدف والكمية.": "Choisissez un produit, un entrepôt de destination et une quantité.",
+  "معرف المخزن إجباري": "L’identifiant de l’entrepôt est obligatoire",
+  "اسم المخزن إجباري": "Le nom de l’entrepôt est obligatoire",
+  "معرف المخزن مستعمل من قبل": "Cet identifiant d’entrepôt est déjà utilisé",
+  "اسم المخزن مسجل من قبل": "Ce nom d’entrepôt existe déjà"
 };
 
 export function translate(language: AppLanguage, value: string): string {

@@ -72,3 +72,18 @@ test('a count with no differences is still recorded and cannot be replayed', () 
   assert.equal(next.filter(m => m.stockCountId === count.id).length, 1);
   assert.throws(() => applyStockCount(count, next), /تطبق/);
 });
+
+test('warehouse normalization preserves unique valid warehouses and always keeps the main warehouse', () => {
+  const { normalizeWarehouses } = require('../.test-build/inventory.js');
+  const result = normalizeWarehouses([{id:'w2',name:'Depot 2',active:true},{id:'w2',name:'Duplicate',active:true},{id:'',name:'Invalid',active:true},{id:'w3',name:'Depot 3',active:false}]);
+  assert.deepEqual(result.map(w=>w.id), ['main','w2','w3']);
+  assert.equal(normalizeWarehouses(null)[0].id, 'main');
+});
+
+test('warehouse validation rejects missing fields and duplicate identifiers or names', () => {
+  const { validateWarehouse } = require('../.test-build/inventory.js');
+  const existing = [{id:'main',name:'Main',active:true}];
+  assert.match(validateWarehouse({id:'',name:''}, existing).join(' '), /اسم المخزن/);
+  assert.match(validateWarehouse({id:'main',name:'Other'}, existing).join(' '), /معرف المخزن/);
+  assert.match(validateWarehouse({id:'new',name:'main'}, existing).join(' '), /اسم المخزن/);
+});
