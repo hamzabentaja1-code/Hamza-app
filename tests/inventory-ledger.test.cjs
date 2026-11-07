@@ -135,7 +135,7 @@ test('stock count can reconcile an empty shelf to zero and validates its movemen
     date: '2026-11-07',
   }), /معرف الحركة إجباري/);
   assert.throws(() => createStockCount(movements, {
-    id: 'count-duplicate', productId: 1, productName: 'Cable', countedQuantity: 2,
+    id: 'opening-1', productId: 1, productName: 'Cable', countedQuantity: 2,
     date: '2026-11-07',
-  }), /المخزون غير كافٍ/);
+  }), /حركة المخزون مسجلة من قبل/);
 });
