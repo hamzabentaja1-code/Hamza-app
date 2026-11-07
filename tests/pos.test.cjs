@@ -45,3 +45,10 @@ test('POS checkout rejects empty carts and underpaid cash checkouts', () => {
   assert.ok(validateCheckout(cart).includes('المبلغ المؤدى أقل من المجموع'));
   assert.deepEqual(validateCheckout({...cart, paymentMethod:'credit'}), []);
 });
+
+test('POS accepts service lines without stock tracking', () => {
+  const service={id:'service-1',name:'Installation',salePrice:300,stock:0,trackStock:false};
+  const cart=addPosLine(emptyPosCart(),service,3);
+  assert.equal(cart.lines[0].quantity,3);
+  assert.equal(cart.lines[0].unitPrice,300);
+});
