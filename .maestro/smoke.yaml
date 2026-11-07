@@ -102,6 +102,19 @@ appId: com.hamza.app
     direction: DOWN
     timeout: 10000
 - tapOn: "قلب على قسم..."
+- inputText: "المخازن"
+- tapOn: "المخازن"
+- assertVisible: "إدارة المخازن"
+- assertVisible: "تحويل بين المخازن"
+- assertVisible: "إضافة مخزن"
+- assertVisible: "المخزون حسب المخزن"
+- tapOn: "الرئيسية"
+lVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
 - inputText: "المشتريات"
 - tapOn: "المشتريات"
 - assertVisible: "تسجيل شراء وإضافة للمخزون"
@@ -408,4 +421,19 @@ appId: com.hamza.app
 - tapOn: "Rapports"
 - assertVisible: "Rapport des dettes fournisseurs"
 - assertVisible: "Rapport de caisse"
+- tapOn: "Accueil"
+
+# French: multi-warehouse stock management and transfers are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المخازن"
+- tapOn: "Entrepôts"
+- assertVisible: "Gestion des entrepôts"
+- assertVisible: "Transfert entre entrepôts"
+- assertVisible: "Ajouter un entrepôt"
+- assertVisible: "Stock par entrepôt"
 - tapOn: "Accueil"
