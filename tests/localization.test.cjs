@@ -101,3 +101,42 @@ test('French dictionary covers the field-operations category error', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'i18n.tsx'), 'utf8');
   assert.ok(source.includes('"تعذر إضافة الفئة.": "Impossible d’ajouter la catégorie."'));
 });
+
+
+test('all Arabic alert titles and messages in primary workspaces have French translations', () => {
+  const files = ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx',
+    'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx',
+    'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx',
+    'src/ChequeWorkspace.tsx', 'src/VariantWorkspace.tsx', 'src/UserAccessWorkspace.tsx',
+    'src/ContactHistoryWorkspace.tsx'];
+  const dictionarySource = fs.readFileSync(path.join(__dirname, '..', 'src', 'i18n.tsx'), 'utf8');
+  const keys = new Set([...dictionarySource.matchAll(/^\\s*"((?:\\\\.|[^"\\\\])*)"\\s*:/gm)].map(match => match[1]));
+  for (const file of files) {
+    const source = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+    for (let position = 0; (position = source.indexOf('showAlert(', position)) >= 0;) {
+      const start = position + 'showAlert('.length;
+      let depth = 1, quote = null, escaped = false, commas = [], end = start;
+      for (; end < source.length && depth > 0; end++) {
+        const char = source[end];
+        if (quote) {
+          if (escaped) escaped = false;
+          else if (char === '\\\\') escaped = true;
+          else if (char === quote) quote = null;
+          continue;
+        }
+        if (char === "'" || char === '"' || char === '`') quote = char;
+        else if (char === '(') depth++;
+        else if (char === ')') depth--;
+        else if (char === ',' && depth === 1) commas.push(end);
+      }
+      const firstTwoArguments = source.slice(start, commas[1] ?? end - 1);
+      for (const match of firstTwoArguments.matchAll(/'([^'\\\\]*(?:\\\\.[^'\\\\]*)*)'|"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/g)) {
+        const value = match[1] ?? match[2];
+        if (/[\\u0600-\\u06FF]/.test(value)) {
+          assert.ok(keys.has(value), file + ' has an untranslated alert string: ' + value);
+        }
+      }
+      position = end;
+    }
+  }
+});
