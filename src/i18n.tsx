@@ -5,6 +5,15 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "سجل حركات المخزون": "Historique des mouvements de stock",
+  "المسجل فالمخزن:": "Enregistré dans l’entrepôt :",
+  "المخزون السابق: ": "Stock précédent : ",
+  "المعدود: ": "Compté : ",
+  "الفرق: ": "Écart : ",
+  "تم تسجيل الجرد": "Inventaire enregistré",
+  "تعذر تسجيل الجرد": "Impossible d’enregistrer l’inventaire",
+  "اختار المنتج ودخل الكمية المعدودة بشكل صحيح.": "Choisissez un produit et saisissez une quantité entière valide.",
+  "مازال ما تسجلات حتى حركة مخزون.": "Aucun mouvement de stock enregistré.",
   "جرد وحركات المخزون": "Inventaire et mouvements de stock",
   "جرد المخزون": "Inventaire du stock",
   "اختار المنتج وسجل الكمية الفعلية. التطبيق يحسب الفرق ويسجلو كحركة جرد مع التاريخ والملاحظة.": "Choisissez un produit et saisissez la quantité réelle. L’application calcule l’écart et l’enregistre avec la date et la note.",
