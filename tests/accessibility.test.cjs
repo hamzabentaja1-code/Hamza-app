@@ -499,5 +499,5 @@ test('archived variants never fall back to the legacy parent-product stock', () 
 test('product deletion refuses to orphan non-zero variant inventory', () => {
   const app = read('App.tsx');
   assert.match(app, /linkedVariants\.some\(v=>v\.stockQty>0\)/);
-  assert.match(app, /setVariantStockMovements\(current=>current\.filter\(m=>!linkedVariants\.some/);
+  assert.match(app, /setProductVariants\(current=>current\.map\(v=>v\.productId===p\.id\?\{\.\.\.v,active:false\}:v\)\)/);
 });
