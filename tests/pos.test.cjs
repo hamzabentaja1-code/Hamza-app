@@ -94,3 +94,27 @@ test('camera barcode scanning is connected to the product editor and POS exact b
  assert.ok(pos.includes('findPosProduct(mapped,scannedBarcode)'));
  assert.ok(pos.includes("p.barcode?.toLocaleLowerCase()===q"));
 });
+
+test('POS stock filters distinguish available, low, out-of-stock and service items and retain categories',()=>{
+ const {filterPosProducts}=require('../.test-build/pos.js');
+ const products=[
+  {id:'a',name:'A',category:'معدات',stock:12,trackStock:true},
+  {id:'b',name:'B',category:'معدات',stock:3,trackStock:true},
+  {id:'c',name:'C',category:'معدات',stock:0,trackStock:true},
+  {id:'d',name:'D',category:'خدمات',trackStock:false},
+ ];
+ assert.deepEqual(filterPosProducts(products,'','available').map(x=>x.id),['a','b','d']);
+ assert.deepEqual(filterPosProducts(products,'','low').map(x=>x.id),['b']);
+ assert.deepEqual(filterPosProducts(products,'','out').map(x=>x.id),['c']);
+ assert.deepEqual(filterPosProducts(products,'','services').map(x=>x.id),['d']);
+ assert.deepEqual(filterPosProducts(products,'معدات','all').map(x=>x.id),['a','b','c']);
+ assert.deepEqual(filterPosProducts(products,'معدات','available').map(x=>x.id),['a','b']);
+});
+test('POS workspace exposes working stock and category filters without changing barcode lookup',()=>{
+ const fs=require('node:fs');const path=require('node:path');
+ const workspace=fs.readFileSync(path.join(__dirname,'..','src','PosWorkspace.tsx'),'utf8');
+ assert.match(workspace,/filterPosProducts\(mapped,categoryFilter,stockFilter\)/);
+ assert.match(workspace,/setStockFilter\(item\.key\)/);
+ assert.match(workspace,/setCategoryFilter\(categoryFilter===category\?'':category\)/);
+ assert.match(workspace,/findPosProduct\(mapped,scannedBarcode\)/);
+});
