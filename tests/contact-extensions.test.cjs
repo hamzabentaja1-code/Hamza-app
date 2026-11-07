@@ -7,6 +7,12 @@ test('custom contact fields are trimmed, unique and bounded',()=>{
  assert.throws(()=>ext.addContactCustomField(fields,'','x','f2'),/اسم الحقل/);
  assert.equal(ext.normalizeContactCustomFields([{id:'x',name:'A',value:'1'},{id:'y',name:'a',value:'2'}]).length,1);
 });
+test('multiple custom fields parse one name=value pair per line',()=>{
+ const fields=ext.parseContactCustomFieldsText('ICE=123\\nSecteur=Installation\\nCode=AB-7','contact');
+ assert.deepEqual(fields.map(x=>[x.name,x.value]),[['ICE','123'],['Secteur','Installation'],['Code','AB-7']]);
+ assert.throws(()=>ext.parseContactCustomFieldsText('ICE=123\\nSans valeur','c'),/الاسم=القيمة/);
+ assert.throws(()=>ext.parseContactCustomFieldsText('ICE=1\\nice=2','c'),/موجود من قبل/);
+});
 test('contact image attachments accept only bounded base64 images and can be removed',()=>{
  const file={id:'a1',name:'photo.png',mimeType:'image/png',dataUri:'data:image/png;base64,AA==',createdAt:'2026-01-01'};
  const saved=ext.addContactAttachment([],file);
@@ -24,6 +30,15 @@ test('price groups validate names and apply centime-safe discounts',()=>{
  assert.throws(()=>ext.priceForContactGroup(-1),/غير صالح/);
 });
 
+test('contact custom fields and saved image gallery are integrated for customers and suppliers',()=>{
+ const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
+ assert.match(app,/parseContactCustomFieldsText\\(customerCustomFieldsText/);
+ assert.match(app,/parseContactCustomFieldsText\\(supplierCustomFieldsText/);
+ assert.match(app,/x\\.attachments\\.map\\(file/);
+ assert.match(app,/c\\.attachments\\.map\\(file/);
+ assert.match(app,/removeContactAttachment/);
+ assert.match(app,/Image source=\\{\\{uri:file\\.dataUri\\}\\}/);
+});
 test('customer price groups persist through the app and flow from contact selection into quotes and invoices',()=>{
  const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
  const quote=fs.readFileSync(path.join(__dirname,'..','src','QuoteWorkspace.tsx'),'utf8');
