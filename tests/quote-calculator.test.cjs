@@ -58,6 +58,27 @@ test('converts quote to invoice and deducts stock exactly once', () => {
   assert.deepEqual(result.updatedProducts,[{id:7,qty:8}]);\n  assert.equal(result.stockDeducted,true);
 });
 
+test('service-only quote lines do not require or deduct stock', () => {
+  const result = convertQuote({
+    id:4,productName:'Installation',customerName:'Client',qty:1,unitPrice:300,total:300,
+    lines:[{productId:8,productName:'Installation',qty:1,unitPrice:300,total:300,trackStock:false}],
+  },'invoice',[],[],103,'07/11/2026');
+  assert.deepEqual(result.updatedProducts,[]);
+  assert.equal(result.stockDeducted,false);
+});
+
+test('mixed quote conversion deducts only stock-tracked product lines', () => {
+  const result = convertQuote({
+    id:5,productName:'Camera and installation',customerName:'Client',qty:2,unitPrice:100,total:200,
+    lines:[
+      {productId:7,productName:'Camera',qty:1,unitPrice:150,total:150,trackStock:true},
+      {productId:8,productName:'Installation',qty:1,unitPrice:50,total:50,trackStock:false},
+    ],
+  },'invoice',[],[{id:7,qty:4}],104,'07/11/2026');
+  assert.deepEqual(result.updatedProducts,[{id:7,qty:3}]);
+  assert.equal(result.stockDeducted,true);
+});
+
 test('delivery conversion deducts stock once and blocks duplicates', () => {
   const quote = {
     id:2,productName:'Widget',customerName:'Client',qty:3,unitPrice:100,total:300,
