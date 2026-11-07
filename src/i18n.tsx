@@ -966,6 +966,9 @@ const fr: Record<string, string> = {
   "تصدير التقرير CSV": "Exporter le rapport CSV",
   "ما قدرناش نشاركوا تقرير CSV.": "Impossible de partager le rapport CSV.",
 
+  "لا يمكن حذف العرض": "Impossible de supprimer le devis",
+  "هاد العرض مرتبط بفاتورة أو سند أو فاتورة أولية.": "Ce devis est lié à une facture, un bon de sortie ou une facture pro forma.",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
