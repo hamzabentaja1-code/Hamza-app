@@ -54,14 +54,14 @@ const modules = [
   {ar:'المشاريع والمهام',en:'Projects & tasks',icon:'📋'}, {ar:'طلبات التركيب',en:'Installation work orders',icon:'🛠'},
   {ar:'الأداءات',en:'Payments',icon:'د.م'}, {ar:'التقارير',en:'Reports',icon:'▥'}, {ar:'تحليل الفترة',en:'Period analysis',icon:'▤'},
 ];
-type CompanyProfile = {name:string;address:string;phone:string;email:string;ice:string;rc:string;taxId:string;bankName:string;bankAccount:string;bankRib:string;bankIban:string;quotePrefix:string;invoicePrefix:string;deliveryPrefix:string;purchasePrefix:string;showTaxFields:boolean;taxRate:number;logoData?:string};
+type CompanyProfile = {name:string;address:string;phone:string;email:string;ice:string;rc:string;taxId:string;bankName:string;bankAccount:string;bankRib:string;bankIban:string;quotePrefix:string;invoicePrefix:string;deliveryPrefix:string;purchasePrefix:string;proformaPrefix:string;showTaxFields:boolean;taxRate:number;logoData?:string};
 const DEFAULT_EXPENSE_CATEGORIES=['نقل','مواد','أكل','كراء','اتصالات','أخرى'];
-const DEFAULT_COMPANY_PROFILE:CompanyProfile={name:'HamZa',address:'',phone:'',email:'',ice:'',rc:'',taxId:'',bankName:'',bankAccount:'',bankRib:'',bankIban:'',quotePrefix:'DEV',invoicePrefix:'FAC',deliveryPrefix:'BL',purchasePrefix:'BC',showTaxFields:false,taxRate:20};
+const DEFAULT_COMPANY_PROFILE:CompanyProfile={name:'HamZa',address:'',phone:'',email:'',ice:'',rc:'',taxId:'',bankName:'',bankAccount:'',bankRib:'',bankIban:'',quotePrefix:'DEV',invoicePrefix:'FAC',deliveryPrefix:'BL',purchasePrefix:'BC',proformaPrefix:'PRO',showTaxFields:false,taxRate:20};
 function normalizeCompanyProfile(value:unknown):CompanyProfile{
   const source=value&&typeof value==='object'?value as Record<string,unknown>:{};
   const field=(key:string,fallback='')=>typeof source[key]==='string'?source[key] as string:fallback;
   const logo=field('logoData');
-  return {name:field('name','HamZa'),address:field('address'),phone:field('phone'),email:field('email'),ice:field('ice'),rc:field('rc'),taxId:field('taxId'),bankName:field('bankName'),bankAccount:field('bankAccount'),bankRib:field('bankRib'),bankIban:field('bankIban'),quotePrefix:field('quotePrefix','DEV'),invoicePrefix:field('invoicePrefix','FAC'),deliveryPrefix:field('deliveryPrefix','BL'),purchasePrefix:field('purchasePrefix','BC'),showTaxFields:source.showTaxFields===true,taxRate:typeof source.taxRate==='number'&&Number.isFinite(source.taxRate)&&source.taxRate>=0&&source.taxRate<=100?source.taxRate:20,logoData:logo.length<=8_000_000&&(logo.startsWith('data:image/')||logo.startsWith('file://'))?logo:undefined};
+  return {name:field('name','HamZa'),address:field('address'),phone:field('phone'),email:field('email'),ice:field('ice'),rc:field('rc'),taxId:field('taxId'),bankName:field('bankName'),bankAccount:field('bankAccount'),bankRib:field('bankRib'),bankIban:field('bankIban'),quotePrefix:field('quotePrefix','DEV'),invoicePrefix:field('invoicePrefix','FAC'),deliveryPrefix:field('deliveryPrefix','BL'),purchasePrefix:field('purchasePrefix','BC'),proformaPrefix:field('proformaPrefix','PRO'),showTaxFields:source.showTaxFields===true,taxRate:typeof source.taxRate==='number'&&Number.isFinite(source.taxRate)&&source.taxRate>=0&&source.taxRate<=100?source.taxRate:20,logoData:logo.length<=8_000_000&&(logo.startsWith('data:image/')||logo.startsWith('file://'))?logo:undefined};
 }
 type Product = {id:number; name:string; price:number; qty:number; kind?:'product'|'service'; quotePrice?:number; invoicePrice?:number; costPrice?:number; reference?:string; barcode?:string; category?:string; brand?:string; unit?:string; variant?:string; photoData?:string; photos?:string[]};
 type Customer = {id:number; name:string; phone?:string; address?:string; ice?:string; openingBalanceCentimes?:number; creditLimitCentimes?:number; paymentTermsDays?:number};
@@ -444,7 +444,7 @@ export default function App() {
     if(type==='invoice'){try{conversionQuote=applyInvoicePriceRules(quote,products);}catch(error){showAlert('ثمن الفاتورة غير صالح',error instanceof Error?error.message:'راجع أثمنة الفاتورة.');return;}}
     const stockAlreadyDeducted=documents.some(d=>d.sourceQuoteId===quote.id);
     const trackedQuoteLines=conversionQuote.lines?.filter(line=>line.trackStock!==false)||[];
-    if(!stockAlreadyDeducted&&trackedQuoteLines.length){
+    if((type==='invoice'||type==='delivery')&&!stockAlreadyDeducted&&trackedQuoteLines.length){
       const insufficient=trackedQuoteLines.find(line=>inventoryBalanceForWarehouse(inventoryMovements,line.productId,activeWarehouseId)<line.qty);
       if(insufficient){showAlert('المخزون غير كافٍ',`الكمية المتوفرة في المخزن النشط غير كافية للمنتج ${products.find(p=>p.id===insufficient.productId)?.name||quote.productName}.`);return;}
     }
@@ -458,7 +458,7 @@ export default function App() {
         }
       }
       const result=createConvertedDocument(
-        conversionQuote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),nextDocumentNumber(type==='invoice'?companyProfile.invoicePrefix:companyProfile.deliveryPrefix,documents),
+        conversionQuote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),nextDocumentNumber(type==='invoice'?companyProfile.invoicePrefix:type==='delivery'?companyProfile.deliveryPrefix:companyProfile.proformaPrefix,documents),
       );
       const dueDate=type==='invoice'&&customer?.paymentTermsDays!==undefined
         ?calculatePaymentDueDate(new Date().toISOString(),customer.paymentTermsDays):undefined;
@@ -686,6 +686,7 @@ export default function App() {
           <TextInput value={companyProfile.invoicePrefix} onChangeText={value=>setCompanyProfile(current=>({...current,invoicePrefix:value.toUpperCase()}))} placeholder="بادئة الفواتير — FAC" placeholderTextColor="#888" style={s.input}/>
           <TextInput value={companyProfile.deliveryPrefix} onChangeText={value=>setCompanyProfile(current=>({...current,deliveryPrefix:value.toUpperCase()}))} placeholder="بادئة سندات الخروج — BL" placeholderTextColor="#888" style={s.input}/>
           <TextInput value={companyProfile.purchasePrefix} onChangeText={value=>setCompanyProfile(current=>({...current,purchasePrefix:value.toUpperCase()}))} placeholder="بادئة أوامر الشراء — BC" placeholderTextColor="#888" style={s.input}/>
+          <TextInput value={companyProfile.proformaPrefix} onChangeText={value=>setCompanyProfile(current=>({...current,proformaPrefix:value.toUpperCase()}))} placeholder="بادئة الفاتورة الأولية — PRO" placeholderTextColor="#888" style={s.input}/>
           <Pressable style={s.action} onPress={()=>showAlert('تم الحفظ','بيانات الشركة محفوظة وستظهر في الوثائق PDF.')}><Text style={s.actionText}>حفظ بيانات الشركة</Text></Pressable>
         </View>
       </>:screen==='الأجندة'?<AgendaWorkspace tasks={workTasks.map(x=>({id:x.id,title:x.title,dueDate:x.dueDate,status:x.status,assignee:x.assignee}))} workOrders={workOrders} recurringExpenses={recurringExpenseRules} invoices={documents.filter(x=>x.type==='invoice').map(x=>({id:x.id,number:x.number,dueDate:x.dueDate,customerName:x.customerName,status:x.status,paidCentimes:x.paidCentimes,total:x.total}))} onNavigate={type=>go(type==='task'?'المشاريع والمهام':type==='work_order'?'طلبات التركيب':type==='recurring_expense'?'المصاريف المتكررة':'الفواتير')}/>
@@ -699,7 +700,7 @@ export default function App() {
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':'delivery')).map(d=><View key={d.id} style={s.listItem}>
           <View style={{flex:1}}><Text style={s.itemTitle}>{d.number} • {d.customerName}</Text><Text style={s.itemSub}>{d.date} • {d.status} • {d.lines.length} سطر</Text>{d.dueDate?<Text style={s.itemSub}>تاريخ الاستحقاق: {d.dueDate}</Text>:null}</View>
           <Text style={s.itemPrice}>{d.total.toFixed(2)} DH</Text>
-          <Pressable onPress={()=>exportPdf((d.type==='invoice'?'Facture ':'Bon de sortie ')+d.number,d.customerName,[...(d.type==='invoice'&&d.dueDate?[(language==='FR'?'Date d’échéance : ':'تاريخ الاستحقاق: ')+d.dueDate]:[]),...d.lines.map(line=>line.productName+' × '+line.qty+' — '+line.total.toFixed(2)+' DH')],d.total)}><Text style={s.gold}>PDF</Text></Pressable>
+          <Pressable onPress={()=>exportPdf((d.type==='invoice'?'Facture ':d.type==='delivery'?'Bon de sortie ':'Facture pro forma ')+d.number,d.customerName,[...(d.type==='invoice'&&d.dueDate?[(language==='FR'?'Date d’échéance : ':'تاريخ الاستحقاق: ')+d.dueDate]:[]),...d.lines.map(line=>line.productName+' × '+line.qty+' — '+line.total.toFixed(2)+' DH')],d.total)}><Text style={s.gold}>PDF</Text></Pressable>
         </View>)}
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':'delivery')).length===0&&<Text style={s.empty}>مازال ما تسجلات حتى وثيقة من هاد النوع.</Text>}
         {sales.length>0&&<Text style={s.note}>سجل المبيعات القديم باقي محفوظ كما هو.</Text>}
