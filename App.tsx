@@ -32,7 +32,7 @@ import {CashMovement, appendCashMovement, cashBalance} from './src/domain/cashbo
 import {BankAccount, BankMovement, BankReconciliation, appendBankMovement, bankBalance, createBankTransfer, reconcileBankAccount} from './src/domain/banking';
 import {createCashBankTransfer} from './src/domain/cash-bank-transfers';
 import {importBankStatement} from './src/domain/bank-statement-import';
-import {ChequeRecord, ChequeEvent, ChequeStatus, createCheque, transitionCheque} from './src/domain/cheques';
+import {ChequeRecord, ChequeEvent, createCheque, transitionCheque} from './src/domain/cheques';
 import {nextDocumentNumber} from './src/domain/document-numbering';
 import {applyInvoicePriceRules} from './src/domain/document-pricing';
 import {Technician, Equipment, WorkOrder, WorkTimeEntry} from './src/domain/field-operations';
