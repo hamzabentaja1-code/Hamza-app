@@ -81,3 +81,20 @@ test('customer price groups persist through the app and flow from contact select
  assert.match(quote,/priceGroupDiscountPercent:selectedPriceGroup\?\.discountPercent/);
  assert.match(pricing,/quote\.priceGroupDiscountPercent/);
 });
+
+test('customer and supplier contacts persist extended identifiers and expose email, call and WhatsApp actions',()=>{
+ const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
+ assert.match(app,/email:customerEmail\.trim\(\)/);
+ assert.match(app,/email:supplierEmail\.trim\(\)/);
+ assert.match(app,/rc:customerRc\.trim\(\)/);
+ assert.match(app,/taxId:supplierTaxId\.trim\(\)/);
+ assert.match(app,/email:contactDraftEmail\.trim\(\)/);
+ assert.match(app,/rc:contactDraftRc\.trim\(\)/);
+ assert.match(app,/taxId:contactDraftTaxId\.trim\(\)/);
+ assert.match(app,/openContactChannel=async\(value:string,channel:'whatsapp'\|'call'\|'email'\)/);
+ assert.match(app,/mailto:'\+email/);
+ assert.ok(app.includes("openContactChannel(c.email||'','email')"));
+ assert.ok(app.includes("openContactChannel(x.email||'','email')"));
+ assert.match(app,/isValidContactEmail\(customerEmail\)/);
+ assert.match(app,/isValidContactEmail\(supplierEmail\)/);
+});
