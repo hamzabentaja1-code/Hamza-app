@@ -19,7 +19,8 @@ export function applyInvoicePriceRules<T extends QuoteForPricing>(quote:T,produc
   return {...line,unitPrice,total:totalCentimes/100};
  });
  const subtotalCentimes=lines.reduce((sum,line)=>sum+Math.round(line.total*100),0);
- const requestedDiscount=Math.max(0,Math.round((quote.documentDiscount||0)*100));
+ const originalSubtotal=quote.lines.reduce((sum,line)=>sum+Math.round(line.total*100),0);
+ const requestedDiscount=quote.documentDiscount===undefined?Math.max(0,originalSubtotal-Math.round(quote.total*100)):Math.max(0,Math.round(quote.documentDiscount*100));
  const documentDiscountCentimes=Math.min(requestedDiscount,subtotalCentimes);
  return {...quote,lines,total:(subtotalCentimes-documentDiscountCentimes)/100,documentDiscount:documentDiscountCentimes/100};
 }
