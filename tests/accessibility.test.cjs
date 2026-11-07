@@ -507,3 +507,11 @@ test('product deletion protects open purchase orders', () => {
   const app = read('App.tsx');
   assert.match(app, /purchaseOrders\.some\(order=>order\.lines\.some\(line=>line\.productId===p\.id&&line\.receivedQuantity<line\.quantity\)\)/);
 });
+
+
+test('activity history records the user who performed each action', () => {
+  const app = read('App.tsx');
+  assert.match(app, /userId:activeUserId,userName:actor\?\.name/);
+  assert.match(app, /entry\.userName/);
+  assert.match(app, /logActivity\('تبديل المستخدم'/);
+});
