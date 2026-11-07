@@ -9,6 +9,7 @@
 - A control's visible child text is used as its screen-reader label; callers can override it with `accessibilityLabel`.
 - Disabled state is exposed to assistive technology.
 - Product, customer, POS payment-method, bank movement-type and bank-transfer destination choices expose their selected state.
+- Expense project assignment, return restocking mode, project status, task project/priority, and payment customer/document/method choices expose selected state.
 - Image-only product preview controls and the language switch have explicit labels.
 - Text inputs expose a translated accessibility label based on their translated placeholder unless a caller supplies a better label.
 - React Native text scaling remains enabled; the wrappers do not disable system font scaling.
