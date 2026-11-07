@@ -64,3 +64,10 @@ test('retains a credit note for a customer with no invoice or opening balance',(
  assert.equal(result[0].outstandingCentimes,0);
  assert.equal(result[0].creditBalanceCentimes,1250);
 });
+
+test('customer credit balances refresh when returns change and appear in statements',()=>{
+ const app=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','App.tsx'),'utf8');
+ assert.match(app,/\[documents,customers,salesReturns\]/);
+ assert.match(app,/رصيد دائن متبقٍ غير مستعمل/);
+ assert.match(app,/Avoir disponible non imputé/);
+});
