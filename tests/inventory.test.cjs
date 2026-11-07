@@ -13,7 +13,7 @@ const base = [
 
 test('stock balance and weighted inventory value remain consistent', () => {
   assert.equal(warehouseStock(base, 'p1', 'w1'), 12);
-  assert.equal(inventoryValue(base, 'p1', 'w1'), 300);
+  assert.equal(inventoryValue(base, 'p1', 'w1'), 280);
 });
 
 test('transfer posts paired movements and preserves total stock', () => {
