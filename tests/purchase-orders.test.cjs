@@ -46,3 +46,8 @@ test('rejects corrupted persisted order receipt counts',()=>{
  const invalid={...order(),lines:[{...order().lines[0],receivedQuantity:11}]};
  assert.throws(()=>receivePurchaseOrder(invalid,{date:'2026-11-07',lines:[{productId:10,quantity:1}]}),/غير صالح/);
 });
+
+test('rejects corrupted expected delivery dates in saved orders',()=>{
+ const invalid={...order(),expectedDate:'not-a-date'};
+ assert.throws(()=>receivePurchaseOrder(invalid,{date:'2026-11-07',lines:[{productId:10,quantity:1}]}),/غير صالح/);
+});
