@@ -365,3 +365,32 @@ appId: com.hamza.app
 - assertVisible: "Créer un bon de commande"
 - assertVisible: "Enregistrer le bon de commande"
 - tapOn: "Accueil"
+
+# Arabic: company profile and PDF branding settings.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "إعدادات الشركة"
+- tapOn: "إعدادات الشركة"
+- assertVisible: "بيانات الشركة والفوترة"
+- assertVisible: "اسم الشركة"
+- assertVisible: "ICE"
+- assertVisible: "حفظ بيانات الشركة"
+- tapOn: "الرئيسية"
+
+# French: company profile and PDF branding settings.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "إعدادات الشركة"
+- tapOn: "Paramètres de l’entreprise"
+- assertVisible: "Informations de l’entreprise et facturation"
+- assertVisible: "Nom de l’entreprise"
+- assertVisible: "Enregistrer les informations de l’entreprise"
+- tapOn: "Accueil"
