@@ -72,3 +72,21 @@ test('POS treats each variant as a separate stock item', () => {
   assert.equal(cart.lines[0].variantId, 'blue');
   assert.equal(cart.lines[1].variantId, 'red');
 });
+
+test('camera barcode scanning is connected to the product editor and POS exact barcode lookup',()=>{
+ const fs=require('node:fs');const path=require('node:path');
+ const root=path.join(__dirname,'..');
+ const app=fs.readFileSync(path.join(root,'App.tsx'),'utf8');
+ const pos=fs.readFileSync(path.join(root,'src','PosWorkspace.tsx'),'utf8');
+ const config=JSON.parse(fs.readFileSync(path.join(root,'app.json'),'utf8'));
+ const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
+ assert.ok(pkg.dependencies['expo-camera']);
+ assert.ok(config.expo.plugins.some(plugin=>Array.isArray(plugin)&&plugin[0]==='expo-camera'));
+ assert.ok(app.includes('useCameraPermissions'));
+ assert.ok(app.includes('barcodeScannerSettings={{barcodeTypes:'));
+ assert.ok(app.includes("openBarcodeScanner('product')"));
+ assert.ok(app.includes("openBarcodeScanner('pos')"));
+ assert.ok(app.includes('setProductBarcode(code)'));
+ assert.ok(pos.includes('findPosProduct(mapped,scannedBarcode)'));
+ assert.ok(pos.includes("p.barcode?.toLocaleLowerCase()===q"));
+});
