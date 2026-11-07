@@ -25,6 +25,8 @@ const fr: Record<string, string> = {
   "الطلب خاصو يحتوي على سطر واحد على الأقل": "La commande doit contenir au moins une ligne",
   "بيانات سطر الطلب غير صالحة": "Les données d’une ligne de commande sont invalides",
   "الكمية المسلمة غير صالحة": "La quantité livrée est invalide",
+  "تخفيض الطلب غير صالح": "La remise de la commande est invalide",
+  "كمية الطلب غير صالحة": "La quantité de la commande est invalide",
   "مجموع الطلب لا يطابق مجموع السطور": "Le total de la commande ne correspond pas au total des lignes",
   "لا يمكن تغيير حالة طلب مغلق": "Impossible de modifier le statut d’une commande clôturée",
   "لا يمكن تأكيد الطلب مرة أخرى": "La commande ne peut pas être confirmée une deuxième fois",
