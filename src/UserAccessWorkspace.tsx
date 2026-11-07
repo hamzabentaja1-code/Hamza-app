@@ -3,6 +3,7 @@ import {View, ScrollView, StyleSheet, Alert} from 'react-native';
 import {TText as Text, TTextInput as TextInput, LanguageContext, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 import {UserAccount, UserModule, UserRole, ROLE_LABELS, createUserAccount, setUserModuleAccess, canManageUsers} from './domain/user-access';
+import {translateUserAccessMessage} from './user-access-i18n';
 
 const Pressable=AccessiblePressable;
 const GOLD='#D6AE55';
@@ -10,13 +11,15 @@ type Props={users:UserAccount[];activeUserId:string;modules:UserModule[];onChang
 const roles:UserRole[]=['admin','sales','warehouse','accountant','viewer','custom'];
 export default function UserAccessWorkspace({users,activeUserId,modules,onChange,onSelect,onLog}:Props){
  const language=useContext(LanguageContext);
+ const t=(value:string)=>translateUserAccessMessage(translateText(value,language),language)??value;
+ const showAlert=(title:string,message:string,buttons?:Parameters<typeof Alert.alert>[2])=>Alert.alert(t(title),t(message),buttons?.map(button=>({...button,text:button.text?t(button.text):button.text})));
  const [name,setName]=useState('');const [role,setRole]=useState<UserRole>('sales');const [selectedId,setSelectedId]=useState(activeUserId);
  const fallback:UserAccount={id:'',name:'',role:'owner',allowedModules:[],canWrite:true,active:true,createdAt:''};const active:UserAccount=users.find(x=>x.id===activeUserId)||users[0]||fallback;const selected:UserAccount=users.find(x=>x.id===selectedId)||active;
  const owner=canManageUsers(active);
- const add=()=>{try{const user=createUserAccount({name,role,moduleIds:modules.map(x=>x.id)});if(users.some(x=>x.name.toLocaleLowerCase()===user.name.toLocaleLowerCase()))throw new Error('كاين مستخدم بنفس الاسم.');onChange([user,...users]);setName('');setSelectedId(user.id);onLog('إضافة مستخدم',user.name+' • '+ROLE_LABELS[user.role]);}catch(e){Alert.alert(translateText('تعذر إنشاء المستخدم',language)||'تعذر إنشاء المستخدم',translateText(e instanceof Error?e.message:'راجع المعلومات.',language)|| (e instanceof Error?e.message:'راجع المعلومات.'));}};
+ const add=()=>{try{const user=createUserAccount({name,role,moduleIds:modules.map(x=>x.id)});if(users.some(x=>x.name.toLocaleLowerCase()===user.name.toLocaleLowerCase()))throw new Error('كاين مستخدم بنفس الاسم.');onChange([user,...users]);setName('');setSelectedId(user.id);onLog('إضافة مستخدم',user.name+' • '+ROLE_LABELS[user.role]);}catch(e){showAlert('تعذر إنشاء المستخدم',e instanceof Error?e.message:'راجع المعلومات.');}};
  const toggleModule=(moduleId:string,allowed:boolean)=>{if(!owner||selected.role==='owner')return;onChange(users.map(x=>x.id===selected.id?setUserModuleAccess(x,moduleId,allowed):x));onLog('تعديل صلاحيات',selected.name+' • '+moduleId+' • '+(allowed?'سماح':'منع'));};
  const setWrite=(value:boolean)=>{if(!owner||selected.role==='owner'||selected.role==='viewer')return;onChange(users.map(x=>x.id===selected.id?{...x,canWrite:value}:x));};
- const remove=()=>{if(!owner||selected.role==='owner')return;Alert.alert('حذف المستخدم؟','غادي يتحذف الحساب المحلي ديال '+selected.name+' فقط.',[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>{onChange(users.filter(x=>x.id!==selected.id));onLog('حذف مستخدم',selected.name);setSelectedId(activeUserId);}}]);};
+ const remove=()=>{if(!owner||selected.role==='owner')return;showAlert('حذف المستخدم؟','غادي يتحذف الحساب المحلي ديال '+selected.name+' فقط.',[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>{onChange(users.filter(x=>x.id!==selected.id));onLog('حذف مستخدم',selected.name);setSelectedId(activeUserId);}}]);};
  return <ScrollView contentContainerStyle={s.body}>
   <View style={s.panel}><Text style={s.title}>المستخدم النشط</Text><Text style={s.note}>اختار الملف الشخصي اللي غادي يستعمل التطبيق دابا. تبديل المستخدم ماشي تسجيل دخول آمن وما كيحميش البيانات من شخص عندو وصول للهاتف.</Text>
    {users.filter(x=>x.active).map(user=><Pressable key={user.id} accessibilityState={{selected:user.id===activeUserId}} onPress={()=>onSelect(user.id)} style={[s.item,user.id===activeUserId&&s.selected]}><View style={{flex:1}}><Text style={s.userName}>{user.name}</Text><Text style={s.sub}>{ROLE_LABELS[user.role]} • {user.canWrite?'قراءة وكتابة':'مشاهدة فقط'}</Text></View><Text style={s.mark}>{user.id===activeUserId?'✓':'›'}</Text></Pressable>)}
