@@ -29,10 +29,13 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Product purchase cost, sale price and unit margin when cost is recorded
 - [x] Weighted average cost updates on purchases when the previous stock cost is known
 - [x] Sale-time cost snapshots and tested gross-profit calculation; legacy sales without a cost are excluded
+- [x] Inventory ledger unit tests for movements, duplicate protection, negative stock prevention and stock-count variance
 - [ ] Separate price rules for quotes/orders vs invoices
 - [ ] HT/TTC display mode and configurable tax rules where required
 - [ ] Stock tracking separately for delivery notes and invoices
-- [ ] Multiple warehouses/sites, transfers, stock counts, stock movements and audit
+- [x] Persistent stock movement ledger for opening stock, purchases, manual sales, POS sales, delivery notes, product quantity corrections and physical stock counts
+- [x] Physical stock count variance is recorded as an auditable movement and updates the product quantity
+- [ ] Multiple warehouses/sites, inter-warehouse transfers, multi-location stock counts and warehouse-level audit
 - [x] Bulk paste import and CSV export, image/name/reference/barcode search, saved product catalog
 
 ### Contacts
