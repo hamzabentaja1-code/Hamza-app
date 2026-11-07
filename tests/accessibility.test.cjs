@@ -621,7 +621,7 @@ test('all literal Arabic alert titles and messages in app workspaces have French
  const missing=[];
  for(const file of files){
   const source=fs.readFileSync(path.join(__dirname,'..',file),'utf8');
-  const pattern=/(?:showAlert|Alert\\.alert)\\(\\s*'([^']+)'(?:\\s*,\\s*'([^']+)')?/g;
+  const pattern=/(?:showAlert|Alert\.alert)\(\s*'([^']+)'(?:\s*,\s*'([^']+)')?/g;
   let match;
   while((match=pattern.exec(source))){
    for(const value of match.slice(1).filter(Boolean)){
