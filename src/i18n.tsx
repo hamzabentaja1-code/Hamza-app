@@ -842,6 +842,8 @@ const fr: Record<string, string> = {
   "مخزون متبقٍ": "Stock restant",
   "فرغ مخزون المنتج قبل تحويله إلى خدمة.": "Épuisez le stock du produit avant de le convertir en service.",
 
+  "الخدمات لا تستقبل في المخزون.": "Les services ne sont pas gérés dans le stock.",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
