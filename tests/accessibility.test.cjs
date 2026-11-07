@@ -134,7 +134,8 @@ test('inventory stocktaking and warehouse controls have French translations', ()
   const app = read('App.tsx');
   assert.match(app, /<WarehouseWorkspace\b/);
   assert.match(app, /createStockCount\(inventoryMovements/);
-  assert.match(app, /kind:'stock_count'/);
+  const ledger = read('src/domain/inventory-ledger.ts');
+  assert.match(ledger, /kind: "stock_count"/);
   assert.match(app, /سجل حركات المخزون/);
 });
 
