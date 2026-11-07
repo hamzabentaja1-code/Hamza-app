@@ -1264,6 +1264,12 @@ const fr: Record<string, string> = {
   "إضافة صورة (حتى 8 مرفقات إجمالاً)": "Ajouter une image (8 pièces jointes au total maximum)",
   "تخصيص محتوى التقرير": "Personnaliser le contenu du rapport",
   "كل المنتجات": "Tous les produits",
+  "آخر المبيعات والمرتجعات": "Ventes récentes et retours",
+  " • الكمية الأصلية: ": " • Quantité initiale : ",
+  " • باقي للإرجاع: ": " • Restant à retourner : ",
+  "فتح المرتجع": "Ouvrir le retour",
+  "تم إرجاع الكمية كاملة": "Quantité entièrement retournée",
+
   "المتوفر": "En stock",
   "مخزون منخفض (1–5)": "Stock faible (1 à 5)",
   "ما لقيناش منتج بهاد الاسم أو الفلتر المختار.": "Aucun produit ne correspond à ce nom ou au filtre sélectionné.",
