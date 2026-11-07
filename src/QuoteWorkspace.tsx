@@ -1,6 +1,7 @@
 import React, {useMemo, useState} from 'react';
 import {Alert, Pressable, ScrollView, Text, TextInput, View} from 'react-native';
 import {calculateQuote} from './domain/quote-calculator';
+import {translate} from './i18n';
 
 type Product = {id:number; name:string; price:number; qty:number};
 type Customer = {id:number; name:string};
@@ -12,6 +13,7 @@ export type QuoteRecord = {
 };
 export type QuoteConversionType = 'invoice' | 'delivery';
 type Props = {
+  language:'AR'|'FR';
   products:Product[];
   customers:Customer[];
   quotes:QuoteRecord[];
@@ -28,7 +30,8 @@ const choice={borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marg
 const active={borderColor:gold,backgroundColor:'#302819'};
 const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
-export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,onConvert}:Props) {
+export default function QuoteWorkspace({language,products,customers,quotes,onSave,onPdf,onConvert}:Props) {
+  const tr=(value:string)=>translate(language,value);
   const [customerId,setCustomerId]=useState('');
   const [productId,setProductId]=useState('');
   const [customerSearch,setCustomerSearch]=useState('');
@@ -66,7 +69,7 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
   };
   const addLine=()=>{
     const qty=Number(quantity.replace(',','.'));
-    if(!selectedProduct){Alert.alert('اختار المنتج','حدد المنتج اللي بغيتي تزيد.');return;}
+    if(!selectedProduct){Alert.alert('اختار {tr('المنتج')}','حدد {tr('المنتج')} اللي بغيتي تزيد.');return;}
     if(!Number.isFinite(qty)||qty<=0){Alert.alert('كمية غير صحيحة','دخل كمية أكبر من صفر.');return;}
     const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):selectedProduct.price;
     if(!Number.isFinite(unitPrice)||unitPrice<0){Alert.alert('ثمن غير صحيح','دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.');return;}
@@ -78,7 +81,7 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
     setQuantity('1');
   };
   const save=()=>{
-    if(!selectedCustomer){Alert.alert('اختار الزبون','خاصك تحدد الزبون قبل الحفظ.');return;}
+    if(!selectedCustomer){Alert.alert('اختار {tr('الزبون')}','خاصك تحدد {tr('الزبون')} قبل الحفظ.');return;}
     if(!calculation){Alert.alert('راجع العرض','زيد منتج واحد على الأقل وتأكد من التخفيض.');return;}
     const now=Date.now();
     const record:QuoteRecord={
@@ -91,7 +94,7 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
     };
     onSave(record);
     setLines([]);setDiscount('0');setNotes('');
-    Alert.alert('تم حفظ عرض السعر','تقدر دابا تصدره PDF.');
+    Alert.alert('تم {tr('حفظ عرض السعر')}','تقدر دابا تصدره PDF.');
   };
   const quoteLines=(quote:QuoteRecord)=>quote.lines?.length
     ? quote.lines.map(line=>`${line.productName} × ${line.qty} — ${line.total.toFixed(2)} DH`)
@@ -99,42 +102,42 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
 
   return <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom:20}}>
     <View style={panel}>
-      <Text style={{color:gold,fontSize:19,fontWeight:'800',marginBottom:12}}>إنشاء عرض سعر متعدد المنتجات</Text>
-      <Text style={{color:'#CCC',marginBottom:7}}>الزبون</Text>
-      <TextInput value={customerSearch} onChangeText={setCustomerSearch} placeholder="بحث عن الزبون بالاسم" placeholderTextColor="#888" style={input}/>
+      <Text style={{color:gold,fontSize:19,fontWeight:'800',marginBottom:12}}>{tr('إنشاء عرض سعر متعدد {tr('المنتج')}ات')}</Text>
+      <Text style={{color:'#CCC',marginBottom:7}}>{tr('الزبون')}</Text>
+      <TextInput value={customerSearch} onChangeText={setCustomerSearch} placeholder="بحث عن {tr('الزبون')} بالاسم" placeholderTextColor="#888" style={input}/>
       {filteredCustomers.map(c=><Pressable key={c.id} onPress={()=>setCustomerId(String(c.id))} style={[choice,customerId===String(c.id)&&active]}><Text style={{color:'#FFF',fontWeight:'700'}}>{c.name}</Text></Pressable>)}
-      {customers.length===0&&<Text style={{color:'#999',padding:8}}>زيد زبون أولاً من قسم الزبناء.</Text>}
-      <Text style={{color:'#CCC',marginVertical:8}}>المنتج</Text>
-      <TextInput value={productSearch} onChangeText={setProductSearch} placeholder="بحث عن المنتج بالاسم" placeholderTextColor="#888" style={input}/>
+      {customers.length===0&&<Text style={{color:'#999',padding:8}}>{tr('زيد زبون أولاً من قسم الزبناء.')}</Text>}
+      <Text style={{color:'#CCC',marginVertical:8}}>{tr('المنتج')}</Text>
+      <TextInput value={productSearch} onChangeText={setProductSearch} placeholder="بحث عن {tr('المنتج')} بالاسم" placeholderTextColor="#888" style={input}/>
       {filteredProducts.map(p=><Pressable key={p.id} onPress={()=>{setProductId(String(p.id));setCustomPrice(p.price.toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text></Pressable>)}
-      {products.length===0&&<Text style={{color:'#999',padding:8}}>زيد المنتجات أولاً.</Text>}
-      {selectedProduct&&<TextInput value={customPrice} onChangeText={setCustomPrice} keyboardType="decimal-pad" placeholder="ثمن البيع لهذا العرض (DH)" placeholderTextColor="#888" style={input}/>}
+      {products.length===0&&<Text style={{color:'#999',padding:8}}>زيد {tr('المنتج')}ات أولاً.</Text>}
+      {selectedProduct&&<TextInput value={customPrice} onChangeText={setCustomPrice} keyboardType="decimal-pad" placeholder={tr('ثمن البيع لهذا العرض (DH)')} placeholderTextColor="#888" style={input}/>}
       <View style={{flexDirection:'row',gap:8}}>
-        <TextInput value={quantity} onChangeText={setQuantity} keyboardType="decimal-pad" placeholder="الكمية" placeholderTextColor="#888" style={[input,{flex:1}]}/>
-        <Pressable onPress={addLine} style={[button,{flex:1,marginTop:0}]}><Text style={{color:'#151515',fontWeight:'900'}}>+ إضافة للسطر</Text></Pressable>
+        <TextInput value={quantity} onChangeText={setQuantity} keyboardType="decimal-pad" placeholder={tr('الكمية')} placeholderTextColor="#888" style={[input,{flex:1}]}/>
+        <Pressable onPress={addLine} style={[button,{flex:1,marginTop:0}]}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('+ إضافة للسطر')}</Text></Pressable>
       </View>
-      <Text style={{color:gold,fontWeight:'800',marginVertical:8}}>المنتجات المضافة ({lines.length})</Text>
+      <Text style={{color:gold,fontWeight:'800',marginVertical:8}}>{tr('المنتج')}ات المضافة ({lines.length})</Text>
       {lines.map((line,index)=><View key={index} style={{flexDirection:'row',alignItems:'center',gap:8,borderBottomWidth:1,borderColor:'#333',paddingVertical:9}}>
         <View style={{flex:1}}>
           <Text style={{color:'#FFF',fontWeight:'700'}}>{line.productName}</Text>
           <View style={{flexDirection:'row',gap:6,marginTop:6}}>
-            <TextInput value={String(line.qty)} onChangeText={v=>updateLine(index,{qty:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder="الكمية" placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
+            <TextInput value={String(line.qty)} onChangeText={v=>updateLine(index,{qty:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder={tr('الكمية')} placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
             <TextInput value={String(line.unitPrice)} onChangeText={v=>updateLine(index,{unitPrice:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder="الثمن" placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
           </View>
         </View>
         <Text style={{color:gold,fontWeight:'800'}}>{Number.isFinite(line.total)?line.total.toFixed(2):'—'} DH</Text>
-        <Pressable onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
+        <Pressable onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}>{tr('حذف')}</Text></Pressable>
       </View>)}
-      <TextInput value={discount} onChangeText={setDiscount} keyboardType="decimal-pad" placeholder="تخفيض إجمالي (DH)" placeholderTextColor="#888" style={[input,{marginTop:12}]}/>
-      <TextInput value={notes} onChangeText={setNotes} placeholder="ملاحظات (اختياري)" placeholderTextColor="#888" style={input}/>
+      <TextInput value={discount} onChangeText={setDiscount} keyboardType="decimal-pad" placeholder={tr('تخفيض إجمالي (DH)')} placeholderTextColor="#888" style={[input,{marginTop:12}]}/>
+      <TextInput value={notes} onChangeText={setNotes} placeholder={tr('ملاحظات (اختياري)')} placeholderTextColor="#888" style={input}/>
       <View style={{backgroundColor:'#111',borderRadius:9,padding:12,marginVertical:8}}>
-        <Text style={{color:'#DDD'}}>المجموع قبل التخفيض: {calculation?money(calculation.subtotalCentimes):'0.00 DH'}</Text>
-        <Text style={{color:'#DDD',marginTop:5}}>التخفيض: {calculation?money(calculation.discountCentimes):'0.00 DH'}</Text>
-        <Text style={{color:gold,fontSize:20,fontWeight:'900',marginTop:7}}>المجموع النهائي: {calculation?money(calculation.totalCentimes):'0.00 DH'}</Text>
+        <Text style={{color:'#DDD'}}>{tr('المجموع قبل {tr('التخفيض:')}')} {calculation?money(calculation.subtotalCentimes):'0.00 DH'}</Text>
+        <Text style={{color:'#DDD',marginTop:5}}>{tr('التخفيض:')} {calculation?money(calculation.discountCentimes):'0.00 DH'}</Text>
+        <Text style={{color:gold,fontSize:20,fontWeight:'900',marginTop:7}}>{tr('المجموع النهائي:')} {calculation?money(calculation.totalCentimes):'0.00 DH'}</Text>
       </View>
-      <Pressable onPress={save} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>حفظ عرض السعر</Text></Pressable>
+      <Pressable onPress={save} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('حفظ عرض السعر')}</Text></Pressable>
     </View>
-    <Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>عروض الأسعار السابقة ({quotes.length})</Text>
+    <Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>{tr('عروض الأسعار السابقة')} ({quotes.length})</Text>
     {quotes.map(q=><View key={q.id} style={[panel,{marginBottom:8}]}>
       <Text style={{color:'#FFF',fontWeight:'800'}}>{q.customerName}</Text>
       <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {q.status}</Text>
@@ -142,10 +145,10 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:8}}>
         <Pressable onPress={()=>onPdf('Devis',q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[])],q.total)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
-        <Pressable onPress={()=>onConvert(q,'delivery')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>سند خروج</Text></Pressable>
-        <Pressable onPress={()=>onConvert(q,'invoice')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>فاتورة</Text></Pressable>
+        <Pressable onPress={()=>onConvert(q,'delivery')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('سند خروج')}</Text></Pressable>
+        <Pressable onPress={()=>onConvert(q,'invoice')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة')}</Text></Pressable>
       </View>
     </View>)}
-    {quotes.length===0&&<Text style={{color:'#999',textAlign:'center',padding:12}}>مازال ما كاين حتى عرض سعر.</Text>}
+    {quotes.length===0&&<Text style={{color:'#999',textAlign:'center',padding:12}}>{tr('مازال ما كاين حتى عرض سعر.')}</Text>}
   </ScrollView>;
 }
