@@ -33,7 +33,7 @@ export default function PeriodReportWorkspace({sales,salesReturns,purchases,supp
    ['Type','Label','Période début','Période fin','Valeur actuelle DH','Valeur de comparaison DH','Détails'],
    ...metrics.map(item=>['Résumé',item.label,report.data!.fromDate,report.data!.toDate,String(report.data!.current[item.key]),String(report.data!.previous[item.key]),'']),
    ['Résumé','Indicateur opérationnel',report.data.fromDate,report.data.toDate,String(report.data.current.operatingIndicator),'','Indicateur préliminaire, pas un bénéfice comptable final'],
-   ...analytics.trend.map(row=>['Tendance mensuelle',row.month,row.month+'-01',row.month+'-31',String(row.sales),String(row.purchases),'Retours ventes '+row.salesReturns+'; retours fournisseurs '+row.supplierReturns+'; dépenses '+row.expenses]),
+   ...analytics.trend.map(row=>['Tendance mensuelle',row.month,row.month,row.month,String(row.sales),String(row.purchases),'Retours ventes '+row.salesReturns+'; retours fournisseurs '+row.supplierReturns+'; dépenses '+row.expenses]),
    ...analytics.suppliers.map(row=>['Fournisseur',row.supplierName,report.data!.fromDate,report.data!.toDate,String(row.netPurchases),String(row.grossPurchases),'Retours '+row.returns+'; achats '+row.purchaseCount]),
   ];  onExportCsv('HamZa - Rapport '+report.data.fromDate+' - '+report.data.toDate,rows);
  };
