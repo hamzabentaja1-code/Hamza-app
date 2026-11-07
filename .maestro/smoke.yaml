@@ -114,6 +114,19 @@ appId: com.hamza.app
     direction: DOWN
     timeout: 10000
 - tapOn: "قلب على قسم..."
+- inputText: "أوامر الشراء"
+- tapOn: "أوامر الشراء"
+- assertVisible: "إنشاء أمر شراء"
+- assertVisible: "حفظ أمر الشراء"
+- assertVisible: "أوامر الشراء"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
 - inputText: "Stock"
 - tapOn: "المخزون"
 - assertVisible: "إضافة منتج جديد"
@@ -338,4 +351,17 @@ appId: com.hamza.app
 - inputText: "المصاريف"
 - tapOn: "Dépenses"
 - assertVisible: "Catégorie de dépense (facultatif)"
+- tapOn: "Accueil"
+
+# French: purchase order and goods receipt workflow is translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "أوامر الشراء"
+- tapOn: "Bons de commande"
+- assertVisible: "Créer un bon de commande"
+- assertVisible: "Enregistrer le bon de commande"
 - tapOn: "Accueil"
