@@ -55,7 +55,6 @@ const fr: Record<string, string> = {
   "الكمية المراد تحويلها": "Quantité à transférer",
   "تنفيذ التحويل": "Effectuer le transfert",
   "تحويل وارد": "Transfert entrant",
-  "تحويل صادر": "Transfert sortant",
   "تعذر تحويل مخزون النسخة": "Impossible de transférer le stock de la variante",
   "راجع المخازن والكمية المتاحة.": "Vérifiez les dépôts et la quantité disponible.",
   "تحويل مخزون نسخة": "Transfert du stock d’une variante",
