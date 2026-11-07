@@ -7,6 +7,7 @@ export type ConversionLine = {
   trackStock?:boolean;
   variantId?:string;
   variantLabel?:string;
+  lineType?:'section';
 };
 export type QuoteForConversion = {
   id:number;
