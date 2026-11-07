@@ -26,6 +26,7 @@ export default function AccessiblePressable(props: PressableProps) {
       hitSlop={props.hitSlop ?? 8}
       accessibilityRole={props.accessibilityRole ?? 'button'}
       accessibilityLabel={label}
+      accessibilityHint={translateText(props.accessibilityHint, language)}
       accessibilityState={{
         ...props.accessibilityState,
         disabled: props.disabled ?? props.accessibilityState?.disabled ?? false,
