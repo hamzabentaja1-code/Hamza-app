@@ -81,3 +81,21 @@ export function findVariantByAttributes(variants: ProductVariant[], productId: n
   const key = attributeKey(attributes);
   return variants.find(item => item.productId === productId && item.active && attributeKey(item.attributes) === key);
 }
+
+
+/** Inventory selling value for active variants, returned in integer centimes. */
+export function variantStockValueCentimes(variants: ProductVariant[], productId: number, fallbackSalePriceCentimes: number): number {
+  return variants.filter(item => item.productId === productId && item.active)
+    .reduce((sum, item) => sum + item.stockQty * (item.salePriceCentimes ?? fallbackSalePriceCentimes), 0);
+}
+
+/** Potential gross profit for active variant stock, returned in integer centimes. */
+export function variantStockProfitCentimes(
+  variants: ProductVariant[],
+  productId: number,
+  fallbackSalePriceCentimes: number,
+  fallbackCostPriceCentimes: number,
+): number {
+  return variants.filter(item => item.productId === productId && item.active)
+    .reduce((sum, item) => sum + item.stockQty * ((item.salePriceCentimes ?? fallbackSalePriceCentimes) - (item.costPriceCentimes ?? fallbackCostPriceCentimes)), 0);
+}
