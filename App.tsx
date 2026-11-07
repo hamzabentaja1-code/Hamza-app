@@ -57,7 +57,7 @@ import {normalizeEquipmentCategories,addEquipmentCategory} from './src/domain/eq
 import {contactChannelUrl} from './src/domain/contact-channels';
 
 const GOLD = '#D6AE55';
-const isValidContactEmail=(value:string)=>!value.trim()||/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value.trim());
+const isValidContactEmail=(value:string)=>!value.trim()||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 const htmlSafe=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
 const STORE_KEY = 'hamza_app_data_v03';
 const modules = [
