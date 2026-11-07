@@ -1,6 +1,6 @@
 import React, {useMemo, useState} from 'react';
 import {Alert, Image, Pressable, Text, TextInput, View} from 'react-native';
-import {addPosLine, emptyPosCart, findPosProduct, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
+import {addPosLine, emptyPosCart, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
 
 type Product = {id:number; name:string; price:number; qty:number; photoData?:string};
 type Customer = {id:number; name:string};
@@ -8,7 +8,7 @@ type CheckoutLine = {productId:number; name:string; quantity:number; unitPrice:n
 type Props = {
   products: Product[];
   customers: Customer[];
-  onCheckout: (data:{customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'; total:number})=>void;
+  onCheckout: (data:{customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'; total:number})=>boolean|void;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
@@ -35,7 +35,7 @@ export default function PosWorkspace({products,customers,onCheckout}:Props){
     const name=customers.find(c=>String(c.id)===customerId)?.name||'زبون عابر';
     Alert.alert('تأكيد البيع',`المجموع ${money(totals.total)}\nالزبون: ${name}\nطريقة الأداء: ${method==='cash'?'نقداً':method==='card'?'بطاقة':'تحويل'}`,[
       {text:'رجوع',style:'cancel'},
-      {text:'تأكيد',onPress:()=>{onCheckout({customerName:name,lines,paymentMethod:method,total:totals.total});setCart(emptyPosCart());setDiscountText('0');setCustomerId('');}}
+      {text:'تأكيد',onPress:()=>{const accepted=onCheckout({customerName:name,lines,paymentMethod:method,total:totals.total});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');}}
     ]);
   };
   return <View style={{gap:12}}>
