@@ -16,6 +16,15 @@ type Props={
 const GOLD='#D6AE55';
 export default function BankWorkspace({accounts,movements,reconciliations,activeAccountId,cashBalanceCentimes,onSelectAccount,onAddAccount,onMovement,onTransfer,onReconcile,onCashTransfer}:Props){
  const language=useContext(LanguageContext);const t=(v:string)=>translateText(v,language)||v;
+ const showAlert = (...args: Parameters<typeof Alert.alert>) => {
+  const [title, message, buttons, options] = args;
+  const translatedButtons = buttons?.map(button => ({
+   ...button,
+   text: button.text ? (translateText(button.text, language) || button.text) : button.text,
+  }));
+  Alert.alert(translateText(title, language) || title, translateText(message, language) || message, translatedButtons, options);
+ };
+
  const [name,setName]=useState('');const [bankName,setBankName]=useState('');const [reference,setReference]=useState('');const [opening,setOpening]=useState('0');
  const [amount,setAmount]=useState('');const [description,setDescription]=useState('');const [kind,setKind]=useState<'deposit'|'withdrawal'>('deposit');
  const [destination,setDestination]=useState('');const [transferAmount,setTransferAmount]=useState('');const [transferDescription,setTransferDescription]=useState('');
@@ -23,24 +32,24 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
  const [statement,setStatement]=useState('');const [reconcileNote,setReconcileNote]=useState('تسوية مع كشف الحساب');
  const active=accounts.find(a=>a.id===activeAccountId);
  const balance=active?bankBalance(movements,active.id):0;
- const add=()=>{const value=Number(opening.replace(',','.'));if(!name.trim()||!Number.isFinite(value)||value<0||!/^\d{0,4}$/.test(reference.trim())){Alert.alert(t('معلومات ناقصة'),t('دخل اسم الحساب ورصيد افتتاحي صحيح، وآخر 4 أرقام فقط للحساب.'));return;}
-  if(accounts.some(a=>a.name.trim().toLowerCase()===name.trim().toLowerCase())){Alert.alert(t('حساب موجود'),t('اسم الحساب مستعمل من قبل.'));return;}
+ const add=()=>{const value=Number(opening.replace(',','.'));if(!name.trim()||!Number.isFinite(value)||value<0||!/^\d{0,4}$/.test(reference.trim())){showAlert(t('معلومات ناقصة'),t('دخل اسم الحساب ورصيد افتتاحي صحيح، وآخر 4 أرقام فقط للحساب.'));return;}
+  if(accounts.some(a=>a.name.trim().toLowerCase()===name.trim().toLowerCase())){showAlert(t('حساب موجود'),t('اسم الحساب مستعمل من قبل.'));return;}
   onAddAccount({id:'bank-'+Date.now(),name:name.trim(),bankName:bankName.trim()||undefined,accountNumberMasked:reference.trim()?('•••• '+reference.trim()):undefined,currency:'MAD',active:true} as BankAccount,Math.round(value*100));
   setName('');setBankName('');setReference('');setOpening('0');
  };
- const saveMovement=()=>{const value=Number(amount.replace(',','.'));if(!active||!Number.isFinite(value)||value<=0||!description.trim()){Alert.alert(t('معلومات ناقصة'),t('دخل مبلغ ووصف صحيحين.'));return;}
+ const saveMovement=()=>{const value=Number(amount.replace(',','.'));if(!active||!Number.isFinite(value)||value<=0||!description.trim()){showAlert(t('معلومات ناقصة'),t('دخل مبلغ ووصف صحيحين.'));return;}
   const ok=onMovement({id:'bank-move-'+Date.now(),accountId:active.id,kind,amountCentimes:Math.round(value*100),date:new Date().toISOString(),description:description.trim()});
   if(ok){setAmount('');setDescription('');}
  };
- const transfer=()=>{const value=Number(transferAmount.replace(',','.'));if(!active||!destination||!Number.isFinite(value)||value<=0||!transferDescription.trim()){Alert.alert(t('معلومات ناقصة'),t('حدد الحساب الوجهة والمبلغ والوصف.'));return;}
+ const transfer=()=>{const value=Number(transferAmount.replace(',','.'));if(!active||!destination||!Number.isFinite(value)||value<=0||!transferDescription.trim()){showAlert(t('معلومات ناقصة'),t('حدد الحساب الوجهة والمبلغ والوصف.'));return;}
   const ok=onTransfer({id:'bank-transfer-'+Date.now(),fromAccountId:active.id,toAccountId:destination,amountCentimes:Math.round(value*100),date:new Date().toISOString(),description:transferDescription.trim()});
   if(ok){setTransferAmount('');setTransferDescription('');setDestination('');}
  };
- const cashTransfer=()=>{const value=Number(cashTransferAmount.replace(',','.'));if(!active||!Number.isFinite(value)||value<=0||!cashTransferDescription.trim()){Alert.alert(t('معلومات ناقصة'),t('دخل مبلغ ووصف صحيحين.'));return;}
+ const cashTransfer=()=>{const value=Number(cashTransferAmount.replace(',','.'));if(!active||!Number.isFinite(value)||value<=0||!cashTransferDescription.trim()){showAlert(t('معلومات ناقصة'),t('دخل مبلغ ووصف صحيحين.'));return;}
   const ok=onCashTransfer({direction:cashTransferDirection,accountId:active.id,amountCentimes:Math.round(value*100),date:new Date().toISOString(),description:cashTransferDescription.trim()});
   if(ok)setCashTransferAmount('');
  };
- const reconcile=()=>{const value=Number(statement.replace(',','.'));if(!active||!Number.isFinite(value)||value<0){Alert.alert(t('معلومات ناقصة'),t('دخل الرصيد الموجود في كشف البنك بشكل صحيح.'));return;}
+ const reconcile=()=>{const value=Number(statement.replace(',','.'));if(!active||!Number.isFinite(value)||value<0){showAlert(t('معلومات ناقصة'),t('دخل الرصيد الموجود في كشف البنك بشكل صحيح.'));return;}
   const ok=onReconcile({id:'bank-reconcile-'+Date.now(),accountId:active.id,statementBalanceCentimes:Math.round(value*100),date:new Date().toISOString(),note:reconcileNote.trim()});
   if(ok)setStatement('');
  };
