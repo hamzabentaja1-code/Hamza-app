@@ -1093,6 +1093,9 @@ const fr: Record<string, string> = {
   "الجرد مطابق": "Inventaire conforme",
   "الكمية الفعلية مطابقة للمخزون المسجل.": "La quantité réelle correspond au stock enregistré.",
   "الكمية الفعلية للنسخة": "Quantité réelle de la variante",
+  "هاد المنتج عندو تنويعات. اختار المقاس أو اللون قبل إضافته لعرض السعر.": "Ce produit a des variantes. Choisissez la taille ou la couleur avant de l’ajouter au devis.",
+  "خاصك تختار نسخة صحيحة ونشطة لكل منتج عندو تنويعات قبل إصدار سند الخروج.": "Choisissez une variante valide et active pour chaque produit à variantes avant d’émettre le bon de sortie.",
+  " من عرض السعر ": " depuis le devis ",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
