@@ -60,7 +60,7 @@ import {SupplierPriceRule,normalizeSupplierPriceRules,upsertSupplierPriceRule,fi
 import {SupplierPriceRequest,SupplierInvoice} from './src/domain/supplier-procurement';
 import SupplierProcurementWorkspace from './src/SupplierProcurementWorkspace';
 import CustomerOrdersWorkspace from './src/CustomerOrdersWorkspace';
-import {CustomerOrder,CustomerOrderStatus,createCustomerOrder,changeCustomerOrderStatus,fulfillCustomerOrder,linkCustomerOrderDocument} from './src/domain/customer-orders';
+import {CustomerOrder,CustomerOrderStatus,createCustomerOrderFromQuote,changeCustomerOrderStatus,fulfillCustomerOrder,linkCustomerOrderDocument} from './src/domain/customer-orders';
 import {buildDueReminders} from './src/domain/due-reminders';
 import {requestLocalNotificationPermission,syncScheduledDueNotifications,cancelScheduledDueNotifications} from './src/local-notifications';
 import {normalizeEquipmentCategories,addEquipmentCategory} from './src/domain/equipment-categories';
@@ -654,10 +654,7 @@ export default function App() {
     try{
       if(customerOrders.some(order=>order.sourceQuoteId===quote.id))throw new Error('هاد العرض تحول من قبل لطلب زبون.');
       if(quote.status!=='مقبول')throw new Error('خاص عرض السعر يكون مقبول قبل إنشاء الطلب.');
-      const sourceLines=quote.lines?.filter(line=>line.lineType!=='section')||[];
-      const lines=sourceLines.length?sourceLines.map(line=>({productId:line.productId,productName:line.productName,qty:line.qty,unitPrice:line.total/line.qty,variantId:line.variantId,variantLabel:line.variantLabel,fulfilledQty:0,trackStock:line.trackStock!==false})):
-        [{productId:0,productName:quote.productName,qty:quote.qty,unitPrice:quote.unitPrice,fulfilledQty:0,trackStock:false}];
-      const order=createCustomerOrder({id:Date.now(),number:nextDocumentNumber('CMD',customerOrders),customerName:quote.customerName,date:new Date().toISOString().slice(0,10),total:quote.total,sourceQuoteId:quote.id,lines,notes:quote.notes});
+      const order=createCustomerOrderFromQuote(quote,Date.now(),nextDocumentNumber('CMD',customerOrders),new Date().toISOString().slice(0,10));
       setCustomerOrders(current=>[order,...current]);logActivity('إنشاء طلب زبون',order.number+' • '+order.customerName);showAlert('تم إنشاء طلب الزبون',order.number);
     }catch(error){showAlert('تعذر إنشاء الطلب',error instanceof Error?error.message:'راجع عرض السعر.');}
   };
