@@ -150,7 +150,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Basic task list with assignments, priorities, due dates, estimated durations and status changes
 - [x] Unified agenda with date-range filtering for task due dates, scheduled work orders, recurring expense due dates and unpaid invoice due dates; overdue items are highlighted
 - [x] Monthly calendar grid with Monday-first weeks, previous/next month navigation, event counts, selected-day announcements and one-day filtering
-- [ ] Recurring task rules, push notifications, attachments and advanced filters
+- [x] Recurring task rules for weekly/monthly/yearly schedules; completion creates the next occurrence, clamps month-end/leap-year dates, honors an optional end date and prevents duplicate generation (tests/recurring-tasks.test.cjs)
+- [ ] Task push notifications, attachments and advanced filters
 - [x] Basic sales/purchase/stock/cash/receivables/payables/gross-profit summary reports with PDF exports
 - [x] Date-range report filters with previous equal-length period comparisons; net sales and net purchases account for returns and invalid legacy dates are reported
 - [x] Monthly sales/purchase trends with returns and expenses, plus supplier comparisons in period analysis
