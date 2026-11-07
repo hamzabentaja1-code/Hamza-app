@@ -71,12 +71,15 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Returns, parked sales and physical receipt-printer integration
 
 ### Projects and field operations
-- [ ] Installations/projects, installation requests and financial status
+- [ ] Full installation requests and work-order lifecycle
+- [x] Basic project records with customer, budget, dates, notes, status and project-linked expense totals
+- [x] Task create/read/update/delete with project link, assignee, priority, due date, estimated duration and status
 - [ ] Technicians, specialties, equipment and equipment categories
-- [ ] Time entries, rates, costs, settlement and history
+- [ ] Time entries, rates, costs, settlement, attachments and history
 
 ### Agenda and reports
-- [ ] Tasks, assignments, priorities, due dates, durations and attachments
+- [x] Basic task list with assignments, priorities, due dates, estimated durations and status changes
+- [ ] Calendar view, recurring tasks, attachments, reminders and advanced task filters
 - [ ] Sales/purchase/stock/cash/receivables/payables/profit reports
 - [ ] Filters, date ranges, export and print
 
