@@ -12,7 +12,7 @@ import {applyPaymentToInvoice} from './src/domain/payment-allocation';
 import {calculateCustomerBalances} from './src/domain/customer-balances';
 import {calculateSalesProfit} from './src/domain/profit';
 import {calculateSupplierBalances} from './src/domain/supplier-balances';
-import {LanguageContext, TText as Text, TTextInput as TextInput} from './src/i18n';
+import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput} from './src/i18n';
 import {InventoryMovement, appendInventoryMovement, createStockCount} from './src/domain/inventory-ledger';
 
 const GOLD = '#D6AE55';
@@ -40,7 +40,7 @@ type Payment = {id:number; customerName:string; amount:number; method:string; da
 export default function App() {
   const [screen,setScreen]=useState('الرئيسية');
   const [search,setSearch]=useState(''); const [productSearch,setProductSearch]=useState(''); const [photoData,setPhotoData]=useState(''); const [photoPreview,setPhotoPreview]=useState<string|null>(null);
-  const [language,setLanguage]=useState('AR');
+  const [language,setLanguage]=useState<AppLanguage>('AR');
   const [products,setProducts]=useState<Product[]>([]);
   const [customers,setCustomers]=useState<Customer[]>([]);
   const [sales,setSales]=useState<Sale[]>([]);
