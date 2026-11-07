@@ -34,6 +34,8 @@ const attributeKey = (attributes: VariantAttributes) => JSON.stringify(normalize
 export function createProductVariant(variant: ProductVariant, existing: ProductVariant[] = []): ProductVariant {
   if (!variant.id.trim() || !Number.isSafeInteger(variant.productId) || variant.productId <= 0) throw new Error('معرف المنتج والنسخة غير صالحين');
   if (!Object.keys(variant.attributes).length || !normalizedAttributes(variant.attributes).length) throw new Error('خصائص النسخة مطلوبة');
+  const normalized = normalizedAttributes(variant.attributes);
+  if (new Set(normalized.map(([key]) => key)).size !== normalized.length) throw new Error('خصائص النسخة فيها أسماء مكررة');
   if (!Number.isSafeInteger(variant.stockQty) || variant.stockQty < 0) throw new Error('كمية النسخة غير صالحة');
   for (const value of [variant.costPriceCentimes, variant.salePriceCentimes]) {
     if (value !== undefined && (!Number.isSafeInteger(value) || value < 0)) throw new Error('ثمن النسخة غير صالح');
@@ -45,7 +47,7 @@ export function createProductVariant(variant: ProductVariant, existing: ProductV
   if (existing.some(item => item.productId === variant.productId && attributeKey(item.attributes) === attributeKey(variant.attributes))) {
     throw new Error('نفس خصائص النسخة مسجلة من قبل');
   }
-  return {...variant, attributes: Object.fromEntries(normalizedAttributes(variant.attributes))};
+  return {...variant, attributes: Object.fromEntries(normalized)};
 }
 
 export function applyVariantStockMovement(
