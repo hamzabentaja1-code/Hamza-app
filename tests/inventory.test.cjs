@@ -1,9 +1,9 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import {
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const {
   warehouseStock, inventoryValue, transferStock, validateStockIssue,
   createStockCount, applyStockCount,
-} from '../.test-build/inventory.js';
+} = require('../.test-build/inventory.js');
 
 const base = [
   { id: 'open-1', productId: 'p1', warehouseId: 'w1', kind: 'opening', quantity: 10, unitCost: 20, createdAt: '2026-01-01' },
