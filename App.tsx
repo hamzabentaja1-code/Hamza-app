@@ -55,7 +55,6 @@ import {exceedsCustomerCreditLimit, calculatePaymentDueDate} from './src/domain/
 import {PeriodReportLayout,DEFAULT_PERIOD_REPORT_LAYOUT,normalizePeriodReportLayout} from './src/domain/report-layout';
 import {contactChannelUrl,ContactChannel} from './src/domain/contact-channels';
 import {normalizeEquipmentCategories,addEquipmentCategory} from './src/domain/equipment-categories';
-import {contactChannelUrl} from './src/domain/contact-channels';
 
 const GOLD = '#D6AE55';
 const isValidContactEmail=(value:string)=>!value.trim()||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
