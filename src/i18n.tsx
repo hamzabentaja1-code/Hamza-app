@@ -274,7 +274,6 @@ const fr: Record<string, string> = {
   "إدخال جماعي للمنتجات": "Importation groupée des produits",
   "بحث بالاسم أو المرجع أو الباركود أو الصنف...": "Rechercher par nom, référence, code-barres ou catégorie...",
   "مازال ما زدتي حتى منتج.": "Aucun produit pour le moment.",
-  "حذف": "Supprimer",
   "إضافة مورد": "Ajouter un fournisseur",
   "الهاتف (اختياري)": "Téléphone (facultatif)",
   "العنوان (اختياري)": "Adresse (facultatif)",
