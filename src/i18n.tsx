@@ -805,6 +805,13 @@ const fr: Record<string, string> = {
   "إصدار سند خروج": "Émission d’un bon de sortie",
   "تسجيل مصروف": "Enregistrement d’une dépense",
 
+  "دفعة موزعة": "Paiement réparti",
+  "دفعة موزعة للمورد: ": "Paiement réparti au fournisseur : ",
+  "تأكيد الدفعة الموزعة": "Confirmer le paiement réparti",
+  "توزع الأداء على مشتريات المورد حسب الأقدمية.": "Le paiement a été réparti sur les achats du fournisseur du plus ancien au plus récent.",
+  "تسجيل أداء مورد": "Enregistrement d’un paiement fournisseur",
+  "عكس أداء مورد": "Annulation d’un paiement fournisseur",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
