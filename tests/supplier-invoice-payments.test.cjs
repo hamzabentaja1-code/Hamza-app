@@ -13,7 +13,7 @@ test('summarizes unpaid, partial and fully paid supplier invoices in centimes',(
 test('rejects overpayment, duplicate IDs, wrong invoice/supplier and invalid amounts',()=>{
  assert.throws(()=>addSupplierInvoicePayment(invoice,[],payment('p1',12551)),/تجاوز/);
  const first=addSupplierInvoicePayment(invoice,[],payment('p1',1000));
- assert.throws(()=>addSupplierInvoicePayment(invoice,first.payments,payment('p1',1000)),/مكرر/);
+ assert.throws(()=>addSupplierInvoicePayment(invoice,first.payments,payment('p1',1000)),/مسجل من قبل/);
  assert.throws(()=>summarizeSupplierInvoicePayments(invoice,[{...payment('p2',100),supplierId:'other'}]),/غير صالحة/);
  assert.throws(()=>summarizeSupplierInvoicePayments(invoice,[{...payment('p2',100),invoiceId:'other'}]),/غير صالحة/);
  assert.throws(()=>summarizeSupplierInvoicePayments(invoice,[payment('p2',0)]),/غير صالحة/);
