@@ -54,3 +54,14 @@ test('mixed product and service quote deducts only stock-tracked product lines',
   assert.equal(result.updatedProducts.find(x=>x.id===7).qty,8);
   assert.equal(result.updatedProducts.find(x=>x.id===8).qty,4);
 });
+
+test('proforma invoices never deduct stock and do not block later invoice/delivery stock posting', () => {
+  const quote={id:70,productName:'Widget',customerName:'Client',qty:2,unitPrice:50,total:100,lines:[{productId:7,productName:'Widget',qty:2,unitPrice:50,total:100}]};
+  const products=[{id:7,qty:10}];
+  const proforma=convertQuote(quote,'proforma',[],products,701,'07/11/2026');
+  assert.equal(proforma.stockDeducted,false);
+  assert.equal(proforma.updatedProducts[0].qty,10);
+  const invoice=convertQuote(quote,'invoice',[proforma.document],products,702,'07/11/2026');
+  assert.equal(invoice.stockDeducted,true);
+  assert.equal(invoice.updatedProducts[0].qty,8);
+});
