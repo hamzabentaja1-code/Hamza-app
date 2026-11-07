@@ -24,6 +24,12 @@
         {
           "photosPermission": "السماح لـ HamZa باختيار صور المنتجات من جهازك."
         }
+      ],
+      [
+        "expo-document-picker",
+        {
+          "iCloudContainerEnvironment": "Production"
+        }
       ]
     ],
     "android": {
