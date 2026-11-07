@@ -11,8 +11,16 @@ export type CashMovement = {
 
 export function cashBalance(movements: CashMovement[]): number {
   return movements.reduce((balance, item) => {
+    if (!Number.isSafeInteger(item.amountCentimes) || item.amountCentimes <= 0 ||
+        !["opening", "cash_in", "cash_out"].includes(item.kind)) {
+      throw new Error("سجل الصندوق يحتوي على حركة غير صالحة");
+    }
     const incoming = item.kind === "opening" || item.kind === "cash_in";
-    return balance + (incoming ? item.amountCentimes : -item.amountCentimes);
+    const next = balance + (incoming ? item.amountCentimes : -item.amountCentimes);
+    if (!Number.isSafeInteger(next) || next < 0) {
+      throw new Error("رصيد الصندوق في السجل غير صالح");
+    }
+    return next;
   }, 0);
 }
 
