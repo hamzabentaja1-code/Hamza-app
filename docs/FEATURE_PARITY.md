@@ -16,7 +16,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Company profile, logo, address, contact details and Moroccan identifiers (ICE, RC, IF) included in PDF branding
 - [x] Company banking details (bank name, account, RIB, IBAN) persisted and printed in Arabic/French PDFs
 - [x] Configurable yearly sequential series for quotes, invoices, delivery notes and purchase orders; existing legacy documents remain unchanged
-- [ ] Users, roles, permissions, activity history
+- [x] Local activity history for product changes, sales, purchases, invoices, customer payments and expenses; persisted and included in backup/restore
+- [ ] User accounts, roles and granular permissions
 - [ ] Arabic/French complete localization, language persistence, theme
 - [ ] Document templates and custom fields
 - [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
