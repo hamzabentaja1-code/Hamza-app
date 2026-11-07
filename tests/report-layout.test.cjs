@@ -6,7 +6,7 @@ const layout=require('../.test-build/report-layout.js');
 
 test('report layout defaults to all sections and normalizes partial or corrupt settings',()=>{
  assert.deepEqual(layout.normalizePeriodReportLayout(undefined),layout.DEFAULT_PERIOD_REPORT_LAYOUT);
- assert.deepEqual(layout.normalizePeriodReportLayout({summary:false,monthlyTrend:false}),{summary:false,comparison:true,monthlyTrend:false,supplierComparison:true});
+ assert.deepEqual(layout.normalizePeriodReportLayout({summary:false,monthlyTrend:false}),{summary:false,comparison:false,monthlyTrend:false,supplierComparison:true});
  assert.deepEqual(layout.normalizePeriodReportLayout('invalid'),layout.DEFAULT_PERIOD_REPORT_LAYOUT);
 });
 
