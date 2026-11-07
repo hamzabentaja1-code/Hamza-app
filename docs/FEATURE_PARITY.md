@@ -65,7 +65,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Price requests, supplier invoices and supplier order comparison
 - [x] Supplier partial payment history with centime-safe allocation, receipts, and reversible payment entries
 - [x] Partial supplier returns with stock deduction, purchase linkage, supplier credit balances, account statement rows and reversal on delete
-- [ ] Supplier comparison, purchase tracking and purchase reports
+- [x] Supplier purchase comparison by gross purchases, returns and net purchases within a selected date range
 - [ ] Link/convert purchase documents and update stock correctly
 
 ### Cash, payments and banking
@@ -108,7 +108,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Recurring task rules, push notifications, attachments and advanced filters
 - [x] Basic sales/purchase/stock/cash/receivables/payables/gross-profit summary reports with PDF exports
 - [x] Date-range report filters with previous equal-length period comparisons; net sales and net purchases account for returns and invalid legacy dates are reported
-- [ ] Monthly charts, supplier comparisons and advanced report exports
+- [x] Monthly sales/purchase trends with returns and expenses, plus supplier comparisons in period analysis
+- [ ] Advanced report exports (CSV/XLSX and configurable layouts)
 
 ## Acceptance tests required before calling a module complete
 - Create, read, update and delete (with confirmation) persist after app restart.
