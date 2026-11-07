@@ -308,7 +308,21 @@ export default function App() {
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':'delivery')).length===0&&<Text style={s.empty}>مازال ما تسجلات حتى وثيقة من هاد النوع.</Text>}
         {sales.length>0&&<Text style={s.note}>سجل المبيعات القديم باقي محفوظ كما هو.</Text>}
       </>
-      :screen==='المشاريع والمهام'?<>
+      :screen==='المرتجعات'?<>
+         <View style={s.panel}>
+           <Text style={s.panelTitle}>تسجيل مرتجع زبون</Text>
+           {sales.filter(sale=>sale.qty>salesReturns.filter(item=>item.saleId===sale.id).reduce((sum,item)=>sum+item.qty,0)).map(sale=>{const remaining=sale.qty-salesReturns.filter(item=>item.saleId===sale.id).reduce((sum,item)=>sum+item.qty,0);return <Pressable key={sale.id} onPress={()=>{setReturnSaleId(String(sale.id));setReturnQuantity('1');}} style={[s.choice,returnSaleId===String(sale.id)&&s.choiceActive]}><Text style={s.itemTitle}>{sale.productName} • {sale.customerName}</Text><Text style={s.itemSub}>{sale.date} • الكمية المتبقية للإرجاع: {remaining}</Text></Pressable>;})}
+           {sales.length===0&&<Text style={s.empty}>ما كايناش مبيعات مسجلة.</Text>}
+           <TextInput value={returnQuantity} onChangeText={setReturnQuantity} keyboardType="number-pad" placeholder="كمية الإرجاع" placeholderTextColor="#888" style={s.input}/>
+           <TextInput value={returnReason} onChangeText={setReturnReason} placeholder="سبب الإرجاع (اختياري)" placeholderTextColor="#888" style={s.input}/>
+           <View style={s.row}><Pressable onPress={()=>setReturnRestock(true)} style={[s.choice,{flex:1,borderColor:returnRestock?GOLD:'#444'}]}><Text style={s.itemTitle}>إرجاع للمخزون</Text></Pressable><Pressable onPress={()=>setReturnRestock(false)} style={[s.choice,{flex:1,borderColor:!returnRestock?GOLD:'#444'}]}><Text style={s.itemTitle}>بدون إعادة للمخزون</Text></Pressable></View>
+           <Pressable style={s.action} onPress={addSalesReturn}><Text style={s.actionText}>تأكيد المرتجع</Text></Pressable>
+         </View>
+         <Text style={s.section}>سجل المرتجعات ({salesReturns.length})</Text>
+         {salesReturns.map(item=><View key={item.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{item.productName} • {item.customerName}</Text><Text style={s.itemSub}>{item.date} • {item.reason||'بدون سبب'} • {item.restocked?'عاد للمخزون':'لم يعد للمخزون'}</Text></View><Text style={s.itemPrice}>{item.total.toFixed(2)} DH</Text></View>)}
+         {salesReturns.length===0&&<Text style={s.empty}>مازال ما تسجل حتى مرتجع.</Text>}
+       </>
+       :screen==='المشاريع والمهام'?<>
          <View style={s.panel}>
            <Text style={s.panelTitle}>إضافة مشروع / ورش</Text>
            <TextInput value={projectName} onChangeText={setProjectName} placeholder="اسم المشروع" placeholderTextColor="#888" style={s.input}/>
