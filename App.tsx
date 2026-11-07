@@ -140,6 +140,16 @@ export default function App() {
   };
   const isValidIsoDate=(value:string)=>{if(!value)return true;if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const [year,month,day]=value.split('-').map(Number);const date=new Date(Date.UTC(year,month-1,day));return date.getUTCFullYear()===year&&date.getUTCMonth()===month-1&&date.getUTCDate()===day;};
   const startEditProject=(project:Project)=>{setEditingProjectId(project.id);setProjectName(project.name);setProjectCustomer(project.customerName);setProjectBudget(String(project.budget));setProjectStartDate(project.startDate);setProjectDueDate(project.dueDate);setProjectNotes(project.notes);};
+  const deleteSalesReturn=(item:SalesReturn)=>{
+    if(item.restocked){
+      const productId=item.productId??products.find(p=>p.name===item.productName)?.id;
+      const product=products.find(p=>p.id===productId);
+      if(!product){Alert.alert('تعذر حذف المرتجع','المنتج المرتبط بالمرتجع غير موجود.');return;}
+      if(!recordInventoryMovement({id:'return-out-'+item.id,productId:product.id,productName:product.name,kind:'return_out',quantityDelta:-item.qty,date:new Date().toISOString(),sourceId:String(item.saleId),note:'إلغاء مرتجع زبون'}))return;
+      setProducts(current=>current.map(p=>p.id===product.id?{...p,qty:p.qty-item.qty}:p));
+    }
+    setSalesReturns(current=>current.filter(value=>value.id!==item.id));
+  };
   const addSalesReturn=()=>{
     const sale=sales.find(item=>String(item.id)===returnSaleId);
     const quantity=Number(returnQuantity);
@@ -320,7 +330,7 @@ export default function App() {
            <Pressable style={s.action} onPress={addSalesReturn}><Text style={s.actionText}>تأكيد المرتجع</Text></Pressable>
          </View>
          <Text style={s.section}>سجل المرتجعات ({salesReturns.length})</Text>
-         {salesReturns.map(item=><View key={item.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{item.productName} • {item.customerName}</Text><Text style={s.itemSub}>{item.date} • {item.reason||'بدون سبب'} • {item.restocked?'عاد للمخزون':'لم يعد للمخزون'}</Text></View><Text style={s.itemPrice}>{item.total.toFixed(2)} DH</Text></View>)}
+         {salesReturns.map(item=><View key={item.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{item.productName} • {item.customerName}</Text><Text style={s.itemSub}>{item.date} • {item.reason||'بدون سبب'} • {item.restocked?'عاد للمخزون':'لم يعد للمخزون'}</Text></View><Text style={s.itemPrice}>{item.total.toFixed(2)} DH</Text><Pressable onPress={()=>Alert.alert('حذف المرتجع؟',item.productName,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>deleteSalesReturn(item)}])}><Text style={s.delete}>حذف</Text></Pressable></View>)}
          {salesReturns.length===0&&<Text style={s.empty}>مازال ما تسجل حتى مرتجع.</Text>}
        </>
        :screen==='المشاريع والمهام'?<>
