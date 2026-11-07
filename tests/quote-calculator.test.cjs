@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { calculateQuote } = require('../.test-build/quote-calculator.js');
+const { calculateQuote } = require('../.test-build/domain/quote-calculator.js');
 
 test('calculates multiple quote lines in integer centimes', () => {
   const result = calculateQuote([
@@ -46,7 +46,7 @@ test('rejects discounts greater than the amount', () => {
   ], 101));
 });
 
-const { convertQuote } = require('../.test-build/document-conversion.js');
+const { convertQuote } = require('../.test-build/domain/document-conversion.js');
 
 test('converts quote to invoice without changing stock', () => {
   const products = [{id:7,qty:10}];

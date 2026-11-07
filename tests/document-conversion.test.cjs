@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { convertQuote } = require('../.test-build/document-conversion.js');
+const { convertQuote } = require('../.test-build/domain/document-conversion.js');
 
 test('invoice conversion preserves stock', () => {
   const products = [{id:7,qty:10}];

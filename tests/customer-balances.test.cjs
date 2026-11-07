@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {calculateCustomerBalances}=require('../.test-build/customer-balances.js');
+const {calculateCustomerBalances}=require('../.test-build/domain/customer-balances.js');
 test('groups invoice balances by customer and excludes delivery notes',()=>{
  const result=calculateCustomerBalances([
   {type:'invoice',customerName:'Amina',total:120,paidCentimes:2000},

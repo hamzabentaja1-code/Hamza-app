@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { applyPaymentToInvoice } = require('../.test-build/payment-allocation.js');
+const { applyPaymentToInvoice } = require('../.test-build/domain/payment-allocation.js');
 
 test('partial payment updates paid amount and remaining balance', () => {
   const result = applyPaymentToInvoice({type:'invoice',total:250,paidCentimes:0,status:'صادرة'},7500);
