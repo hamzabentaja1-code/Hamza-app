@@ -209,8 +209,6 @@ const fr: Record<string, string> = {
   "لصق محتوى ملف JSON هنا...": "Collez ici le contenu du fichier JSON...",
   "اضغط لإغلاق الصورة": "Appuyez pour fermer l’image",
   "إنشاء عرض سعر متعدد المنتجات": "Créer un devis multi-produits",
-  "الزبون": "Client",
-  "المنتج": "Produit",
   "المنتجات المضافة": "Produits ajoutés",
   "التخفيض": "Remise",
   "حفظ عرض السعر": "Enregistrer le devis",
