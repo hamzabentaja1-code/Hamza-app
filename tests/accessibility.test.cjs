@@ -541,6 +541,8 @@ test('contact history is persisted, accessible and attributed to the selected co
   const app = read('App.tsx');
   const workspace = read('src/ContactHistoryWorkspace.tsx');
   assert.match(app, /contactInteractions/);
+  assert.match(app, /setContactInteractions\(Array\.isArray\(d\.contactInteractions\)/);
+  assert.match(app, /screen==='سجل التواصل'/);
   assert.match(app, /createContactInteraction\(input\)/);
   assert.match(workspace, /accessibilityState=\{\{selected:/);
   assert.match(workspace, /filterContactInteractions\(entries/);
