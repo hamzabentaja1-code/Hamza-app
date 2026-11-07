@@ -199,7 +199,7 @@ export default function App() {
   const grossProfit=profitSummary.grossProfit-totalReturnProfitAdjustment(salesReturns);
   const untrackedSalesCount=profitSummary.untrackedSalesCount;
   const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const supplierReturnTotal=useMemo(()=>supplierReturns.reduce((sum,x)=>sum+x.amountCentimes,0)/100,[supplierReturns]); const netPurchaseTotal=purchaseTotal-supplierReturnTotal; const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
-  const customerBalances=useMemo(()=>calculateCustomerBalances(documents,customers.map(c=>({customerName:c.name,openingBalanceCentimes:c.openingBalanceCentimes}))),[documents,customers]);
+  const customerBalances=useMemo(()=>calculateCustomerBalances(documents,customers.map(c=>({customerName:c.name,openingBalanceCentimes:c.openingBalanceCentimes})),salesReturns.map(item=>({id:item.id,customerName:item.customerName,total:item.total,date:item.date}))),[documents,customers]);
   const supplierBalances=useMemo(()=>calculateSupplierBalances(purchases,suppliers.map(x=>({supplierName:x.name,openingBalanceCentimes:x.openingBalanceCentimes})),supplierReturns),[purchases,suppliers,supplierReturns]);
   const supplierPayablesTotal=supplierBalances.reduce((sum,x)=>sum+x.outstandingCentimes,0)/100;
   const balanceFor=(customerName:string)=>customerBalances.find(x=>x.customerName===customerName);
