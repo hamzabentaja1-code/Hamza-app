@@ -89,7 +89,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Numbered credit-note PDF records are generated for partial customer returns and their value is automatically applied oldest-first to the customer's unpaid invoices; unused amounts remain as a visible customer credit balance and appear in customer statements
 - [x] Configurable document numbering for quotes, invoices, delivery notes and purchase orders
 - [x] Quote editor supports non-stock custom fee/service lines, named section headings, and product lookup by name, reference or barcode; sections carry through converted invoice/delivery PDFs without affecting totals or stock
-- [ ] Camera barcode scanning directly inside the document editor
+- [x] Camera barcode scanning inside the quote editor resolves exact saved barcode/reference matches and selects the product; variants and customer price-group pricing remain intact
 - [x] Basic PDF generation and sharing for quotes, invoices, delivery notes, receipts and statements, with company profile branding
 
 ### Purchases
