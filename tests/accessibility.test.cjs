@@ -340,3 +340,11 @@ test('separate quote and invoice product prices are stored and applied on invoic
   assert.match(quote, /documentDiscount:calculation\.discountCentimes\/100/);
   assert.match(pricing, /invoicePrice/);
 });
+
+test('PDFs use TTC-only by default and allow optional HT/TVA/TTC breakdown', () => {
+  const app = read('App.tsx');
+  assert.ok(app.includes('showTaxFields:false,taxRate:20'));
+  assert.ok(app.includes('إظهار TTC فقط (افتراضي)'));
+  assert.ok(app.includes('إظهار HT و TVA و TTC'));
+  assert.ok(app.includes('labels.vat'));
+});
