@@ -36,6 +36,7 @@ const fr: Record<string, string> = {
   "حالة التسليم كتتحدد من عملية التسليم": "Le statut de livraison est défini par l’opération de livraison",
   "أكد الطلب قبل تسجيل التسليم": "Confirmez la commande avant d’enregistrer une livraison",
   "رقم سند التسليم غير صالح أو مكرر": "Le numéro du bon de livraison est invalide ou déjà utilisé",
+  "أكد الطلب قبل ربط سند التسليم": "Confirmez la commande avant de lier le bon de livraison",
   "كمية التسليم غير صالحة": "La quantité de livraison est invalide",
   "كمية التسليم كتفوت الكمية المتبقية": "La quantité livrée dépasse la quantité restante",
   "دخل كمية واحدة على الأقل للتسليم": "Saisissez au moins une quantité à livrer",
