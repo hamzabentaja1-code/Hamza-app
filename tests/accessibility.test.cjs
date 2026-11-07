@@ -175,3 +175,15 @@ test('all primary workflow alerts and confirmation buttons respect the selected 
     assert.match(source, /showAlert\(/, file + ' must route alerts through the translation wrapper');
   }
 });
+
+test('company banking details and document series are persisted and localized', () => {
+  const app = read('App.tsx');
+  const dictionary = read('src/i18n.tsx');
+  for (const key of ['bankName', 'bankAccount', 'bankRib', 'bankIban', 'quotePrefix', 'invoicePrefix', 'deliveryPrefix', 'purchasePrefix']) {
+    assert.match(app, new RegExp(key), 'missing company profile field ' + key);
+  }
+  for (const label of ['اسم البنك', 'رقم الحساب البنكي', 'IBAN (اختياري)', 'بادئة عروض الأسعار — DEV',
+    'بادئة الفواتير — FAC', 'بادئة سندات الخروج — BL', 'بادئة أوامر الشراء — BC']) {
+    assert.ok(dictionary.includes('"' + label + '"'), 'missing French translation for ' + label);
+  }
+});
