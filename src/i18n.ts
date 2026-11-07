@@ -176,6 +176,30 @@ Routeur;R-01;61100001;Réseau;150;220;5',
   'حذف الزبون؟':'Supprimer le client ?',
   'إلغاء':'Annuler'
   'المرجع:':'Référence :'
+  'اختار المنتج (ضغط عليه)':'Choisir un produit (appuyez dessus)',
+  'اختار الزبون':'Choisir un client',
+  'سجل المبيعات':'Historique des ventes',
+  'مازال ما تسجلات حتى عملية بيع.':'Aucune vente enregistrée.',
+  'ثمن الوحدة':'Prix unitaire',
+  'سجل المشتريات':'Historique des achats',
+  'سجل المصاريف':'Historique des dépenses',
+  'سجل الأداءات':'Historique des paiements',
+  'تسجيل أداء زبون':'Enregistrer un paiement client',
+  'اختار الفاتورة (اختياري)':'Choisir une facture (facultatif)',
+  'حماية بياناتك':'Protégez vos données',
+  'جاري التحضير...':'Préparation en cours...',
+  'استرجاع نسخة':'Restaurer une sauvegarde',
+  'لصق محتوى ملف JSON هنا...':'Collez le contenu du fichier JSON ici...',
+  'تقرير ديون الزبناء':'Rapport des créances clients',
+  'إجمالي المبالغ المتبقية:':'Total restant dû :',
+  'عدد الفواتير المفتوحة:':'Nombre de factures ouvertes :',
+  'تقرير المخزون':'Rapport de stock',
+  'عدد المنتجات:':'Nombre de produits :',
+  'منتجات نافدة:':'Produits en rupture :',
+  'منتجات قليلة المخزون:':'Produits en stock faible :',
+  'مازال ما تسجلات حتى وثيقة من هاد النوع.':'Aucun document de ce type enregistré.',
+  'إجمالي المشتريات:':'Total des achats :',
+  'إجمالي المصاريف:':'Total des dépenses :'
 };
 
 export function translate(language: AppLanguage, value: string): string {
