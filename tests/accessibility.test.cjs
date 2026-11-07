@@ -482,3 +482,15 @@ test('customer returns receive a numbered credit-note PDF action', () => {
   assert.match(app, /exportPdf\('إشعار دائن/);
   assert.match(app, /creditNotePrefix:string/);
 });
+
+
+test('archived variants never fall back to the legacy parent-product stock', () => {
+  const app = read('App.tsx');
+  const pos = read('src/PosWorkspace.tsx');
+  const quote = read('src/QuoteWorkspace.tsx');
+  assert.match(app, /if\(allVariants\.length&&!variants\.length\)/);
+  assert.match(app, /productVariants\.some\(v=>v\.productId===p\.id\)/);
+  assert.match(pos, /if\(!allVariants\.length\)return/);
+  assert.match(pos, /if\(!variantsForProduct\.length\)return \[\]/);
+  assert.match(quote, /if\(hasVariants&&!selectedVariant\)/);
+});
