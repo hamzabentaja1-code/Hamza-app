@@ -38,6 +38,8 @@ const fr: Record<string, string> = {
   "اختار المنتج وسجل الكمية الفعلية. التطبيق يحسب الفرق ويسجلو كحركة جرد مع التاريخ والملاحظة.": "Choisissez un produit et saisissez la quantité réelle. L’application calcule l’écart et l’enregistre avec la date et la note.",
   "الكمية المعدودة فعلياً": "Quantité réellement comptée",
   "ملاحظة الجرد (اختياري)": "Note d’inventaire (facultative)",
+  "المنتج ": "Produit ",
+  "، المخزون المسجل: ": ", stock enregistré : ",
   "تأكيد الجرد وتحديث المخزون": "Confirmer l’inventaire et mettre à jour le stock",
   "سجل حركات المخزون (": "Historique des mouvements de stock (",
   "رصيد افتتاحي": "Stock initial",
