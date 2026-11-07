@@ -227,3 +227,29 @@ export function transferVariantStockBetweenWarehouses(
     movements: [afterSource.movement, afterDestination.movement],
   };
 }
+
+
+/** Migrates legacy variant quantities into an auditable opening movement in the default warehouse. */
+export function migrateLegacyVariantOpeningMovements(
+  variants: ProductVariant[],
+  movements: VariantStockMovement[],
+  date: string,
+): VariantStockMovement[] {
+  if (!validDate(date)) throw new Error('تاريخ ترحيل مخزون النسخ غير صالح');
+  const migrated = variants
+    .filter(variant => Number.isSafeInteger(variant.stockQty) && variant.stockQty > 0 &&
+      !movements.some(movement => movement.variantId === variant.id))
+    .map(variant => ({
+      id: 'variant-opening-migration-' + variant.id,
+      variantId: variant.id,
+      kind: 'opening' as const,
+      quantityDelta: variant.stockQty,
+      date,
+      warehouseId: DEFAULT_VARIANT_WAREHOUSE_ID,
+      note: 'ترحيل الرصيد القديم إلى المخزن الرئيسي',
+    }));
+  if (migrated.some(item => movements.some(movement => movement.id === item.id))) {
+    throw new Error('معرف حركة ترحيل مخزون النسخة مسجل من قبل');
+  }
+  return [...migrated, ...movements];
+}
