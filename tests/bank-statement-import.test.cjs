@@ -30,3 +30,17 @@ test('keeps identical repeated statement rows and remains idempotent on re-impor
  assert.equal(second.matched,2);
  assert.equal(second.movements.length,2);
 });
+
+test('bank workspace can import a CSV file selected from the phone',()=>{
+ const fs=require('node:fs');const path=require('node:path');
+ const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
+ const workspace=fs.readFileSync(path.join(__dirname,'..','src','BankWorkspace.tsx'),'utf8');
+ const translations=fs.readFileSync(path.join(__dirname,'..','src','i18n.tsx'),'utf8');
+ assert.match(app,/DocumentPicker\.getDocumentAsync\(\{type:\['text\/csv','text\/plain','application\/vnd\.ms-excel'\]/);
+ assert.match(app,/FileSystem\.readAsStringAsync\(asset\.uri\)/);
+ assert.match(app,/onPickStatementFile=\{async accountId/);
+ assert.match(workspace,/onPickStatementFile:\(accountId:string\)=>Promise/);
+ assert.match(workspace,/onPress=\{pickStatementFile\}/);
+ assert.match(workspace,/اختيار ملف CSV من الهاتف/);
+ assert.match(translations,/"اختيار ملف CSV من الهاتف":/);
+});
