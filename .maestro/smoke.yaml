@@ -530,3 +530,29 @@ appId: com.hamza.app
 - assertVisible: "Fréquence"
 - assertVisible: "Générer les dépenses échues jusqu'à aujourd'hui"
 - tapOn: "Accueil"
+
+# Arabic: agenda combines tasks, work orders and due financial items.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "الأجندة"
+- tapOn: "الأجندة"
+- assertVisible: "الأجندة والمواعيد"
+- assertVisible: "المواعيد حسب التاريخ"
+- tapOn: "الرئيسية"
+
+# French: agenda date filters and combined due events.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الأجندة"
+- tapOn: "Agenda"
+- assertVisible: "Agenda et échéances"
+- assertVisible: "Échéances par date"
+- tapOn: "Accueil"
