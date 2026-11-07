@@ -69,6 +69,17 @@ appId: com.hamza.app
     direction: DOWN
     timeout: 10000
 - tapOn: "قلب على قسم..."
+- inputText: "المرتجعات"
+- tapOn: "المرتجعات"
+- assertVisible: "تسجيل مرتجع زبون"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
 - inputText: "جرد وحركات المخزون"
 - tapOn: "جرد وحركات المخزون"
 - assertVisible: "جرد المخزون"
@@ -215,4 +226,16 @@ appId: com.hamza.app
 - tapOn: "Projets et tâches"
 - assertVisible: "Ajouter un projet / chantier"
 - assertVisible: "Ajouter une tâche"
+- tapOn: "Accueil"
+
+# French: customer returns are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المرتجعات"
+- tapOn: "Retours clients"
+- assertVisible: "Enregistrer un retour client"
 - tapOn: "Accueil"
