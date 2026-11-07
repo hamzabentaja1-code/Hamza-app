@@ -42,6 +42,9 @@ appId: com.hamza.app
 - tapOn: "الزبناء"
 - assertVisible: "إضافة زبون"
 - assertVisible: "كشف الحساب"
+- assertVisible: "الدين الافتتاحي DH"
+- assertVisible: "سقف الدين DH"
+- assertVisible: "أجل الأداء بالأيام (اختياري)"
 - tapOn: "الرئيسية"
 
 - scrollUntilVisible:
@@ -54,6 +57,9 @@ appId: com.hamza.app
 - tapOn: "الموردون"
 - assertVisible: "إضافة مورد"
 - assertVisible: "كشف الحساب"
+- assertVisible: "الدين الافتتاحي DH"
+- assertVisible: "سقف الدين DH"
+- assertVisible: "أجل الأداء بالأيام (اختياري)"
 - tapOn: "الرئيسية"
 
 - scrollUntilVisible:
@@ -305,4 +311,18 @@ appId: com.hamza.app
 - inputText: "الموردون"
 - tapOn: "Fournisseurs"
 - assertVisible: "Relevé de compte"
+- tapOn: "Accueil"
+
+# French: customer and supplier credit profile fields are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الزبناء"
+- tapOn: "Clients"
+- assertVisible: "Solde initial dû (DH)"
+- assertVisible: "Plafond de crédit (DH)"
+- assertVisible: "Délai de paiement en jours (facultatif)"
 - tapOn: "Accueil"
