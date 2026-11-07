@@ -26,6 +26,7 @@ const fr: Record<string, string> = {
   "بيانات سطر الطلب غير صالحة": "Les données d’une ligne de commande sont invalides",
   "الكمية المسلمة غير صالحة": "La quantité livrée est invalide",
   "تخفيض الطلب غير صالح": "La remise de la commande est invalide",
+  "خاصك تختار نسخة المنتج قبل التسليم: ": "Choisissez une variante du produit avant la livraison : ",
   "كمية الطلب غير صالحة": "La quantité de la commande est invalide",
   "مجموع الطلب لا يطابق مجموع السطور": "Le total de la commande ne correspond pas au total des lignes",
   "لا يمكن تغيير حالة طلب مغلق": "Impossible de modifier le statut d’une commande clôturée",
