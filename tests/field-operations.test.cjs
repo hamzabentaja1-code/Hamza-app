@@ -45,3 +45,23 @@ test('time entries enforce the assigned technician and category permission',()=>
  const allowed={...active,category:'installation'};
  assert.throws(()=>createWorkTimeEntry({id:'time-other',workOrderId:'wo1',technicianId:'tech2',date:'2026-11-07',hours:1,hourlyRate:80},{...allowed,technicianId:'tech1'},{...tech,id:'tech2'}),/غير مخول/);
 });
+
+
+test('work order settlement tracks partial and final payments in integer centimes',()=>{
+ const {summarizeWorkOrderSettlement,addWorkOrderSettlementPayment}=require('../.test-build/field-operations.js');
+ let settlement=summarizeWorkOrderSettlement(125050,[]);
+ assert.equal(settlement.status,'unpaid');assert.equal(settlement.balanceCentimes,125050);
+ settlement=addWorkOrderSettlementPayment(settlement,{id:'pay-1',amountCentimes:50000,date:'2026-11-07',method:'cash'});
+ assert.equal(settlement.status,'partial');assert.equal(settlement.paidCentimes,50000);assert.equal(settlement.balanceCentimes,75050);
+ settlement=addWorkOrderSettlementPayment(settlement,{id:'pay-2',amountCentimes:75050,date:'2026-11-08',method:'transfer'});
+ assert.equal(settlement.status,'settled');assert.equal(settlement.balanceCentimes,0);
+});
+test('work order settlement rejects duplicate, invalid and excessive payments without changing prior state',()=>{
+ const {summarizeWorkOrderSettlement,addWorkOrderSettlementPayment}=require('../.test-build/field-operations.js');
+ const current=summarizeWorkOrderSettlement(10000,[{id:'p1',amountCentimes:4000,date:'2026-11-07',method:'cash'}]);
+ assert.throws(()=>addWorkOrderSettlementPayment(current,{id:'p1',amountCentimes:1000,date:'2026-11-07',method:'cash'}));
+ assert.throws(()=>addWorkOrderSettlementPayment(current,{id:'p2',amountCentimes:6001,date:'2026-11-07',method:'cash'}),/تجاوز/);
+ assert.throws(()=>addWorkOrderSettlementPayment(current,{id:'p3',amountCentimes:100,date:'bad',method:'cash'}));
+ assert.equal(current.paidCentimes,4000);
+ assert.throws(()=>summarizeWorkOrderSettlement(1000,[{id:'p',amountCentimes:1001,date:'2026-11-07',method:'cash'}]),/تجاوز/);
+});
