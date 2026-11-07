@@ -106,3 +106,34 @@ test('agenda month navigation and day cells are accessible and translated', () =
     assert.ok(translations.includes('"'+label+'"'), 'missing French translation for '+label);
   }
 });
+
+test('inventory stocktaking and warehouse controls have French translations', () => {
+  const translations = read('src/i18n.tsx');
+  for (const label of [
+    'إدارة المخازن',
+    'المخزن النشط: ',
+    'اسم المخزن الجديد',
+    'إضافة مخزن',
+    'تحويل بين المخازن',
+    'مخزن الوجهة',
+    'تأكيد التحويل',
+    'المخزون حسب المخزن',
+    'جرد المخزون',
+    'سجل حركات المخزون',
+    'اختار المنتج وسجل الكمية الفعلية. التطبيق يحسب الفرق ويسجلو كحركة جرد مع التاريخ والملاحظة.',
+    'المسجل فالمخزن:',
+    'الكمية المعدودة فعلياً',
+    'ملاحظة الجرد (اختياري)',
+    'تأكيد الجرد وتحديث المخزون',
+    'المخزون السابق:',
+    'المعدود:',
+    'الفرق:',
+  ]) {
+    assert.ok(translations.includes('"' + label + '"'), 'missing French translation for ' + label);
+  }
+  const app = read('App.tsx');
+  assert.match(app, /<WarehouseWorkspace\b/);
+  assert.match(app, /createStockCount\(inventoryMovements/);
+  assert.match(app, /kind:'stock_count'/);
+  assert.match(app, /سجل حركات المخزون/);
+});
