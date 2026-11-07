@@ -629,6 +629,20 @@ export default function App() {
           <Pressable style={s.action} onPress={()=>exportPdf('Situation des clients','',customerBalances.filter(x=>x.outstandingCentimes>0).map(x=>x.customerName+' — '+(x.outstandingCentimes/100).toFixed(2)+' DH'),receivablesTotal)}><Text style={s.actionText}>تصدير تقرير الديون PDF</Text></Pressable>
         </View>
         <View style={[s.panel,{marginTop:12}]}>
+          <Text style={s.panelTitle}>تقرير ديون الموردين</Text>
+          <Text style={s.panelText}>إجمالي الرصيد المستحق للموردين: {supplierPayablesTotal.toFixed(2)} DH</Text>
+          {supplierBalances.filter(x=>x.outstandingCentimes!==0).map(x=><View key={x.supplierName} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{x.supplierName}</Text><Text style={s.itemSub}>{x.outstandingCentimes<0?'لنا رصيد عند المورد':'مبلغ مستحق للمورد'}</Text></View><Text style={s.itemPrice}>{(x.outstandingCentimes/100).toFixed(2)} DH</Text></View>)}
+          {supplierBalances.every(x=>x.outstandingCentimes===0)&&<Text style={s.note}>ما كاين حتى دين مستحق للموردين.</Text>}
+          <Pressable style={s.action} onPress={()=>exportPdf('Situation des fournisseurs','',supplierBalances.map(x=>x.supplierName+' — '+(x.outstandingCentimes/100).toFixed(2)+' DH'),supplierPayablesTotal)}><Text style={s.actionText}>تصدير تقرير ديون الموردين PDF</Text></Pressable>
+        </View>
+        <View style={[s.panel,{marginTop:12}]}>
+          <Text style={s.panelTitle}>تقرير الصندوق</Text>
+          <Text style={s.panelText}>الرصيد الحالي: {cashOnHand.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>عدد الحركات المسجلة: {cashMovements.length}</Text>
+          {cashMovements.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10).map(item=><View key={item.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{item.description}</Text><Text style={s.itemSub}>{item.date.slice(0,10)} • {item.kind==='cash_in'?'داخل':item.kind==='opening'?'رصيد افتتاحي':'خارج'}</Text></View><Text style={s.itemPrice}>{(item.amountCentimes/100).toFixed(2)} DH</Text></View>)}
+          <Pressable style={s.action} onPress={()=>exportPdf('Journal de caisse','',cashMovements.map(item=>item.description+' • '+item.date.slice(0,10)+' • '+(item.kind==='cash_out'?'-':'+')+(item.amountCentimes/100).toFixed(2)+' DH'),cashOnHand)}><Text style={s.actionText}>تصدير تقرير الصندوق PDF</Text></Pressable>
+        </View>
+        <View style={[s.panel,{marginTop:12}]}>
           <Text style={s.panelTitle}>تقرير المخزون</Text>
           <Text style={s.panelText}>عدد المنتجات: {products.length}</Text>
           <Text style={s.panelText}>قيمة المخزون بسعر البيع: {stockValue.toFixed(2)} DH</Text>
