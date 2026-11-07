@@ -55,6 +55,8 @@ export default function App() {
   const [inventoryMovements,setInventoryMovements]=useState<InventoryMovement[]>([]);
   const [projects,setProjects]=useState<Project[]>([]);
   const [workTasks,setWorkTasks]=useState<WorkTask[]>([]);
+  const [editingProjectId,setEditingProjectId]=useState<number|null>(null);
+  const [editingTaskId,setEditingTaskId]=useState<number|null>(null);
   const [projectName,setProjectName]=useState(''); const [projectCustomer,setProjectCustomer]=useState(''); const [projectBudget,setProjectBudget]=useState(''); const [projectStartDate,setProjectStartDate]=useState(''); const [projectDueDate,setProjectDueDate]=useState(''); const [projectNotes,setProjectNotes]=useState('');
   const [taskTitle,setTaskTitle]=useState(''); const [taskProjectId,setTaskProjectId]=useState(''); const [taskAssignee,setTaskAssignee]=useState(''); const [taskPriority,setTaskPriority]=useState<TaskPriority>('medium'); const [taskDueDate,setTaskDueDate]=useState(''); const [taskDuration,setTaskDuration]=useState('');
   const [stockCountProduct,setStockCountProduct]=useState(''); const [stockCountQuantity,setStockCountQuantity]=useState(''); const [stockCountNote,setStockCountNote]=useState('');
@@ -130,21 +132,27 @@ export default function App() {
     catch{Alert.alert('تعذر التصدير','ما قدرناش نشاركوا لائحة المنتجات.');}
   };
   const isValidIsoDate=(value:string)=>{if(!value)return true;if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const date=new Date(value+'T00:00:00');return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value;};
+  const startEditProject=(project:Project)=>{setEditingProjectId(project.id);setProjectName(project.name);setProjectCustomer(project.customerName);setProjectBudget(String(project.budget));setProjectStartDate(project.startDate);setProjectDueDate(project.dueDate);setProjectNotes(project.notes);};
   const addProject=()=>{
     const budget=Number(projectBudget.replace(',','.'));
     if(!projectName.trim()||!Number.isFinite(budget)||budget<0){Alert.alert('معلومات ناقصة','دخل اسم المشروع وميزانية صحيحة أو صفر.');return;}
     if(!isValidIsoDate(projectStartDate)||!isValidIsoDate(projectDueDate)){Alert.alert('تاريخ غير صالح','استعمل صيغة YYYY-MM-DD لتاريخ المشروع.');return;}
     if(projectStartDate&&projectDueDate&&projectDueDate<projectStartDate){Alert.alert('تاريخ غير صالح','تاريخ نهاية المشروع خاصو يكون من بعد تاريخ البداية.');return;}
-    const project:Project={id:Date.now(),name:projectName.trim(),customerName:projectCustomer.trim(),budget,spent:0,status:'planned',startDate:projectStartDate,dueDate:projectDueDate,notes:projectNotes.trim()};
-    setProjects(current=>[project,...current]);setProjectName('');setProjectCustomer('');setProjectBudget('');setProjectStartDate('');setProjectDueDate('');setProjectNotes('');
+    const previous=editingProjectId===null?undefined:projects.find(p=>p.id===editingProjectId);
+    const project:Project={id:editingProjectId??Date.now(),name:projectName.trim(),customerName:projectCustomer.trim(),budget,spent:previous?.spent||0,status:previous?.status||'planned',startDate:projectStartDate,dueDate:projectDueDate,notes:projectNotes.trim()};
+    if(editingProjectId!==null)setProjects(current=>current.map(p=>p.id===editingProjectId?project:p));else setProjects(current=>[project,...current]);
+    setEditingProjectId(null);setProjectName('');setProjectCustomer('');setProjectBudget('');setProjectStartDate('');setProjectDueDate('');setProjectNotes('');
   };
+  const startEditTask=(task:WorkTask)=>{setEditingTaskId(task.id);setTaskTitle(task.title);setTaskProjectId(task.projectId===undefined?'':String(task.projectId));setTaskAssignee(task.assignee);setTaskPriority(task.priority);setTaskDueDate(task.dueDate);setTaskDuration(String(task.durationHours));};
   const addWorkTask=()=>{
     const duration=taskDuration.trim()===''?0:Number(taskDuration.replace(',','.'));
     const projectId=taskProjectId?Number(taskProjectId):undefined;
     if(!taskTitle.trim()||!Number.isFinite(duration)||duration<0||(projectId!==undefined&&!projects.some(p=>p.id===projectId))){Alert.alert('معلومات ناقصة','دخل عنوان المهمة ومدة صحيحة واختار مشروعاً صالحاً إن وجد.');return;}
     if(!isValidIsoDate(taskDueDate)){Alert.alert('تاريخ غير صالح','استعمل صيغة YYYY-MM-DD لموعد المهمة.');return;}
-    const task:WorkTask={id:Date.now(),title:taskTitle.trim(),projectId,assignee:taskAssignee.trim(),priority:taskPriority,dueDate:taskDueDate,durationHours:duration,status:'todo'};
-    setWorkTasks(current=>[task,...current]);setTaskTitle('');setTaskProjectId('');setTaskAssignee('');setTaskPriority('medium');setTaskDueDate('');setTaskDuration('');
+    const previous=editingTaskId===null?undefined:workTasks.find(t=>t.id===editingTaskId);
+    const task:WorkTask={id:editingTaskId??Date.now(),title:taskTitle.trim(),projectId,assignee:taskAssignee.trim(),priority:taskPriority,dueDate:taskDueDate,durationHours:duration,status:previous?.status||'todo'};
+    if(editingTaskId!==null)setWorkTasks(current=>current.map(t=>t.id===editingTaskId?task:t));else setWorkTasks(current=>[task,...current]);
+    setEditingTaskId(null);setTaskTitle('');setTaskProjectId('');setTaskAssignee('');setTaskPriority('medium');setTaskDueDate('');setTaskDuration('');
   };
   const addCustomer=()=>{if(!customer.trim()){Alert.alert('معلومات ناقصة','دخل اسم الزبون.');return;}setCustomers(v=>[{id:Date.now(),name:customer.trim(),phone:customerPhone.trim(),address:customerAddress.trim(),ice:customerIce.trim()},...v]);setCustomer('');setCustomerPhone('');setCustomerAddress('');setCustomerIce('');};
   const addSale=()=>{const p=products.find(x=>String(x.id)===saleProduct);const c=customers.find(x=>String(x.id)===saleCustomer);const q=Number(saleQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert('معلومات ناقصة','اختار منتج وزبون ودخل كمية صحيحة.');return;}if(q>p.qty){Alert.alert('المخزون غير كافٍ',`المتوفر هو ${p.qty} فقط.`);return;}const sale:Sale={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,costPrice:p.costPrice,date:new Date().toLocaleDateString('fr-MA')};if(!recordInventoryMovement({id:'sale-'+sale.id,productId:p.id,productName:p.name,kind:'sale',quantityDelta:-q,date:new Date().toISOString(),sourceId:String(sale.id),unitCost:p.costPrice}))return;setSales(v=>[sale,...v]);setProducts(v=>v.map(x=>x.id===p.id?{...x,qty:x.qty-q}:x));setSaleQty('1');Alert.alert('تم تسجيل البيع',`المجموع: ${sale.total.toFixed(2)} DH`);};
@@ -291,7 +299,7 @@ export default function App() {
            <TextInput value={projectBudget} onChangeText={setProjectBudget} keyboardType="decimal-pad" placeholder="الميزانية المتفق عليها (DH)" placeholderTextColor="#888" style={s.input}/>
            <View style={s.row}><TextInput value={projectStartDate} onChangeText={setProjectStartDate} placeholder="تاريخ البداية YYYY-MM-DD" placeholderTextColor="#888" style={[s.input,s.half]}/><TextInput value={projectDueDate} onChangeText={setProjectDueDate} placeholder="تاريخ التسليم YYYY-MM-DD" placeholderTextColor="#888" style={[s.input,s.half]}/></View>
            <TextInput value={projectNotes} onChangeText={setProjectNotes} placeholder="ملاحظات المشروع" placeholderTextColor="#888" style={s.input}/>
-           <Pressable style={s.action} onPress={addProject}><Text style={s.actionText}>حفظ المشروع</Text></Pressable>
+           <Pressable style={s.action} onPress={addProject}><Text style={s.actionText}>{editingProjectId===null?'حفظ المشروع':'حفظ تعديلات المشروع'}</Text></Pressable>
          </View>
          <Text style={s.section}>المشاريع ({projects.length})</Text>
          {projects.map(project=><View key={project.id} style={[s.panel,{marginBottom:9}]}>
@@ -299,7 +307,7 @@ export default function App() {
            <Text style={s.itemSub}>{project.customerName||'بدون زبون'} • {project.startDate||'بدون تاريخ بداية'} → {project.dueDate||'بدون موعد تسليم'}</Text>
            <Text style={s.panelText}>الميزانية: {project.budget.toFixed(2)} DH • المصروف المسجل: {expenses.filter(e=>e.projectId===project.id).reduce((sum,e)=>sum+e.amount,0).toFixed(2)} DH • المهام المكتملة: {workTasks.filter(t=>t.projectId===project.id&&t.status==='done').length}/{workTasks.filter(t=>t.projectId===project.id).length}</Text>
            <View style={s.row}>{([{value:'planned',label:'مخطط'},{value:'active',label:'قيد الإنجاز'},{value:'completed',label:'مكتمل'},{value:'cancelled',label:'ملغى'}] as const).map(status=><Pressable key={status.value} onPress={()=>setProjects(current=>current.map(p=>p.id===project.id?{...p,status:status.value}:p))} style={[s.choice,{flex:1,borderColor:project.status===status.value?GOLD:'#444'}]}><Text style={{color:project.status===status.value?GOLD:'#DDD',fontSize:11,textAlign:'center'}}>{status.label}</Text></Pressable>)}</View>
-           <Pressable onPress={()=>Alert.alert('حذف المشروع؟',project.name,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>{setProjects(current=>current.filter(p=>p.id!==project.id));setWorkTasks(current=>current.map(t=>t.projectId===project.id?{...t,projectId:undefined}:t));}}])}><Text style={s.delete}>حذف المشروع</Text></Pressable>
+           <Pressable onPress={()=><><Pressable onPress={()=>startEditProject(project)}><Text style={s.gold}>تعديل المشروع</Text></Pressable><Pressable onPress={()=>Alert.alert('حذف المشروع؟',project.name,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>{setProjects(current=>current.filter(p=>p.id!==project.id));setWorkTasks(current=>current.map(t=>t.projectId===project.id?{...t,projectId:undefined}:t));setExpenses(current=>current.map(e=>e.projectId===project.id?{...e,projectId:undefined}:e));}}])}><Text style={s.delete}>حذف المشروع</Text></Pressable>
          </View>)}
          <View style={[s.panel,{marginTop:12}]}>
            <Text style={s.panelTitle}>إضافة مهمة</Text>
@@ -310,10 +318,10 @@ export default function App() {
            <Text style={s.fieldLabel}>الأولوية</Text>
            <View style={s.row}>{([{value:'low',label:'منخفضة'},{value:'medium',label:'متوسطة'},{value:'high',label:'مستعجلة'}] as const).map(p=><Pressable key={p.value} onPress={()=>setTaskPriority(p.value)} style={[s.choice,{flex:1,borderColor:taskPriority===p.value?GOLD:'#444'}]}><Text style={{color:taskPriority===p.value?GOLD:'#DDD',textAlign:'center'}}>{p.label}</Text></Pressable>)}</View>
            <View style={s.row}><TextInput value={taskDueDate} onChangeText={setTaskDueDate} placeholder="موعد المهمة YYYY-MM-DD" placeholderTextColor="#888" style={[s.input,s.half]}/><TextInput value={taskDuration} onChangeText={setTaskDuration} keyboardType="decimal-pad" placeholder="المدة بالساعات" placeholderTextColor="#888" style={[s.input,s.half]}/></View>
-           <Pressable style={s.action} onPress={addWorkTask}><Text style={s.actionText}>حفظ المهمة</Text></Pressable>
+           <Pressable style={s.action} onPress={addWorkTask}><Text style={s.actionText}>{editingTaskId===null?'حفظ المهمة':'حفظ تعديلات المهمة'}</Text></Pressable>
          </View>
          <Text style={s.section}>المهام ({workTasks.length})</Text>
-         {workTasks.map(task=>{const linked=projects.find(p=>p.id===task.projectId);return <View key={task.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{task.title}</Text><Text style={s.itemSub}>{linked?.name||'بدون مشروع'} • {task.assignee||'بدون مسؤول'} • {task.dueDate||'بدون موعد'} • {task.durationHours} س</Text><Text style={s.itemSub}>الأولوية: {task.priority==='high'?'مستعجلة':task.priority==='medium'?'متوسطة':'منخفضة'} • الحالة: {task.status==='done'?'مكتملة':task.status==='doing'?'قيد الإنجاز':'جديدة'}</Text></View><Pressable onPress={()=>setWorkTasks(current=>current.map(t=>t.id===task.id?{...t,status:t.status==='todo'?'doing':t.status==='doing'?'done':'todo'}:t))}><Text style={s.gold}>{task.status==='todo'?'بدء':task.status==='doing'?'إنهاء':'إعادة'}</Text></Pressable><Pressable onPress={()=>Alert.alert('حذف المهمة؟',task.title,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>setWorkTasks(current=>current.filter(t=>t.id!==task.id))}])}><Text style={s.delete}>حذف</Text></Pressable></View>;})}
+         {workTasks.map(task=>{const linked=projects.find(p=>p.id===task.projectId);return <View key={task.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{task.title}</Text><Text style={s.itemSub}>{linked?.name||'بدون مشروع'} • {task.assignee||'بدون مسؤول'} • {task.dueDate||'بدون موعد'} • {task.durationHours} س</Text><Text style={s.itemSub}>الأولوية: {task.priority==='high'?'مستعجلة':task.priority==='medium'?'متوسطة':'منخفضة'} • الحالة: {task.status==='done'?'مكتملة':task.status==='doing'?'قيد الإنجاز':'جديدة'}</Text></View><Pressable onPress={()=>startEditTask(task)}><Text style={s.gold}>تعديل</Text></Pressable><Pressable onPress={()=>setWorkTasks(current=>current.map(t=>t.id===task.id?{...t,status:t.status==='todo'?'doing':t.status==='doing'?'done':'todo'}:t))}><Text style={s.gold}>{task.status==='todo'?'بدء':task.status==='doing'?'إنهاء':'إعادة'}</Text></Pressable><Pressable onPress={()=>Alert.alert('حذف المهمة؟',task.title,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>setWorkTasks(current=>current.filter(t=>t.id!==task.id))}])}><Text style={s.delete}>حذف</Text></Pressable></View>;})}
          {workTasks.length===0&&<Text style={s.empty}>مازال ما تسجلات حتى مهمة.</Text>}
        </>
       :screen==='الأداءات'?<><View style={s.panel}><Text style={s.panelTitle}>تسجيل أداء زبون</Text>{customers.map(c=><Pressable key={c.id} onPress={()=>{setPaymentCustomer(String(c.id));setPaymentDocument('');}} style={[s.choice,paymentCustomer===String(c.id)&&s.choiceActive]}><Text style={s.itemTitle}>{c.name}</Text></Pressable>)}
