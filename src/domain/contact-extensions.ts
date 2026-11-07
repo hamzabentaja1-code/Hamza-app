@@ -61,7 +61,7 @@ export function normalizeContactAttachments(value:unknown):ContactAttachment[]{
 
 export function addContactAttachment(files:ContactAttachment[],file:ContactAttachment):ContactAttachment[]{
  const normalized=normalizeContactAttachments(files);
- if(normalized.length>=MAX_ATTACHMENTS)throw new Error('الحد الأقصى هو 8 صور لكل جهة اتصال');
+ if(normalized.length>=MAX_ATTACHMENTS)throw new Error('الحد الأقصى هو 8 مرفقات لكل جهة اتصال');
  if(normalized.some(item=>item.id===file.id))throw new Error('معرف المرفق مكرر');
  if(!normalizeContactAttachments([file]).length)throw new Error('المرفق غير صالح أو حجمه أكبر من الحد المسموح؛ استعمل JPG أو PNG أو WebP أو PDF أو DOC/DOCX أو XLS/XLSX أو TXT/CSV');
  return [...normalized,file];
