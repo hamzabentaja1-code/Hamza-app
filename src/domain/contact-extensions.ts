@@ -8,7 +8,7 @@ const MAX_FIELD_VALUE=240;
 const MAX_ATTACHMENTS=8;
 const MAX_ATTACHMENT_DATA_URI=5_500_000;
 const ALLOWED_CONTACT_MIME_TYPES=new Set(['image/jpeg','image/png','image/webp','application/pdf','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
-const ALLOWED_CONTACT_MIME_TYPES=new Set(['image/jpeg','image/png','image/webp','application/pdf','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+
 
 export function normalizeContactCustomFields(value:unknown):ContactCustomField[]{
  if(!Array.isArray(value))return [];
