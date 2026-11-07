@@ -56,3 +56,13 @@ test('rejects impossible dates and exposes active product totals and attribute l
   assert.equal(totalVariantStock(variants,10),5);
   assert.equal(findVariantByAttributes(variants,10,{size:'M',color:'BLACK'}).id,'v-1');
 });
+
+
+test('variant returns restore stock and supplier returns deduct it', () => {
+  const initial = [{id:'v-return', productId:8, attributes:{color:'blue'}, stockQty:3, active:true}];
+  const returned = applyVariantStockMovement(initial, {id:'return-in-1',variantId:'v-return',kind:'return_in',quantityDelta:2,date:'2026-11-07'});
+  assert.equal(returned.variants[0].stockQty, 5);
+  const sentBack = applyVariantStockMovement(returned.variants, {id:'return-out-1',variantId:'v-return',kind:'return_out',quantityDelta:-4,date:'2026-11-07'}, [returned.movement]);
+  assert.equal(sentBack.variants[0].stockQty, 1);
+  assert.throws(() => applyVariantStockMovement(sentBack.variants, {id:'return-out-2',variantId:'v-return',kind:'return_out',quantityDelta:-2,date:'2026-11-07'}, [returned.movement,sentBack.movement]), /مخزون النسخة غير كافٍ/);
+});
