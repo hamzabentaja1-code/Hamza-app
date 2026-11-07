@@ -20,7 +20,6 @@ const fr: Record<string, string> = {
   "الإجمالي: ": "Total : ",
   "في ": "Dans ",
   "مخزن الوجهة": "Entrepôt de destination",
-  "الكمية": "Quantité",
   "ملاحظة اختيارية": "Note facultative",
   "تأكيد التحويل": "Confirmer le transfert",
   "التحويل كيسجل خروج من المصدر ودخول للوجهة، بلا ما يتبدل مجموع المخزون العام.": "Le transfert enregistre une sortie et une entrée sans modifier le stock global.",
