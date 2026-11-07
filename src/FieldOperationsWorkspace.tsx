@@ -31,7 +31,8 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
  const addTech=()=>{const rate=Number(techRate.replace(',','.'));if(!techName.trim()||!Number.isFinite(rate)||rate<0){showAlert(t('معلومات ناقصة'),t('دخل اسم التقني وسعر ساعة صحيح.'));return;}
   onAddTechnician({id:'tech-'+Date.now(),name:techName.trim(),phone:techPhone.trim()||undefined,specialty:techSpecialty.trim()||undefined,hourlyRate:rate,active:true});setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('0');
  };
- const addEquipmentCategory=()=>{try{if(!equipmentCategoryDraft.trim())throw new Error('اسم فئة المعدات مطلوب');onAddEquipmentCategory(equipmentCategoryDraft);setEquipmentCategoryDraft('');}catch(error){showAlert(t('فئات المعدات'),error instanceof Error?(t(error.message)||error.message):t('تعذر إضافة الفئة.'));}};\n const addEquip=()=>{if(!equipmentName.trim()){showAlert(t('معلومات ناقصة'),t('دخل اسم المعدة.'));return;}
+ const addEquipmentCategory=()=>{try{if(!equipmentCategoryDraft.trim())throw new Error('اسم فئة المعدات مطلوب');onAddEquipmentCategory(equipmentCategoryDraft);setEquipmentCategoryDraft('');}catch(error){showAlert(t('فئات المعدات'),error instanceof Error?(t(error.message)||error.message):t('تعذر إضافة الفئة.'));}};
+ const addEquip=()=>{if(!equipmentName.trim()){showAlert(t('معلومات ناقصة'),t('دخل اسم المعدة.'));return;}
   onAddEquipment({id:'equipment-'+Date.now(),name:equipmentName.trim(),category:equipmentCategory||undefined,reference:equipmentRef.trim()||undefined,serialNumber:equipmentSerial.trim()||undefined,status:'available'});setEquipmentName('');setEquipmentRef('');setEquipmentSerial('');setEquipmentCategory('');
  };
  const createOrder=()=>{const customer=customers.find(x=>String(x.id)===orderCustomer);if(!customer||!orderTitle.trim()){showAlert(t('معلومات ناقصة'),t('اختار الزبون ودخل عنوان أمر العمل.'));return;}
