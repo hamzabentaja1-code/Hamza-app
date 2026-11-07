@@ -1,5 +1,5 @@
 const test=require('node:test');const assert=require('node:assert/strict');
-const {createCustomerOrder,changeCustomerOrderStatus,fulfillCustomerOrder,linkCustomerOrderDocument}=require('../.test-build/customer-orders.js');
+const {createCustomerOrder,createCustomerOrderFromQuote,changeCustomerOrderStatus,fulfillCustomerOrder,linkCustomerOrderDocument}=require('../.test-build/customer-orders.js');
 const base=()=>createCustomerOrder({id:1,number:'CMD-2026-0001',customerName:'Client',date:'2026-11-07',total:250,sourceQuoteId:22,notes:'Urgent',lines:[
  {productId:7,productName:'Cable',qty:2,unitPrice:100,fulfilledQty:0,trackStock:true},
  {productId:8,productName:'Installation',qty:1,unitPrice:50,fulfilledQty:0,trackStock:false}
@@ -11,6 +11,17 @@ test('customer order validates totals, quantities and identifiers',()=>{
  assert.throws(()=>createCustomerOrder({id:0,number:'X',customerName:'Client',date:'2026-11-07',total:10,lines:[{productId:1,productName:'X',qty:1,unitPrice:10,fulfilledQty:0}]}));
  assert.throws(()=>createCustomerOrder({id:1,number:'X',customerName:'Client',date:'2026-11-07',total:11,lines:[{productId:1,productName:'X',qty:1,unitPrice:10,fulfilledQty:0}]}),/مجموع/);
  assert.throws(()=>createCustomerOrder({id:1,number:'X',customerName:'Client',date:'2026-11-07',total:10,lines:[{productId:1,productName:'X',qty:0,unitPrice:10,fulfilledQty:0}]}),/سطر/);
+});
+test('quote conversion preserves document discounts and line-level discounted totals',()=>{
+ const quote={id:77,number:'DEV-77',customerName:'Client',productName:'Cable, Adapter',qty:2,unitPrice:0,total:190,documentDiscount:10,lines:[
+  {productId:7,productName:'Cable',qty:1,unitPrice:100,total:100,trackStock:true},
+  {productId:8,productName:'Adapter',qty:1,unitPrice:100,total:100,trackStock:true}
+ ]};
+ const order=createCustomerOrderFromQuote(quote,77,'CMD-77','2026-11-07');
+ assert.equal(order.total,190);
+ assert.equal(order.lines.reduce((sum,line)=>sum+line.qty*line.unitPrice,0),190);
+ assert.equal(order.lines[0].unitPrice,95);
+ assert.equal(order.lines[1].unitPrice,95);
 });
 test('order confirmation and cancellation enforce lifecycle rules',()=>{
  const order=base(),confirmed=changeCustomerOrderStatus(order,'confirmed');assert.equal(confirmed.status,'confirmed');
