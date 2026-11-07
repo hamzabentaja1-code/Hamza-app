@@ -19,8 +19,8 @@ export function changeCustomerOrderStatus(order:CustomerOrder,status:CustomerOrd
  if(order.status==='cancelled'||order.status==='fulfilled')throw new Error('لا يمكن تغيير حالة طلب مغلق');
  if(status==='confirmed'&&order.status!=='draft')throw new Error('لا يمكن تأكيد الطلب مرة أخرى');
  if(status==='cancelled'&&order.lines.some(line=>line.fulfilledQty>0))throw new Error('لا يمكن إلغاء طلب تسلمت منه كمية');
- if(status==='fulfilled'&&order.lines.some(line=>line.trackStock!==false&&line.fulfilledQty<line.qty))throw new Error('باقي كميات ما تسلماتش');
  if(status==='partially_fulfilled'||status==='fulfilled')throw new Error('حالة التسليم كتتحدد من عملية التسليم');
+ if(status==='fulfilled'&&order.lines.some(line=>line.trackStock!==false&&line.fulfilledQty<line.qty))throw new Error('باقي كميات ما تسلماتش');
  return {...order,status};
 }
 export function fulfillCustomerOrder(order:CustomerOrder,quantities:Record<string,number>,deliveryDocumentId:number):CustomerOrder{
