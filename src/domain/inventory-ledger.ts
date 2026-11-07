@@ -26,8 +26,9 @@ export function validateMovement(movement: InventoryMovement): string[] {
   if (!movement.id.trim()) errors.push("معرف الحركة إجباري");
   if (!Number.isSafeInteger(movement.productId) || movement.productId <= 0) errors.push("المنتج غير صالح");
   if (!movement.productName.trim()) errors.push("اسم المنتج إجباري");
-  if (!Number.isFinite(movement.quantityDelta) || movement.quantityDelta === 0) errors.push("تغيير الكمية خاصو يكون رقم صحيح وغير صفر");
-  if (!movement.date.trim()) errors.push("تاريخ الحركة إجباري");
+  if (!Number.isSafeInteger(movement.quantityDelta) || movement.quantityDelta === 0) errors.push("تغيير الكمية خاصو يكون رقم صحيح وغير صفر");
+  if (!movement.date.trim() || !Number.isFinite(Date.parse(movement.date))) errors.push("تاريخ الحركة غير صالح");
+  if (!["opening", "purchase", "sale", "delivery", "return_in", "return_out", "adjustment", "stock_count"].includes(movement.kind)) errors.push("نوع حركة المخزون غير صالح");
   if (movement.unitCost !== undefined && (!Number.isFinite(movement.unitCost) || movement.unitCost < 0)) errors.push("تكلفة الوحدة غير صالحة");
   return errors;
 }
@@ -60,8 +61,8 @@ export function createStockCount(
     note?: string;
   },
 ): StockCountResult {
-  if (!Number.isFinite(input.countedQuantity) || input.countedQuantity < 0) {
-    throw new Error("الكمية المعدودة خاصها تكون صفر أو أكثر");
+  if (!Number.isSafeInteger(input.countedQuantity) || input.countedQuantity < 0) {
+    throw new Error("الكمية المعدودة خاصها تكون عدد صحيح صفر أو أكثر");
   }
   const expectedQuantity = inventoryBalance(movements, input.productId);
   const difference = input.countedQuantity - expectedQuantity;
