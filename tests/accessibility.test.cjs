@@ -215,3 +215,11 @@ test('period report exports monthly trends and supplier comparison in PDF', () =
   assert.match(screen, /analytics\.suppliers\.map/);
   assert.match(app, /onExportPdf=\{\(title,lines\)=>exportPdf\(title,'',lines,0,false\)\}/);
 });
+
+test('expense category dictionary is persisted, backed up and selectable', () => {
+  const app = read('App.tsx');
+  assert.match(app, /expenseCategories,language,companyProfile/);
+  assert.match(app, /setExpenseCategories\(Array\.isArray\(d\.expenseCategories\)/);
+  assert.match(app, /expenseCategories\.map\(category/);
+  assert.match(app, /حفظ تصنيف جديد/);
+});
