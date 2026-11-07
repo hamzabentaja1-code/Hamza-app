@@ -22,7 +22,8 @@
     "expo-build-properties": "~1.0.10",
     "expo-image-picker": "~17.0.8",
     "expo-document-picker": "~14.0.7",
-    "expo-file-system": "~19.0.17"
+    "expo-file-system": "~19.0.17",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
