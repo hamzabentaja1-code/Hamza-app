@@ -38,8 +38,10 @@ export function parseBankStatementCsv(text:string):ParsedStatementRow[]{
  return data.map((row,index)=>{
   const date=normalizeDate(row[indexes.date]||'');
   const description=(row[indexes.description]||'').trim();
-  const rawAmount=(row[indexes.amount]||'').replace(/\s/g,'').replace(',','.');
-  const amount=Number(rawAmount);
+  const rawAmount=(row[indexes.amount]||'').replace(/\s/g,'');
+  const comma=rawAmount.lastIndexOf(','),dot=rawAmount.lastIndexOf('.');
+  const normalizedAmount=comma>=0&&dot>=0?(comma>dot?rawAmount.replace(/\./g,'').replace(',','.'):rawAmount.replace(/,/g,'')):rawAmount.replace(',','.');
+  const amount=Number(normalizedAmount);
   if(!description||!Number.isFinite(amount)||amount===0)throw new Error('راجع وصف ومبلغ الحركة رقم '+(index+1));
   const amountCentimes=Math.round(Math.abs(amount)*100);
   if(!Number.isSafeInteger(amountCentimes)||amountCentimes<=0)throw new Error('مبلغ الحركة غير صالح في السطر '+(index+1));
