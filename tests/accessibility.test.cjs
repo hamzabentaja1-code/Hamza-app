@@ -137,3 +137,10 @@ test('inventory stocktaking and warehouse controls have French translations', ()
   assert.match(app, /kind:'stock_count'/);
   assert.match(app, /سجل حركات المخزون/);
 });
+
+test('dynamic product, quote, POS and agenda labels have French translations', () => {
+  const translations = read('src/i18n.tsx');
+  for (const label of ['حذف ', 'إنقاص كمية ', 'زيادة كمية ', ' • افتراضي', '، ']) {
+    assert.ok(translations.includes('"' + label + '"'), 'missing French translation for dynamic label ' + label);
+  }
+});
