@@ -34,3 +34,14 @@ test('variant-specific quote prices are preserved instead of applying base produ
  assert.equal(result.lines[0].variantId,'blue-xl');
  assert.equal(result.lines[0].variantLabel,'Blue / XL');
 });
+
+test('customer group discount is reapplied to configured invoice prices without double-discounting quote prices',()=>{
+ const quote={total:87.5,priceGroupDiscountPercent:12.5,lines:[
+  {productId:1,productName:'Camera',qty:1,unitPrice:87.5,total:87.5},
+  {productId:2,productName:'Cable',qty:1,unitPrice:87.5,total:87.5}
+ ]};
+ const result=applyInvoicePriceRules(quote,[{id:1,invoicePrice:100},{id:2}]);
+ assert.equal(result.lines[0].unitPrice,87.5);
+ assert.equal(result.lines[1].unitPrice,87.5);
+ assert.equal(result.total,175);
+});
