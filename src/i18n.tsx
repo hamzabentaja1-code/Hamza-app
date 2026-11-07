@@ -6,7 +6,10 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
-  "مقارنة أثمان الموردين": "Comparaison des offres fournisseurs",
+  "إنشاء طلب عرض أثمان": "Créer une demande de devis fournisseur",
+  "تعذر حفظ عرض المورد": "Impossible d’enregistrer l’offre du fournisseur",
+  "راجع أثمان المنتجات.": "Vérifiez les prix des produits.",
+
   "طلب عرض أثمان من الموردين": "Demander des devis aux fournisseurs",
   "اختار المورد": "Choisir le fournisseur",
   "المنتج والكمية المطلوبة": "Produit et quantité demandée",
@@ -16,15 +19,10 @@ const fr: Record<string, string> = {
   "مسودة": "Brouillon",
   "مرسل": "Envoyée",
   "توصلنا بالثمن": "Offre reçue",
-  "مقبول": "Acceptée",
-  "مرفوض": "Refusée",
-  "ملغى": "Annulée",
   "تسجيل أو تعديل عرض المورد": "Saisir ou modifier l’offre fournisseur",
   "ثمن الوحدة DH": "Prix unitaire DH",
   "ثمن المورد بالدرهم": "Prix fournisseur en dirhams",
   "حفظ عرض الأثمان": "Enregistrer les prix proposés",
-  "قبول العرض": "Accepter l’offre",
-  "رفض العرض": "Refuser l’offre",
   "مقارنة أثمان الموردين": "Comparaison des prix fournisseurs",
   "كمية": "Quantité",
   "التسليم": "Livraison",
