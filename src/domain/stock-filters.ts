@@ -20,5 +20,6 @@ export function filterStockProducts<T extends StockFilterProduct>(products:T[],o
   if(status==='out')return product.kind!=='service'&&product.stock<=0;
   return true;
  });
- if(!sort)return filtered;\n return filtered.sort((a,b)=>sort==='quantity'?a.stock-b.stock:sort==='price'?a.price-b.price:a.name.localeCompare(b.name));
+ if(!sort)return filtered;
+ return filtered.sort((a,b)=>sort==='quantity'?a.stock-b.stock:sort==='price'?a.price-b.price:a.name.localeCompare(b.name));
 }
