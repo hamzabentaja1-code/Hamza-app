@@ -51,7 +51,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Inventory ledger unit tests for movements, duplicate protection, negative stock prevention and stock-count variance
 - [x] Separate product quote prices and invoice prices; invoice conversion recalculates line/document totals while preserving discounts
 - [x] Advanced customer price groups can be created, activated/deactivated, assigned to customers, persisted through backups and applied to quote/invoice line defaults (tests/contact-extensions.test.cjs)
-- [ ] Separate supplier-specific price rules for purchase orders and automatic supplier/product price lookup
+- [x] Separate supplier-specific price rules for purchase orders and automatic supplier/product price lookup
 - [x] TTC-only PDF totals by default; optional HT/TVA/TTC breakdown with a configurable VAT rate in company settings
 - [x] Invoice and delivery-note conversions deduct stock only once per quote, regardless of conversion order; later document conversion does not double-deduct
 - [x] Persistent stock movement ledger for opening stock, purchases, manual sales, POS sales, delivery notes, product quantity corrections and physical stock counts
@@ -102,7 +102,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Expenses with optional category, project association, PDF receipt and delete confirmation
 - [x] Recurring weekly/monthly/yearly expense rules, due-date generation, missed-period catch-up, duplicate prevention and pause/resume
 - [x] Persistent custom expense category dictionary with quick selection and backup/restore support
-- [ ] OS push notifications for recurring expenses and due items
+- [x] OS local notifications for recurring expenses and due items (permission-gated, scheduled at 09:00 on-device)
 - [x] Basic single-cashbox ledger with opening balance, cash income/expense entries, non-negative balance validation and PDF journal
 - [x] Cash POS checkouts are posted into the cash register ledger
 - [x] Multiple bank accounts with opening balances, deposits, withdrawals and account-level balances
@@ -115,7 +115,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Partial customer invoice payments and supplier purchase payments with centime-safe allocation and balance recalculation
 - [x] Customer payments can be allocated automatically, oldest invoice first, across multiple outstanding invoices; one cash/bank ledger entry is recorded for the full receipt
 - [x] Supplier payments can be distributed oldest-first across multiple open purchases; one cash/bank movement is recorded and grouped reversal restores all allocations
-- [ ] Automated due-date reminders for unpaid invoices and supplier obligations
+- [x] Automated due-date reminders for unpaid invoices and supplier obligations
 - [x] Manual statement-balance reconciliation with stored difference and adjustment entry
 - [x] Pasted CSV bank statement import with exact matching against existing ledger rows and idempotent duplicate protection
 - [ ] Native bank file selection and fuzzy/automatic transaction matching beyond exact matches
