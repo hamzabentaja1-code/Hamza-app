@@ -24,14 +24,14 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Product/service catalog with references, barcodes and multiple images
 - [x] Single product photo: choose, replace, remove, preview, and persist in local product data
 - [x] Product name search and product edit flow
-- [ ] Categories, brands, units, variants
+- [x] Categories, brands, units, variants
 - [x] Basic product purchase cost, sale price, unit margin and estimated stock margin
 - [x] Auditable stock ledger for opening balances, purchases, direct sales, POS sales, delivery notes and quantity corrections; physical stock counts post only the differences and prevent replay (single main warehouse UI)
 - [ ] Separate price rules for quotes/orders vs invoices
 - [ ] HT/TTC display mode and configurable tax rules where required
 - [ ] Stock tracking separately for delivery notes and invoices
-- [ ] Multiple warehouses/sites, transfers, stock counts, stock movements and audit
-- [ ] Bulk import/export, image/name search, saved product catalog
+- [x] Multiple warehouse records, active warehouse selection, paired stock transfers, per-warehouse stock counts, warehouse-filtered movement ledger and persistent audit trail (normal purchase/sale/POS/delivery operations use the selected warehouse; warehouse deactivation and location/site hierarchies remain pending)
+- [x] Bulk product import/export with name search and saved product catalog (image search remains pending)
 
 ### Contacts
 - [ ] Customer and supplier profiles with phone/WhatsApp, address, ICE/RC/IF
