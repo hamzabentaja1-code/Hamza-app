@@ -18,7 +18,7 @@ test('rejects duplicate IDs, SKU and normalized attribute combinations', () => {
   const first = createProductVariant(variant());
   assert.throws(() => createProductVariant(variant(),[first]), /معرف النسخة/);
   assert.throws(() => createProductVariant(variant({id:'v-2'}),[first]), /مرجع النسخة/);
-  assert.throws(() => createProductVariant(variant({id:'v-3',sku:'OTHER',attributes:{size:'m',color:'BLACK'}}),[first]), /نفس خصائص النسخة/);
+  assert.throws(() => createProductVariant(variant({id:'v-3',sku:'OTHER',barcode:'654321',attributes:{size:'m',color:'BLACK'}}),[first]), /نفس خصائص النسخة/);
   assert.throws(() => createProductVariant(variant({id:'v-4',sku:'OTHER',barcode:'123456'}),[first]), /باركود النسخة/);
   assert.throws(() => createProductVariant(variant({id:'v-5',sku:'OTHER',attributes:{Color:'black',color:'blue'}})), /أسماء مكررة/);
 });
