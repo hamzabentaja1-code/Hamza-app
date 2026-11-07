@@ -50,6 +50,7 @@ export default function App() {
   useEffect(()=>{(async()=>{try{const d=await readAppData({products:[],customers:[],sales:[],purchases:[],expenses:[],suppliers:[],quotes:[],payments:[],documents:[]});setProducts(Array.isArray(d.products)?d.products as Product[]:[]);setCustomers(Array.isArray(d.customers)?d.customers as Customer[]:[]);setSales(Array.isArray(d.sales)?d.sales as Sale[]:[]);setPurchases(Array.isArray(d.purchases)?d.purchases as Purchase[]:[]);setExpenses(Array.isArray(d.expenses)?d.expenses as Expense[]:[]);setSuppliers(Array.isArray(d.suppliers)?d.suppliers as Supplier[]:[]);setQuotes(Array.isArray(d.quotes)?d.quotes as Quote[]:[]);setPayments(Array.isArray(d.payments)?d.payments as Payment[]:[]);setDocuments(Array.isArray(d.documents)?d.documents as CommercialDocument[]:[]);}catch(e){Alert.alert('تنبيه',e instanceof Error?e.message:'تعذر تحميل البيانات المحفوظة.');}finally{setLoaded(true);}})();},[]);
   useEffect(()=>{if(loaded){writeAppData({products,customers,sales,purchases,expenses,suppliers,quotes,payments,documents}).catch(()=>Alert.alert('خطأ','ما قدرناش نحفظو البيانات.'));}},[products,customers,sales,purchases,expenses,suppliers,quotes,payments,documents,loaded]);
   const stockValue=useMemo(()=>products.reduce((a,p)=>a+p.price*p.qty,0),[products]);
+  const potentialStockProfit=useMemo(()=>products.reduce((sum,p)=>sum+(p.price-(p.costPrice||0))*p.qty,0),[products]);
   const salesTotal=useMemo(()=>sales.reduce((a,x)=>a+x.total,0),[sales]);
   const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
   const customerBalances=useMemo(()=>calculateCustomerBalances(documents),[documents]);
@@ -124,7 +125,7 @@ export default function App() {
         <View style={s.stats}><View style={s.stat}><Text style={s.statNum}>{products.length}</Text><Text style={s.statLabel}>المنتجات</Text></View><View style={s.stat}><Text style={s.statNum}>{customers.length}</Text><Text style={s.statLabel}>الزبناء</Text></View><View style={s.stat}><Text style={s.statNum}>{salesTotal.toFixed(0)} DH</Text><Text style={s.statLabel}>مجموع المبيعات</Text></View></View>
         <View style={s.summary}>
           <Text style={s.panelTitle}>ملخص النشاط</Text>
-          <Text style={s.summaryText}>قيمة المخزون بسعر البيع: {stockValue.toFixed(2)} DH</Text>
+          <Text style={s.summaryText}>قيمة المخزون بسعر البيع: {stockValue.toFixed(2)} DH</Text><Text style={s.summaryText}>الربح المحتمل إذا تباع المخزون كامل: {potentialStockProfit.toFixed(2)} DH</Text>
           <Text style={s.summaryText}>المبيعات المسجلة: {salesTotal.toFixed(2)} DH • {sales.length} عملية</Text>
           <Text style={s.summaryText}>المشتريات: {purchaseTotal.toFixed(2)} DH</Text>
           <Text style={s.summaryText}>المصاريف: {expenseTotal.toFixed(2)} DH</Text>
