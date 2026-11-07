@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { calculateSalesProfit } = require('../.test-build/domain/profit.js');
+const { calculateSalesProfit } = require('../.test-build/profit.js');
 
 test('calculates gross profit from sale-time unit cost', () => {
   const result = calculateSalesProfit([
