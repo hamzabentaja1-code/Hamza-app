@@ -461,3 +461,15 @@ test('variant stock count records the exact physical-count variance', () => {
   assert.match(workspace, /الكمية الفعلية للنسخة/);
   assert.match(domain, /'stock_count'/);
 });
+
+
+test('quote workspace preserves variants through invoice and delivery conversion', () => {
+  const quote = read('src/QuoteWorkspace.tsx');
+  const app = read('App.tsx');
+  const conversion = read('src/domain/document-conversion.ts');
+  assert.match(quote, /variantId:selectedVariant\?\.id/);
+  assert.match(quote, /variantLabel:selectedVariant/);
+  assert.match(app, /kind:type==='invoice'\?'sale':'delivery'/);
+  assert.match(app, /applyVariantStockMovement\(nextVariants/);
+  assert.match(conversion, /variantId\?:string/);
+});
