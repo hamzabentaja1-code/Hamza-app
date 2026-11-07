@@ -12,6 +12,7 @@
 - Expense project assignment, return restocking mode, project status, task project/priority, and payment customer/document/method choices expose selected state.
 - Image-only product preview controls and the language switch have explicit labels.
 - Quote-line and POS-cart removal actions announce the affected product and explain the removal action in Arabic or French.
+- Agenda month navigation announces previous/next month actions; each day announces its date and event count, and the selected day is exposed to screen readers.
 - Text inputs expose a translated accessibility label based on their translated placeholder unless a caller supplies a better label.
 - React Native text scaling remains enabled; the wrappers do not disable system font scaling.
 - Arabic and French retain their respective writing directions.
