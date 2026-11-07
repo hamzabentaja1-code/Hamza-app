@@ -80,7 +80,7 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
     if(!scannedBarcode)return;
     const code=scannedBarcode.trim().toLocaleLowerCase();
     const found=products.find(product=>product.barcode?.trim().toLocaleLowerCase()===code||product.reference?.trim().toLocaleLowerCase()===code);
-    if(found){setProductId(String(found.id));setVariantId('');setProductSearch(found.name);setCustomPrice(found.quotePrice===undefined?found.price.toFixed(2):found.quotePrice.toFixed(2));}
+    if(found){setProductId(String(found.id));setVariantId('');setProductSearch(found.name);setCustomPrice(priceForContactGroup(found.quotePrice??found.price,selectedPriceGroup).toFixed(2));}
     else{setProductSearch(scannedBarcode);showAlert('منتج غير موجود','ما لقيناش منتج بالباركود أو المرجع: '+scannedBarcode);}
     onBarcodeConsumed();
   },[scannedBarcode,products]);
