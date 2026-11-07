@@ -55,7 +55,7 @@ test('contact custom fields and saved image gallery are integrated for customers
  assert.ok(app.includes('const addExistingContactImage=async()=>'));
  assert.match(app,/const addExistingContactDocument\s*=\s*async\s*\(\)\s*=>/);
  assert.ok(app.includes('DocumentPicker.getDocumentAsync'));
- assert.match(app,/decodedBytes\\s*>\\s*4_000_000/);
+ assert.match(app,/decodedBytes\s*>\s*4_000_000/);
  assert.ok(app.includes('mimeByExtension[extension]'));
  assert.ok(app.includes("filter(file=>!file.mimeType.startsWith('image/')).map(file"));
  assert.ok(app.includes('onPress={()=>openContactDocument(file)}'));
