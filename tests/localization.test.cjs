@@ -34,7 +34,7 @@ test('leaves unknown dynamic values intact rather than deleting user data', () =
 
 test('French dictionary has no duplicate literal keys',()=>{
  const source=fs.readFileSync(path.join(__dirname,'..','src','i18n.tsx'),'utf8');
- const keys=[...source.matchAll(/^\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*:/gm)].map(match=>match[1]);
+ const keys=[...source.matchAll(/^\s*"([^"]+)"\s*:/gm)].map(match=>match[1]);
  const seen=new Set();
  const duplicates=keys.filter(key=>seen.has(key)||!seen.add(key));
  assert.deepEqual(duplicates,[]);
