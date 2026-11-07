@@ -39,6 +39,7 @@ appId: com.hamza.app
 - inputText: "الزبناء"
 - tapOn: "الزبناء"
 - assertVisible: "إضافة زبون"
+- assertVisible: "كشف الحساب"
 - tapOn: "الرئيسية"
 
 - scrollUntilVisible:
@@ -50,6 +51,7 @@ appId: com.hamza.app
 - inputText: "الموردون"
 - tapOn: "الموردون"
 - assertVisible: "إضافة مورد"
+- assertVisible: "كشف الحساب"
 - tapOn: "الرئيسية"
 
 - scrollUntilVisible:
@@ -276,4 +278,27 @@ appId: com.hamza.app
 - tapOn: "Caisse"
 - assertVisible: "Solde actuel de la caisse"
 - assertVisible: "Journal de caisse"
+- tapOn: "Accueil"
+
+# French: account statements are available for customers and suppliers.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الزبناء"
+- tapOn: "Clients"
+- assertVisible: "Relevé de compte"
+- tapOn: "Accueil"
+
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الموردون"
+- tapOn: "Fournisseurs"
+- assertVisible: "Relevé de compte"
 - tapOn: "Accueil"
