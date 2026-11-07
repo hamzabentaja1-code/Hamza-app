@@ -74,7 +74,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Partial customer returns with optional restocking and net sales/profit adjustment
 - [x] Quote validity dates, accepted/rejected statuses, expired quote handling and confirmed deletion
 - [x] Proforma invoices can be created from quotes with their own number series and do not deduct stock
-- [ ] Customer orders, formal credit-note documents and automatic reminders
+- [ ] Customer orders and automatic reminders
+- [x] Numbered credit-note PDF records are generated for partial customer returns; automatic invoice allocation remains pending
 - [x] Configurable document numbering for quotes, invoices, delivery notes and purchase orders
 - [ ] Advanced fees, document sections and in-document barcode entry
 - [x] Basic PDF generation and sharing for quotes, invoices, delivery notes, receipts and statements, with company profile branding
