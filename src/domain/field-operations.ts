@@ -44,3 +44,36 @@ export function workOrderHours(entries:WorkTimeEntry[],workOrderId:string):numbe
 export function technicianTimeCost(entries:WorkTimeEntry[],technicianId:string):number{
  return entries.filter(e=>e.technicianId===technicianId).reduce((sum,e)=>sum+e.costCentimes,0);
 }
+
+
+export type WorkOrderSettlementStatus='unquoted'|'unpaid'|'partial'|'settled';
+export type WorkOrderSettlementPayment={id:string;amountCentimes:number;date:string;method:'cash'|'transfer'|'card'|'cheque';note?:string};
+export type WorkOrderSettlement={quotedAmountCentimes:number;payments:WorkOrderSettlementPayment[];paidCentimes:number;balanceCentimes:number;status:WorkOrderSettlementStatus};
+
+/** Validates and summarizes a work order's customer settlement without floating-point money arithmetic. */
+export function summarizeWorkOrderSettlement(quotedAmountCentimes:number,payments:WorkOrderSettlementPayment[]):WorkOrderSettlement{
+ if(!Number.isSafeInteger(quotedAmountCentimes)||quotedAmountCentimes<0)throw new Error('مبلغ أمر العمل غير صالح');
+ if(!Array.isArray(payments))throw new Error('سجل الأداءات غير صالح');
+ const ids=new Set<string>();
+ let paidCentimes=0;
+ for(const payment of payments){
+  if(!payment.id.trim()||ids.has(payment.id)||!Number.isSafeInteger(payment.amountCentimes)||payment.amountCentimes<=0||
+   !validDate(payment.date)||!['cash','transfer','card','cheque'].includes(payment.method)||
+   (payment.note!==undefined&&typeof payment.note!=='string'))throw new Error('بيانات أداء أمر العمل غير صالحة');
+  ids.add(payment.id);paidCentimes+=payment.amountCentimes;
+  if(!Number.isSafeInteger(paidCentimes))throw new Error('مجموع الأداءات تجاوز الحد المسموح');
+ }
+ if(paidCentimes>quotedAmountCentimes)throw new Error('مجموع الأداءات تجاوز المبلغ المتفق عليه');
+ const balanceCentimes=quotedAmountCentimes-paidCentimes;
+ const status=quotedAmountCentimes===0?'unquoted':paidCentimes===0?'unpaid':balanceCentimes===0?'settled':'partial';
+ return {quotedAmountCentimes,payments:payments.map(payment=>({...payment})),paidCentimes,balanceCentimes,status};
+}
+
+/** Adds one partial/full payment; duplicate IDs, overpayments and invalid dates are rejected atomically. */
+export function addWorkOrderSettlementPayment(
+ current:WorkOrderSettlement,
+ payment:WorkOrderSettlementPayment,
+):WorkOrderSettlement{
+ const validated=summarizeWorkOrderSettlement(current.quotedAmountCentimes,current.payments);
+ return summarizeWorkOrderSettlement(validated.quotedAmountCentimes,[...validated.payments,payment]);
+}
