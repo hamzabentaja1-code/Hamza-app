@@ -308,3 +308,15 @@ test('bank workspace imports pasted CSV statements and reports matched duplicate
   assert.match(domain, /existingCounts/);
   assert.match(domain, /appendBankMovement/);
 });
+
+test('service items are excluded from stock and remain available in POS and quotes', () => {
+  const app = read('App.tsx');
+  const pos = read('src/PosWorkspace.tsx');
+  const quote = read('src/QuoteWorkspace.tsx');
+  const conversion = read('src/domain/document-conversion.ts');
+  assert.match(app, /kind==='service'\?0:q/);
+  assert.match(app, /product\.kind!=='service'\)nextMovements=appendInventoryMovement/);
+  assert.match(pos, /trackStock:p\.kind!=='service'/);
+  assert.match(quote, /trackStock:selectedProduct\.kind!=='service'/);
+  assert.match(conversion, /lines\.filter\(line=>line\.trackStock!==false\)/);
+});
