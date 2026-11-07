@@ -33,6 +33,18 @@ export function addContactCustomField(fields:ContactCustomField[],name:string,va
  return [...normalized,{id,name:cleanName,value:cleanValue}];
 }
 
+export function parseContactCustomFieldsText(value:string,idPrefix:string):ContactCustomField[]{
+ const lines=value.split(/\\r?\\n/).map(line=>line.trim()).filter(Boolean);
+ if(lines.length>MAX_CUSTOM_FIELDS)throw new Error('الحد الأقصى هو 20 حقلاً مخصصاً');
+ let fields:ContactCustomField[]=[];
+ for(let index=0;index<lines.length;index++){
+  const separator=lines[index].indexOf('=');
+  if(separator<=0||separator===lines[index].length-1)throw new Error('اكتب كل حقل بهذا الشكل: الاسم=القيمة');
+  fields=addContactCustomField(fields,lines[index].slice(0,separator),lines[index].slice(separator+1),idPrefix+'-'+index);
+ }
+ return fields;
+}
+
 export function normalizeContactAttachments(value:unknown):ContactAttachment[]{
  if(!Array.isArray(value))return [];
  return value.filter((item):item is ContactAttachment=>{
