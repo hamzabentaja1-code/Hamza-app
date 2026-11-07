@@ -58,9 +58,11 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Bank statement import and reconciliation
 
 ### POS
-- [ ] Product search/barcode, category and stock filters
-- [ ] Cart, customer selection, discounts, returns, pending sales
-- [ ] Payment methods, receipt printing and stock posting
+- [x] Product name search and stock-aware cart with quantity controls
+- [x] Customer selection, general discount, cash/card/transfer methods and checkout validation
+- [x] Checkout records sales, posts stock reduction and generates a PDF receipt
+- [ ] Barcode scanning, categories and stock filters
+- [ ] Returns, parked sales and physical receipt-printer integration
 
 ### Projects and field operations
 - [ ] Installations/projects, installation requests and financial status
