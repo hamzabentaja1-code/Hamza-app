@@ -38,6 +38,13 @@ test('contact custom fields and saved image gallery are integrated for customers
  assert.ok(app.includes('c.attachments.map(file'));
  assert.ok(app.includes('removeContactAttachment'));
  assert.ok(app.includes('Image source={{uri:file.dataUri}}'));
+ assert.ok(app.includes("openContactEditor('customer',c.id)"));
+ assert.ok(app.includes("openContactEditor('supplier',x.id)"));
+ assert.ok(app.includes('const saveContactEditor=()=>'));
+ assert.ok(app.includes('const addExistingContactImage=async()=>'));
+ assert.ok(app.includes('addContactAttachment(contact.attachments||[],file)'));
+ assert.ok(app.includes('setPhotoPreview(file.dataUri)'));
+ assert.ok(app.includes('تعديل بيانات الزبون'));
 });
 test('customer price groups persist through the app and flow from contact selection into quotes and invoices',()=>{
  const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
