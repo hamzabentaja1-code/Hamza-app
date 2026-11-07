@@ -437,3 +437,34 @@ appId: com.hamza.app
 - assertVisible: "Ajouter un entrepôt"
 - assertVisible: "Stock par entrepôt"
 - tapOn: "Accueil"
+
+
+# Arabic: bank accounts, transfers and reconciliation.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "الحسابات البنكية"
+- tapOn: "الحسابات البنكية"
+- assertVisible: "الحسابات البنكية"
+- assertVisible: "إضافة حساب بنكي"
+- assertVisible: "تحويل بين الحسابات"
+- assertVisible: "التسوية مع كشف البنك"
+- tapOn: "الرئيسية"
+
+# French: bank accounts and reconciliation are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الحسابات البنكية"
+- tapOn: "Comptes bancaires"
+- assertVisible: "Comptes bancaires"
+- assertVisible: "Ajouter un compte bancaire"
+- assertVisible: "Virement entre comptes"
+- assertVisible: "Rapprochement bancaire"
+- tapOn: "Accueil"
