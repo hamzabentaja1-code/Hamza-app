@@ -20,7 +20,7 @@ export const DEFAULT_WAREHOUSE: Warehouse = { id: "main", name: "المخزن ا
 export function normalizeWarehouses(value: unknown): Warehouse[] {
   if (!Array.isArray(value)) return [{ ...DEFAULT_WAREHOUSE }];
   const seen = new Set<string>();
-  const normalized = value.filter((item): item is Record<string, unknown> =>
+  const normalized: Warehouse[] = value.filter((item): item is Record<string, unknown> =>
     typeof item === "object" && item !== null && !Array.isArray(item)
   ).map(item => ({
     id: typeof item.id === "string" ? item.id.trim() : "",
