@@ -1109,6 +1109,10 @@ const fr: Record<string, string> = {
   "كمل استلام أو ألغِ أمر الشراء قبل حذف المنتج.": "Terminez la réception ou annulez la commande avant de supprimer le produit.",
   "حذف منتج": "Suppression de produit",
   "مستخدم غير محدد": "Utilisateur non identifié",
+  "لا يمكن إيقاف النسخة": "Impossible de désactiver la variante",
+  "فرّغ مخزون النسخة أو سجل جرداً حتى تصبح الكمية صفراً قبل إيقافها.": "Videz le stock de la variante ou faites un inventaire à zéro avant de la désactiver.",
+  "تفعيل نسخة": "Activation d’une variante",
+  "إيقاف نسخة": "Désactivation d’une variante",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
