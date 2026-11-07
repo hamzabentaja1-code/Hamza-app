@@ -95,7 +95,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Supplier payments can be distributed oldest-first across multiple open purchases; one cash/bank movement is recorded and grouped reversal restores all allocations
 - [ ] Automated due-date reminders for unpaid invoices and supplier obligations
 - [x] Manual statement-balance reconciliation with stored difference and adjustment entry
-- [ ] Bank statement file import and automatic transaction matching
+- [x] Pasted CSV bank statement import with exact matching against existing ledger rows and idempotent duplicate protection
+- [ ] Native bank file selection and fuzzy/automatic transaction matching beyond exact matches
 
 ### POS
 - [x] Product name search and stock-aware cart with quantity controls
