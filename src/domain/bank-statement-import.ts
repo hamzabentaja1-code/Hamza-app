@@ -70,7 +70,7 @@ export function importBankStatement(
   const availableMatches=existingCounts.get(key)||0;
   if(availableMatches>0){existingCounts.set(key,availableMatches-1);matched++;continue;}
   const occurrence=(seen.get(key)||0)+1;seen.set(key,occurrence);
-  const id='statement-'+key.replace(/[^a-z0-9|.-]/gi,'-')+'-'+occurrence;
+  const id='statement-'+encodeURIComponent(key)+'-'+occurrence;
   if(movements.some(m=>m.id===id)){skipped++;continue;}
   const movement:BankMovement={id,accountId,kind,amountCentimes,date:row.date,description:row.description,sourceId:'bank-statement-import'};
   movements=appendBankMovement(movements,movement);imported++;
