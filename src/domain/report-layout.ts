@@ -4,9 +4,10 @@ export const DEFAULT_PERIOD_REPORT_LAYOUT:PeriodReportLayout={summary:true,compa
 export function normalizePeriodReportLayout(value:unknown):PeriodReportLayout{
  if(!value||typeof value!=='object'||Array.isArray(value))return {...DEFAULT_PERIOD_REPORT_LAYOUT};
  const source=value as Record<string,unknown>;
+ const summary=typeof source.summary==='boolean'?source.summary:true;
  return {
-  summary:typeof source.summary==='boolean'?source.summary:true,
-  comparison:typeof source.comparison==='boolean'?source.comparison:true,
+  summary,
+  comparison:summary&&(typeof source.comparison==='boolean'?source.comparison:true),
   monthlyTrend:typeof source.monthlyTrend==='boolean'?source.monthlyTrend:true,
   supplierComparison:typeof source.supplierComparison==='boolean'?source.supplierComparison:true,
  };
