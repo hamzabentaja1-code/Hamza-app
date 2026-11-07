@@ -909,6 +909,7 @@ const fr: Record<string, string> = {
 
   "تاريخ انتهاء العرض YYYY-MM-DD (اختياري)": "Date d’expiration du devis YYYY-MM-DD (facultatif)",
 
+  "خاصك تضيف حساب بنكي قبل إيداع الشيك أو تسويته.": "Ajoutez un compte bancaire avant de déposer ou régler un chèque.",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
