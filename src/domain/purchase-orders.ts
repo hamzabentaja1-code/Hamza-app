@@ -12,6 +12,7 @@ export type PurchaseOrder = {
   id: number;
   number?: string;
   supplierName: string;
+  supplierId?: string;
   createdAt: string;
   expectedDate?: string;
   status: PurchaseOrderStatus;
@@ -53,7 +54,7 @@ function validateOrder(order: PurchaseOrder): void {
   }
 }
 export function createPurchaseOrder(input: {
-  id:number; number?:string; supplierName:string; createdAt:string; expectedDate?:string;
+  id:number; number?:string; supplierName:string; supplierId?:string; createdAt:string; expectedDate?:string;
   lines:Array<{productId:number;productName:string;quantity:number;unitCost:number;variantId?:string;variantLabel?:string}>;
 }): PurchaseOrder {
   if (!Number.isSafeInteger(input.id) || input.id<=0 || !input.supplierName.trim() ||
@@ -71,7 +72,7 @@ export function createPurchaseOrder(input: {
     seen.add(line.productId+'::'+(line.variantId||''));
     return {...line,receivedQuantity:0};
   });
-  return {id:input.id,number:input.number?.trim()||undefined,supplierName:input.supplierName.trim(),createdAt:input.createdAt,
+  return {id:input.id,number:input.number?.trim()||undefined,supplierName:input.supplierName.trim(),supplierId:input.supplierId?.trim()||undefined,createdAt:input.createdAt,
     expectedDate:input.expectedDate,status:'ordered',lines};
 }
 export function receivePurchaseOrder(
