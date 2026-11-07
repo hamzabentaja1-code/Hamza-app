@@ -6,6 +6,16 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "تكرار المهمة": "Répétition de la tâche",
+  "بدون تكرار": "Aucune répétition",
+  "أسبوعياً": "Chaque semaine",
+  "شهرياً": "Chaque mois",
+  "سنوياً": "Chaque année",
+  "نهاية التكرار YYYY-MM-DD (اختياري)": "Fin de répétition AAAA-MM-JJ (facultatif)",
+  "راجع موعد المهمة ونهاية التكرار بصيغة YYYY-MM-DD.": "Vérifiez la date de la tâche et la fin de répétition au format AAAA-MM-JJ.",
+  "تم إكمال المهمة": "Tâche terminée",
+  "تسجلات المهمة المقبلة بتاريخ ": "La prochaine tâche a été créée pour le ",
+  "تعذر إكمال المهمة": "Impossible de terminer la tâche",
   "إنشاء طلب عرض أثمان": "Créer une demande de devis fournisseur",
   "تأكيد إرسال الطلب": "Confirmer l’envoi de la demande",
   " • التسليم ": " • livraison ",
