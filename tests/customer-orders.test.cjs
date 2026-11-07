@@ -23,6 +23,14 @@ test('quote conversion preserves document discounts and line-level discounted to
  assert.equal(order.lines[0].unitPrice,95);
  assert.equal(order.lines[1].unitPrice,95);
 });
+test('legacy quote records infer a saved discount from their line and final totals',()=>{
+ const quote={id:78,customerName:'Client',productName:'Cable',qty:2,unitPrice:50,total:90,lines:[
+  {productId:7,productName:'Cable',qty:2,unitPrice:50,total:100,trackStock:true}
+ ]};
+ const order=createCustomerOrderFromQuote(quote,78,'CMD-78','2026-11-07');
+ assert.equal(order.total,90);
+ assert.equal(order.lines[0].unitPrice,45);
+});
 test('order confirmation and cancellation enforce lifecycle rules',()=>{
  const order=base(),confirmed=changeCustomerOrderStatus(order,'confirmed');assert.equal(confirmed.status,'confirmed');
  assert.throws(()=>changeCustomerOrderStatus(order,'fulfilled'),/عملية التسليم/);
