@@ -842,7 +842,6 @@ const fr: Record<string, string> = {
   "مخزون متبقٍ": "Stock restant",
   "فرغ مخزون المنتج قبل تحويله إلى خدمة.": "Épuisez le stock du produit avant de le convertir en service.",
 
-  "الخدمات لا تستقبل في المخزون.": "Les services ne sont pas gérés dans le stock.",
 
   "ثمن خاص بالديفي (اختياري)": "Prix spécifique au devis (facultatif)",
   "ثمن خاص بالفاتورة (اختياري)": "Prix spécifique à la facture (facultatif)",
@@ -861,7 +860,6 @@ const fr: Record<string, string> = {
   "مودع": "Déposé",
   "مقبوض / مؤدى": "Encaissé / payé",
   "مرفوض": "Rejeté",
-  "ملغى": "Annulé",
   "شيك وارد من زبون": "Chèque reçu d’un client",
   "شيك صادر لمورد": "Chèque émis à un fournisseur",
   "رقم الشيك": "Numéro du chèque",
@@ -876,7 +874,6 @@ const fr: Record<string, string> = {
   "صادر": "Émis",
   "تاريخ الشيك:": "Date du chèque :",
   "الاستحقاق:": "Échéance :",
-  "إيداع": "Déposer",
   "تأكيد التحصيل / الأداء": "Confirmer l’encaissement / le paiement",
   "تسجيل رفض الشيك": "Enregistrer le rejet du chèque",
   "إلغاء الشيك": "Annuler le chèque",
@@ -888,7 +885,6 @@ const fr: Record<string, string> = {
   "الواردة غير المحصلة:": "Chèques reçus non encaissés :",
   "الصادرة غير المؤداة:": "Chèques émis non payés :",
   "إضافة شيك": "Ajouter un chèque",
-  "ملاحظات (اختياري)": "Notes (facultatif)",
 
 
   "الشيكات الواردة: ": "Chèques reçus : ",
@@ -954,6 +950,19 @@ const fr: Record<string, string> = {
   "تاريخ أو كمية حركة النسخة غير صالحة": "Date ou quantité du mouvement de variante invalide",
   "اتجاه كمية الحركة لا يطابق نوعها": "Le signe de la quantité ne correspond pas au type de mouvement",
   "مخزون النسخة غير كافٍ": "Stock de variante insuffisant",
+  "الشيكات": "Chèques",
+  "تعذر إضافة الشيك": "Impossible d’ajouter le chèque",
+  "راجع بيانات الشيك.": "Vérifiez les informations du chèque.",
+  "الحساب البنكي المرتبط بالشيك غير موجود": "Le compte bancaire associé au chèque est introuvable",
+  "تحصيل شيك وارد: ": "Encaissement d’un chèque reçu : ",
+  "أداء شيك صادر: ": "Paiement d’un chèque émis : ",
+  "تغيير حالة شيك": "Modification du statut du chèque",
+  "تعذر تحديث الشيك": "Impossible de mettre à jour le chèque",
+  "راجع الحساب البنكي والرصيد.": "Vérifiez le compte bancaire et le solde.",
+  " • صالح حتى ": " • Valable jusqu’au ",
+  "مقبول": "Accepté",
+  "المتوفر: ": "Disponible : ",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
