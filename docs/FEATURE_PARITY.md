@@ -95,7 +95,8 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Purchases
 - [x] Supplier purchase orders with expected delivery dates, partial/full goods receipts, stock updates and order PDF
-- [ ] Price requests, supplier invoices and supplier order comparison
+- [x] Supplier price requests with supplier-specific request lifecycle, offer capture, per-product/per-variant price comparison and local persistence (tests/supplier-procurement.test.cjs)
+- [ ] Supplier invoice entry linked to received purchase orders, payable reconciliation and invoice-level payment allocation
 - [x] Supplier partial payment history with centime-safe allocation, receipts, and reversible payment entries
 - [x] Partial supplier returns with stock deduction, purchase linkage, supplier credit balances, account statement rows and reversal on delete
 - [x] Supplier purchase comparison by gross purchases, returns and net purchases within a selected date range
