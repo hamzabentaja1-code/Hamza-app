@@ -10,6 +10,7 @@ import PosWorkspace from './src/PosWorkspace';
 import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/domain/document-conversion';
 import {applyPaymentToInvoice} from './src/domain/payment-allocation';
 import {calculateCustomerBalances} from './src/domain/customer-balances';
+import {calculateSalesProfit} from './src/domain/profit';
 
 const GOLD = '#D6AE55';
 const htmlSafe=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
@@ -54,9 +55,9 @@ export default function App() {
   const stockValue=useMemo(()=>products.reduce((a,p)=>a+p.price*p.qty,0),[products]);
   const potentialStockProfit=useMemo(()=>products.reduce((sum,p)=>sum+(p.price-(p.costPrice||0))*p.qty,0),[products]);
   const salesTotal=useMemo(()=>sales.reduce((a,x)=>a+x.total,0),[sales]);
-  const trackedSales=sales.filter(x=>typeof x.costPrice==='number'&&Number.isFinite(x.costPrice)&&x.costPrice>=0);
-  const grossProfit=useMemo(()=>trackedSales.reduce((sum,x)=>sum+x.total-(x.costPrice||0)*x.qty,0),[sales]);
-  const untrackedSalesCount=sales.length-trackedSales.length;
+  const profitSummary=useMemo(()=>calculateSalesProfit(sales.map(x=>({total:x.total,quantity:x.qty,unitCost:x.costPrice}))),[sales]);
+  const grossProfit=profitSummary.grossProfit;
+  const untrackedSalesCount=profitSummary.untrackedSalesCount;
   const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
   const customerBalances=useMemo(()=>calculateCustomerBalances(documents),[documents]);
   const balanceFor=(customerName:string)=>customerBalances.find(x=>x.customerName===customerName);
