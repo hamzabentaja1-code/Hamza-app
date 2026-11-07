@@ -14,7 +14,7 @@ type Props = {
   activeWarehouseId:string;
   onSelectWarehouse:(id:string)=>void;
   onAddWarehouse:(warehouse:Warehouse)=>void;
-  onTransfer:(input:TransferInput)=>void;
+  onTransfer:(input:TransferInput)=>boolean;
 };
 
 const GOLD='#D6AE55';
@@ -37,8 +37,8 @@ export default function WarehouseWorkspace({warehouses,movements,products,active
     const amount=Number(quantity);
     if(!product||!destinationId){Alert.alert('معلومات ناقصة','اختار المنتج ومخزن الوجهة.');return;}
     if(!Number.isSafeInteger(amount)||amount<1){Alert.alert('كمية غير صالحة','دخل كمية صحيحة أكبر من صفر.');return;}
-    onTransfer({id:'transfer-'+Date.now(),productId:product.id,quantity:amount,fromWarehouseId:activeWarehouseId,toWarehouseId:destinationId,date:new Date().toISOString(),note:note.trim()||undefined,unitCost:product.costPrice});
-    setProductId('');setDestinationId('');setQuantity('1');setNote('');
+    const saved=onTransfer({id:'transfer-'+Date.now(),productId:product.id,quantity:amount,fromWarehouseId:activeWarehouseId,toWarehouseId:destinationId,date:new Date().toISOString(),note:note.trim()||undefined,unitCost:product.costPrice});
+    if(saved){setProductId('');setDestinationId('');setQuantity('1');setNote('');}
   };
   return <View>
     <View style={styles.panel}>
