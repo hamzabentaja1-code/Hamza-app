@@ -326,7 +326,8 @@ const fr: Record<string, string> = {
   "اسم المخزن إجباري": "Le nom de l’entrepôt est obligatoire",
   "معرف المخزن مستعمل من قبل": "Cet identifiant d’entrepôt est déjà utilisé",
   "اسم المخزن مسجل من قبل": "Ce nom d’entrepôt existe déjà",
-  "المتوفر في المخزن المحدد هو": "Disponible dans l’entrepôt sélectionné :"
+  "المتوفر في المخزن المحدد هو": "Disponible dans l’entrepôt sélectionné :",
+  "راجع البيانات وحاول من جديد.": "Vérifiez les données et réessayez."
 };
 
 export function translate(language: AppLanguage, value: string): string {
