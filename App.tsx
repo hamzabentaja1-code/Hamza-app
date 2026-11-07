@@ -15,6 +15,7 @@ import AgendaWorkspace from './src/AgendaWorkspace';
 import PeriodReportWorkspace from './src/PeriodReportWorkspace';
 import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/domain/document-conversion';
 import {applyPaymentToInvoice} from './src/domain/payment-allocation';
+import {allocatePaymentAcrossInvoices} from './src/domain/multi-invoice-payment';
 import {calculateCustomerBalances} from './src/domain/customer-balances';
 import {calculateSalesProfit} from './src/domain/profit';
 import {calculateSupplierBalances} from './src/domain/supplier-balances';
@@ -429,15 +430,24 @@ export default function App() {
         if(!account)throw new Error('اختار حساباً بنكياً قبل تسجيل أداء بالتحويل.');
         nextBank=appendBankMovement(nextBank,{id:'customer-payment-bank-'+paymentId,accountId:account.id,kind:'customer_payment',amountCentimes:Math.round(amount*100),date:movementDate,description:'تحويل من الزبون: '+cst.name});
       }
+      let paymentRows:Payment[];
       if(invoice){
         const result=applyPaymentToInvoice({type:'invoice',total:invoice.total,paidCentimes:invoice.paidCentimes,status:invoice.status},Math.round(amount*100));
         setDocuments(current=>current.map(d=>d.id===invoice.id?{...d,paidCentimes:result.invoice.paidCentimes,status:result.invoice.status}:d));
+        paymentRows=[{id:paymentId,customerName:cst.name,amount,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:paymentNote.trim(),documentId:invoice.id}];
+      }else{
+        const allocation=allocatePaymentAcrossInvoices(documents,cst.name,Math.round(amount*100));
+        setDocuments(allocation.documents as CommercialDocument[]);
+        paymentRows=allocation.allocations.map((item,index)=>{
+          const target=documents.find(d=>d.id===item.documentId);
+          return {id:paymentId+index,customerName:cst.name,amount:item.amountCentimes/100,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:[paymentNote.trim(),target?.number||('Facture '+item.documentId)].filter(Boolean).join(' • '),documentId:item.documentId};
+        });
       }
       if(paymentMethod==='نقداً')setCashMovements(nextCash);
       if(paymentMethod==='تحويل')setBankMovements(nextBank);
-      setPayments(v=>[{id:paymentId,customerName:cst.name,amount,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:paymentNote.trim(),...(invoice?{documentId:invoice.id}:{})},...v]);
+      setPayments(v=>[...paymentRows,...v]);
       setPaymentAmount('');setPaymentNote('');setPaymentDocument('');
-      showAlert('تم تسجيل الأداء',invoice?'تحدّث الرصيد المتبقي ديال الفاتورة.':'تسجل الأداء كدفعة غير مخصصة لفاتورة.');
+      showAlert('تم تسجيل الأداء',invoice?'تحدّث الرصيد المتبقي ديال الفاتورة.':'توزع الأداء تلقائياً على الفواتير المستحقة.');
     }catch(error){showAlert('تعذر تسجيل الأداء',error instanceof Error?error.message:'راجع مبلغ الأداء والحساب المختار.');}
   };
   const exportBackup=async()=>{try{setBackupBusy(true);const json=await createBackup({products,customers,sales,salesReturns,purchases,purchaseOrders,supplierPayments,supplierReturns,cashMovements,expenses,suppliers,quotes,payments,documents,inventoryMovements,warehouses,activeWarehouseId,bankAccounts,bankMovements,bankReconciliations,activeBankAccountId,projects,workTasks,technicians,equipment,workOrders,workTimeEntries,recurringExpenseRules,language,companyProfile});await Share.share({title:'HamZa backup',message:json});}catch(e){showAlert('خطأ','ما قدرناش نوجدوا النسخة الاحتياطية.');}finally{setBackupBusy(false);}};
@@ -677,6 +687,7 @@ export default function App() {
        </>
       :screen==='الأداءات'?<><View style={s.panel}><Text style={s.panelTitle}>تسجيل أداء زبون</Text>{customers.map(c=><Pressable key={c.id} accessibilityState={{selected:paymentCustomer===String(c.id)}} onPress={()=>{setPaymentCustomer(String(c.id));setPaymentDocument('');}} style={[s.choice,paymentCustomer===String(c.id)&&s.choiceActive]}><Text style={s.itemTitle}>{c.name}</Text></Pressable>)}
         <Text style={s.fieldLabel}>اختار الفاتورة (اختياري)</Text>
+        <Pressable accessibilityState={{selected:paymentDocument===''}} onPress={()=>setPaymentDocument('')} style={[s.choice,paymentDocument===''&&s.choiceActive]}><Text style={s.itemTitle}>توزيع تلقائي على جميع الفواتير المستحقة</Text></Pressable>
         {documents.filter(d=>d.type==='invoice'&&(!paymentCustomer||d.customerName===customers.find(c=>String(c.id)===paymentCustomer)?.name)&&d.paidCentimes!==Math.round(d.total*100)).map(d=><Pressable key={d.id} accessibilityState={{selected:paymentDocument===String(d.id)}} onPress={()=>setPaymentDocument(String(d.id))} style={[s.choice,paymentDocument===String(d.id)&&s.choiceActive]}><Text style={s.itemTitle}>{d.number} — باقي {((d.total*100-(d.paidCentimes||0))/100).toFixed(2)} DH</Text></Pressable>)}
         <TextInput value={paymentAmount} onChangeText={setPaymentAmount} keyboardType="decimal-pad" placeholder="المبلغ DH" placeholderTextColor="#888" style={s.input}/><View style={s.row}>{['نقداً','تحويل','شيك'].map(m=><Pressable key={m} accessibilityState={{selected:paymentMethod===m}} onPress={()=>setPaymentMethod(m)} style={[s.choice,{flex:1},paymentMethod===m&&s.choiceActive]}><Text style={s.itemTitle}>{m}</Text></Pressable>)}</View><TextInput value={paymentNote} onChangeText={setPaymentNote} placeholder="ملاحظة (اختياري)" placeholderTextColor="#888" style={s.input}/><Pressable style={s.action} onPress={addPayment}><Text style={s.actionText}>تسجيل الأداء</Text></Pressable></View><Text style={s.section}>سجل الأداءات ({payments.length})</Text>{payments.map(x=><View key={x.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{x.customerName} • {x.method}</Text><Text style={s.itemSub}>{x.date} {x.note}</Text></View><Text style={s.itemPrice}>{x.amount.toFixed(2)} DH</Text><Pressable onPress={()=>exportPdf('Reçu de paiement',x.customerName,[`Mode: ${x.method}`,`Montant: ${x.amount.toFixed(2)} DH`,x.note],x.amount)}><Text style={s.gold}>PDF</Text></Pressable></View>)}</>
       :screen==='النسخ الاحتياطي'?<><View style={s.panel}><Text style={s.panelTitle}>حماية بياناتك</Text><Text style={s.panelText}>صدر نسخة JSON فيها المنتجات والزبناء والموردين والمبيعات والمشتريات والمصاريف والعروض والأداءات. خزن الملف فمكان آمن.</Text><Pressable style={[s.action,{marginTop:14}]} disabled={backupBusy} onPress={exportBackup}><Text style={s.actionText}>{backupBusy?'جاري التحضير...':'تصدير نسخة احتياطية'}</Text></Pressable></View><View style={[s.panel,{marginTop:14}]}><Text style={s.panelTitle}>استرجاع نسخة</Text><Text style={s.panelText}>حل ملف النسخة الاحتياطية، نسخ المحتوى كامل، ولصقو هنا. الاسترجاع كيعوض البيانات الحالية.</Text><TextInput value={backupText} onChangeText={setBackupText} multiline numberOfLines={8} textAlignVertical="top" placeholder="لصق محتوى ملف JSON هنا..." placeholderTextColor="#888" style={[s.input,{minHeight:150,textAlign:'left'}]}/><Pressable style={s.action} disabled={backupBusy||!backupText.trim()} onPress={importBackup}><Text style={s.actionText}>استرجاع البيانات</Text></Pressable></View></>
