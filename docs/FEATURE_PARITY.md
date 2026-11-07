@@ -24,6 +24,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Selectable light/dark theme
 - [ ] Document templates and custom fields
 - [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
+- [x] Customer order lifecycle from accepted quotes: create immutable order snapshots, confirm/cancel, track partial and full deliveries, deduct stock per delivery, link delivery documents and invoices, persist and include orders in backup/restore (tests/customer-orders.test.cjs)
 - [x] Serialized local-storage writes to prevent overlapping state saves from overwriting newer snapshots
 - [ ] Automated scheduled backups and encrypted backup files
 
