@@ -821,6 +821,14 @@ const fr: Record<string, string> = {
   "راجع المبلغ والرصيد والحساب البنكي.": "Vérifiez le montant, le solde et le compte bancaire.",
   "مرتجع مورد": "Retour fournisseur",
 
+  "استيراد كشف حساب CSV": "Importer un relevé bancaire CSV",
+  "لصق محتوى كشف البنك بصيغة CSV أولاً.": "Collez d’abord le contenu du relevé bancaire au format CSV.",
+  "تم استيراد كشف البنك": "Relevé bancaire importé",
+  "حركات جديدة: ": "Nouvelles opérations : ",
+  "مطابقة موجودة: ": "Opérations déjà rapprochées : ",
+  "مكررة: ": "Doublons : ",
+  "استيراد ومطابقة الحركات": "Importer et rapprocher les opérations",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
