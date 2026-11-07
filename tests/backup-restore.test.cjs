@@ -24,14 +24,14 @@ test('backup restore restores every field included in exported backup data', () 
     'workOrders','workTimeEntries','recurringExpenseRules','activityLog',
     'expenseCategories','productCategories','productBrands','language',
     'companyProfile','users','activeUserId','parkedPosCarts','contactInteractions',
-    'priceGroups','supplierPriceRules','supplierPriceRequests','supplierInvoices','reportLayout','notificationsEnabled',
+    'priceGroups','supplierPriceRules','supplierPriceRequests','supplierInvoices','supplierInvoicePayments','reportLayout','notificationsEnabled',
   ];
   for (const field of fields) {
     assert.ok(exportHandler.includes(field), 'backup must export '+field);
     assert.ok(importHandler.includes('d.'+field), 'backup restore must read '+field);
   }
   for (const setter of [
-    'setPriceGroups(','setSupplierPriceRules(','setSupplierPriceRequests(','setSupplierInvoices(','setNotificationsEnabled(',
+    'setPriceGroups(','setSupplierPriceRules(','setSupplierPriceRequests(','setSupplierInvoices(','setSupplierInvoicePayments(','setNotificationsEnabled(',
     'setContactInteractions(','setRecurringExpenseRules(',
   ]) {
     assert.ok(importHandler.includes(setter), 'backup restore must apply '+setter);
