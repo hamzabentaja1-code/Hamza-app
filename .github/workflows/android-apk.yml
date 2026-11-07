@@ -21,7 +21,8 @@ concurrency:
 
 jobs:
   build:
-    # Build a validation APK for approved feature work so emulator, inspection and security checks can run.
+    # APK builds are manual only. Keep CI focused on source checks until all requested features are complete.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
