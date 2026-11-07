@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { calculateSupplierBalances } = require('../.test-build/domain/supplier-balances.js');
+const { calculateSupplierBalances } = require('../.test-build/supplier-balances.js');
 
 test('groups supplier debts and partial payments in integer centimes', () => {
   const result = calculateSupplierBalances([
