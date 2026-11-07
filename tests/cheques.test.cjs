@@ -25,7 +25,7 @@ test('rejects duplicate cheque IDs and duplicate numbers per direction', () => {
 test('rejects invalid amounts, dates and due dates', () => {
   assert.throws(() => createCheque(base({amountCentimes:0})), /مبلغ الشيك/);
   assert.throws(() => createCheque(base({amountCentimes:1.2})), /مبلغ الشيك/);
-  assert.throws(() => createCheque(base({issueDate:'bad'})), /تاريخ الشيك/);
+  assert.throws(() => createCheque(base({issueDate:'bad'})), /تاريخ الشيك/);\n  assert.throws(() => createCheque(base({issueDate:'2026-02-31'})), /تاريخ الشيك/);
   assert.throws(() => createCheque(base({dueDate:'2026-10-31'})), /تاريخ الاستحقاق/);
 });
 
