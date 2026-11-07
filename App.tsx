@@ -498,8 +498,8 @@ export default function App() {
         setDocuments(current=>current.map(d=>d.id===invoice.id?{...d,paidCentimes:result.invoice.paidCentimes,status:result.invoice.status}:d));
         paymentRows=[{id:paymentId,customerName:cst.name,amount,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:paymentNote.trim(),documentId:invoice.id}];
       }else{
-        const invoiceDocuments=documents.filter((document):document is CommercialDocument & {type:'invoice'|'delivery'}=>document.type==='invoice'||document.type==='delivery');const allocation=allocatePaymentAcrossInvoices(invoiceDocuments,cst.name,Math.round(amount*100));
-        setDocuments(allocation.documents as CommercialDocument[]);
+        const invoiceDocuments=documents.filter((document):document is CommercialDocument & {type:'invoice'}=>document.type==='invoice');const allocation=allocatePaymentAcrossInvoices(invoiceDocuments,cst.name,Math.round(amount*100));
+        setDocuments(current=>current.map(document=>allocation.documents.find(updated=>updated.id===document.id)||document));
         paymentRows=allocation.allocations.map((item,index)=>{
           const target=documents.find(d=>d.id===item.documentId);
           return {id:paymentId+index,customerName:cst.name,amount:item.amountCentimes/100,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:[paymentNote.trim(),target?.number||('Facture '+item.documentId)].filter(Boolean).join(' • '),documentId:item.documentId};
