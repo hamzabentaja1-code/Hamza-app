@@ -22,3 +22,16 @@ test('customer and supplier cards expose real phone and WhatsApp actions',()=>{
  assert.match(app,/openContactChannel\(x\.email\|\|'','email'\)/);
  assert.match(app,/openContactChannel\(value:string,channel:'whatsapp'\|'call'\|'email'\)/);
 });
+
+test('customer and supplier extended identifiers and email fields persist through create and edit flows',()=>{
+ const fs=require('node:fs');const path=require('node:path');const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
+ assert.match(app,/type Customer = \{[^}]*email\?:string;[^}]*rc\?:string;[^}]*taxId\?:string/);
+ assert.match(app,/type Supplier = \{[^}]*email\?:string;[^}]*rc\?:string;[^}]*taxId\?:string/);
+ assert.match(app,/email:customerEmail\.trim\(\),address:customerAddress\.trim\(\),ice:customerIce\.trim\(\),rc:customerRc\.trim\(\),taxId:customerTaxId\.trim\(\)/);
+ assert.match(app,/email:supplierEmail\.trim\(\),address:supplierAddress\.trim\(\),ice:supplierIce\.trim\(\),rc:supplierRc\.trim\(\),taxId:supplierTaxId\.trim\(\)/);
+ assert.match(app,/email:contactDraftEmail\.trim\(\),address:contactDraftAddress\.trim\(\),ice:contactDraftIce\.trim\(\),rc:contactDraftRc\.trim\(\),taxId:contactDraftTaxId\.trim\(\)/);
+ assert.match(app,/isValidContactEmail\(customerEmail\)/);
+ assert.match(app,/isValidContactEmail\(supplierEmail\)/);
+ assert.match(app,/isValidContactEmail\(contactDraftEmail\)/);
+ assert.match(app,/createBackup\(\{[\\s\\S]*?customers[\\s\\S]*?suppliers/);
+});
