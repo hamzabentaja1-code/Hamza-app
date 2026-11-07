@@ -649,3 +649,15 @@ test('quote custom fees are non-stock lines included in totals and converted doc
  const conversion=read('src/domain/document-conversion.ts');
  assert.match(conversion,/trackStock!==false/);
 });
+
+test('quote section headings are non-stock zero-value lines preserved in document PDFs',()=>{
+ const quote=read('src/QuoteWorkspace.tsx');
+ assert.match(quote,/lineType:'section'/);
+ assert.match(quote,/trackStock:false,lineType:'section'/);
+ assert.match(quote,/line\.lineType==='section'/);
+ assert.match(quote,/── \$\{line\.productName\} ──/);
+ const conversion=read('src/domain/document-conversion.ts');
+ assert.match(conversion,/lineType\?:'section'/);
+ const app=read('App.tsx');
+ assert.match(app,/line\.lineType==='section'\?'── '\+line\.productName\+' ──'/);
+});
