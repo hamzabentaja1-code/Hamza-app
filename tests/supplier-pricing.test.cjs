@@ -24,4 +24,10 @@ test('purchase workspace persists supplier price rules and uses them when suppli
  assert.match(app,/upsertSupplierPriceRule\(supplierPriceRules/);
  assert.match(app,/supplierPriceRules,workOrders|supplierPriceRules/);
  assert.match(app,/حفظ ثمن المورد لهذا المنتج/);
+ assert.match(app,/writeAppData\(\{[\s\S]*?supplierPriceRules/);
+ assert.match(app,/createBackup\(\{[\s\S]*?supplierPriceRules/);
+ assert.match(app,/applySupplierPriceRule\(purchaseSupplier,String\(p\.id\)\)/);
+ assert.match(app,/applySupplierPriceRule\(String\(x\.id\),purchaseProduct,purchaseVariantId\)/);
+ assert.match(app,/applySupplierPriceRule\(purchaseSupplier,purchaseProduct,v\.id\)/);
+ assert.match(app,/onPress=\{saveSupplierPriceRule\}/);
 });
