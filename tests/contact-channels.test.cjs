@@ -15,18 +15,17 @@ test('contact channel URL generation rejects short or oversized phone numbers',(
  assert.throws(()=>contactChannelUrl('1'.repeat(16),'call'),/رقم الهاتف غير صالح/);
 });
 
-test('customer and supplier cards expose real phone and WhatsApp actions',()=>{
+test('customer and supplier cards expose phone, WhatsApp and email actions',()=>{
  const fs=require('node:fs');const path=require('node:path');const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
- assert.match(app,/Linking\.openURL\(contactChannelUrl\(raw,channel\)\)/);
- assert.match(app,/openContactChannel(?:=async)?\(value:string,channel:ContactChannel\)/);
- assert.match(app,/openContactChannel(?:=async)?\(value:string,channel:ContactChannel\)/);
+ assert.match(app,/Linking\.openURL\(contactChannelUrl\(value,channel\)\)/);
+ assert.match(app,/openContactChannel=async\(value:string,channel:ContactChannel\)/);
+ assert.match(app,/openContactChannel\(c\.phone\|\|'','whatsapp'\)/);
+ assert.match(app,/openContactChannel\(x\.phone\|\|'','call'\)/);
  assert.match(app,/c\.phone\?\.trim\(\)\|\|c\.email\?\.trim\(\)/);
  assert.match(app,/x\.phone\?\.trim\(\)\|\|x\.email\?\.trim\(\)/);
- assert.match(app,/openContactChannel(?:=async)?\(value:string,channel:ContactChannel\)/);
- assert.match(app,/openContactChannel(?:=async)?\(value:string,channel:ContactChannel\)/);
- assert.match(app,/openContactChannel(?:=async)?\(value:string,channel:ContactChannel\)/);
+ assert.match(app,/openContactChannel\(c\.email\|\|'','email'\)/);
+ assert.match(app,/openContactChannel\(x\.email\|\|'','email'\)/);
 });
-
 test('customer and supplier extended identifiers and email fields persist through create and edit flows',()=>{
  const fs=require('node:fs');const path=require('node:path');const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
  assert.match(app,/type Customer = \{[^}]*email\?:string;[^}]*rc\?:string;[^}]*taxId\?:string/);
