@@ -1131,6 +1131,12 @@ const fr: Record<string, string> = {
   "إضافة متابعة تواصل": "Ajout d’un suivi de contact",
   "حذف متابعة تواصل": "Suppression d’un suivi de contact",
   "معلومات سجل التواصل غير صالحة": "Les informations de suivi sont invalides",
+
+  "معلومات غير مكتملة": "Informations incomplètes",
+  "اختار جهة الاتصال وكتب ملخصاً من حرفين على الأقل.": "Choisissez un contact et saisissez un résumé d’au moins deux caractères.",
+  "غادي يتحذف هاد السجل فقط.": "Seul cet enregistrement sera supprimé.",
+  "حذف": "Supprimer",
+  "حذف المتابعة": "Supprimer le suivi",
   "زبون": "Client",
   "مورد": "Fournisseur",
 };
