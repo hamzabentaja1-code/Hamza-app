@@ -4,6 +4,7 @@ export type ProductPriceRule={id:number;invoicePrice?:number};
 
 /** Apply configured invoice prices while preserving line discounts and the quote's document discount. */
 export function applyInvoicePriceRules<T extends QuoteForPricing>(quote:T,products:ProductPriceRule[]):T{
+ if(quote.priceGroupDiscountPercent!==undefined&&(!Number.isFinite(quote.priceGroupDiscountPercent)||quote.priceGroupDiscountPercent<0||quote.priceGroupDiscountPercent>90))throw new Error('نسبة خصم مجموعة الأسعار غير صالحة');
  if(!quote.lines?.length)return quote;
  const lines=quote.lines.map(line=>{
   if(!Number.isFinite(line.qty)||line.qty<=0||!Number.isFinite(line.unitPrice)||line.unitPrice<0||!Number.isFinite(line.total)||line.total<0)
