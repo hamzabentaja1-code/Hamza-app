@@ -116,6 +116,8 @@ const fr: Record<string, string> = {
   "تسجيل الأداء على الفاتورة المختارة": "Enregistrer le paiement sur la facture sélectionnée",
   "اختار حساباً بنكياً نشطاً قبل تسجيل الأداء.": "Sélectionnez un compte bancaire actif avant d’enregistrer le paiement.",
   "الحساب البنكي المرتبط بالأداء غير موجود.": "Le compte bancaire associé au paiement est introuvable.",
+  "الحساب البنكي النشط: ": "Compte bancaire actif : ",
+  "ما محددش": "Aucun compte sélectionné",
   "عكس أداء فاتورة مورد": "Annulation du paiement d’une facture fournisseur",
   "تعذر تسجيل الأداء": "Impossible d’enregistrer le paiement",
   "تم تسجيل الأداء": "Paiement enregistré",
