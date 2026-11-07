@@ -655,7 +655,7 @@ export default function App() {
       if(customerOrders.some(order=>order.sourceQuoteId===quote.id))throw new Error('هاد العرض تحول من قبل لطلب زبون.');
       if(quote.status!=='مقبول')throw new Error('خاص عرض السعر يكون مقبول قبل إنشاء الطلب.');
       const sourceLines=quote.lines?.filter(line=>line.lineType!=='section')||[];
-      const lines=sourceLines.length?sourceLines.map(line=>({productId:line.productId,productName:line.productName,qty:line.qty,unitPrice:line.unitPrice,variantId:line.variantId,variantLabel:line.variantLabel,fulfilledQty:0,trackStock:line.trackStock!==false})):
+      const lines=sourceLines.length?sourceLines.map(line=>({productId:line.productId,productName:line.productName,qty:line.qty,unitPrice:line.total/line.qty,variantId:line.variantId,variantLabel:line.variantLabel,fulfilledQty:0,trackStock:line.trackStock!==false})):
         [{productId:0,productName:quote.productName,qty:quote.qty,unitPrice:quote.unitPrice,fulfilledQty:0,trackStock:false}];
       const order=createCustomerOrder({id:Date.now(),number:nextDocumentNumber('CMD',customerOrders),customerName:quote.customerName,date:new Date().toISOString().slice(0,10),total:quote.total,sourceQuoteId:quote.id,lines,notes:quote.notes});
       setCustomerOrders(current=>[order,...current]);logActivity('إنشاء طلب زبون',order.number+' • '+order.customerName);showAlert('تم إنشاء طلب الزبون',order.number);
@@ -691,11 +691,12 @@ export default function App() {
       const linkedOrder=linkCustomerOrderDocument(nextOrder,{id:documentId,type:'delivery',sourceOrderId:order.id});
       setCustomerOrders(current=>current.map(item=>item.id===order.id?linkedOrder:item));setDocuments(current=>[document,...current]);setInventoryMovements(nextInventory);
       if(nextVariants!==productVariants){setProductVariants(nextVariants);setVariantStockMovements(nextVariantMovements);}
-      setProducts(current=>current.map(product=>({...product,qty:inventoryBalance(nextInventory,product.id)})));
+      setProducts(current=>current.map(product=>deliveredLines.some(line=>line.productId===product.id&&!line.variantId&&line.trackStock!==false)?{...product,qty:inventoryBalance(nextInventory,product.id)}:product));
       logActivity('تسليم طلب زبون',order.number+' • '+document.number);showAlert('تم تسجيل التسليم',document.number+' • '+total.toFixed(2)+' DH');
     }catch(error){showAlert('تعذر تسجيل التسليم',error instanceof Error?error.message:'راجع الكميات والمخزون.');}
   };
   const invoiceCustomerOrder=(order:CustomerOrder)=>{
+    if(order.status==='draft'||order.status==='cancelled'){showAlert('الطلب غير جاهز','أكد الطلب قبل إصدار الفاتورة، والطلب الملغى لا يمكن فوترته.');return;}
     const quote=quotes.find(item=>item.id===order.sourceQuoteId);
     if(!quote){showAlert('تعذر إصدار الفاتورة','عرض السعر الأصلي غير موجود.');return;}
     const created=convertQuote(quote,'invoice');
