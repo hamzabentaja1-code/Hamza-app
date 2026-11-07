@@ -645,9 +645,61 @@ export default function App() {
       if(nextVariants!==productVariants){setProductVariants(nextVariants);setVariantStockMovements(nextVariantMovements);}
       logActivity(type==='invoice'?'إصدار فاتورة':'إصدار سند خروج',document.number+' • '+document.customerName);
       showAlert('تم التحويل',type==='invoice'?'تسجلات الفاتورة.':'تسجل سند الخروج وتحدّث المخزون.');
+      return document;
     }catch(error){
       showAlert('تعذر التحويل',error instanceof Error?error.message:'وقع خطأ أثناء تحويل العرض.');
     }
+  };
+  const createOrderFromQuote=(quote:Quote)=>{
+    try{
+      if(customerOrders.some(order=>order.sourceQuoteId===quote.id))throw new Error('هاد العرض تحول من قبل لطلب زبون.');
+      if(quote.status!=='مقبول')throw new Error('خاص عرض السعر يكون مقبول قبل إنشاء الطلب.');
+      const sourceLines=quote.lines?.filter(line=>line.lineType!=='section')||[];
+      const lines=sourceLines.length?sourceLines.map(line=>({productId:line.productId,productName:line.productName,qty:line.qty,unitPrice:line.unitPrice,variantId:line.variantId,variantLabel:line.variantLabel,fulfilledQty:0,trackStock:line.trackStock!==false})):
+        [{productId:0,productName:quote.productName,qty:quote.qty,unitPrice:quote.unitPrice,fulfilledQty:0,trackStock:false}];
+      const order=createCustomerOrder({id:Date.now(),number:nextDocumentNumber('CMD',customerOrders),customerName:quote.customerName,date:new Date().toISOString().slice(0,10),total:quote.total,sourceQuoteId:quote.id,lines,notes:quote.notes});
+      setCustomerOrders(current=>[order,...current]);logActivity('إنشاء طلب زبون',order.number+' • '+order.customerName);showAlert('تم إنشاء طلب الزبون',order.number);
+    }catch(error){showAlert('تعذر إنشاء الطلب',error instanceof Error?error.message:'راجع عرض السعر.');}
+  };
+  const updateCustomerOrderStatus=(id:number,status:CustomerOrderStatus)=>{
+    try{const order=customerOrders.find(item=>item.id===id);if(!order)throw new Error('الطلب غير موجود.');const updated=changeCustomerOrderStatus(order,status);setCustomerOrders(current=>current.map(item=>item.id===id?updated:item));logActivity(status==='confirmed'?'تأكيد طلب زبون':'إلغاء طلب زبون',order.number); }
+    catch(error){showAlert('تعذر تغيير حالة الطلب',error instanceof Error?error.message:'راجع حالة الطلب.');}
+  };
+  const deliverCustomerOrder=(order:CustomerOrder,quantities:Record<string,number>)=>{
+    try{
+      const quote=quotes.find(item=>item.id===order.sourceQuoteId);
+      if(!quote)throw new Error('عرض السعر الأصلي غير موجود.');
+      const nextOrder=fulfillCustomerOrder(order,quantities,Date.now());
+      const documentId=nextOrder.deliveryDocumentIds[nextOrder.deliveryDocumentIds.length-1];
+      const deliveredLines=order.lines.map((line,index)=>({...line,qty:quantities[String(index)]||0})).filter(line=>line.qty>0);
+      for(const line of deliveredLines){
+        if(line.trackStock===false)continue;
+        if(line.variantId){const variant=productVariants.find(item=>item.id===line.variantId&&item.productId===line.productId&&item.active);if(!variant||variant.stockQty<line.qty)throw new Error('المخزون غير كافٍ للنسخة '+(line.variantLabel||line.productName));}
+        else if(inventoryBalanceForWarehouse(inventoryMovements,line.productId,activeWarehouseId)<line.qty)throw new Error('المخزون غير كافٍ للمنتج '+line.productName);
+      }
+      const date=new Date().toISOString();
+      let nextInventory=inventoryMovements;
+      let nextVariants=productVariants;
+      let nextVariantMovements=variantStockMovements;
+      for(const [index,line] of deliveredLines.entries()){
+        if(line.trackStock===false)continue;
+        if(line.variantId){const applied=applyVariantStockMovement(nextVariants,{id:'customer-order-delivery-'+documentId+'-'+index,variantId:line.variantId,kind:'delivery',quantityDelta:-line.qty,date:date.slice(0,10),reference:String(documentId),note:'تسليم طلب '+order.number},nextVariantMovements);nextVariants=applied.variants;nextVariantMovements=[applied.movement,...nextVariantMovements];}
+        else nextInventory=appendInventoryMovement(nextInventory,{id:'customer-order-delivery-'+documentId+'-'+index,productId:line.productId,productName:line.productName,kind:'delivery',quantityDelta:-line.qty,date,sourceId:String(documentId),warehouseId:activeWarehouseId});
+      }
+      const total=deliveredLines.reduce((sum,line)=>sum+line.qty*line.unitPrice,0);
+      const document:CommercialDocument={id:documentId,number:nextDocumentNumber(companyProfile.deliveryPrefix,documents),type:'delivery',customerName:order.customerName,total,date:new Date().toLocaleDateString('fr-MA'),status:'صادرة',sourceQuoteId:quote.id,lines:deliveredLines.map(line=>({...line,total:line.qty*line.unitPrice}))};
+      const linkedOrder=linkCustomerOrderDocument(nextOrder,{id:documentId,type:'delivery',sourceOrderId:order.id});
+      setCustomerOrders(current=>current.map(item=>item.id===order.id?linkedOrder:item));setDocuments(current=>[document,...current]);setInventoryMovements(nextInventory);
+      if(nextVariants!==productVariants){setProductVariants(nextVariants);setVariantStockMovements(nextVariantMovements);}
+      setProducts(current=>current.map(product=>({...product,qty:inventoryBalance(nextInventory,product.id)})));
+      logActivity('تسليم طلب زبون',order.number+' • '+document.number);showAlert('تم تسجيل التسليم',document.number+' • '+total.toFixed(2)+' DH');
+    }catch(error){showAlert('تعذر تسجيل التسليم',error instanceof Error?error.message:'راجع الكميات والمخزون.');}
+  };
+  const invoiceCustomerOrder=(order:CustomerOrder)=>{
+    const quote=quotes.find(item=>item.id===order.sourceQuoteId);
+    if(!quote){showAlert('تعذر إصدار الفاتورة','عرض السعر الأصلي غير موجود.');return;}
+    const created=convertQuote(quote,'invoice');
+    if(created){try{const linked=linkCustomerOrderDocument(order,{id:created.id,type:'invoice',sourceOrderId:order.id});setCustomerOrders(current=>current.map(item=>item.id===order.id?linked:item));}catch(error){showAlert('الفاتورة صدرت لكن تعذر ربطها بالطلب',error instanceof Error?error.message:'راجع سجل الطلب.');}}
   };
   const addPayment=()=>{
     const cst=customers.find(x=>String(x.id)===paymentCustomer);
@@ -879,6 +931,7 @@ export default function App() {
           <View style={s.row}>{expenseCategories.map(category=><Pressable key={category} accessibilityState={{selected:expenseCategory===category}} onPress={()=>setExpenseCategory(category)} style={[s.choice,{borderColor:expenseCategory===category?GOLD:'#444'}]}><Text style={s.itemTitle}>{category}</Text></Pressable>)}</View>
           <Pressable style={s.action} onPress={()=>{const value=expenseCategory.trim();if(!value){showAlert('تصنيف ناقص','دخل اسم التصنيف أولاً.');return;}if(expenseCategories.includes(value)){showAlert('التصنيف موجود','هاد التصنيف مسجل من قبل.');return;}setExpenseCategories(current=>[...current,value]);showAlert('تم حفظ التصنيف','تزاد التصنيف للقائمة.');}}><Text style={s.actionText}>حفظ تصنيف جديد</Text></Pressable><Text style={s.fieldLabel}>ربط المصروف بمشروع (اختياري)</Text><View style={s.row}><Pressable accessibilityState={{selected:expenseProjectId===''}} onPress={()=>setExpenseProjectId('')} style={[s.choice,{flex:1,borderColor:expenseProjectId===''?GOLD:'#444'}]}><Text style={s.itemTitle}>مصروف عام</Text></Pressable>{projects.map(p=><Pressable key={p.id} accessibilityState={{selected:expenseProjectId===String(p.id)}} onPress={()=>setExpenseProjectId(String(p.id))} style={[s.choice,{flex:1,borderColor:expenseProjectId===String(p.id)?GOLD:'#444'}]}><Text style={s.itemTitle}>{p.name}</Text></Pressable>)}</View><Pressable style={s.action} onPress={addExpense}><Text style={s.actionText}>+ تسجيل المصروف</Text></Pressable></View><Text style={s.section}>سجل المصاريف — {expenseTotal.toFixed(2)} DH</Text>{expenses.map(x=><View key={x.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{x.title}</Text><Text style={s.itemSub}>{x.date} • {x.category||'بدون تصنيف'}</Text></View><Text style={s.itemPrice}>{x.amount.toFixed(2)} DH</Text><Pressable onPress={()=>exportPdf('Reçu de dépense','',[`${x.title} — ${x.amount.toFixed(2)} DH`],x.amount)}><Text style={s.gold}>PDF</Text></Pressable><Pressable onPress={()=>showAlert('حذف المصروف؟',x.title,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>setExpenses(v=>v.filter(y=>y.id!==x.id))}])}><Text style={s.delete}>حذف</Text></Pressable></View>)}</>
       :screen==='عروض الأسعار'?<QuoteWorkspace products={products} variants={productVariants} customers={customers} priceGroups={priceGroups} quotes={quotes} quotePrefix={companyProfile.quotePrefix} onScanBarcode={()=>openBarcodeScanner('quote')} scannedBarcode={quoteScannedBarcode} onBarcodeConsumed={()=>setQuoteScannedBarcode('')} onSave={(quote)=>{setQuotes(v=>[quote,...v]);logActivity('إنشاء عرض سعر',quote.number||quote.customerName);}} onUpdate={(quote)=>{setQuotes(v=>v.map(item=>item.id===quote.id?quote:item));logActivity('تحديث حالة عرض سعر',quote.number||quote.customerName+' • '+quote.status);}} onDelete={(id)=>{if(documents.some(document=>document.sourceQuoteId===id)){showAlert('لا يمكن حذف العرض','هاد العرض مرتبط بفاتورة أو سند أو فاتورة أولية.');return;}const quote=quotes.find(item=>item.id===id);setQuotes(v=>v.filter(item=>item.id!==id));if(quote)logActivity('حذف عرض سعر',quote.number||quote.customerName);}} onPdf={exportPdf} onConvert={convertQuote}/>
+      :screen==='طلبات الزبناء'?<CustomerOrdersWorkspace quotes={quotes} orders={customerOrders} onCreate={createOrderFromQuote} onStatus={updateCustomerOrderStatus} onDeliver={deliverCustomerOrder} onInvoice={invoiceCustomerOrder}/>
       :screen==='الفواتير'||screen==='الفواتير الأولية'||screen==='Bon de sortie'?<>
         <Text style={s.section}>{screen==='الفواتير'?'الفواتير':screen==='الفواتير الأولية'?'الفواتير الأولية':'سندات الخروج'}</Text>
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':screen==='الفواتير الأولية'?'proforma':'delivery')).map(d=><View key={d.id} style={s.listItem}>
