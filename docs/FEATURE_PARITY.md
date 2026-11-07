@@ -86,7 +86,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Cheque/draft lifecycle and bank statement file import
 - [x] Partial customer invoice payments and supplier purchase payments with centime-safe allocation and balance recalculation
 - [x] Customer payments can be allocated automatically, oldest invoice first, across multiple outstanding invoices; one cash/bank ledger entry is recorded for the full receipt
-- [ ] Supplier payments across multiple purchases, cheque/draft lifecycle and automated due-date reminders
+- [x] Supplier payments can be distributed oldest-first across multiple open purchases; one cash/bank movement is recorded and grouped reversal restores all allocations
+- [ ] Cheque/draft lifecycle and automated due-date reminders
 - [x] Manual statement-balance reconciliation with stored difference and adjustment entry
 - [ ] Bank statement file import and automatic transaction matching
 
