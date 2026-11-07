@@ -21,9 +21,9 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
  const [statement,setStatement]=useState('');const [reconcileNote,setReconcileNote]=useState('تسوية مع كشف الحساب');
  const active=accounts.find(a=>a.id===activeAccountId);
  const balance=active?bankBalance(movements,active.id):0;
- const add=()=>{const value=Number(opening.replace(',','.'));if(!name.trim()||!Number.isFinite(value)||value<0){Alert.alert(t('معلومات ناقصة'),t('دخل اسم الحساب ورصيد افتتاحي صحيح.'));return;}
+ const add=()=>{const value=Number(opening.replace(',','.'));if(!name.trim()||!Number.isFinite(value)||value<0||!/^\\d{0,4}$/.test(reference.trim())){Alert.alert(t('معلومات ناقصة'),t('دخل اسم الحساب ورصيد افتتاحي صحيح، وآخر 4 أرقام فقط للحساب.'));return;}
   if(accounts.some(a=>a.name.trim().toLowerCase()===name.trim().toLowerCase())){Alert.alert(t('حساب موجود'),t('اسم الحساب مستعمل من قبل.'));return;}
-  onAddAccount({id:'bank-'+Date.now(),name:name.trim(),bankName:bankName.trim()||undefined,accountNumberMasked:reference.trim()||undefined,currency:'MAD',active:true} as BankAccount,Math.round(value*100));
+  onAddAccount({id:'bank-'+Date.now(),name:name.trim(),bankName:bankName.trim()||undefined,accountNumberMasked:reference.trim()?('•••• '+reference.trim()):undefined,currency:'MAD',active:true} as BankAccount,Math.round(value*100));
   setName('');setBankName('');setReference('');setOpening('0');
  };
  const saveMovement=()=>{const value=Number(amount.replace(',','.'));if(!active||!Number.isFinite(value)||value<=0||!description.trim()){Alert.alert(t('معلومات ناقصة'),t('دخل مبلغ ووصف صحيحين.'));return;}
@@ -45,7 +45,7 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
    </AccessiblePressable>)}
    <TextInput value={name} onChangeText={setName} placeholder="اسم الحساب" placeholderTextColor="#888" style={styles.input}/>
    <TextInput value={bankName} onChangeText={setBankName} placeholder="اسم البنك (اختياري)" placeholderTextColor="#888" style={styles.input}/>
-   <TextInput value={reference} onChangeText={setReference} placeholder="مرجع الحساب أو آخر الأرقام" placeholderTextColor="#888" style={styles.input}/>
+   <TextInput value={reference} onChangeText={setReference} keyboardType="number-pad" maxLength={4} placeholder="آخر 4 أرقام فقط (اختياري)" placeholderTextColor="#888" style={styles.input}/>
    <TextInput value={opening} onChangeText={setOpening} keyboardType="decimal-pad" placeholder="الرصيد الافتتاحي DH" placeholderTextColor="#888" style={styles.input}/>
    <AccessiblePressable style={styles.action} onPress={add}><Text style={styles.actionText}>إضافة حساب بنكي</Text></AccessiblePressable>
   </View>
