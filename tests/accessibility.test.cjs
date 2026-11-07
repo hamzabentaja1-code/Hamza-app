@@ -429,3 +429,13 @@ test('variant workspace uses accessible controls and is persisted, backed up and
     assert.ok(translations.includes('"'+label+'"'), 'missing French translation for '+label);
   }
 });
+
+
+test('user management workspace uses accessible controls and selected-state announcements', () => {
+  const workspace = read('src/UserAccessWorkspace.tsx');
+  assert.match(workspace, /import AccessiblePressable from/);
+  assert.match(workspace, /const Pressable=AccessiblePressable/);
+  assert.match(workspace, /TTextInput as TextInput/);
+  assert.match(workspace, /accessibilityState=\{\{selected:/);
+  assert.match(workspace, /disabled=\{selected\.role==='owner'\}/);
+});
