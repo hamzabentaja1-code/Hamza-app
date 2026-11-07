@@ -16,6 +16,7 @@ const fr: Record<string, string> = {
   "تم إكمال المهمة": "Tâche terminée",
   "تسجلات المهمة المقبلة بتاريخ ": "La prochaine tâche a été créée pour le ",
   "تعذر إكمال المهمة": "Impossible de terminer la tâche",
+  "راجع المهمة.": "Vérifiez la tâche.",
   "إنشاء طلب عرض أثمان": "Créer une demande de devis fournisseur",
   "تأكيد إرسال الطلب": "Confirmer l’envoi de la demande",
   " • التسليم ": " • livraison ",
