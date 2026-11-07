@@ -48,6 +48,10 @@ test('stock count rejects invalid quantities and no-difference counts', () => {
     countedQuantity: -1, date: '2026-11-07',
   }), /صفر أو أكثر/);
   assert.throws(() => createStockCount([opening], {
+    id: 'count-fraction', productId: 1, productName: 'Cable',
+    countedQuantity: 2.5, date: '2026-11-07',
+  }), /عدد صحيح/);
+  assert.throws(() => createStockCount([opening], {
     id: 'count-same', productId: 1, productName: 'Cable',
     countedQuantity: 10, date: '2026-11-07',
   }), /مطابق/);
@@ -60,4 +64,14 @@ test('movement history is filtered and newest first', () => {
     { ...opening, id: 'other', productId: 2 },
   ];
   assert.deepEqual(inventoryMovementsForProduct(movements, 1).map(x => x.id), ['count-2', 'opening-1']);
+});
+
+
+test('movement validation rejects fractional quantities and invalid dates', () => {
+  assert.throws(() => appendInventoryMovement([], {
+    ...opening, id: 'fractional', quantityDelta: 1.5,
+  }), /رقم صحيح/);
+  assert.throws(() => appendInventoryMovement([], {
+    ...opening, id: 'bad-date', date: 'not-a-date',
+  }), /تاريخ الحركة غير صالح/);
 });
