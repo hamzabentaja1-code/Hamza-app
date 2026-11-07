@@ -84,7 +84,7 @@ test('camera barcode scanning is connected to the product editor and POS exact b
  assert.ok(config.expo.plugins.some(plugin=>Array.isArray(plugin)&&plugin[0]==='expo-camera'));
  assert.ok(app.includes('useCameraPermissions'));
  assert.ok(app.includes('barcodeScannerSettings={{barcodeTypes:'));
- assert.ok(app.includes("openBarcodeScanner('product')"));
+ assert.match(app,/openBarcodeScanner\(['\"]product['\"]\)/);
  assert.ok(app.includes("openBarcodeScanner('pos')"));
  assert.ok(app.includes('setProductBarcode(code)'));
  assert.ok(pos.includes('findPosProduct(mapped,scannedBarcode)'));
