@@ -40,6 +40,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Product photo gallery supports up to four images, preview, per-image removal and persisted local product records
 - [ ] Variant stock matrix in product form and warehouse-scoped variant balances
 - [x] Product-level stock selling value and potential gross profit aggregate active variant quantities and variant-specific prices using centime-safe calculations
+- [x] Archived variants cannot silently fall back to stale parent-product stock in sales, purchases, POS, quotes, stock counts, warehouse transfers or stock reports
 - [x] Variant stock domain: normalized attribute combinations, duplicate SKU protection, centime-safe prices, per-variant movement validation, no-negative-stock rule and aggregate balances (tests/variant-stock.test.cjs)
 - [x] Physical stock counts for each variant record positive or negative variance in the variant movement ledger with a note and date
 - [x] Product purchase cost, sale price and unit margin when cost is recorded
