@@ -1,6 +1,7 @@
 import React, {useContext, useMemo, useState} from 'react';
 import {Alert, ScrollView, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
 import {calculateQuote} from './domain/quote-calculator';
+import {nextDocumentNumber} from './domain/document-numbering';
 import {TText as Text, TTextInput as TextInput, LanguageContext, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
@@ -9,7 +10,7 @@ type Product = {id:number; name:string; price:number; qty:number};
 type Customer = {id:number; name:string};
 export type QuoteLine = {productId:number; productName:string; qty:number; unitPrice:number; total:number};
 export type QuoteRecord = {
-  id:number; productName:string; customerName:string; qty:number;
+  id:number; number?:string; productName:string; customerName:string; qty:number;
   unitPrice:number; total:number; date:string; status:string;
   lines?:QuoteLine[]; notes?:string;
 };
@@ -18,6 +19,7 @@ type Props = {
   products:Product[];
   customers:Customer[];
   quotes:QuoteRecord[];
+  quotePrefix:string;
   onSave:(quote:QuoteRecord)=>void;
   onPdf:(title:string, customerName:string, lines:string[], total:number)=>void;
   onConvert:(quote:QuoteRecord,type:QuoteConversionType)=>void;
@@ -31,7 +33,7 @@ const choice={borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marg
 const active={borderColor:gold,backgroundColor:'#302819'};
 const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
-export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,onConvert}:Props) {
+export default function QuoteWorkspace({products,customers,quotes,quotePrefix,onSave,onPdf,onConvert}:Props) {
   const language=useContext(LanguageContext);
  const showAlert = (...args: Parameters<typeof Alert.alert>) => {
   const [title, message, buttons, options] = args;
@@ -95,7 +97,7 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
     if(!calculation){showAlert('راجع العرض','زيد منتج واحد على الأقل وتأكد من التخفيض.');return;}
     const now=Date.now();
     const record:QuoteRecord={
-      id:now,productName:lines.map(x=>x.productName).join(', '),
+      id:now,number:nextDocumentNumber(quotePrefix,quotes),productName:lines.map(x=>x.productName).join(', '),
       customerName:selectedCustomer.name,qty:lines.reduce((n,x)=>n+x.qty,0),
       unitPrice:0,total:calculation.totalCentimes/100,
       date:new Date().toLocaleDateString('fr-MA'),status:'معلق',
@@ -149,7 +151,7 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
     </View>
     <Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>عروض الأسعار السابقة ({quotes.length})</Text>
     {quotes.map(q=><View key={q.id} style={[panel,{marginBottom:8}]}>
-      <Text style={{color:'#FFF',fontWeight:'800'}}>{q.customerName}</Text>
+      <Text style={{color:'#FFF',fontWeight:'800'}}>{q.number||('DEV-'+q.id)} • {q.customerName}</Text>
       <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {q.status}</Text>
       {quoteLines(q).map((line,i)=><Text key={i} style={{color:'#DDD',marginTop:5}}>{line}</Text>)}
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
