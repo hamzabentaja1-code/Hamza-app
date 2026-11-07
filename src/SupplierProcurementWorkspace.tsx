@@ -22,6 +22,7 @@ export default function SupplierProcurementWorkspace({suppliers,products,variant
  const [selectedOrderId,setSelectedOrderId]=useState('');
  const [invoiceNumber,setInvoiceNumber]=useState('');
  const [invoiceDueDate,setInvoiceDueDate]=useState('');
+ const [invoiceUnitCosts,setInvoiceUnitCosts]=useState<Record<string,string>>({});
  const selected=requests.find(item=>item.id===selectedId);
  const comparisons=useMemo(()=>compareSupplierOffers(requests),[requests]);
  const addLine=()=>{
@@ -83,9 +84,15 @@ export default function SupplierProcurementWorkspace({suppliers,products,variant
   <View style={panel}>
    <Text style={{color:gold,fontSize:18,fontWeight:'900',marginBottom:8}}>تسجيل فاتورة المورد</Text>
    <Text style={{color:'#AAA',marginBottom:8}}>الفاتورة كتترابط بالكميات المستلمة من أمر الشراء، وما كتزيدش المخزون مرة ثانية.</Text>
-   {purchaseOrders.filter(order=>order.status==='partially_received'||order.status==='received').map(order=><AccessiblePressable key={order.id} accessibilityState={{selected:selectedOrderId===String(order.id)}} onPress={()=>setSelectedOrderId(String(order.id))} style={{padding:10,borderRadius:8,borderWidth:1,borderColor:selectedOrderId===String(order.id)?gold:'#444',marginBottom:6}}><Text style={{color:'#FFF',fontWeight:'800'}}>BC-{order.id} • {order.supplierName}</Text><Text style={{color:'#AAA',marginTop:3}}>{order.status==='received'?'مستلم بالكامل':'استلام جزئي'} • {order.lines.reduce((sum,line)=>sum+line.receivedQuantity,0)} وحدة مستلمة</Text></AccessiblePressable>)}
+   {purchaseOrders.filter(order=>order.status==='partially_received'||order.status==='received').map(order=><AccessiblePressable key={order.id} accessibilityState={{selected:selectedOrderId===String(order.id)}} onPress={()=>{setSelectedOrderId(String(order.id));setInvoiceUnitCosts(Object.fromEntries(order.lines.map(line=>[line.productId+'::'+(line.variantId||''),String(line.unitCost)])));}} style={{padding:10,borderRadius:8,borderWidth:1,borderColor:selectedOrderId===String(order.id)?gold:'#444',marginBottom:6}}><Text style={{color:'#FFF',fontWeight:'800'}}>BC-{order.id} • {order.supplierName}</Text><Text style={{color:'#AAA',marginTop:3}}>{order.status==='received'?'مستلم بالكامل':'استلام جزئي'} • {order.lines.reduce((sum,line)=>sum+line.receivedQuantity,0)} وحدة مستلمة</Text></AccessiblePressable>)}
    <TextInput value={invoiceNumber} onChangeText={setInvoiceNumber} placeholder="رقم فاتورة المورد" placeholderTextColor="#888" style={input}/>
    <TextInput value={invoiceDueDate} onChangeText={setInvoiceDueDate} placeholder="تاريخ الاستحقاق YYYY-MM-DD (اختياري)" placeholderTextColor="#888" style={input}/>
+   {purchaseOrders.find(order=>String(order.id)===selectedOrderId)?.lines.map(line=>{
+    const key=line.productId+'::'+(line.variantId||'');
+    const billed=invoices.filter(invoice=>invoice.purchaseOrderId===Number(selectedOrderId)).flatMap(invoice=>invoice.lines).filter(item=>item.productId===line.productId&&(item.variantId||'')===(line.variantId||'')).reduce((sum,item)=>sum+item.quantity,0);
+    const remaining=line.receivedQuantity-billed;
+    return remaining>0?<View key={key} style={{marginBottom:8}}><Text style={{color:'#DDD',marginBottom:4}}>{line.productName} • باقي للفوترة {remaining} • ثمن الوحدة DH</Text><TextInput value={invoiceUnitCosts[key]??String(line.unitCost)} onChangeText={value=>setInvoiceUnitCosts(current=>({...current,[key]:value}))} keyboardType="decimal-pad" placeholder="ثمن الفاتورة بالدرهم" placeholderTextColor="#888" style={input}/></View>:null;
+   })}
    {selectedOrderId?action('تسجيل فاتورة الكميات المستلمة',()=>{
     const order=purchaseOrders.find(item=>String(item.id)===selectedOrderId);
     const supplier=order&&(order.supplierId?suppliers.find(item=>String(item.id)===order.supplierId):suppliers.find(item=>item.name===order.supplierName));
@@ -94,7 +101,7 @@ export default function SupplierProcurementWorkspace({suppliers,products,variant
     const already=invoices.filter(invoice=>invoice.purchaseOrderId===order.id);
     const billed=new Map<string,number>();
     for(const invoice of already)for(const line of invoice.lines){const key=line.productId+'::'+(line.variantId||'');billed.set(key,(billed.get(key)||0)+line.quantity);}
-    const invoiceLines=order.lines.map(line=>{const key=line.productId+'::'+(line.variantId||'');const quantity=line.receivedQuantity-(billed.get(key)||0);return quantity>0?{productId:line.productId,variantId:line.variantId,description:line.productName+(line.variantLabel?' • '+line.variantLabel:''),quantity,unitCostCentimes:Math.round(line.unitCost*100)}:null;}).filter((line):line is NonNullable<typeof line>=>line!==null);
+    const invoiceLines=order.lines.map(line=>{const key=line.productId+'::'+(line.variantId||'');const quantity=line.receivedQuantity-(billed.get(key)||0);return quantity>0?{productId:line.productId,variantId:line.variantId,description:line.productName+(line.variantLabel?' • '+line.variantLabel:''),quantity,unitCostCentimes:(()=>{const raw=(invoiceUnitCosts[key]??String(line.unitCost)).trim().replace(',','.');const cost=Number(raw);if(!raw||!Number.isFinite(cost)||cost<0)throw new Error('دخل ثمن فاتورة صحيح لكل منتج.');return Math.round(cost*100);})()}:null;}).filter((line):line is NonNullable<typeof line>=>line!==null);
     try{
      const invoice=createSupplierInvoice({id:'supplier-invoice-'+Date.now(),number:invoiceNumber.trim()||'FA-'+Date.now(),supplierId:String(supplier.id),purchaseOrder:receivedOrder,issuedAt:new Date().toISOString(),dueDate:invoiceDueDate.trim()||undefined,lines:invoiceLines,previousInvoices:invoices});
      onSaveInvoice(invoice);setInvoiceNumber('');setInvoiceDueDate('');Alert.alert('تم تسجيل فاتورة المورد','تسجلات الفاتورة بلا ما يتعاود تحديث المخزون.');
