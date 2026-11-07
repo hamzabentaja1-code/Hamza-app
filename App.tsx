@@ -227,6 +227,34 @@ export default function App() {
       setSupplierPayments(current=>current.filter(x=>x.id!==payment.id));
     }catch(error){Alert.alert('تعذر عكس الأداء',error instanceof Error?error.message:'راجع رصيد المورد.');}
   };
+  const addSupplierReturn=(purchaseId:number)=>{
+    const purchase=purchases.find(x=>x.id===purchaseId);
+    if(!purchase){Alert.alert('تعذر تسجيل المرتجع','عملية الشراء غير موجودة.');return;}
+    const product=products.find(x=>x.id===purchase.productId)||products.find(x=>x.name===purchase.productName);
+    if(!product){Alert.alert('تعذر تسجيل المرتجع','المنتج المرتبط بالشراء غير موجود في المخزون.');return;}
+    const qty=Number(supplierReturnQuantity);
+    try{
+      const record=calculateSupplierReturn(purchase,supplierReturns,{id:Date.now(),qty,date:new Date().toISOString(),reason:supplierReturnReason});
+      if(!recordInventoryMovement({id:'supplier-return-'+record.id,productId:product.id,productName:product.name,kind:'return_out',quantityDelta:-qty,date:record.date,sourceId:String(purchase.id),note:'مرتجع للمورد: '+record.reason,unitCost:purchase.unitCost}))return;
+      setProducts(current=>current.map(x=>x.id===product.id?{...x,qty:x.qty-qty}:x));
+      setPurchases(current=>current.map(x=>x.id===purchase.id?{...x,returnedCentimes:(x.returnedCentimes||0)+record.amountCentimes}:x));
+      setSupplierReturns(current=>[record,...current]);
+      setSupplierReturnPurchaseId(null);setSupplierReturnQuantity('1');setSupplierReturnReason('');
+      Alert.alert('تم تسجيل مرتجع المورد',`القيمة: ${(record.amountCentimes/100).toFixed(2)} DH`);
+    }catch(error){Alert.alert('تعذر تسجيل المرتجع',error instanceof Error?error.message:'راجع الكمية.');}
+  };
+  const deleteSupplierReturn=(item:SupplierReturnRecord)=>{
+    const purchase=purchases.find(x=>x.id===item.purchaseId);
+    const product=purchase&&(products.find(x=>x.id===purchase.productId)||products.find(x=>x.name===purchase.productName));
+    if(!purchase||!product){Alert.alert('تعذر حذف المرتجع','الشراء أو المنتج المرتبط غير موجود.');return;}
+    try{
+      const next=appendInventoryMovement(inventoryMovements,{id:'supplier-return-reversal-'+item.id,productId:product.id,productName:product.name,kind:'adjustment',quantityDelta:item.qty,date:new Date().toISOString(),sourceId:String(item.id),note:'عكس مرتجع المورد'});
+      setInventoryMovements(next);
+      setProducts(current=>current.map(x=>x.id===product.id?{...x,qty:x.qty+item.qty}:x));
+      setPurchases(current=>current.map(x=>x.id===purchase.id?{...x,returnedCentimes:Math.max(0,(x.returnedCentimes||0)-item.amountCentimes)}:x));
+      setSupplierReturns(current=>current.filter(x=>x.id!==item.id));
+    }catch(error){Alert.alert('تعذر عكس المرتجع',error instanceof Error?error.message:'راجع حركة المخزون.');}
+  };
   const addExpense=()=>{const a=Number(expenseAmount.replace(',','.'));const projectId=expenseProjectId?Number(expenseProjectId):undefined;if(!expenseTitle.trim()||!Number.isFinite(a)||a<=0||(projectId!==undefined&&!projects.some(p=>p.id===projectId))){Alert.alert('معلومات ناقصة','دخل وصف المصروف ومبلغ صحيح واختار مشروعاً صالحاً إن وجد.');return;}setExpenses(v=>[{id:Date.now(),title:expenseTitle.trim(),amount:a,date:new Date().toLocaleDateString('fr-MA'),category:expenseCategory.trim()||undefined,projectId},...v]);setExpenseTitle('');setExpenseAmount('');setExpenseCategory('');setExpenseProjectId('');};
   const addQuote=()=>{const p=products.find(x=>String(x.id)===quoteProduct);const c=customers.find(x=>String(x.id)===quoteCustomer);const q=Number(quoteQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert('معلومات ناقصة','اختار المنتج والزبون والكمية.');return;}const x:Quote={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,date:new Date().toLocaleDateString('fr-MA'),status:'معلق'};setQuotes(v=>[x,...v]);setQuoteQty('1');Alert.alert('تم حفظ عرض السعر',`${x.total.toFixed(2)} DH`);};
   const convertQuote=(quote:Quote,type:QuoteConversionType)=>{
