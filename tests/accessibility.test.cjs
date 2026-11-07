@@ -346,7 +346,9 @@ test('PDFs use TTC-only by default and allow optional HT/TVA/TTC breakdown', () 
   assert.ok(app.includes('showTaxFields:false,taxRate:20'));
   assert.ok(app.includes('إظهار TTC فقط (افتراضي)'));
   assert.ok(app.includes('إظهار HT و TVA و TTC'));
-  assert.ok(app.includes('labels.vat'));
+  const pdf = read('src/domain/commercial-pdf.ts');
+  assert.match(pdf, /labels\.vat/);
+  assert.match(app, /buildCommercialPdfHtml\(/);
 });
 
 
