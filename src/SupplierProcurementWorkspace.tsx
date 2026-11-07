@@ -3,14 +3,15 @@ import {ScrollView,View,Alert} from 'react-native';
 import {TText as Text,TTextInput as TextInput} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 import {SupplierPriceRequest,SupplierInvoice,createSupplierPriceRequest,transitionSupplierPriceRequest,recordSupplierPriceOffer,compareSupplierOffers,createSupplierInvoice} from './domain/supplier-procurement';
+import {SupplierInvoicePayment,summarizeSupplierInvoicePayments} from './domain/supplier-invoice-payments';
 type Supplier={id:number;name:string};
 type Product={id:number;name:string;reference?:string;barcode?:string;kind?:string};
 type Variant={id:string;productId:number;attributes:Record<string,string>;active:boolean};
 type PurchaseOrder={id:number;supplierName:string;supplierId?:string;status:'ordered'|'partially_received'|'received'|'cancelled';lines:Array<{productId:number;productName:string;quantity:number;receivedQuantity:number;unitCost:number;variantId?:string;variantLabel?:string}>};
-type Props={suppliers:Supplier[];products:Product[];variants:Variant[];requests:SupplierPriceRequest[];purchaseOrders:PurchaseOrder[];invoices:SupplierInvoice[];onSave:(item:SupplierPriceRequest)=>void;onUpdate:(item:SupplierPriceRequest)=>void;onSaveInvoice:(item:SupplierInvoice)=>void;onPdf:(title:string,customer:string,lines:string[],total:number)=>void};
+type Props={suppliers:Supplier[];products:Product[];variants:Variant[];requests:SupplierPriceRequest[];purchaseOrders:PurchaseOrder[];invoices:SupplierInvoice[];invoicePayments:SupplierInvoicePayment[];onAddInvoicePayment:(invoice:SupplierInvoice,payment:Omit<SupplierInvoicePayment,'invoiceId'|'supplierId'>)=>void;onReverseInvoicePayment:(paymentId:string)=>void;onSave:(item:SupplierPriceRequest)=>void;onUpdate:(item:SupplierPriceRequest)=>void;onSaveInvoice:(item:SupplierInvoice)=>void;onPdf:(title:string,customer:string,lines:string[],total:number)=>void};
 const gold='#D4AF62',panel={backgroundColor:'#1B1B1B',borderRadius:12,borderWidth:1,borderColor:'#383838',padding:13,marginBottom:12} as const;
 const input={backgroundColor:'#111',borderWidth:1,borderColor:'#3A3A3A',borderRadius:8,padding:10,color:'#FFF',marginBottom:8} as const;
-export default function SupplierProcurementWorkspace({suppliers,products,variants,requests,purchaseOrders,invoices,onSave,onUpdate,onSaveInvoice,onPdf}:Props){
+export default function SupplierProcurementWorkspace({suppliers,products,variants,requests,purchaseOrders,invoices,invoicePayments,onAddInvoicePayment,onReverseInvoicePayment,onSave,onUpdate,onSaveInvoice,onPdf}:Props){
  const [supplierId,setSupplierId]=useState('');
  const [productId,setProductId]=useState('');
  const [variantId,setVariantId]=useState('');
@@ -23,6 +24,7 @@ export default function SupplierProcurementWorkspace({suppliers,products,variant
  const [invoiceNumber,setInvoiceNumber]=useState('');
  const [invoiceDueDate,setInvoiceDueDate]=useState('');
  const [invoiceUnitCosts,setInvoiceUnitCosts]=useState<Record<string,string>>({});
+ const [paymentInvoiceId,setPaymentInvoiceId]=useState('');const [paymentAmount,setPaymentAmount]=useState('');const [paymentMethod,setPaymentMethod]=useState<SupplierInvoicePayment['method']>('cash');const [paymentReference,setPaymentReference]=useState('');
  const selected=requests.find(item=>item.id===selectedId);
  const comparisons=useMemo(()=>compareSupplierOffers(requests),[requests]);
  const addLine=()=>{
@@ -109,8 +111,15 @@ export default function SupplierProcurementWorkspace({suppliers,products,variant
    }):null}
   </View>
   <Text style={{color:gold,fontWeight:'900',fontSize:17,marginVertical:10}}>فواتير الموردين ({invoices.length})</Text>
-  {invoices.map(invoice=>{const supplier=suppliers.find(item=>String(item.id)===invoice.supplierId);return <View key={invoice.id} style={panel}><Text style={{color:'#FFF',fontWeight:'900'}}>{invoice.number} • {supplier?.name||invoice.supplierId}</Text><Text style={{color:'#AAA',marginTop:4}}>أمر الشراء BC-{invoice.purchaseOrderId} • {invoice.issuedAt.slice(0,10)}{invoice.dueDate?' • استحقاق '+invoice.dueDate:''}</Text><Text style={{color:gold,fontWeight:'900',marginTop:6}}>{(invoice.totalCentimes/100).toFixed(2)} DH</Text><AccessiblePressable onPress={()=>onPdf('Facture fournisseur '+invoice.number,supplier?.name||'',invoice.lines.map(line=>line.description+' × '+line.quantity+' — '+(line.unitCostCentimes/100).toFixed(2)+' DH'),invoice.totalCentimes/100)} style={{padding:8,marginTop:5}}><Text style={{color:gold}}>PDF</Text></AccessiblePressable></View>;})}
+undefined
   {invoices.length===0?<Text style={{color:'#888',padding:12}}>مازال ما تسجلات حتى فاتورة مورد.</Text>:null}
+  {invoices.length>0?<View style={panel}><Text style={{color:gold,fontSize:17,fontWeight:'900',marginBottom:8}}>أداءات فواتير الموردين</Text>
+   {invoices.map(invoice=>{const payments=invoicePayments.filter(item=>item.invoiceId===invoice.id);const summary=summarizeSupplierInvoicePayments(invoice,payments);return <View key={'pay-'+invoice.id} style={{paddingVertical:8,borderBottomWidth:1,borderBottomColor:'#333'}}><AccessiblePressable accessibilityState={{selected:paymentInvoiceId===invoice.id}} onPress={()=>setPaymentInvoiceId(invoice.id)}><Text style={{color:'#FFF',fontWeight:'800'}}>{invoice.number} • {summary.status==='paid'?'مخلصة':summary.status==='partial'?'أداء جزئي':'غير مخلصة'}</Text><Text style={{color:'#AAA'}}>المجموع {(summary.totalCentimes/100).toFixed(2)} DH • المؤدى {(summary.paidCentimes/100).toFixed(2)} DH • الباقي {(summary.outstandingCentimes/100).toFixed(2)} DH</Text></AccessiblePressable>{payments.map(payment=><View key={payment.id} style={{flexDirection:'row',justifyContent:'space-between',paddingVertical:4}}><Text style={{color:'#BBB'}}>{(payment.amountCentimes/100).toFixed(2)} DH • {payment.date.slice(0,10)} • {payment.method}</Text><AccessiblePressable onPress={()=>onReverseInvoicePayment(payment.id)}><Text style={{color:'#E28A78'}}>عكس الأداء</Text></AccessiblePressable></View>)}</View>;})}
+   <TextInput value={paymentAmount} onChangeText={setPaymentAmount} keyboardType="decimal-pad" placeholder="مبلغ الأداء DH" placeholderTextColor="#888" style={input}/>
+   <View style={{flexDirection:'row',flexWrap:'wrap',gap:6}}>{(['cash','bank','cheque'] as const).map(method=><AccessiblePressable key={method} accessibilityState={{selected:paymentMethod===method}} onPress={()=>setPaymentMethod(method)} style={{padding:9,borderWidth:1,borderColor:paymentMethod===method?gold:'#444',borderRadius:8}}><Text style={{color:'#FFF'}}>{method==='cash'?'نقداً':method==='bank'?'تحويل بنكي':'شيك'}</Text></AccessiblePressable>)}</View>
+   {paymentMethod==='cheque'?<TextInput value={paymentReference} onChangeText={setPaymentReference} placeholder="مرجع الشيك" placeholderTextColor="#888" style={input}/>:null}
+   {action('تسجيل الأداء على الفاتورة المختارة',()=>{const invoice=invoices.find(item=>item.id===paymentInvoiceId);const raw=paymentAmount.trim().replace(',','.');const amount=Number(raw);if(!invoice||!raw||!Number.isFinite(amount)||amount<=0){Alert.alert('معلومات ناقصة','اختار فاتورة ودخل مبلغ أداء صحيح.');return;}onAddInvoicePayment(invoice,{id:'supplier-invoice-payment-'+Date.now(),amountCentimes:Math.round(amount*100),date:new Date().toISOString(),method:paymentMethod,reference:paymentReference.trim()||undefined});setPaymentAmount('');setPaymentReference('');})}
+  </View>:null}
 
  </ScrollView>;
 }
