@@ -5,6 +5,12 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "اختار النسخة (المقاس / اللون)": "Choisissez la variante (taille / couleur)",
+  "اختار النسخة": "Choisir la variante",
+  "هاد المنتج عندو تنويعات. اختار المقاس أو اللون قبل البيع.": "Ce produit a des variantes. Choisissez la taille ou la couleur avant la vente.",
+  "هاد المنتج عندو تنويعات. اختار المقاس أو اللون قبل الشراء.": "Ce produit a des variantes. Choisissez la taille ou la couleur avant l’achat.",
+  "المتوفر فالنسخة المختارة": "Disponible dans la variante sélectionnée",
+  "المخزون: ": "Stock : ",
   "الخدمات لا تستقبل في المخزون.": "Les services ne sont pas réceptionnés en stock.",
   "الخدمة لا تحتاج كمية في المخزون": "Le service ne nécessite pas de quantité en stock",
   "نوع العنصر": "Type d’article",
