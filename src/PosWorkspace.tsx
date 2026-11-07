@@ -49,7 +49,7 @@ export default function PosWorkspace({products,customers,onCheckout}:Props){
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>البحث عن منتج</Text>
       <TextInput value={term} onChangeText={setTerm} placeholder="اسم المنتج..." placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'right'}}/>
-      {matches.map(p=><Pressable key={p.id} onPress={()=>add(p)} style={{padding:11,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:10}}>
+      {matches.map(p=><Pressable key={p.id} accessibilityHint="اضغط لإضافة المنتج إلى السلة" onPress={()=>add(p)} style={{padding:11,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:10}}>
         <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{p.name}</Text><Text style={{color:'#AAA',fontSize:12}}>المتوفر: {p.stock} • {money(p.salePrice)}</Text></View>
         <Text style={{color:GOLD,fontWeight:'900'}}>+ أضف</Text>
       </Pressable>)}
@@ -72,7 +72,7 @@ export default function PosWorkspace({products,customers,onCheckout}:Props){
       <Text style={{color:'#CCC',marginTop:12,marginBottom:6}}>الزبون</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:6}}>
         <Pressable onPress={()=>setCustomerId('')} style={{borderWidth:1,borderColor:customerId===''?GOLD:'#444',borderRadius:8,padding:9}}><Text style={{color:'#FFF'}}>زبون عابر</Text></Pressable>
-        {customers.map(c=><Pressable key={c.id} onPress={()=>setCustomerId(String(c.id))} style={{borderWidth:1,borderColor:customerId===String(c.id)?GOLD:'#444',borderRadius:8,padding:9}}><Text style={{color:'#FFF'}}>{c.name}</Text></Pressable>)}
+        {customers.map(c=><Pressable key={c.id} accessibilityState={{selected:customerId===String(c.id)}} onPress={()=>setCustomerId(String(c.id))} style={{borderWidth:1,borderColor:customerId===String(c.id)?GOLD:'#444',borderRadius:8,padding:9}}><Text style={{color:'#FFF'}}>{c.name}</Text></Pressable>)}
       </View>
       <Text style={{color:'#CCC',marginTop:12,marginBottom:6}}>طريقة الأداء</Text>
       <View style={{flexDirection:'row',gap:7}}>
