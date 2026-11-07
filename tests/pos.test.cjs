@@ -86,6 +86,10 @@ test('camera barcode scanning is connected to the product editor and POS exact b
  assert.ok(app.includes('barcodeScannerSettings={{barcodeTypes:'));
  assert.match(app,/openBarcodeScanner\(['\"]product['\"]\)/);
  assert.ok(app.includes("openBarcodeScanner('pos')"));
+ assert.ok(app.includes("openBarcodeScanner('sale')"));
+ assert.ok(app.includes("openBarcodeScanner('purchase')"));
+ assert.ok(app.includes('setSaleProduct(String(found.id))'));
+ assert.ok(app.includes('setPurchaseProduct(String(found.id))'));
  assert.ok(app.includes('setProductBarcode(code)'));
  assert.ok(pos.includes('findPosProduct(mapped,scannedBarcode)'));
  assert.ok(pos.includes("p.barcode?.toLocaleLowerCase()===q"));
