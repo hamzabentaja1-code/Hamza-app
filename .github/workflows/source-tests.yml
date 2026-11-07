@@ -1,0 +1,35 @@
+name: HamZa source validation
+
+on:
+  push:
+    branches:
+      - feature/accurate-profit-tracking
+  pull_request:
+    branches:
+      - feature/accurate-profit-tracking
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hamza-source-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run domain and accessibility tests
+        run: npm run test:quote
+      - name: TypeScript validation
+        run: npx tsc --noEmit
