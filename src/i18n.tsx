@@ -910,6 +910,19 @@ const fr: Record<string, string> = {
   "تاريخ انتهاء العرض YYYY-MM-DD (اختياري)": "Date d’expiration du devis YYYY-MM-DD (facultatif)",
 
   "خاصك تضيف حساب بنكي قبل إيداع الشيك أو تسويته.": "Ajoutez un compte bancaire avant de déposer ou régler un chèque.",
+  "استعمل صيغة YYYY-MM-DD لتاريخ انتهاء العرض.": "Utilisez le format YYYY-MM-DD pour la date d’expiration du devis.",
+  "تاريخ انتهاء العرض خاصو يكون اليوم أو تاريخ فالمستقبل.": "La date d’expiration doit être aujourd’hui ou une date future.",
+  "منتهي": "Expiré",
+  "صالح حتى ": "Valable jusqu’au ",
+  "قبول العرض": "Accepter le devis",
+  "رفض العرض": "Refuser le devis",
+  "حذف عرض السعر؟": "Supprimer le devis ?",
+  "إنشاء عرض سعر": "Création d’un devis",
+  "تحديث حالة عرض سعر": "Mise à jour du statut du devis",
+  "حذف عرض سعر": "Suppression d’un devis",
+  "العرض غير صالح": "Devis non valide",
+  "ما يمكنش تحويل عرض مرفوض أو منتهي.": "Un devis refusé ou expiré ne peut pas être converti.",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
