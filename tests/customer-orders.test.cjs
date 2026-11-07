@@ -39,3 +39,20 @@ test('invoice and delivery documents link once and only to their source order',(
  assert.throws(()=>linkCustomerOrderDocument(linked,{id:700,type:'invoice',sourceOrderId:1}),/مسبقاً/);
  assert.throws(()=>linkCustomerOrderDocument(order,{id:701,type:'delivery',sourceOrderId:9}),/لا تخص/);
 });
+
+test('customer orders are wired to quotes, invoice/delivery records, backup and translated accessible workspace',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const app=fs.readFileSync(path.join(__dirname,'..','App.tsx'),'utf8');
+ const workspace=fs.readFileSync(path.join(__dirname,'..','src','CustomerOrdersWorkspace.tsx'),'utf8');
+ const i18n=fs.readFileSync(path.join(__dirname,'..','src','i18n.tsx'),'utf8');
+ assert.match(app,/createOrderFromQuote/);
+ assert.match(app,/fulfillCustomerOrder\(order,quantities,Date\.now\(\)\)/);
+ assert.match(app,/linkCustomerOrderDocument\(nextOrder/);
+ assert.match(app,/customerOrders,/, 'orders are included in local persistence and backup payloads');
+ assert.match(app,/setCustomerOrders\(Array\.isArray\(d\.customerOrders\)/);
+ assert.match(app,/screen==='طلبات الزبناء'/);
+ assert.match(workspace,/AccessiblePressable/);
+ assert.match(workspace,/TTextInput as TextInput/);
+ assert.match(workspace,/onDeliver\(order,values\)/);
+ for(const key of ['طلبات الزبناء','إنشاء طلب من عرض سعر مقبول','تأكيد الطلب','تسجيل التسليم','إنشاء فاتورة'])assert.ok(i18n.includes('"'+key+'"'), 'missing French translation '+key);
+});
