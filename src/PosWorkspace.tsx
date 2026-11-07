@@ -1,6 +1,7 @@
 import React, {useContext, useEffect, useMemo, useState} from 'react';
 import {Alert, Image, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
 import {addPosLine, emptyPosCart, findPosProduct, filterPosProducts, PosCart, PosProduct, PosStockFilter, posTotals, validateCheckout} from './pos';
+import {ExistingSaleReturn,SaleReturnSource,remainingReturnQuantity} from './domain/sales-returns';
 import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
@@ -9,6 +10,7 @@ type Product = {id:number; name:string; price:number; qty:number; photoData?:str
 type ProductVariant = {id:string;productId:number;attributes:Record<string,string>;stockQty:number;costPriceCentimes?:number;salePriceCentimes?:number;active:boolean};
 type Customer = {id:number; name:string};
 type ParkedCart = {id:string;createdAt:string;cart:PosCart};
+type RecentSale=SaleReturnSource&{productName:string;customerName:string;date:string};
 type CheckoutLine = {productId:number; variantId?:string; name:string; quantity:number; unitPrice:number; discount:number};
 type Props = {
   products: Product[];
@@ -23,11 +25,15 @@ type Props = {
   onScanBarcode:()=>void;
   scannedBarcode:string;
   onBarcodeConsumed:()=>void;
+  recentSales:RecentSale[];
+  salesReturns:ExistingSaleReturn[];
+  canStartReturn:boolean;
+  onStartReturn:(saleId:number)=>void;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PosWorkspace({products,customers,variants,bankAccountName,parkedCarts,onPark,onResume,onDeleteParked,onCheckout,onScanBarcode,scannedBarcode,onBarcodeConsumed}:Props){
+export default function PosWorkspace({products,customers,variants,bankAccountName,parkedCarts,onPark,onResume,onDeleteParked,onCheckout,onScanBarcode,scannedBarcode,onBarcodeConsumed,recentSales,salesReturns,canStartReturn,onStartReturn}:Props){
   const language:AppLanguage=useContext(LanguageContext);
  const showAlert = (...args: Parameters<typeof Alert.alert>) => {
   const [title, message, buttons, options] = args;
@@ -91,6 +97,16 @@ export default function PosWorkspace({products,customers,variants,bankAccountNam
       {!!term.trim()&&matches.length===0&&<Text style={{color:'#999',padding:10}}>ما لقيناش منتج بهاد الاسم أو الفلتر المختار.</Text>}{!term.trim()&&mapped.length>0&&filteredMapped.length===0?<Text style={{color:'#999',padding:10}}>ما كايناش منتجات كتوافق الفلاتر المختارة.</Text>:null}
       {products.length===0&&<Text style={{color:'#999',padding:10}}>زيد المنتجات أولاً من قسم المنتجات.</Text>}{products.length>0&&mapped.length===0&&<Text style={{color:'#999',padding:10}}>ما كايناش منتجات أو نسخ نشطة للبيع.</Text>}
     </View>
+    {recentSales.length>0?<View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
+      <Text style={{color:GOLD,fontSize:16,fontWeight:'800',marginBottom:8}}>آخر المبيعات والمرتجعات</Text>
+      {recentSales.slice(0,8).map(sale=>{const remaining=remainingReturnQuantity(sale,salesReturns);return <View key={sale.id} style={{paddingVertical:9,borderBottomWidth:1,borderBottomColor:'#333',gap:5}}>
+        <Text style={{color:'#FFF',fontWeight:'700'}}>{sale.productName} • {sale.customerName}</Text>
+        <Text style={{color:'#AAA',fontSize:12}}>{sale.date} • {money(sale.total)} • الكمية الأصلية: {sale.qty} • باقي للإرجاع: {remaining}</Text>
+        <Pressable accessibilityRole="button" disabled={!canStartReturn||remaining===0} onPress={()=>onStartReturn(sale.id)} style={{backgroundColor:canStartReturn&&remaining>0?GOLD:'#333',padding:9,borderRadius:7,alignItems:'center',opacity:canStartReturn&&remaining>0?1:0.5}}>
+          <Text style={{color:canStartReturn&&remaining>0?'#151515':'#999',fontWeight:'800'}}>{remaining>0?'فتح المرتجع':'تم إرجاع الكمية كاملة'}</Text>
+        </Pressable>
+      </View>;})}
+    </View>:null}
     {parkedCarts.length>0?<View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#6A542A'}}>
       <Text style={{color:GOLD,fontSize:16,fontWeight:'800',marginBottom:8}}>المبيعات المعلقة ({parkedCarts.length})</Text>
       {parkedCarts.map(item=>{const total=posTotals({...item.cart,paidAmount:0}).total;const customer=customers.find(c=>String(c.id)===item.cart.customerId)?.name||'زبون عابر';return <View key={item.id} style={{paddingVertical:9,borderBottomWidth:1,borderBottomColor:'#333',gap:6}}>
