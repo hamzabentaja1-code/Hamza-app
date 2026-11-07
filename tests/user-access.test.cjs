@@ -31,4 +31,3 @@ test('owner cannot be removed by normalization and cannot be deleted by workspac
   const normalized = access.normalizeUserAccounts([{id:'u1',name:'مستخدم',role:'viewer',allowedModules:[],canWrite:false,active:true}], modules);
   assert.equal(normalized.some(user=>user.role==='owner'), true);
 });
-`;
