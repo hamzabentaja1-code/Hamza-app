@@ -363,22 +363,33 @@ export default function App() {
     }
   };
   const addPayment=()=>{
-    const c=customers.find(x=>String(x.id)===paymentCustomer);
-    const a=Number(paymentAmount.replace(',','.'));
-    if(!c||!Number.isFinite(a)||a<=0){Alert.alert('معلومات ناقصة','اختار الزبون ودخل مبلغ صحيح.');return;}
-    const invoice=documents.find(d=>d.id===Number(paymentDocument)&&d.type==='invoice'&&d.customerName===c.name);
+    const cst=customers.find(x=>String(x.id)===paymentCustomer);
+    const amount=Number(paymentAmount.replace(',','.'));
+    if(!cst||!Number.isFinite(amount)||amount<=0){Alert.alert('معلومات ناقصة','اختار الزبون ودخل مبلغ صحيح.');return;}
+    const invoice=documents.find(d=>d.id===Number(paymentDocument)&&d.type==='invoice'&&d.customerName===cst.name);
     if(paymentDocument&&!invoice){Alert.alert('الفاتورة غير موجودة','عاود اختار فاتورة صالحة لهذا الزبون.');return;}
-    let paidCentimes:number|undefined;
-    if(invoice){
-      try{
-        const result=applyPaymentToInvoice({type:'invoice',total:invoice.total,paidCentimes:invoice.paidCentimes,status:invoice.status},Math.round(a*100));
-        paidCentimes=result.invoice.paidCentimes;
+    const paymentId=Date.now();
+    const movementDate=new Date().toISOString();
+    let nextCash=cashMovements;
+    let nextBank=bankMovements;
+    try{
+      if(paymentMethod==='نقداً'){
+        nextCash=appendCashMovement(nextCash,{id:'customer-payment-cash-'+paymentId,kind:'cash_in',amountCentimes:Math.round(amount*100),date:movementDate,description:'أداء زبون: '+cst.name});
+      }else if(paymentMethod==='تحويل'){
+        const account=bankAccounts.find(a=>a.id===activeBankAccountId);
+        if(!account)throw new Error('اختار حساباً بنكياً قبل تسجيل أداء بالتحويل.');
+        nextBank=appendBankMovement(nextBank,{id:'customer-payment-bank-'+paymentId,accountId:account.id,kind:'customer_payment',amountCentimes:Math.round(amount*100),date:movementDate,description:'تحويل من الزبون: '+cst.name});
+      }
+      if(invoice){
+        const result=applyPaymentToInvoice({type:'invoice',total:invoice.total,paidCentimes:invoice.paidCentimes,status:invoice.status},Math.round(amount*100));
         setDocuments(current=>current.map(d=>d.id===invoice.id?{...d,paidCentimes:result.invoice.paidCentimes,status:result.invoice.status}:d));
-      }catch(error){Alert.alert('تعذر تسجيل الأداء',error instanceof Error?error.message:'راجع مبلغ الأداء.');return;}
-    }
-    setPayments(v=>[{id:Date.now(),customerName:c.name,amount:a,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:paymentNote.trim(),...(invoice?{documentId:invoice.id}:{})},...v]);
-    setPaymentAmount('');setPaymentNote('');setPaymentDocument('');
-    Alert.alert('تم تسجيل الأداء',invoice?'تحدّث الرصيد المتبقي ديال الفاتورة.':'تسجل الأداء كدفعة غير مخصصة لفاتورة.');
+      }
+      if(paymentMethod==='نقداً')setCashMovements(nextCash);
+      if(paymentMethod==='تحويل')setBankMovements(nextBank);
+      setPayments(v=>[{id:paymentId,customerName:cst.name,amount,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:paymentNote.trim(),...(invoice?{documentId:invoice.id}:{})},...v]);
+      setPaymentAmount('');setPaymentNote('');setPaymentDocument('');
+      Alert.alert('تم تسجيل الأداء',invoice?'تحدّث الرصيد المتبقي ديال الفاتورة.':'تسجل الأداء كدفعة غير مخصصة لفاتورة.');
+    }catch(error){Alert.alert('تعذر تسجيل الأداء',error instanceof Error?error.message:'راجع مبلغ الأداء والحساب المختار.');}
   };
   const exportBackup=async()=>{try{setBackupBusy(true);const json=await createBackup({products,customers,sales,salesReturns,purchases,purchaseOrders,supplierPayments,supplierReturns,cashMovements,expenses,suppliers,quotes,payments,documents,inventoryMovements,warehouses,activeWarehouseId,bankAccounts,bankMovements,bankReconciliations,activeBankAccountId,projects,workTasks,language,companyProfile});await Share.share({title:'HamZa backup',message:json});}catch(e){Alert.alert('خطأ','ما قدرناش نوجدوا النسخة الاحتياطية.');}finally{setBackupBusy(false);}};
   const importBackup=()=>{Alert.alert('استرجاع البيانات','هاد العملية غادي تعوض البيانات الحالية بالنسخة اللي لصقتي. واش متأكد؟',[{text:'إلغاء',style:'cancel'},{text:'استرجاع',style:'destructive',onPress:async()=>{try{setBackupBusy(true);const d=await restoreBackup(backupText);setProducts(Array.isArray(d.products)?d.products as Product[]:[]);setCustomers(Array.isArray(d.customers)?d.customers as Customer[]:[]);setSales(Array.isArray(d.sales)?d.sales as Sale[]:[]);setSalesReturns(Array.isArray(d.salesReturns)?d.salesReturns as SalesReturn[]:[]);setPurchases(Array.isArray(d.purchases)?d.purchases as Purchase[]:[]);setPurchaseOrders(Array.isArray(d.purchaseOrders)?d.purchaseOrders as PurchaseOrder[]:[]);setSupplierPayments(Array.isArray(d.supplierPayments)?d.supplierPayments as SupplierPayment[]:[]);setSupplierReturns(Array.isArray(d.supplierReturns)?d.supplierReturns as SupplierReturnRecord[]:[]);setCashMovements(Array.isArray(d.cashMovements)?d.cashMovements as CashMovement[]:[]);const restoredBankAccounts=Array.isArray(d.bankAccounts)?d.bankAccounts as BankAccount[]:[];setBankAccounts(restoredBankAccounts);setBankMovements(Array.isArray(d.bankMovements)?d.bankMovements as BankMovement[]:[]);setBankReconciliations(Array.isArray(d.bankReconciliations)?d.bankReconciliations as BankReconciliation[]:[]);setActiveBankAccountId(typeof d.activeBankAccountId==='string'&&restoredBankAccounts.some(a=>a.id===d.activeBankAccountId)?d.activeBankAccountId:restoredBankAccounts[0]?.id||'');setExpenses(Array.isArray(d.expenses)?d.expenses as Expense[]:[]);setSuppliers(Array.isArray(d.suppliers)?d.suppliers as Supplier[]:[]);setQuotes(Array.isArray(d.quotes)?d.quotes as Quote[]:[]);setPayments(Array.isArray(d.payments)?d.payments as Payment[]:[]);setDocuments(Array.isArray(d.documents)?d.documents as CommercialDocument[]:[]);setProjects(Array.isArray(d.projects)?d.projects as Project[]:[]);setWorkTasks(Array.isArray(d.workTasks)?d.workTasks as WorkTask[]:[]);setCompanyProfile(normalizeCompanyProfile(d.companyProfile));const restoredWarehouses=Array.isArray(d.warehouses)?d.warehouses as Warehouse[]:[];setWarehouses(restoredWarehouses.some(w=>w.id===DEFAULT_WAREHOUSE_ID)?restoredWarehouses:[{id:DEFAULT_WAREHOUSE_ID,name:'المخزن الرئيسي',isDefault:true},...restoredWarehouses]);setActiveWarehouseId(typeof d.activeWarehouseId==='string'&&restoredWarehouses.some(w=>w.id===d.activeWarehouseId)?d.activeWarehouseId:DEFAULT_WAREHOUSE_ID);const restoredProducts=Array.isArray(d.products)?d.products as Product[]:[];const restoredMovements=Array.isArray(d.inventoryMovements)?d.inventoryMovements as InventoryMovement[]:[];setInventoryMovements([...restoredMovements,...restoredProducts.filter(p=>p.qty>0&&!restoredMovements.some(m=>m.productId===p.id)).map(p=>({id:'opening-restore-'+p.id,productId:p.id,productName:p.name,kind:'opening' as const,quantityDelta:p.qty,date:new Date().toISOString(),warehouseId:DEFAULT_WAREHOUSE_ID,note:'ترحيل رصيد منتج قديم مسترجع إلى المخزن الرئيسي'}))]);setLanguage(d.language==='FR'?'FR':'AR');setBackupText('');Alert.alert('تم الاسترجاع','ترجعات البيانات بنجاح.');}catch(e){Alert.alert('تعذر الاسترجاع',e instanceof Error?e.message:'النسخة غير صالحة.');}finally{setBackupBusy(false);}}}]);};
