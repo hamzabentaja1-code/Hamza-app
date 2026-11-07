@@ -640,3 +640,12 @@ test('quote product search matches names, references and barcodes and shows iden
  const dictionary=read('src/i18n.tsx');
  assert.ok(dictionary.includes('"بحث عن المنتج بالاسم أو المرجع أو الباركود"'));
 });
+
+test('quote custom fees are non-stock lines included in totals and converted documents',()=>{
+ const quote=read('src/QuoteWorkspace.tsx');
+ assert.match(quote,/productId:0,productName:'رسوم إضافية: '\+description,qty:1,unitPrice:amount,total:amount,trackStock:false/);
+ assert.match(quote,/calculateQuote\(lines\.map/);
+ assert.match(quote,/إضافة رسوم أو خدمة خارج كتالوج المنتجات/);
+ const conversion=read('src/domain/document-conversion.ts');
+ assert.match(conversion,/trackStock!==false/);
+});
