@@ -233,23 +233,7 @@ jobs:
           arch: x86_64
           profile: pixel_6
           script: |
-            bash -euo pipefail -c '
-              APK_DIR="$GITHUB_WORKSPACE/dist/apk"
-              echo "Workspace: $GITHUB_WORKSPACE"
-              echo "Downloaded artifact contents:"
-              find "$APK_DIR" -maxdepth 4 -type f -print
-              APK="$(find "$APK_DIR" -type f -name "*.apk" -print -quit)"
-              if [ -z "$APK" ]; then
-                echo "APK not found under $APK_DIR"
-                exit 1
-              fi
-              echo "Installing $APK"
-              adb install "$APK"
-              curl -Ls "https://get.maestro.mobile.dev" | bash
-              export PATH="$HOME/.maestro/bin:$PATH"
-              maestro --version
-              maestro test .maestro/smoke.yaml
-            '
+            APK="$(find "$GITHUB_WORKSPACE/dist/apk" -type f -name '*.apk' -print -quit)"; test -n "$APK"; adb install "$APK"; curl -Ls "https://get.maestro.mobile.dev" | bash; export PATH="$HOME/.maestro/bin:$PATH"; maestro --version; maestro test .maestro/smoke.yaml
 
   mobsf:
     name: MobSF Android security scan
