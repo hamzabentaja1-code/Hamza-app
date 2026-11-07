@@ -24,7 +24,7 @@ test('customer and supplier cards expose real phone and WhatsApp actions',()=>{
  assert.match(app,/x\.phone\?\.trim\(\)\|\|x\.email\?\.trim\(\)/);
  assert.match(app,/openContactChannel\(c\.email\|\|'','email'\)/);
  assert.match(app,/openContactChannel\(x\.email\|\|'','email'\)/);
- assert.match(app,/openContactChannel\(value:string,channel:'whatsapp'\|'call'\|'email'\)/);
+ assert.match(app,/openContactChannel\\(value:string,channel:ContactChannel\\)/);
 });
 
 test('customer and supplier extended identifiers and email fields persist through create and edit flows',()=>{
