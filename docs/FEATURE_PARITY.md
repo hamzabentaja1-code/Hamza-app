@@ -75,7 +75,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Customer price groups support named active/disabled groups, 0–90% discounts, customer assignment, automatic quote-line pricing, and preservation of the group discount when configured invoice prices override quote prices
 - [x] Multiple custom fields can be entered at contact creation as name=value lines; saved customer/supplier image attachments render thumbnails and can be removed individually
 - [x] Edit existing customer/supplier details, opening balance, credit limit, payment terms, customer price group and multiple custom fields; add/remove up to eight image attachments after creation and open thumbnails in full-screen preview
-- [ ] Attach non-image documents (PDF and other files) to existing customer/supplier records
+- [x] Attach validated PDF, DOC/DOCX, XLS/XLSX, TXT and CSV documents to existing customer/supplier records; enforce an 8-file per-contact cap and 4 MB per-document picker limit, persist base64 content in local contact data/JSON backups, allow removal and sharing, and keep document entries out of image previews (tests/contact-extensions.test.cjs)
 
 ### Sales documents
 - [x] Basic multi-product quotes with conversion to invoices and delivery notes; duplicate conversion is prevented
