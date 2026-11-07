@@ -1,6 +1,6 @@
 import React, {useMemo, useState} from 'react';
 import {Alert, ScrollView, StyleSheet, View} from 'react-native';
-import {TText as Text, TTextInput as TextInput} from './i18n';
+import {TText as Text, TTextInput as TextInput, LanguageContext, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 import {ContactInteraction, ContactType, ContactInteractionKind, filterContactInteractions} from './domain/contact-history';
 
@@ -23,6 +23,9 @@ const kinds: Array<{id:ContactInteractionKind; label:string}> = [
 ];
 
 export default function ContactHistoryWorkspace({customers,suppliers,entries,onAdd,onDelete}:Props) {
+  const language = React.useContext(LanguageContext);
+  const t = (value:string) => translateText(value, language) || value;
+  const showAlert = (title:string, message:string, buttons?:Array<{text?:string;style?:'default'|'cancel'|'destructive';onPress?:()=>void}>) => Alert.alert(t(title), t(message), buttons?.map(button=>({...button,text:button.text?t(button.text):button.text})));
   const [contactType,setContactType] = useState<ContactType>('customer');
   const [contactId,setContactId] = useState('');
   const [kind,setKind] = useState<ContactInteractionKind>('call');
@@ -35,7 +38,7 @@ export default function ContactHistoryWorkspace({customers,suppliers,entries,onA
   );
   const add = () => {
     if (!selectedContact || summary.trim().length < 2) {
-      Alert.alert('معلومات غير مكتملة','اختار جهة الاتصال وكتب ملخصاً من حرفين على الأقل.');
+      showAlert('معلومات غير مكتملة','اختار جهة الاتصال وكتب ملخصاً من حرفين على الأقل.');
       return;
     }
     onAdd({
@@ -48,7 +51,7 @@ export default function ContactHistoryWorkspace({customers,suppliers,entries,onA
     setSummary('');
   };
   const confirmDelete = (entry:ContactInteraction) => {
-    Alert.alert('حذف المتابعة؟','غادي يتحذف هاد السجل فقط.',[
+    showAlert('حذف المتابعة؟','غادي يتحذف هاد السجل فقط.',[
       {text:'إلغاء',style:'cancel'},
       {text:'حذف',style:'destructive',onPress:()=>onDelete(entry.id)},
     ]);
