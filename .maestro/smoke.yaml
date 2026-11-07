@@ -179,7 +179,7 @@ appId: com.hamza.app
 - assertVisible: "Accueil"
 - assertVisible: "Produits"
 - assertVisible: "Point de vente"
-- tapOn: "الرئيسية"
+- tapOn: "Accueil"
 - scrollUntilVisible:
     element:
       text: "Rechercher un module..."
