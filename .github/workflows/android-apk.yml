@@ -17,8 +17,7 @@ concurrency:
 
 jobs:
   build:
-    # APK builds are manual only. Keep CI focused on source checks until all requested features are complete.
-    if: github.event_name == 'workflow_dispatch'
+    # Build only on explicit manual dispatch or a deliberate update to this workflow file.
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
