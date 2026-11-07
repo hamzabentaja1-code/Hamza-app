@@ -81,10 +81,17 @@ export default function ChequeWorkspace({cheques,events,bankAccounts,onAdd,onTra
         <Text style={s.meta}>{cheque.direction==='incoming'?'وارد':'صادر'} • {labels[cheque.status]} • {money(cheque.amountCentimes)}</Text>
         <Text style={s.meta}>تاريخ الشيك: {cheque.issueDate}{cheque.dueDate?' • الاستحقاق: '+cheque.dueDate:''}</Text>
         {cheque.notes?<Text style={s.meta}>{cheque.notes}</Text>:null}
-        {actions(cheque).map(next=><AccessiblePressable key={next} onPress={()=>transition(cheque,next)} style={s.action}><Text style={s.actionText}>{next==='deposited'?'إيداع':next==='cleared'?'تأكيد التحصيل / الأداء':next==='bounced'?'تسجيل رفض الشيك':'إلغاء الشيك'}</Text></AccessiblePressable>)}
+        {actions(cheque).map(next=><AccessiblePressable key={next} onPress={()=>transition(cheque,next)} style={s.action}><Text style={s.actionText}>{next==='deposited'?(cheque.direction==='incoming'?'إيداع الشيك':'تقديم الشيك للبنك'):next==='cleared'?'تأكيد التحصيل / الأداء':next==='bounced'?'تسجيل رفض الشيك':'إلغاء الشيك'}</Text></AccessiblePressable>)}
       </View>
     </View>)}
     {cheques.length===0?<Text style={s.empty}>مازال ما تسجل حتى شيك.</Text>:null}
+    <Text style={s.section}>سجل حركات الشيكات ({events.length})</Text>
+    {events.map(event=>{const cheque=cheques.find(item=>item.id===event.chequeId);return <View key={event.id} style={s.item}>
+      <Text style={s.itemTitle}>{cheque?.number||event.chequeId}</Text>
+      <Text style={s.meta}>{event.date} • {event.from?labels[event.from]:'إنشاء'} → {labels[event.to]}</Text>
+      {event.note?<Text style={s.meta}>{event.note}</Text>:null}
+    </View>;})}
+    {events.length===0?<Text style={s.empty}>مازال ما تسجلات حتى حركة شيك.</Text>:null}
   </ScrollView>;
 }
 
