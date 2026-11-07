@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {SafeAreaView, View, Text as NativeText, Pressable, ScrollView, TextInput as NativeTextInput, StyleSheet, Alert, ActivityIndicator, Share, Image, Modal} from 'react-native';
+import {SafeAreaView, View, Pressable, ScrollView, StyleSheet, Alert, ActivityIndicator, Share, Image, Modal} from 'react-native';
 import {StatusBar} from 'expo-status-bar';
 import {readAppData, writeAppData, createBackup, restoreBackup} from './src/storage';
 import * as Print from 'expo-print';
@@ -136,7 +136,7 @@ export default function App() {
         quote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),
       );
       setDocuments(current=>[result.document,...current]);
-      if(type==='delivery'){const updated=result.updatedProducts as Product[];for(const previous of products){const next=updated.find(p=>p.id===previous.id);const delta=(next?.qty??previous.qty)-previous.qty;if(delta!==0&&!recordInventoryMovement({id:'delivery-'+result.document.id+'-'+previous.id,productId:previous.id,productName:previous.name,kind:'delivery',quantityDelta:delta,date:new Date().toISOString(),sourceId:String(result.document.id)}))return;}setProducts(updated);}
+      if(type==='delivery'){const updated=result.updatedProducts as Product[];try{let nextMovements=inventoryMovements;for(const previous of products){const next=updated.find(p=>p.id===previous.id);const delta=(next?.qty??previous.qty)-previous.qty;if(delta!==0)nextMovements=appendInventoryMovement(nextMovements,{id:'delivery-'+result.document.id+'-'+previous.id,productId:previous.id,productName:previous.name,kind:'delivery',quantityDelta:delta,date:new Date().toISOString(),sourceId:String(result.document.id)});}setInventoryMovements(nextMovements);setProducts(updated);}catch(error){Alert.alert('حركة المخزون',error instanceof Error?error.message:'تعذر تسجيل حركات سند الخروج.');return;}}
       Alert.alert('تم التحويل',type==='invoice'?'تسجلات الفاتورة.':'تسجل سند الخروج وتحدّث المخزون.');
     }catch(error){
       Alert.alert('تعذر التحويل',error instanceof Error?error.message:'وقع خطأ أثناء تحويل العرض.');
