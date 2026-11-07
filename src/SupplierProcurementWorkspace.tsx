@@ -1,5 +1,5 @@
 import React,{useMemo,useState} from 'react';
-import {ScrollView,View} from 'react-native';
+import {ScrollView,View,Alert} from 'react-native';
 import {TText as Text,TTextInput as TextInput} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 import {SupplierPriceRequest,createSupplierPriceRequest,transitionSupplierPriceRequest,recordSupplierPriceOffer,compareSupplierOffers} from './domain/supplier-procurement';
@@ -37,8 +37,10 @@ export default function SupplierProcurementWorkspace({suppliers,products,request
  const send=()=>{if(!selected)return;try{onUpdate(transitionSupplierPriceRequest(selected,'sent'));}catch{}};
  const saveOffer=()=>{
   if(!selected)return;
-  const offerLines=selected.lines.map(line=>{const raw=(prices[String(line.productId)]||'').trim().replace(',','.');const value=Number(raw);if(!raw||!Number.isFinite(value)||value<0)throw new Error('دخل ثمن صحيح لكل منتج.');return {productId:line.productId,unitCostCentimes:Math.round(value*100)};});
-  try{onUpdate(recordSupplierPriceOffer(selected,{id:selected.id+'-'+Date.now(),receivedAt:new Date().toISOString(),lines:offerLines}));setPrices({});}catch{}
+  try{
+   const offerLines=selected.lines.map(line=>{const raw=(prices[String(line.productId)]||'').trim().replace(',','.');const value=Number(raw);if(!raw||!Number.isFinite(value)||value<0)throw new Error('دخل ثمن صحيح لكل منتج.');return {productId:line.productId,unitCostCentimes:Math.round(value*100)};});
+   onUpdate(recordSupplierPriceOffer(selected,{id:selected.id+'-'+Date.now(),receivedAt:new Date().toISOString(),lines:offerLines}));setPrices({});
+  }catch(error){Alert.alert('تعذر حفظ عرض المورد',error instanceof Error?error.message:'راجع أثمان المنتجات.');}
  };
  const action=(label:string,onPress:()=>void,color=gold)=> <AccessiblePressable accessibilityRole="button" onPress={onPress} style={{borderWidth:1,borderColor:color,borderRadius:8,padding:10,marginTop:6,alignItems:'center'}}><Text style={{color,fontWeight:'800'}}>{label}</Text></AccessiblePressable>;
  return <ScrollView keyboardShouldPersistTaps="handled">
