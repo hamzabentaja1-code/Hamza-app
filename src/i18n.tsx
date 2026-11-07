@@ -1267,6 +1267,7 @@ const fr: Record<string, string> = {
   "كل المنتجات": "Tous les produits",
   "آخر المبيعات والمرتجعات": "Ventes récentes et retours",
   "تذكيرات الهاتف": "Rappels du téléphone",
+  "التذكيرات": "Rappels",
   "إشعارات محلية على هذا الهاتف للفواتير غير المؤداة، مستحقات الموردين والمصاريف المتكررة. كتتحدد على الساعة 09:00 من تاريخ الاستحقاق، حسب سماح نظام الهاتف.": "Notifications locales sur ce téléphone pour les factures impayées, les dettes fournisseurs et les dépenses récurrentes. Elles sont prévues à 09 h le jour de l’échéance, selon les autorisations du système.",
   "حالة التذكيرات: ": "État des rappels : ",
   "مفعّلة": "Activés",
