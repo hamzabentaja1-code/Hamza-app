@@ -198,7 +198,7 @@ const fr: Record<string, string> = {
   "مازال ما تسجلات حتى وثيقة من هاد النوع.": "Aucun document de ce type enregistré.",
   "إجمالي المشتريات:": "Total des achats :",
   "إجمالي المصاريف:": "Total des dépenses :",
-  "إجمالي المبيعات:": "Total des ventes :"
+  "إجمالي المبيعات:": "Total des ventes :",
   "زيد منتجات أولاً.": "Ajoutez d’abord des produits.",
   "زيد زبناء أولاً.": "Ajoutez d’abord des clients.",
   "سندات الخروج": "Bons de sortie",
