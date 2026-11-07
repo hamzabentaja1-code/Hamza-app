@@ -467,8 +467,8 @@ export default function App() {
             <TextInput value={orderUnitCost} onChangeText={setOrderUnitCost} keyboardType="decimal-pad" placeholder="ثمن الشراء للوحدة" placeholderTextColor="#888" style={[s.input,s.half]}/>
           </View>
           <TextInput value={orderExpectedDate} onChangeText={setOrderExpectedDate} placeholder="تاريخ التسليم المتوقع (YYYY-MM-DD)" placeholderTextColor="#888" style={s.input}/>
-          <Pressable style={s.secondary} onPress={addOrderDraftLine}><Text style={s.actionText}>إضافة المنتج للأمر</Text></Pressable>
-          {orderDraftLines.map(line=><Text key={line.productId} style={s.itemSub}>{line.productName} × {line.quantity} • {line.unitCost.toFixed(2)} DH <Pressable onPress={()=>setOrderDraftLines(current=>current.filter(x=>x.productId!==line.productId))}><Text style={s.delete}>حذف</Text></Pressable></Text>)}
+          <Pressable style={s.action} onPress={addOrderDraftLine}><Text style={s.actionText}>إضافة المنتج للأمر</Text></Pressable>
+          {orderDraftLines.map(line=><View key={line.productId} style={s.row}><Text style={s.itemSub}>{line.productName} × {line.quantity} • {line.unitCost.toFixed(2)} DH</Text><Pressable onPress={()=>setOrderDraftLines(current=>current.filter(x=>x.productId!==line.productId))}><Text style={s.delete}>حذف</Text></Pressable></View>)}
           <Pressable style={s.action} onPress={createOrder}><Text style={s.actionText}>حفظ أمر الشراء</Text></Pressable>
           <Text style={s.itemSub}>إنشاء الأمر لا يغير المخزون؛ الكمية كتزاد غير من بعد تسجيل الاستلام.</Text>
         </View>
