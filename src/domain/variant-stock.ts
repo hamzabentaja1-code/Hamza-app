@@ -13,7 +13,7 @@ export type ProductVariant = {
 export type VariantStockMovement = {
   id: string;
   variantId: string;
-  kind: 'opening' | 'purchase' | 'sale' | 'return_in' | 'return_out' | 'adjustment';
+  kind: 'opening' | 'purchase' | 'sale' | 'return_in' | 'return_out' | 'adjustment' | 'stock_count';
   quantityDelta: number;
   date: string;
   reference?: string;
@@ -62,9 +62,9 @@ export function applyVariantStockMovement(
   if (!validDate(movement.date) || !Number.isSafeInteger(movement.quantityDelta) || movement.quantityDelta === 0) throw new Error('تاريخ أو كمية حركة النسخة غير صالحة');
   const variant = variants.find(item => item.id === movement.variantId && item.active);
   if (!variant) throw new Error('النسخة غير موجودة أو غير نشطة');
-  if (!['opening','purchase','sale','return_in','return_out','adjustment'].includes(movement.kind)) throw new Error('نوع حركة النسخة غير صالح');
+  if (!['opening','purchase','sale','return_in','return_out','adjustment','stock_count'].includes(movement.kind)) throw new Error('نوع حركة النسخة غير صالح');
   if ((movement.kind === 'sale' || movement.kind === 'return_out') && movement.quantityDelta > 0) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
-  if (!['sale','return_out','adjustment'].includes(movement.kind) && movement.quantityDelta < 0) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
+  if (!['sale','return_out','adjustment','stock_count'].includes(movement.kind) && movement.quantityDelta < 0) throw new Error('اتجاه كمية الحركة لا يطابق نوعها');
   const nextQty = variant.stockQty + movement.quantityDelta;
   if (nextQty < 0) throw new Error('مخزون النسخة غير كافٍ');
   return {
