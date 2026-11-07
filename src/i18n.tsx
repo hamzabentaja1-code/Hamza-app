@@ -732,6 +732,9 @@ const fr: Record<string, string> = {
   " • افتراضي": " • Par défaut",
   "، ": "; ",
 
+  "حقل إدخال": "Champ de saisie",
+  "زر": "Bouton",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
