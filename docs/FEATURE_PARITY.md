@@ -119,7 +119,7 @@ A screen appearing is not proof that its controls work. A module is marked compl
 
 - [x] Shared accessible button semantics, text-derived labels, keyboard focus, disabled state and expanded hit slop
 - [x] Translated accessibility labels for text inputs
-- [x] Selected-state announcements for key product, customer and supplier choices
+- [x] Selected-state announcements for product, customer, supplier, POS payment-method, bank movement-type and bank-transfer destination choices
 - [x] Explicit labels for image previews and language switch
 - [x] Automated static accessibility regression tests cover primary workspaces and shared control wrappers (tests/accessibility.test.cjs)
 - [ ] Manual TalkBack verification in Arabic and French at normal and enlarged font sizes
