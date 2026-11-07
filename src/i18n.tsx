@@ -829,6 +829,11 @@ const fr: Record<string, string> = {
   "مكررة: ": "Doublons : ",
   "استيراد ومطابقة الحركات": "Importer et rapprocher les opérations",
 
+  "استيراد كشف بنكي": "Importation d’un relevé bancaire",
+  " حركات جديدة": " nouvelles opérations",
+  "تعذر استيراد كشف البنك": "Impossible d’importer le relevé bancaire",
+  "راجع صيغة CSV والرصيد.": "Vérifiez le format CSV et le solde.",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
