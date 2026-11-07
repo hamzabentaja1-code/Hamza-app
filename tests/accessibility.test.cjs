@@ -71,3 +71,14 @@ test('main app announces selected states for project, return, expense and paymen
   ];
   for (const pattern of patterns) assert.match(app, pattern);
 });
+
+test('quote and POS removal buttons announce the affected product and action', () => {
+  const quote = read('src/QuoteWorkspace.tsx');
+  assert.match(quote, /accessibilityLabel=\{language===\x27AR\x27\?\x27حذف \x27\+line\.productName:\x27Supprimer \x27\+line\.productName\}/);
+  assert.match(quote, /إزالة هذا المنتج من عرض السعر/);
+  assert.match(quote, /Retirer ce produit du devis/);
+  const pos = read('src/PosWorkspace.tsx');
+  assert.match(pos, /accessibilityLabel=\{language===\x27AR\x27\?\x27حذف \x27\+line\.name:\x27Supprimer \x27\+line\.name\}/);
+  assert.match(pos, /إزالة هذا المنتج من سلة البيع/);
+  assert.match(pos, /Retirer ce produit du panier/);
+});
