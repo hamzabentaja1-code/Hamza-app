@@ -59,7 +59,8 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Cash, payments and banking
 - [ ] Expenses and recurring expenses/categories
-- [ ] Cash registers, opening balance, cash in/out and transfers
+- [x] Basic single-cashbox ledger with opening balance, cash income/expense entries, non-negative balance validation and PDF journal
+- [ ] Multiple cash registers, transfers between cash/bank accounts, cheques, drafts and bank reconciliation
 - [ ] Customer and supplier payments, allocations and balances
 - [ ] Cheques, drafts, unpaid items and due-date tracking
 - [ ] Bank statement import and reconciliation
