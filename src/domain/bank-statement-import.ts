@@ -56,12 +56,17 @@ export function importBankStatement(
  const rows=parseBankStatementCsv(text);
  let movements=existing.slice();let imported=0,matched=0,skipped=0;
  const seen=new Map<string,number>();
+ const existingCounts=new Map<string,number>();
+ const movementKey=(movement:{accountId:string;date:string;kind:string;amountCentimes:number;description:string})=>[
+  movement.accountId,movement.date.slice(0,10),movement.kind,movement.amountCentimes,normalizeDescription(movement.description),
+ ].join('|');
+ for(const movement of existing){const key=movementKey(movement);existingCounts.set(key,(existingCounts.get(key)||0)+1);}
  for(const row of rows){
   const kind=row.amountCentimes>0?'deposit':'withdrawal';
   const amountCentimes=Math.abs(row.amountCentimes);
-  const alreadyMatched=movements.some(m=>m.accountId===accountId&&m.date.slice(0,10)===row.date.slice(0,10)&&m.kind===kind&&m.amountCentimes===amountCentimes&&normalizeDescription(m.description)===normalizeDescription(row.description));
-  if(alreadyMatched){matched++;continue;}
-  const key=[accountId,row.date.slice(0,10),kind,amountCentimes,normalizeDescription(row.description)].join('|');
+  const key=movementKey({accountId,date:row.date,kind,amountCentimes,description:row.description});
+  const availableMatches=existingCounts.get(key)||0;
+  if(availableMatches>0){existingCounts.set(key,availableMatches-1);matched++;continue;}
   const occurrence=(seen.get(key)||0)+1;seen.set(key,occurrence);
   const id='statement-'+key.replace(/[^a-z0-9|.-]/gi,'-')+'-'+occurrence;
   if(movements.some(m=>m.id===id)){skipped++;continue;}
