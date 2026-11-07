@@ -439,3 +439,15 @@ test('user management workspace uses accessible controls and selected-state anno
   assert.match(workspace, /accessibilityState=\{\{selected:/);
   assert.match(workspace, /disabled=\{selected\.role==='owner'\}/);
 });
+
+
+test('POS parked sales can be resumed or deleted and are persisted by the app', () => {
+  const pos = read('src/PosWorkspace.tsx');
+  const app = read('App.tsx');
+  assert.match(pos, /onPark\(currentCart\)/);
+  assert.match(pos, /parkedCarts\.map/);
+  assert.match(pos, /onResume\(item\.id\)/);
+  assert.match(pos, /onDeleteParked\(item\.id\)/);
+  assert.match(app, /parkedPosCarts/);
+  assert.match(app, /parkedPosCarts,activeUserId/);
+});
