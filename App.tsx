@@ -274,7 +274,9 @@ export default function App() {
   const exportCustomerStatement=(customerName:string)=>{
     const invoices=documents.filter(d=>d.type==='invoice'&&d.customerName===customerName);
     const customerPayments=payments.filter(p=>p.customerName===customerName);
+    const openingBalance=customers.find(c=>c.name===customerName)?.openingBalanceCentimes||0;
     const lines=[
+      ...(openingBalance>0?[language==='FR'?`Solde initial dû : ${(openingBalance/100).toFixed(2)} DH`:`دين افتتاحي: ${(openingBalance/100).toFixed(2)} درهم`]:[]),
       ...invoices.map(d=>{const total=Math.round(d.total*100),paid=d.paidCentimes||0;return language==='FR'?`Facture ${d.number} • ${d.date} • Total ${(total/100).toFixed(2)} DH • Payé ${(paid/100).toFixed(2)} DH • Reste ${((total-paid)/100).toFixed(2)} DH`:`فاتورة ${d.number} • ${d.date} • المجموع ${(total/100).toFixed(2)} • المؤدى ${(paid/100).toFixed(2)} • الباقي ${((total-paid)/100).toFixed(2)} درهم`;}),
       ...customerPayments.map(p=>language==='FR'?`Paiement • ${p.date} • ${p.method} • ${p.amount.toFixed(2)} DH${p.documentId?' • Facture '+p.documentId:''}`:`أداء • ${p.date} • ${p.method} • ${p.amount.toFixed(2)} درهم${p.documentId?' • الفاتورة '+p.documentId:''}`),
     ];
@@ -284,7 +286,9 @@ export default function App() {
   const exportSupplierStatement=(supplierName:string)=>{
     const supplierPurchases=purchases.filter(p=>p.supplierName===supplierName);
     const supplierRows=supplierPayments.filter(p=>p.supplierName===supplierName);
+    const openingBalance=suppliers.find(x=>x.name===supplierName)?.openingBalanceCentimes||0;
     const lines=[
+      ...(openingBalance>0?[language==='FR'?`Solde initial dû : ${(openingBalance/100).toFixed(2)} DH`:`دين افتتاحي للمورد: ${(openingBalance/100).toFixed(2)} درهم`]:[]),
       ...supplierPurchases.map(p=>{const total=Math.round(p.total*100),paid=p.paidCentimes||0;return language==='FR'?`Achat ${p.id} • ${p.date} • ${p.productName} × ${p.qty} • Total ${(total/100).toFixed(2)} DH • Payé ${(paid/100).toFixed(2)} DH • Reste ${((total-paid)/100).toFixed(2)} DH`:`شراء ${p.id} • ${p.date} • ${p.productName} × ${p.qty} • المجموع ${(total/100).toFixed(2)} • المؤدى ${(paid/100).toFixed(2)} • الباقي ${((total-paid)/100).toFixed(2)} درهم`;}),
       ...supplierRows.map(p=>language==='FR'?`Paiement • ${p.date} • ${(p.amountCentimes/100).toFixed(2)} DH • Achat ${p.purchaseId}`:`أداء • ${p.date} • ${(p.amountCentimes/100).toFixed(2)} درهم • شراء ${p.purchaseId}`),
     ];
