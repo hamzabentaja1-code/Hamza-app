@@ -159,6 +159,18 @@ appId: com.hamza.app
     direction: DOWN
     timeout: 10000
 - tapOn: "قلب على قسم..."
+- inputText: "الصندوق"
+- tapOn: "الصندوق"
+- assertVisible: "الرصيد الحالي للصندوق"
+- assertVisible: "سجل الصندوق"
+- tapOn: "الرئيسية"
+
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
 - inputText: "النسخ الاحتياطي"
 - tapOn: "النسخ الاحتياطي"
 - assertVisible: "حماية بياناتك"
@@ -251,4 +263,17 @@ appId: com.hamza.app
 - inputText: "المشتريات"
 - tapOn: "Achats"
 - assertVisible: "Historique des paiements fournisseurs"
+- tapOn: "Accueil"
+
+# French: cash register labels are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "الصندوق"
+- tapOn: "Caisse"
+- assertVisible: "Solde actuel de la caisse"
+- assertVisible: "Journal de caisse"
 - tapOn: "Accueil"
