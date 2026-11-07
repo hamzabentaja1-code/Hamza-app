@@ -43,6 +43,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Basic customer and supplier profiles with phone, address and ICE
 - [ ] Extended company identifiers (RC/IF) and contact communication history
 - [x] Customer and supplier opening balances, credit ceilings and payment-term metadata
+- [x] Enforce customer credit ceiling when converting a quote to an invoice; calculate and show invoice due dates from payment terms
 - [x] Basic customer/supplier statement PDF exports from invoices, purchases and recorded payments
 - [ ] Attachments, contacts, custom fields, price groups
 
@@ -65,6 +66,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Expenses with optional category, project association, PDF receipt and delete confirmation
 - [ ] Recurring expense schedules and category dictionaries
 - [x] Basic single-cashbox ledger with opening balance, cash income/expense entries, non-negative balance validation and PDF journal
+- [x] Cash POS checkouts are posted into the cash register ledger
 - [ ] Multiple cash registers, transfers between cash/bank accounts, cheques, drafts and bank reconciliation
 - [ ] Customer and supplier payments, allocations and balances
 - [ ] Cheques, drafts, unpaid items and due-date tracking
