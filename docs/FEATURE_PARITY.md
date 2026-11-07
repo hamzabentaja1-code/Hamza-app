@@ -18,6 +18,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Arabic/French complete localization, language persistence, theme
 - [ ] Numbering series, document templates, custom fields
 - [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
+- [x] Serialized local-storage writes to prevent overlapping state saves from overwriting newer snapshots
 - [ ] Automated scheduled backups and encrypted backup files
 
 ### Products and inventory
@@ -25,12 +26,14 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Single product photo: choose, replace, remove, preview, and persist in local product data
 - [x] Product name search and product edit flow
 - [ ] Categories, brands, units, variants
-- [x] Basic product purchase cost, sale price, unit margin and estimated stock margin
+- [x] Product purchase cost, sale price and unit margin when cost is recorded
+- [x] Weighted average cost updates on purchases when the previous stock cost is known
+- [x] Sale-time cost snapshots and tested gross-profit calculation; legacy sales without a cost are excluded
 - [ ] Separate price rules for quotes/orders vs invoices
 - [ ] HT/TTC display mode and configurable tax rules where required
 - [ ] Stock tracking separately for delivery notes and invoices
 - [ ] Multiple warehouses/sites, transfers, stock counts, stock movements and audit
-- [ ] Bulk import/export, image/name search, saved product catalog
+- [x] Bulk paste import and CSV export, image/name/reference/barcode search, saved product catalog
 
 ### Contacts
 - [ ] Customer and supplier profiles with phone/WhatsApp, address, ICE/RC/IF
