@@ -294,7 +294,13 @@ const fr: Record<string, string> = {
   "البريد الإلكتروني": "E-mail",
   "العنوان": "Adresse",
   "البنك": "Banque",
-  "معلومات الشركة كتتحفظ تلقائياً وكتظهر فوثائق PDF.": "Les informations de l’entreprise sont enregistrées automatiquement et apparaissent sur les documents PDF."
+  "معلومات الشركة كتتحفظ تلقائياً وكتظهر فوثائق PDF.": "Les informations de l’entreprise sont enregistrées automatiquement et apparaissent sur les documents PDF.",
+  "العلامة التجارية (اختياري)": "Marque (facultatif)",
+  "الوحدة (اختياري)": "Unité (facultatif)",
+  "الموديل / النسخة (اختياري)": "Modèle / variante (facultatif)",
+  "العلامة: ": "Marque : ",
+  "الوحدة: ": "Unité : ",
+  "الموديل: ": "Modèle : "
 };
 
 export function translate(language: AppLanguage, value: string): string {
