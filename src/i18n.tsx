@@ -834,6 +834,11 @@ const fr: Record<string, string> = {
   "تعذر استيراد كشف البنك": "Impossible d’importer le relevé bancaire",
   "راجع صيغة CSV والرصيد.": "Vérifiez le format CSV et le solde.",
 
+  "منتج مخزني": "Article en stock",
+  "خدمة بدون مخزون": "Service sans stock",
+  "مخزون متبقٍ": "Stock restant",
+  "فرغ مخزون المنتج قبل تحويله إلى خدمة.": "Épuisez le stock du produit avant de le convertir en service.",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
