@@ -286,3 +286,8 @@ test('stock count screen and movement labels have French translations', () => {
     'إرجاع زبون', 'إلغاء مرتجع', 'استلام تحويل', 'تحويل صادر', 'تعديل',
   ]) assert.ok(translations.includes('"' + label + '"'), 'missing French translation for ' + label);
 });
+
+test('changing the active warehouse clears stale stock-count form values', () => {
+  const app = read('App.tsx');
+  assert.match(app, /useEffect\(\(\)=>\{setStockCountProduct\(''\);setStockCountQuantity\(''\);setStockCountNote\(''\);\},\[activeWarehouseId\]\)/);
+});
