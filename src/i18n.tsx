@@ -5,6 +5,15 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "حركة مخزون النسخة": "Mouvement de stock de variante",
+  "تعذر تسجيل حركة النسخة.": "Impossible d’enregistrer le mouvement de variante.",
+  "فالنسخة المختارة": "dans la variante sélectionnée",
+  "فالمخزن النشط": "dans l’entrepôt actif",
+  "بيع مباشر": "Vente directe",
+  "شراء من المورد ": "Achat auprès du fournisseur ",
+  "بيع نقطة البيع": "Vente au point de vente",
+  "ثمن المنتج": "Prix du produit",
+  "راجع بيانات النسخة.": "Vérifiez les données de la variante.",
   "اختار النسخة (المقاس / اللون)": "Choisissez la variante (taille / couleur)",
   "اختار النسخة": "Choisir la variante",
   "هاد المنتج عندو تنويعات. اختار المقاس أو اللون قبل البيع.": "Ce produit a des variantes. Choisissez la taille ou la couleur avant la vente.",
