@@ -9,7 +9,7 @@ export function applyInvoicePriceRules<T extends QuoteForPricing>(quote:T,produc
   if(!Number.isFinite(line.qty)||line.qty<=0||!Number.isFinite(line.unitPrice)||line.unitPrice<0||!Number.isFinite(line.total)||line.total<0)
    throw new Error('سطر العرض يحتوي على كمية أو ثمن غير صالح');
   const product=products.find(item=>item.id===line.productId);
-  const unitPrice=line.variantId||product?.invoicePrice===undefined?line.unitPrice:product.invoicePrice;
+  const unitPrice=line.variantId?line.unitPrice:(product?.invoicePrice===undefined?line.unitPrice:product.invoicePrice);
   if(!Number.isFinite(unitPrice)||unitPrice<0)throw new Error('ثمن الفاتورة غير صالح للمنتج '+line.productName);
   const grossOld=Math.round(line.qty*line.unitPrice*100);
   const oldTotal=Math.round(line.total*100);
