@@ -29,6 +29,9 @@ type Props = {
   onDelete:(id:number)=>void;
   onPdf:(title:string, customerName:string, lines:string[], total:number)=>void;
   onConvert:(quote:QuoteRecord,type:QuoteConversionType)=>void;
+  onScanBarcode:()=>void;
+  scannedBarcode:string;
+  onBarcodeConsumed:()=>void;
 };
 
 const gold='#D6AE55';
@@ -39,7 +42,7 @@ const choice={borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marg
 const active={borderColor:gold,backgroundColor:'#302819'};
 const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
-export default function QuoteWorkspace({products,variants,customers,priceGroups,quotes,quotePrefix,onSave,onUpdate,onDelete,onPdf,onConvert}:Props) {
+export default function QuoteWorkspace({products,variants,customers,priceGroups,quotes,quotePrefix,onSave,onUpdate,onDelete,onPdf,onConvert,onScanBarcode,scannedBarcode,onBarcodeConsumed}:Props) {
   const language=useContext(LanguageContext);
  const showAlert = (...args: Parameters<typeof Alert.alert>) => {
   const [title, message, buttons, options] = args;
@@ -73,6 +76,15 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
   const filteredCustomers=customers.filter(c=>c.name.toLocaleLowerCase().includes(customerSearch.trim().toLocaleLowerCase()));
   const productQuery=productSearch.trim().toLocaleLowerCase();
   const filteredProducts=products.filter(p=>[p.name,p.reference||'',p.barcode||''].some(value=>value.toLocaleLowerCase().includes(productQuery)));
+  useEffect(()=>{
+    if(!scannedBarcode)return;
+    const code=scannedBarcode.trim().toLocaleLowerCase();
+    const found=products.find(product=>product.barcode?.trim().toLocaleLowerCase()===code||product.reference?.trim().toLocaleLowerCase()===code);
+    if(found){setProductId(String(found.id));setVariantId('');setProductSearch(found.name);setCustomPrice(found.quotePrice===undefined?found.price.toFixed(2):found.quotePrice.toFixed(2));}
+    else{setProductSearch(scannedBarcode);showAlert('منتج غير موجود','ما لقيناش منتج بالباركود أو المرجع: '+scannedBarcode);}
+    onBarcodeConsumed();
+  },[scannedBarcode,products]);
+
 
   const calculation=useMemo(()=>{
     if(!lines.length) return null;
@@ -158,7 +170,10 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
       {filteredCustomers.map(c=><Pressable key={c.id} accessibilityState={{selected:customerId===String(c.id)}} onPress={()=>{setCustomerId(String(c.id));const group=priceGroups.find(item=>item.id===c.priceGroupId&&item.active);if(selectedProduct){const base=selectedVariant?.salePriceCentimes===undefined?(selectedProduct.quotePrice??selectedProduct.price):selectedVariant.salePriceCentimes/100;setCustomPrice(priceForContactGroup(base,group).toFixed(2));}}} style={[choice,customerId===String(c.id)&&active]}><Text style={{color:'#FFF',fontWeight:'700'}}>{c.name}{c.priceGroupId?' • '+(priceGroups.find(group=>group.id===c.priceGroupId)?.name||'مجموعة'):''}</Text></Pressable>)}
       {customers.length===0&&<Text style={{color:'#999',padding:8}}>زيد زبون أولاً من قسم الزبناء.</Text>}
       <Text style={{color:'#CCC',marginVertical:8}}>المنتج</Text>
-      <TextInput value={productSearch} onChangeText={setProductSearch} placeholder="بحث عن المنتج بالاسم أو المرجع أو الباركود" placeholderTextColor="#888" style={input}/>
+      <View style={{flexDirection:'row',gap:8}}>
+        <TextInput value={productSearch} onChangeText={setProductSearch} placeholder="بحث عن المنتج بالاسم أو المرجع أو الباركود" placeholderTextColor="#888" style={[input,{flex:1}]}/>
+        <Pressable accessibilityRole="button" accessibilityLabel="مسح باركود المنتج" onPress={onScanBarcode} style={[button,{marginTop:0,justifyContent:'center'}]}><Text style={{color:'#151515',fontWeight:'900'}}>▦</Text></Pressable>
+      </View>
       {filteredProducts.map(p=><Pressable key={p.id} accessibilityState={{selected:productId===String(p.id)}} onPress={()=>{setProductId(String(p.id));setVariantId('');setCustomPrice(priceForContactGroup(p.quotePrice??p.price,selectedPriceGroup).toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text>{p.reference||p.barcode?<Text style={{color:'#AAA',fontSize:12,marginTop:3}}>{[p.reference?'مرجع: '+p.reference:'',p.barcode?'باركود: '+p.barcode:''].filter(Boolean).join(' • ')}</Text>:null}</Pressable>)}
       {products.length===0&&<Text style={{color:'#999',padding:8}}>زيد المنتجات أولاً.</Text>}
       {selectedVariants.length>0&&<><Text style={{color:'#CCC',marginVertical:7}}>اختار النسخة (المقاس / اللون)</Text>{selectedVariants.map(v=><Pressable key={v.id} accessibilityState={{selected:variantId===v.id}} onPress={()=>{setVariantId(v.id);setCustomPrice(priceForContactGroup(v.salePriceCentimes===undefined?(selectedProduct?.quotePrice??selectedProduct?.price??0):v.salePriceCentimes/100,selectedPriceGroup).toFixed(2));}} style={[choice,variantId===v.id&&active]}><Text style={{color:'#FFF'}}>{Object.values(v.attributes).join(' / ')} • المخزون: {v.stockQty} • {v.salePriceCentimes===undefined?(selectedProduct?.price??0).toFixed(2):(v.salePriceCentimes/100).toFixed(2)} DH</Text></Pressable>)}</>}
