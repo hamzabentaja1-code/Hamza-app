@@ -129,6 +129,7 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
   };
   const save=()=>{
     if(!selectedCustomer){showAlert('اختار الزبون','خاصك تحدد الزبون قبل الحفظ.');return;}
+    if(!lines.some(line=>line.lineType!=='section')){showAlert('العرض فارغ','زيد منتجاً أو رسماً إضافياً قبل حفظ العرض.');return;}
     if(!calculation){showAlert('راجع العرض','زيد منتج واحد على الأقل وتأكد من التخفيض.');return;}
     if(validUntil&&!/^\d{4}-\d{2}-\d{2}$/.test(validUntil)){showAlert('تاريخ غير صالح','استعمل صيغة YYYY-MM-DD لتاريخ انتهاء العرض.');return;}
     if(validUntil&&validUntil<new Date().toISOString().slice(0,10)){showAlert('تاريخ غير صالح','تاريخ انتهاء العرض خاصو يكون اليوم أو تاريخ فالمستقبل.');return;}
