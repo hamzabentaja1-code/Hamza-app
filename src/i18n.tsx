@@ -1148,7 +1148,7 @@ const fr: Record<string, string> = {
   "الحقول المخصصة — كل سطر الاسم=القيمة": "Champs personnalisés — une ligne par nom=valeur",
   "الصور المرفقة": "Images jointes",
   "+ إضافة صورة أخرى (حتى 8 صور)": "+ Ajouter une autre image (jusqu’à 8)",
-  "معاينة الصورة ": "Aperçu de l’image "
+  "معاينة الصورة ": "Aperçu de l’image ",
   "راجع الاسم والرصيد وسقف الدين وأجل الأداء.": "Vérifiez le nom, le solde initial, le plafond de crédit et le délai de paiement.",
   "تعذر إضافة الصورة": "Impossible d’ajouter l’image",
   "راجع الصورة أو الحد الأقصى للمرفقات.": "Vérifiez l’image ou la limite de pièces jointes.",
