@@ -525,3 +525,11 @@ test('product CSV exports separate rows with variant-specific prices and stock',
   assert.match(app, /v\.stockQty/);
   assert.match(app, /Variant status/);
 });
+
+
+test('variants with stock cannot be archived and restored stocked variants are reactivated', () => {
+  const app = read('App.tsx');
+  assert.match(app, /if\(!active&&variant&&variant\.stockQty>0\)/);
+  assert.match(app, /normalizeProductVariants\(d\.productVariants\)/);
+  assert.match(app, /movement\.quantityDelta>0\?\{\.\.\.v,active:true\}:v/);
+});
