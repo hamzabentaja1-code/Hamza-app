@@ -51,3 +51,25 @@ test('rejects corrupted expected delivery dates in saved orders',()=>{
  const invalid={...order(),expectedDate:'not-a-date'};
  assert.throws(()=>receivePurchaseOrder(invalid,{date:'2026-11-07',lines:[{productId:10,quantity:1}]}),/غير صالح/);
 });
+
+
+test('purchase orders keep two variants of one product as separate receipt lines',()=>{
+ const value=createPurchaseOrder({id:77,supplierName:'Supplier B',createdAt:'2026-11-07T09:00:00.000Z',lines:[
+  {productId:10,productName:'T-shirt',variantId:'blue-xl',variantLabel:'Blue / XL',quantity:5,unitCost:30},
+  {productId:10,productName:'T-shirt',variantId:'red-m',variantLabel:'Red / M',quantity:3,unitCost:28},
+ ]});
+ assert.equal(value.lines.length,2);
+ const first=receivePurchaseOrder(value,{date:'2026-11-07T10:00:00.000Z',lines:[{productId:10,variantId:'blue-xl',quantity:2}]});
+ assert.equal(first.order.lines[0].receivedQuantity,2);
+ assert.equal(first.order.lines[1].receivedQuantity,0);
+ const second=receivePurchaseOrder(first.order,{date:'2026-11-08T10:00:00.000Z',lines:[{productId:10,variantId:'red-m',quantity:3}]});
+ assert.equal(second.order.lines[0].receivedQuantity,2);
+ assert.equal(second.order.lines[1].receivedQuantity,3);
+});
+
+test('purchase order rejects a receipt for the wrong variant',()=>{
+ const value=createPurchaseOrder({id:78,supplierName:'Supplier B',createdAt:'2026-11-07',lines:[
+  {productId:10,productName:'T-shirt',variantId:'blue-xl',quantity:5,unitCost:30},
+ ]});
+ assert.throws(()=>receivePurchaseOrder(value,{date:'2026-11-07',lines:[{productId:10,variantId:'red-m',quantity:1}]}),/غير موجودة/);
+});
