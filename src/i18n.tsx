@@ -941,6 +941,9 @@ const fr: Record<string, string> = {
   "خصائص النسخة فيها أسماء مكررة": "Les attributs de la variante contiennent des noms en double",
   "باركود النسخة مسجل من قبل": "Le code-barres de cette variante existe déjà",
   "نوع حركة النسخة غير صالح": "Type de mouvement de variante invalide",
+  "الفواتير الأولية": "Factures pro forma",
+  "بادئة الفاتورة الأولية — PRO": "Préfixe des factures pro forma — PRO",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
