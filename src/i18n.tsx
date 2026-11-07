@@ -1057,6 +1057,9 @@ const fr: Record<string, string> = {
   "مخصص": "Personnalisé",
   "ما عندكش الصلاحية": "Accès refusé",
   "هاد القسم ما مسموحش للحساب الحالي.": "Ce module n’est pas autorisé pour le compte actuel.",
+  "تبديل المستخدم": "Changer d’utilisateur",
+  "اختار الحساب اللي غادي تستعمل دابا.": "Choisissez le compte à utiliser maintenant.",
+  "المستخدم": "Utilisateur",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
