@@ -7,6 +7,8 @@ export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
   "إنشاء طلب عرض أثمان": "Créer une demande de devis fournisseur",
+  "تأكيد إرسال الطلب": "Confirmer l’envoi de la demande",
+  " • التسليم ": " • livraison ",
   "تحديث طلب عرض أثمان": "Mettre à jour une demande de prix fournisseur",
   "تعذر حفظ عرض المورد": "Impossible d’enregistrer l’offre du fournisseur",
   "راجع أثمان المنتجات.": "Vérifiez les prix des produits.",
