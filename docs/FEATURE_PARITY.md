@@ -65,7 +65,8 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Contacts
 - [x] Basic customer and supplier profiles with phone, address and ICE
 - [x] Company ICE, RC and IF fields appear in branded PDF documents
-- [ ] Contact communication history and extended identifiers on customer/supplier records
+- [x] Contact communication history for customer/supplier calls, messages, meetings and notes, with per-contact filtering, deletion, activity attribution and backup restore
+- [ ] Extended contact identifiers and external communication integrations on customer/supplier records
 - [x] Customer and supplier opening balances, credit ceilings and payment-term metadata
 - [x] Enforce customer credit ceiling when converting a quote to an invoice; calculate and show invoice due dates from payment terms
 - [x] Basic customer/supplier statement PDF exports from invoices, purchases and recorded payments
