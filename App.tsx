@@ -672,6 +672,7 @@ export default function App() {
       for(const line of deliveredLines){
         if(line.trackStock===false)continue;
         if(line.variantId){const variant=productVariants.find(item=>item.id===line.variantId&&item.productId===line.productId&&item.active);if(!variant||variant.stockQty<line.qty)throw new Error('المخزون غير كافٍ للنسخة '+(line.variantLabel||line.productName));}
+        else if(productVariants.some(item=>item.productId===line.productId))throw new Error('خاصك تختار نسخة المنتج قبل التسليم: '+line.productName);
         else if(inventoryBalanceForWarehouse(inventoryMovements,line.productId,activeWarehouseId)<line.qty)throw new Error('المخزون غير كافٍ للمنتج '+line.productName);
       }
       const date=new Date().toISOString();
