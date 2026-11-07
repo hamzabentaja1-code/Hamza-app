@@ -2,6 +2,11 @@ name: Build HamZa Android APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - feature/accurate-profit-tracking
+    paths:
+      - .github/workflows/android-apk.yml
 
 permissions:
   contents: read
