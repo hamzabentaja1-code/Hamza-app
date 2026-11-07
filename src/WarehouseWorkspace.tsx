@@ -20,6 +20,15 @@ type Props = {
 const GOLD='#D6AE55';
 export default function WarehouseWorkspace({warehouses,movements,products,activeWarehouseId,onSelectWarehouse,onAddWarehouse,onTransfer}:Props){
   const language=useContext(LanguageContext);
+ const showAlert = (...args: Parameters<typeof Alert.alert>) => {
+  const [title, message, buttons, options] = args;
+  const translatedButtons = buttons?.map(button => ({
+   ...button,
+   text: button.text ? (translateText(button.text, language) || button.text) : button.text,
+  }));
+  Alert.alert(translateText(title, language) || title, translateText(message, language) || message, translatedButtons, options);
+ };
+
   const t=(value:string)=>translateText(value,language)||value;
   const [name,setName]=useState('');
   const [productId,setProductId]=useState('');
@@ -29,16 +38,16 @@ export default function WarehouseWorkspace({warehouses,movements,products,active
   const active=warehouses.find(w=>w.id===activeWarehouseId);
   const addWarehouse=()=>{
     const clean=name.trim();
-    if(!clean){Alert.alert(t('معلومات ناقصة'),t('دخل اسم المخزن.'));return;}
-    if(warehouses.some(w=>w.name.trim().toLocaleLowerCase()===clean.toLocaleLowerCase())){Alert.alert(t('مخزن موجود'),t('هاد الاسم مستعمل من قبل.'));return;}
+    if(!clean){showAlert(t('معلومات ناقصة'),t('دخل اسم المخزن.'));return;}
+    if(warehouses.some(w=>w.name.trim().toLocaleLowerCase()===clean.toLocaleLowerCase())){showAlert(t('مخزن موجود'),t('هاد الاسم مستعمل من قبل.'));return;}
     onAddWarehouse({id:'warehouse-'+Date.now(),name:clean});
     setName('');
   };
   const submitTransfer=()=>{
     const product=products.find(p=>String(p.id)===productId);
     const amount=Number(quantity);
-    if(!product||!destinationId){Alert.alert(t('معلومات ناقصة'),t('اختار المنتج ومخزن الوجهة.'));return;}
-    if(!Number.isSafeInteger(amount)||amount<1){Alert.alert(t('كمية غير صالحة'),t('دخل كمية صحيحة أكبر من صفر.'));return;}
+    if(!product||!destinationId){showAlert(t('معلومات ناقصة'),t('اختار المنتج ومخزن الوجهة.'));return;}
+    if(!Number.isSafeInteger(amount)||amount<1){showAlert(t('كمية غير صالحة'),t('دخل كمية صحيحة أكبر من صفر.'));return;}
     const saved=onTransfer({id:'transfer-'+Date.now(),productId:product.id,quantity:amount,fromWarehouseId:activeWarehouseId,toWarehouseId:destinationId,date:new Date().toISOString(),note:note.trim()||undefined,unitCost:product.costPrice});
     if(saved){setProductId('');setDestinationId('');setQuantity('1');setNote('');}
   };
