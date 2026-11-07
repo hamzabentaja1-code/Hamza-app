@@ -2,13 +2,17 @@ import React,{useMemo,useState} from 'react';
 import {View,StyleSheet} from 'react-native';
 import {TText as Text,TTextInput as TextInput} from './i18n';
 import {buildPeriodReport,DatedAmount} from './domain/period-report';
+import {buildMonthlyTrend,buildSupplierPurchaseComparison} from './domain/report-analytics';
 const GOLD='#D6AE55';
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const monthStart=()=>today().slice(0,8)+'01';
 const money=(v:number)=>(Number.isFinite(v)?v:0).toFixed(2)+' DH';
-export default function PeriodReportWorkspace({sales,salesReturns,purchases,supplierReturns,expenses}:{sales:DatedAmount[];salesReturns:DatedAmount[];purchases:DatedAmount[];supplierReturns:DatedAmount[];expenses:DatedAmount[]}){
+export default function PeriodReportWorkspace({sales,salesReturns,purchases,supplierReturns,expenses,purchaseRows,supplierReturnRows}:{sales:DatedAmount[];salesReturns:DatedAmount[];purchases:DatedAmount[];supplierReturns:DatedAmount[];expenses:DatedAmount[];purchaseRows:{date:string;supplierName:string;amount:number}[];supplierReturnRows:{date:string;supplierName:string;amount:number}[]}){
  const [fromDate,setFromDate]=useState(monthStart());const [toDate,setToDate]=useState(today());
  const report=useMemo(()=>{try{return {data:buildPeriodReport({sales,salesReturns,purchases,supplierReturns,expenses,fromDate,toDate}),error:''};}catch(error){return {data:null,error:error instanceof Error?error.message:'فترة غير صالحة'};}},[sales,salesReturns,purchases,supplierReturns,expenses,fromDate,toDate]);
+ const analytics=useMemo(()=>{try{return {trend:buildMonthlyTrend({sales,salesReturns,purchases,supplierReturns,expenses,fromDate,toDate}),suppliers:buildSupplierPurchaseComparison(purchaseRows,supplierReturnRows,fromDate,toDate),error:''};}catch(error){return {trend:[],suppliers:[],error:error instanceof Error?error.message:'تعذر تحليل الموردين'};}},[sales,salesReturns,purchases,supplierReturns,expenses,purchaseRows,supplierReturnRows,fromDate,toDate]);
+ const maxMonthly=Math.max(1,...analytics.trend.flatMap(row=>[row.sales,row.purchases]));
+ const maxSupplier=Math.max(1,...analytics.suppliers.map(row=>row.netPurchases));
  const metrics=report.data?[
   {label:'المبيعات الإجمالية',key:'salesGross' as const},
   {label:'مرتجعات الزبناء',key:'salesReturns' as const},
@@ -32,8 +36,24 @@ export default function PeriodReportWorkspace({sales,salesReturns,purchases,supp
     <View style={styles.row}><View style={{flex:1}}><Text style={styles.value}>{money(current)}</Text><Text style={styles.note}>الحالية</Text></View><View style={{flex:1}}><Text style={styles.previous}>{money(previous)}</Text><Text style={styles.note}>السابقة</Text></View><View style={{flex:1}}><Text style={[styles.value,{color:difference>=0?'#73C99A':'#E28A78'}]}>{difference>=0?'+':''}{money(difference)}</Text><Text style={styles.note}>الفرق</Text></View></View>
    </View>})}
    <Text style={styles.note}>المؤشر التشغيلي الأولي = صافي المبيعات − صافي المشتريات − المصاريف. ليس ربحاً محاسبياً نهائياً ولا يشمل كل التكاليف والضرائب.</Text>
+   <Text style={styles.section}>الاتجاه الشهري</Text>
+   {analytics.trend.map(row=><View key={row.month} style={styles.metric}>
+    <Text style={styles.label}>{row.month}</Text>
+    <Text style={styles.note}>المبيعات: {money(row.sales)} • المشتريات: {money(row.purchases)}</Text>
+    <View style={styles.track}><View style={[styles.bar,{width:(row.sales/maxMonthly*100)+'%'}]}/></View>
+    <View style={styles.track}><View style={[styles.purchaseBar,{width:(row.purchases/maxMonthly*100)+'%'}]}/></View>
+    <Text style={styles.note}>مرتجعات المبيعات: {money(row.salesReturns)} • مرتجعات الموردين: {money(row.supplierReturns)} • المصاريف: {money(row.expenses)}</Text>
+   </View>)}
+   <Text style={styles.section}>مقارنة الموردين حسب صافي المشتريات</Text>
+   {analytics.suppliers.map(row=><View key={row.supplierName} style={styles.metric}>
+    <Text style={styles.label}>{row.supplierName}</Text>
+    <Text style={styles.value}>{money(row.netPurchases)}</Text>
+    <View style={styles.track}><View style={[styles.purchaseBar,{width:(Math.max(0,row.netPurchases)/maxSupplier*100)+'%'}]}/></View>
+    <Text style={styles.note}>عدد المشتريات: {row.purchaseCount} • الإجمالي: {money(row.grossPurchases)} • المرتجعات: {money(row.returns)}</Text>
+   </View>)}
+   {analytics.suppliers.length===0?<Text style={styles.note}>لا توجد مشتريات موردين في الفترة المحددة.</Text>:null}
    {report.data.unparsedDates>0&&<Text style={styles.warning}>تعذر تحليل تاريخ {report.data.unparsedDates} حركة قديمة؛ لم تدخل في الفترة.</Text>}
   </>}
  </View>;
 }
-const styles=StyleSheet.create({panel:{backgroundColor:'#1B1B1B',padding:16,borderRadius:14,borderWidth:1,borderColor:'#444'},title:{color:GOLD,fontSize:19,fontWeight:'800',marginBottom:12},input:{backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRadius:9,padding:12,color:'#FFF',marginBottom:9,textAlign:'right'},note:{color:'#BBB',fontSize:12,marginVertical:4},section:{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:9},metric:{backgroundColor:'#1B1B1B',borderWidth:1,borderColor:'#333',borderRadius:10,padding:12,marginBottom:8},label:{color:'#FFF',fontWeight:'700'},row:{flexDirection:'row',gap:8,marginTop:8},value:{color:GOLD,fontSize:15,fontWeight:'900'},previous:{color:'#BBB',fontSize:14,fontWeight:'800'},error:{color:'#E28A78'},warning:{color:'#E7B66A',marginTop:8}});
+const styles=StyleSheet.create({panel:{backgroundColor:'#1B1B1B',padding:16,borderRadius:14,borderWidth:1,borderColor:'#444'},title:{color:GOLD,fontSize:19,fontWeight:'800',marginBottom:12},input:{backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRadius:9,padding:12,color:'#FFF',marginBottom:9,textAlign:'right'},note:{color:'#BBB',fontSize:12,marginVertical:4},section:{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:9},metric:{backgroundColor:'#1B1B1B',borderWidth:1,borderColor:'#333',borderRadius:10,padding:12,marginBottom:8},label:{color:'#FFF',fontWeight:'700'},row:{flexDirection:'row',gap:8,marginTop:8},value:{color:GOLD,fontSize:15,fontWeight:'900'},previous:{color:'#BBB',fontSize:14,fontWeight:'800'},error:{color:'#E28A78'},warning:{color:'#E7B66A',marginTop:8},track:{height:7,backgroundColor:'#333',borderRadius:5,overflow:'hidden',marginTop:5},bar:{height:7,backgroundColor:GOLD,borderRadius:5},purchaseBar:{height:7,backgroundColor:'#4D9D82',borderRadius:5}});
