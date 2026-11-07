@@ -162,3 +162,16 @@ test('primary screens have no untranslated static Arabic labels', () => {
     }
   }
 });
+
+test('all primary workflow alerts and confirmation buttons respect the selected language', () => {
+  for (const file of ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx',
+    'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx',
+    'src/RecurringExpensesWorkspace.tsx']) {
+    const source = read(file);
+    assert.match(source, /const showAlert = \(\.\.\.args: Parameters<typeof Alert\.alert>\)/,
+      file + ' must define the translated alert wrapper');
+    assert.equal((source.match(/Alert\.alert\(/g) || []).length, 1,
+      file + ' must call native Alert only inside the translation wrapper');
+    assert.match(source, /showAlert\(/, file + ' must route alerts through the translation wrapper');
+  }
+});
