@@ -7,7 +7,7 @@ import {TText as Text, TTextInput as TextInput, LanguageContext, translateText} 
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
-type Product = {id:number; name:string; price:number; qty:number; kind?:'product'|'service'; quotePrice?:number; invoicePrice?:number};
+type Product = {id:number; name:string; price:number; qty:number; kind?:'product'|'service'; quotePrice?:number; invoicePrice?:number;reference?:string;barcode?:string};
 type ProductVariant = {id:string;productId:number;attributes:Record<string,string>;stockQty:number;salePriceCentimes?:number;active:boolean};
 type Customer = {id:number; name:string; priceGroupId?:string};
 export type QuoteLine = {productId:number; productName:string; qty:number; unitPrice:number; total:number; trackStock?:boolean; variantId?:string; variantLabel?:string};
@@ -68,7 +68,8 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
   const selectedVariants=selectedProduct?variants.filter(v=>v.productId===selectedProduct.id&&v.active):[];
   const selectedVariant=selectedVariants.find(v=>v.id===variantId);
   const filteredCustomers=customers.filter(c=>c.name.toLocaleLowerCase().includes(customerSearch.trim().toLocaleLowerCase()));
-  const filteredProducts=products.filter(p=>p.name.toLocaleLowerCase().includes(productSearch.trim().toLocaleLowerCase()));
+  const productQuery=productSearch.trim().toLocaleLowerCase();
+  const filteredProducts=products.filter(p=>[p.name,p.reference||'',p.barcode||''].some(value=>value.toLocaleLowerCase().includes(productQuery)));
 
   const calculation=useMemo(()=>{
     if(!lines.length) return null;
@@ -138,8 +139,8 @@ export default function QuoteWorkspace({products,variants,customers,priceGroups,
       {filteredCustomers.map(c=><Pressable key={c.id} accessibilityState={{selected:customerId===String(c.id)}} onPress={()=>{setCustomerId(String(c.id));const group=priceGroups.find(item=>item.id===c.priceGroupId&&item.active);if(selectedProduct){const base=selectedVariant?.salePriceCentimes===undefined?(selectedProduct.quotePrice??selectedProduct.price):selectedVariant.salePriceCentimes/100;setCustomPrice(priceForContactGroup(base,group).toFixed(2));}}} style={[choice,customerId===String(c.id)&&active]}><Text style={{color:'#FFF',fontWeight:'700'}}>{c.name}{c.priceGroupId?' • '+(priceGroups.find(group=>group.id===c.priceGroupId)?.name||'مجموعة'):''}</Text></Pressable>)}
       {customers.length===0&&<Text style={{color:'#999',padding:8}}>زيد زبون أولاً من قسم الزبناء.</Text>}
       <Text style={{color:'#CCC',marginVertical:8}}>المنتج</Text>
-      <TextInput value={productSearch} onChangeText={setProductSearch} placeholder="بحث عن المنتج بالاسم" placeholderTextColor="#888" style={input}/>
-      {filteredProducts.map(p=><Pressable key={p.id} accessibilityState={{selected:productId===String(p.id)}} onPress={()=>{setProductId(String(p.id));setVariantId('');setCustomPrice(priceForContactGroup(p.quotePrice??p.price,selectedPriceGroup).toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text></Pressable>)}
+      <TextInput value={productSearch} onChangeText={setProductSearch} placeholder="بحث عن المنتج بالاسم أو المرجع أو الباركود" placeholderTextColor="#888" style={input}/>
+      {filteredProducts.map(p=><Pressable key={p.id} accessibilityState={{selected:productId===String(p.id)}} onPress={()=>{setProductId(String(p.id));setVariantId('');setCustomPrice(priceForContactGroup(p.quotePrice??p.price,selectedPriceGroup).toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text>{p.reference||p.barcode?<Text style={{color:'#AAA',fontSize:12,marginTop:3}}>{[p.reference?'مرجع: '+p.reference:'',p.barcode?'باركود: '+p.barcode:''].filter(Boolean).join(' • ')}</Text>:null}</Pressable>)}
       {products.length===0&&<Text style={{color:'#999',padding:8}}>زيد المنتجات أولاً.</Text>}
       {selectedVariants.length>0&&<><Text style={{color:'#CCC',marginVertical:7}}>اختار النسخة (المقاس / اللون)</Text>{selectedVariants.map(v=><Pressable key={v.id} accessibilityState={{selected:variantId===v.id}} onPress={()=>{setVariantId(v.id);setCustomPrice(priceForContactGroup(v.salePriceCentimes===undefined?(selectedProduct?.quotePrice??selectedProduct?.price??0):v.salePriceCentimes/100,selectedPriceGroup).toFixed(2));}} style={[choice,variantId===v.id&&active]}><Text style={{color:'#FFF'}}>{Object.values(v.attributes).join(' / ')} • المخزون: {v.stockQty} • {v.salePriceCentimes===undefined?(selectedProduct?.price??0).toFixed(2):(v.salePriceCentimes/100).toFixed(2)} DH</Text></Pressable>)}</>}
       {selectedProduct&&hasVariants&&selectedVariants.length===0?<Text style={{color:'#E28A78',padding:8}}>ما كايناش نسخ نشطة لهذا المنتج.</Text>:null}
