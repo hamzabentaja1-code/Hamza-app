@@ -1,7 +1,7 @@
-import React, {useMemo, useState} from 'react';
+import React, {useContext, useMemo, useState} from 'react';
 import {Alert, Image, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
 import {addPosLine, emptyPosCart, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
-import {TText as Text, TTextInput as TextInput} from './i18n';
+import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
@@ -17,6 +17,7 @@ const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
 export default function PosWorkspace({products,customers,onCheckout}:Props){
+  const language:AppLanguage=useContext(LanguageContext);
   const [term,setTerm]=useState('');
   const [customerId,setCustomerId]=useState('');
   const [method,setMethod]=useState<'cash'|'card'|'transfer'>('cash');
@@ -63,9 +64,9 @@ export default function PosWorkspace({products,customers,onCheckout}:Props){
         return <View key={line.productId} style={{paddingVertical:10,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:8}}>
           {product?.photoData?<Image source={{uri:product.photoData}} style={{width:42,height:42,borderRadius:7}}/>:null}
           <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{line.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{money(line.unitPrice)} × {line.quantity}</Text></View>
-          <Pressable onPress={()=>changeQty(line.productId,-1)} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>−</Text></Pressable>
+          <Pressable accessibilityLabel={language==='AR'?'إنقاص كمية '+line.name:'Diminuer la quantité de '+line.name} onPress={()=>changeQty(line.productId,-1)} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>−</Text></Pressable>
           <Text style={{color:'#FFF'}}>{line.quantity}</Text>
-          <Pressable onPress={()=>{const p=mapped.find(x=>x.id===line.productId);if(p)add(p);}} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>+</Text></Pressable>
+          <Pressable accessibilityLabel={language==='AR'?'زيادة كمية '+line.name:'Augmenter la quantité de '+line.name} onPress={()=>{const p=mapped.find(x=>x.id===line.productId);if(p)add(p);}} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>+</Text></Pressable>
           <Pressable onPress={()=>remove(line.productId)} style={{padding:5}}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
         </View>;
       })}
