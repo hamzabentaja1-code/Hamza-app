@@ -45,7 +45,7 @@ export function calculateSupplierBalances(
   }
   for (const item of returns) {
     const name = item.supplierName.trim();
-    if (!name || !Number.isSafeInteger(item.amountCentimes) || item.amountCentimes <= 0) {
+    if (!name || !Number.isSafeInteger(item.amountCentimes) || item.amountCentimes < 0) {
       throw new Error('مرتجع المورد غير صالح');
     }
     const current = balances.get(name) ?? {
