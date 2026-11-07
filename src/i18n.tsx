@@ -1142,6 +1142,7 @@ const fr: Record<string, string> = {
   "معلومات سجل التواصل غير صالحة": "Les informations de suivi sont invalides",
   "تعذر اختيار الصورة": "Impossible de sélectionner l’image",
   "حذف المرفق ": "Supprimer la pièce jointe ",
+  " يوم": " jour",
   "حذف الصورة": "Supprimer l’image",
   "الاسم=القيمة (كل حقل في سطر)": "Nom=valeur (un champ par ligne)",
   "اكتب كل حقل بهذا الشكل: الاسم=القيمة": "Saisissez chaque champ sous la forme : nom=valeur",
