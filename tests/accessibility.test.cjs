@@ -206,3 +206,12 @@ test('customer payment screen offers automatic allocation across open invoices',
   assert.match(app, /توزيع تلقائي على جميع الفواتير المستحقة/);
   assert.match(allocation, /sort\(\(a,b\)=>a\.document\.id-b\.document\.id\)/);
 });
+
+test('period report exports monthly trends and supplier comparison in PDF', () => {
+  const screen = read('src/PeriodReportWorkspace.tsx');
+  const app = read('App.tsx');
+  assert.match(screen, /onExportPdf\('Rapport de période/);
+  assert.match(screen, /analytics\.trend\.map/);
+  assert.match(screen, /analytics\.suppliers\.map/);
+  assert.match(app, /onExportPdf=\{\(title,lines\)=>exportPdf\(title,'',lines,0,false\)\}/);
+});
