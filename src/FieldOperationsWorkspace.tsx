@@ -26,13 +26,13 @@ export default function FieldOperationsWorkspace({technicians,equipment,orders,t
   onAddEquipment({id:'equipment-'+Date.now(),name:equipmentName.trim(),reference:equipmentRef.trim()||undefined,serialNumber:equipmentSerial.trim()||undefined,status:'available'});setEquipmentName('');setEquipmentRef('');setEquipmentSerial('');
  };
  const createOrder=()=>{const customer=customers.find(x=>String(x.id)===orderCustomer);if(!customer||!orderTitle.trim()){Alert.alert(t('معلومات ناقصة'),t('اختار الزبون ودخل عنوان أمر العمل.'));return;}
-  const now=new Date().toISOString();const scheduledAt=orderDate.trim()?new Date(orderDate).toISOString():undefined;
+  if(orderDate.trim()&&!Number.isFinite(Date.parse(orderDate))){Alert.alert(t('تاريخ غير صالح'),t('تاريخ أمر العمل غير صالح'));return;}const now=new Date().toISOString();const scheduledAt=orderDate.trim()?new Date(orderDate).toISOString():undefined;
   try{const order=createWorkOrder({id:'work-order-'+Date.now(),number:'WO-'+Date.now(),title:orderTitle.trim(),customerName:customer.name,projectId:orderProject?Number(orderProject):undefined,description:orderDescription.trim(),status:scheduledAt?'scheduled':'requested',priority:'normal',scheduledAt,technicianId:orderTechnician||undefined,equipmentIds:selectedEquipment,createdAt:now},technicians,equipment);onCreateOrder(order);setOrderTitle('');setOrderCustomer('');setOrderProject('');setOrderTechnician('');setOrderDate('');setOrderDescription('');setSelectedEquipment([]);}
   catch(error){Alert.alert(t('أمر العمل'),error instanceof Error?(t(error.message)||error.message):t('تعذر إنشاء أمر العمل.'));}
  };
  const changeStatus=(order:WorkOrder,next:WorkOrder['status'])=>{try{onChangeOrder(transitionWorkOrderStatus(order,next));}catch(error){Alert.alert(t('حالة أمر العمل'),error instanceof Error?(t(error.message)||error.message):t('انتقال الحالة غير مسموح.'));}};
  const addTime=()=>{const order=orders.find(x=>x.id===timeOrder);const technician=technicians.find(x=>x.id===timeTechnician);const hours=Number(timeHours.replace(',','.'));if(!order||!technician){Alert.alert(t('معلومات ناقصة'),t('اختار أمر العمل والتقني.'));return;}
-  try{const entry=createWorkTimeEntry({id:'work-time-'+Date.now(),workOrderId:order.id,technicianId:technician.id,date:new Date(timeDate).toISOString(),hours,hourlyRate:technician.hourlyRate,notes:timeNote.trim()||undefined},order,technician);onAddTimeEntry(entry);setTimeHours('');setTimeNote('');}
+  if(!Number.isFinite(Date.parse(timeDate))){Alert.alert(t('تاريخ غير صالح'),t('تاريخ وساعات العمل غير صالحة'));return;}try{const entry=createWorkTimeEntry({id:'work-time-'+Date.now(),workOrderId:order.id,technicianId:technician.id,date:new Date(timeDate).toISOString(),hours,hourlyRate:technician.hourlyRate,notes:timeNote.trim()||undefined},order,technician);onAddTimeEntry(entry);setTimeHours('');setTimeNote('');}
   catch(error){Alert.alert(t('ساعات العمل'),error instanceof Error?(t(error.message)||error.message):t('تعذر تسجيل ساعات العمل.'));}
  };
  return <View>
