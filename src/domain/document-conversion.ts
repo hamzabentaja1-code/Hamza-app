@@ -43,6 +43,7 @@ export function convertQuote(
   products:StockProduct[],
   id:number,
   date:string,
+  documentNumber?:string,
 ):ConversionResult {
   if(documents.some(d=>d.sourceQuoteId===quote.id&&d.type===type)) {
     throw new Error('This quote has already been converted to this document type');
@@ -71,7 +72,7 @@ export function convertQuote(
   }];
   const document:ConvertedDocument={
     id,
-    number:(type==='invoice'?'FAC-':'BL-')+id,
+    number:documentNumber||((type==='invoice'?'FAC-':'BL-')+id),
     type,
     customerName:quote.customerName,
     total:quote.total,
