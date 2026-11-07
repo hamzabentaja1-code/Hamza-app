@@ -938,6 +938,9 @@ const fr: Record<string, string> = {
   "حركة المخزون مسجلة من قبل أو معرفها غير صالح": "Ce mouvement est déjà enregistré ou son identifiant est invalide",
   "النسخة غير موجودة أو غير نشطة": "La variante est introuvable ou inactive",
 
+  "خصائص النسخة فيها أسماء مكررة": "Les attributs de la variante contiennent des noms en double",
+  "باركود النسخة مسجل من قبل": "Le code-barres de cette variante existe déjà",
+  "نوع حركة النسخة غير صالح": "Type de mouvement de variante invalide",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
