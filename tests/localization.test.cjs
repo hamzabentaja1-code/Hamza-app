@@ -140,3 +140,22 @@ test('all Arabic alert titles and messages in primary workspaces have French tra
     }
   }
 });
+
+test('all static Arabic fragments inside primary-workspace template messages have French translations',()=>{
+ const dictionarySource=fs.readFileSync(path.join(__dirname,'..','src','i18n.tsx'),'utf8');
+ const entries=[...dictionarySource.matchAll(/^\s*"((?:\\.|[^"\\])*)"\s*:\s*"((?:\\.|[^"\\])*)"/gm)];
+ const actualDictionary={};
+ for(const entry of entries){actualDictionary[JSON.parse('"'+entry[1]+'"')]=JSON.parse('"'+entry[2]+'"');}
+ const files=['App.tsx','src/QuoteWorkspace.tsx','src/PosWorkspace.tsx','src/WarehouseWorkspace.tsx','src/BankWorkspace.tsx','src/FieldOperationsWorkspace.tsx','src/RecurringExpensesWorkspace.tsx','src/AgendaWorkspace.tsx','src/PeriodReportWorkspace.tsx','src/ChequeWorkspace.tsx','src/VariantWorkspace.tsx','src/UserAccessWorkspace.tsx','src/ContactHistoryWorkspace.tsx'];
+ for(const file of files){
+  const source=fs.readFileSync(path.join(__dirname,'..',file),'utf8');
+  for(const template of source.matchAll(/`([^`]+)`/g)){
+   for(const segment of template[1].split(/\$\{[^}]*\}/g)){
+    const value=segment.trim();
+    if(!/[\u0600-\u06FF]/.test(value))continue;
+    const translated=translateWithDictionary(value,'FR',actualDictionary)||'';
+    assert.doesNotMatch(translated,/[\u0600-\u06FF]/,file+' has an untranslated dynamic message fragment: '+value);
+   }
+  }
+ }
+});
