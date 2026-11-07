@@ -72,10 +72,15 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Recurring expense schedules and category dictionaries
 - [x] Basic single-cashbox ledger with opening balance, cash income/expense entries, non-negative balance validation and PDF journal
 - [x] Cash POS checkouts are posted into the cash register ledger
-- [ ] Multiple cash registers, transfers between cash/bank accounts, cheques, drafts and bank reconciliation
+- [x] Multiple bank accounts with opening balances, deposits, withdrawals and account-level balances
+- [x] Atomic internal bank transfers with paired entries, duplicate/overdraft protection and unchanged combined bank balance
+- [x] Bank account reconciliation against a statement balance with an auditable adjustment and reconciliation history
+- [x] POS card and bank-transfer sales are posted to the selected bank account; checkout validates the account before committing stock and payment ledgers
+- [ ] Cash-to-bank transfers, cheque/draft lifecycle and bank statement file import
 - [x] Partial customer invoice payments and supplier purchase payments with centime-safe allocation and balance recalculation
 - [ ] Payment across multiple invoices/purchases, cheques, drafts, unpaid items and automated due-date reminders
-- [ ] Bank statement import and reconciliation
+- [x] Manual statement-balance reconciliation with stored difference and adjustment entry
+- [ ] Bank statement file import and automatic transaction matching
 
 ### POS
 - [x] Product name search and stock-aware cart with quantity controls
