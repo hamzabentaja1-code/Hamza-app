@@ -372,3 +372,13 @@ test('PDFs use TTC-only by default and allow optional HT/TVA/TTC breakdown', () 
     assert.ok(dictionary.includes('"'+label+'"'), 'missing French cheque translation: '+label);
   }
 });
+
+test('quotes track expiry and accepted/rejected lifecycle with safe deletion', () => {
+  const quote = read('src/QuoteWorkspace.tsx');
+  const app = read('App.tsx');
+  assert.match(quote, /validUntil\?:string/);
+  assert.match(quote, /onUpdate\(\{\.\.\.q,status:'مقبول'\}\)/);
+  assert.match(quote, /onUpdate\(\{\.\.\.q,status:'مرفوض'\}\)/);
+  assert.match(quote, /ما يمكنش تحويل عرض مرفوض أو منتهي/);
+  assert.match(app, /onDelete=\{\(id\)=>\{const quote=quotes\.find/);
+});
