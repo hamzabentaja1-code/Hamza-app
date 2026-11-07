@@ -17,6 +17,8 @@ appId: com.hamza.app
 - inputText: "المنتجات"
 - tapOn: "المنتجات"
 - assertVisible: "إضافة منتج جديد"
+- assertVisible: "الماركة (اختياري)"
+- assertVisible: "الوحدة (قطعة، متر...)"
 - tapOn: "الرئيسية"
 
 - scrollUntilVisible:
@@ -228,6 +230,8 @@ appId: com.hamza.app
 - inputText: "المنتجات"
 - tapOn: "Produits"
 - assertVisible: "Ajouter un produit"
+- assertVisible: "Marque (facultatif)"
+- assertVisible: "Unité (pièce, mètre...)"
 - tapOn: "Accueil"
 
 # French: projects and tasks are translated.
