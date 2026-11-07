@@ -769,6 +769,20 @@ const fr: Record<string, string> = {
 
   "تصدير التقرير PDF": "Exporter le rapport en PDF",
 
+  "نقل": "Transport",
+  "مواد": "Matériaux",
+  "أكل": "Repas",
+  "كراء": "Loyer",
+  "اتصالات": "Télécommunications",
+  "أخرى": "Autres",
+  "حفظ تصنيف جديد": "Enregistrer une nouvelle catégorie",
+  "تصنيف ناقص": "Catégorie manquante",
+  "دخل اسم التصنيف أولاً.": "Saisissez d’abord le nom de la catégorie.",
+  "التصنيف موجود": "Catégorie déjà existante",
+  "هاد التصنيف مسجل من قبل.": "Cette catégorie existe déjà.",
+  "تم حفظ التصنيف": "Catégorie enregistrée",
+  "تزاد التصنيف للقائمة.": "La catégorie a été ajoutée à la liste.",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
