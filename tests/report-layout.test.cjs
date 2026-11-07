@@ -26,7 +26,7 @@ test('report workspace applies selected sections to visible output and PDF CSV X
  assert.match(workspace,/layout\.supplierComparison\?/);
  assert.match(workspace,/layout\.comparison\?/);
  assert.match(workspace,/onLayoutChange\(togglePeriodReportLayout\(layout,item\.key\)\)/);
- assert.match(app,/reportLayout,reportLayout\}\)/);
+ assert.match(app,/writeAppData\(\{[\s\S]*?contactInteractions,priceGroups,reportLayout\}\)/);
  assert.match(app,/setReportLayout\(normalizePeriodReportLayout\(d\.reportLayout\)\)/);
  assert.match(app,/layout=\{reportLayout\} onLayoutChange=\{setReportLayout\}/);
  assert.match(app,/createBackup\(\{[\s\S]*?reportLayout\}/);
