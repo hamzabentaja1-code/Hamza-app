@@ -154,3 +154,20 @@ test('warehouse balance helper returns each requested warehouse with its balance
     {warehouseId:'warehouse-b',warehouseName:'B',quantity:0},
   ]);
 });
+
+
+test('warehouse-tagged movements enforce stock per warehouse while preserving aggregate quantity', () => {
+  const initial = [createProductVariant(variant({id:'v-warehouse',sku:'SKU-WH',barcode:'WH-1',stockQty:5}))];
+  const opening = {id:'wh-open',variantId:'v-warehouse',kind:'opening',quantityDelta:5,date:'2026-11-01',warehouseId:'warehouse-a'};
+  const sold = applyVariantStockMovement(initial,opening);
+  assert.equal(sold.variants[0].stockQty,10);
+  const sale = applyVariantStockMovement(sold.variants,{id:'wh-sale',variantId:'v-warehouse',kind:'sale',quantityDelta:-3,date:'2026-11-02',warehouseId:'warehouse-a'},[opening]);
+  assert.equal(sale.variants[0].stockQty,7);
+  assert.throws(()=>applyVariantStockMovement(sale.variants,{id:'wh-over',variantId:'v-warehouse',kind:'sale',quantityDelta:-1,date:'2026-11-03',warehouseId:'warehouse-b'},[opening,{...sale.movement}]),/مخزون النسخة غير كافٍ في هذا المخزن/);
+});
+
+test('legacy variants with no movement history retain their opening balance in the default warehouse', () => {
+  const initial=[createProductVariant(variant({id:'v-legacy',sku:'SKU-LEGACY',barcode:'WH-LEGACY',stockQty:4}))];
+  const result=applyVariantStockMovement(initial,{id:'legacy-sale',variantId:'v-legacy',kind:'sale',quantityDelta:-2,date:'2026-11-07',warehouseId:DEFAULT_VARIANT_WAREHOUSE_ID});
+  assert.equal(result.variants[0].stockQty,2);
+});
