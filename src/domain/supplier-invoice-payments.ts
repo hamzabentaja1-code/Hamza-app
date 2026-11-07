@@ -7,6 +7,7 @@ export type SupplierInvoicePayment = {
   date: string;
   method: SupplierInvoicePaymentMethod;
   reference?: string;
+  bankAccountId?: string;
 };
 export type SupplierInvoicePaymentSummary = {
   invoiceId: string;
@@ -30,6 +31,7 @@ export function summarizeSupplierInvoicePayments(
       !Number.isSafeInteger(payment.amountCentimes)||payment.amountCentimes<=0||!validDate(payment.date)||
       !['cash','bank','cheque'].includes(payment.method)||
       (payment.method==='cheque'&&!payment.reference?.trim())||
+      (payment.method==='bank'&&!payment.bankAccountId?.trim())||
       (payment.reference!==undefined&&typeof payment.reference!=='string'))
       throw new Error('بيانات أداء فاتورة المورد غير صالحة أو مكررة');
     ids.add(payment.id);paidCentimes+=payment.amountCentimes;
