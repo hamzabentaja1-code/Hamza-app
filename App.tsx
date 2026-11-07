@@ -53,7 +53,7 @@ type Customer = {id:number; name:string; phone?:string; address?:string; ice?:st
 type Sale = {id:number; productId?:number; productName:string; customerName:string; qty:number; unitPrice:number; total:number; date:string; paymentMethod?:string; discount?:number; costPrice?:number; warehouseId?:string};
 type SalesReturn = {id:number; saleId:number; productId?:number; productName:string; customerName:string; qty:number; unitPrice:number; total:number; costPrice?:number; date:string; reason:string; restocked:boolean; warehouseId?:string};
 type Purchase = {id:number; productId?:number; productName:string; supplierName:string; qty:number; unitCost:number; total:number; date:string; paidCentimes?:number; returnedCentimes?:number; purchaseOrderId?:number; warehouseId?:string};
-type SupplierPayment = {id:number; purchaseId:number; supplierName:string; amountCentimes:number; method:string; date:string; note:string};
+type SupplierPayment = {id:number; purchaseId:number; supplierName:string; amountCentimes:number; method:string; date:string; note:string; bankAccountId?:string};
 type Expense = {id:number; title:string; amount:number; date:string; projectId?:number; category?:string};
 type Supplier = {id:number; name:string; phone?:string; address?:string; ice?:string; openingBalanceCentimes?:number; creditLimitCentimes?:number; paymentTermsDays?:number};
 type Quote = QuoteRecord;
@@ -99,7 +99,7 @@ export default function App() {
   const [stockCountProduct,setStockCountProduct]=useState(''); const [stockCountQuantity,setStockCountQuantity]=useState(''); const [stockCountNote,setStockCountNote]=useState('');
   const [quoteProduct,setQuoteProduct]=useState(''); const [quoteCustomer,setQuoteCustomer]=useState(''); const [quoteQty,setQuoteQty]=useState('1');
   const [paymentCustomer,setPaymentCustomer]=useState(''); const [paymentDocument,setPaymentDocument]=useState(''); const [paymentAmount,setPaymentAmount]=useState(''); const [paymentMethod,setPaymentMethod]=useState('نقداً'); const [paymentNote,setPaymentNote]=useState('');
-  const [supplierName,setSupplierName]=useState(''); const [supplierPhone,setSupplierPhone]=useState(''); const [supplierAddress,setSupplierAddress]=useState(''); const [supplierIce,setSupplierIce]=useState(''); const [supplierOpeningBalance,setSupplierOpeningBalance]=useState(''); const [supplierCreditLimit,setSupplierCreditLimit]=useState(''); const [supplierPaymentTerms,setSupplierPaymentTerms]=useState(''); const [purchaseProduct,setPurchaseProduct]=useState(''); const [purchaseSupplier,setPurchaseSupplier]=useState(''); const [purchaseQty,setPurchaseQty]=useState('1'); const [purchaseCost,setPurchaseCost]=useState(''); const [supplierPaymentPurchaseId,setSupplierPaymentPurchaseId]=useState<number|null>(null); const [supplierPaymentAmount,setSupplierPaymentAmount]=useState(''); const [supplierReturnPurchaseId,setSupplierReturnPurchaseId]=useState<number|null>(null); const [supplierReturnQuantity,setSupplierReturnQuantity]=useState('1'); const [supplierReturnReason,setSupplierReturnReason]=useState(''); const [orderSupplierId,setOrderSupplierId]=useState(''); const [orderProductId,setOrderProductId]=useState(''); const [orderQuantity,setOrderQuantity]=useState('1'); const [orderUnitCost,setOrderUnitCost]=useState(''); const [orderExpectedDate,setOrderExpectedDate]=useState(''); const [orderDraftLines,setOrderDraftLines]=useState<PurchaseOrder['lines']>([]); const [receivingOrderId,setReceivingOrderId]=useState<number|null>(null); const [receivingProductId,setReceivingProductId]=useState<number|null>(null); const [receivingQuantity,setReceivingQuantity]=useState('1'); const [expenseTitle,setExpenseTitle]=useState(''); const [expenseAmount,setExpenseAmount]=useState(''); const [expenseCategory,setExpenseCategory]=useState(''); const [expenseProjectId,setExpenseProjectId]=useState('');
+  const [supplierName,setSupplierName]=useState(''); const [supplierPhone,setSupplierPhone]=useState(''); const [supplierAddress,setSupplierAddress]=useState(''); const [supplierIce,setSupplierIce]=useState(''); const [supplierOpeningBalance,setSupplierOpeningBalance]=useState(''); const [supplierCreditLimit,setSupplierCreditLimit]=useState(''); const [supplierPaymentTerms,setSupplierPaymentTerms]=useState(''); const [purchaseProduct,setPurchaseProduct]=useState(''); const [purchaseSupplier,setPurchaseSupplier]=useState(''); const [purchaseQty,setPurchaseQty]=useState('1'); const [purchaseCost,setPurchaseCost]=useState(''); const [supplierPaymentPurchaseId,setSupplierPaymentPurchaseId]=useState<number|null>(null); const [supplierPaymentAmount,setSupplierPaymentAmount]=useState(''); const [supplierPaymentMethod,setSupplierPaymentMethod]=useState('نقداً'); const [supplierReturnPurchaseId,setSupplierReturnPurchaseId]=useState<number|null>(null); const [supplierReturnQuantity,setSupplierReturnQuantity]=useState('1'); const [supplierReturnReason,setSupplierReturnReason]=useState(''); const [orderSupplierId,setOrderSupplierId]=useState(''); const [orderProductId,setOrderProductId]=useState(''); const [orderQuantity,setOrderQuantity]=useState('1'); const [orderUnitCost,setOrderUnitCost]=useState(''); const [orderExpectedDate,setOrderExpectedDate]=useState(''); const [orderDraftLines,setOrderDraftLines]=useState<PurchaseOrder['lines']>([]); const [receivingOrderId,setReceivingOrderId]=useState<number|null>(null); const [receivingProductId,setReceivingProductId]=useState<number|null>(null); const [receivingQuantity,setReceivingQuantity]=useState('1'); const [expenseTitle,setExpenseTitle]=useState(''); const [expenseAmount,setExpenseAmount]=useState(''); const [expenseCategory,setExpenseCategory]=useState(''); const [expenseProjectId,setExpenseProjectId]=useState('');
   const [loaded,setLoaded]=useState(false); const [backupText,setBackupText]=useState(''); const [backupBusy,setBackupBusy]=useState(false);
   const [productBulkText,setProductBulkText]=useState('');
   const [name,setName]=useState(''); const [price,setPrice]=useState(''); const [costPrice,setCostPrice]=useState(''); const [qty,setQty]=useState(''); const [productReference,setProductReference]=useState(''); const [productBarcode,setProductBarcode]=useState(''); const [productCategory,setProductCategory]=useState(''); const [productBrand,setProductBrand]=useState(''); const [productUnit,setProductUnit]=useState(''); const [productVariant,setProductVariant]=useState(''); const [editingProductId,setEditingProductId]=useState<number|null>(null);
@@ -286,23 +286,46 @@ export default function App() {
     const amount=Number(supplierPaymentAmount.replace(',','.'));
     if(!purchase||!Number.isFinite(amount)||amount<=0){Alert.alert('معلومات ناقصة','دخل مبلغ أداء صحيح.');return;}
     const paymentCentimes=Math.round(amount*100);
+    const paymentId=Date.now();
+    let nextCash=cashMovements;
+    let nextBank=bankMovements;
     try{
       const allocation=allocateSupplierPayment({...purchase,returnedCentimes:purchase.returnedCentimes||0},paymentCentimes);
-      const payment:SupplierPayment={id:Date.now(),purchaseId,supplierName:purchase.supplierName,amountCentimes:paymentCentimes,method:'نقداً',date:new Date().toLocaleDateString('fr-MA'),note:''};
+      let bankAccountId:string|undefined;
+      if(supplierPaymentMethod==='نقداً'){
+        nextCash=appendCashMovement(nextCash,{id:'supplier-payment-cash-'+paymentId,kind:'cash_out',amountCentimes:paymentCentimes,date:new Date().toISOString(),description:'أداء للمورد: '+purchase.supplierName});
+      }else if(supplierPaymentMethod==='تحويل'){
+        const account=bankAccounts.find(a=>a.id===activeBankAccountId);
+        if(!account)throw new Error('اختار حساباً بنكياً قبل أداء المورد بالتحويل.');
+        bankAccountId=account.id;
+        nextBank=appendBankMovement(nextBank,{id:'supplier-payment-bank-'+paymentId,accountId:account.id,kind:'supplier_payment',amountCentimes:paymentCentimes,date:new Date().toISOString(),description:'تحويل إلى المورد: '+purchase.supplierName});
+      }
+      const payment:SupplierPayment={id:paymentId,purchaseId,supplierName:purchase.supplierName,amountCentimes:paymentCentimes,method:supplierPaymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:'',bankAccountId};
       setPurchases(current=>current.map(x=>x.id===purchaseId?{...x,paidCentimes:allocation.paidCentimes}:x));
       setSupplierPayments(current=>[payment,...current]);
-      setSupplierPaymentAmount('');setSupplierPaymentPurchaseId(null);
+      if(supplierPaymentMethod==='نقداً')setCashMovements(nextCash);
+      if(supplierPaymentMethod==='تحويل')setBankMovements(nextBank);
+      setSupplierPaymentAmount('');setSupplierPaymentPurchaseId(null);setSupplierPaymentMethod('نقداً');
       Alert.alert('تسجل الأداء',`باقي للمورد: ${(allocation.remainingCentimes/100).toFixed(2)} DH`);
-    }catch(error){Alert.alert('تعذر تسجيل الأداء',error instanceof Error?error.message:'راجع مبلغ الأداء.');}
+    }catch(error){Alert.alert('تعذر تسجيل الأداء',error instanceof Error?error.message:'راجع مبلغ الأداء والحساب المختار.');}
   };
   const deleteSupplierPayment=(payment:SupplierPayment)=>{
     const purchase=purchases.find(x=>x.id===payment.purchaseId);
     if(!purchase){Alert.alert('تعذر حذف الأداء','عملية الشراء المرتبطة غير موجودة.');return;}
     try{
       const reversed=reverseSupplierPayment(purchase,payment.amountCentimes);
+      let nextCash=cashMovements;
+      let nextBank=bankMovements;
+      if(payment.method==='نقداً'){
+        nextCash=appendCashMovement(nextCash,{id:'supplier-payment-cash-reversal-'+payment.id,kind:'cash_in',amountCentimes:payment.amountCentimes,date:new Date().toISOString(),description:'عكس أداء المورد: '+payment.supplierName});
+      }else if(payment.method==='تحويل'&&payment.bankAccountId){
+        nextBank=appendBankMovement(nextBank,{id:'supplier-payment-bank-reversal-'+payment.id,accountId:payment.bankAccountId,kind:'deposit',amountCentimes:payment.amountCentimes,date:new Date().toISOString(),description:'عكس تحويل المورد: '+payment.supplierName});
+      }
       setPurchases(current=>current.map(x=>x.id===purchase.id?{...x,paidCentimes:reversed.paidCentimes}:x));
       setSupplierPayments(current=>current.filter(x=>x.id!==payment.id));
-    }catch(error){Alert.alert('تعذر عكس الأداء',error instanceof Error?error.message:'راجع رصيد المورد.');}
+      if(payment.method==='نقداً')setCashMovements(nextCash);
+      if(payment.method==='تحويل')setBankMovements(nextBank);
+    }catch(error){Alert.alert('تعذر عكس الأداء',error instanceof Error?error.message:'راجع رصيد الصندوق أو البنك.');}
   };
   const addSupplierReturn=(purchaseId:number)=>{
     const purchase=purchases.find(x=>x.id===purchaseId);
