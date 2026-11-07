@@ -20,7 +20,8 @@ type Props = {
 const GOLD='#D6AE55';
 export default function WarehouseWorkspace({warehouses,movements,products,activeWarehouseId,onSelectWarehouse,onAddWarehouse,onTransfer}:Props){
   const language=useContext(LanguageContext);
-  const t=(value:string)=>translateText(value,language)||value;\n  const [name,setName]=useState('');
+  const t=(value:string)=>translateText(value,language)||value;
+  const [name,setName]=useState('');
   const [productId,setProductId]=useState('');
   const [destinationId,setDestinationId]=useState('');
   const [quantity,setQuantity]=useState('1');
