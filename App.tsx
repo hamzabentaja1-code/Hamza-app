@@ -684,8 +684,8 @@ export default function App() {
         if(line.variantId){const applied=applyVariantStockMovement(nextVariants,{id:'customer-order-delivery-'+documentId+'-'+index,variantId:line.variantId,kind:'delivery',quantityDelta:-line.qty,date:date.slice(0,10),reference:String(documentId),note:'تسليم طلب '+order.number},nextVariantMovements);nextVariants=applied.variants;nextVariantMovements=[applied.movement,...nextVariantMovements];}
         else nextInventory=appendInventoryMovement(nextInventory,{id:'customer-order-delivery-'+documentId+'-'+index,productId:line.productId,productName:line.productName,kind:'delivery',quantityDelta:-line.qty,date,sourceId:String(documentId),warehouseId:activeWarehouseId});
       }
-      const total=deliveredLines.reduce((sum,line)=>sum+line.qty*line.unitPrice,0);
-      const document:CommercialDocument={id:documentId,number:nextDocumentNumber(companyProfile.deliveryPrefix,documents),type:'delivery',customerName:order.customerName,total,date:new Date().toLocaleDateString('fr-MA'),status:'صادرة',sourceQuoteId:quote.id,lines:deliveredLines.map(line=>({...line,total:line.qty*line.unitPrice}))};
+      const total=Math.round(deliveredLines.reduce((sum,line)=>sum+line.qty*line.unitPrice,0)*100)/100;
+      const document:CommercialDocument={id:documentId,number:nextDocumentNumber(companyProfile.deliveryPrefix,documents),type:'delivery',customerName:order.customerName,total,date:new Date().toLocaleDateString('fr-MA'),status:'صادرة',sourceQuoteId:quote.id,lines:deliveredLines.map(line=>({...line,total:Math.round(line.qty*line.unitPrice*100)/100}))};
       const linkedOrder=linkCustomerOrderDocument(nextOrder,{id:documentId,type:'delivery',sourceOrderId:order.id});
       setCustomerOrders(current=>current.map(item=>item.id===order.id?linkedOrder:item));setDocuments(current=>[document,...current]);setInventoryMovements(nextInventory);
       if(nextVariants!==productVariants){setProductVariants(nextVariants);setVariantStockMovements(nextVariantMovements);}
