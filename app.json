@@ -2,7 +2,7 @@
   "expo": {
     "name": "HamZa",
     "slug": "hamza-app",
-    "version": "0.7.2",
+    "version": "0.8.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "plugins": [
@@ -17,6 +17,12 @@
               "arm64-v8a"
             ]
           }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "السماح لـ HamZa باختيار صور المنتجات من جهازك."
         }
       ]
     ],
