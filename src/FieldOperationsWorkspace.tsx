@@ -108,5 +108,5 @@ const styles=StyleSheet.create({
  action:{marginTop:4,backgroundColor:GOLD,borderRadius:9,padding:13,alignItems:'center'},actionText:{color:'#151515',fontWeight:'900'},
  choice:{borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marginBottom:6},selected:{borderColor:GOLD,backgroundColor:'#302819'},
  section:{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:20,marginBottom:10},order:{backgroundColor:'#1B1B1B',borderRadius:10,padding:13,marginBottom:8,borderWidth:1,borderColor:'#333'},
- row:{flexDirection:'row',gap:8,marginTop:8},smallAction:{backgroundColor:GOLD,borderRadius:7,padding:9,flex:1,alignItems:'center'},smallDanger:{backgroundColor:'#8B3A31',borderRadius:7,padding:9,flex:1,alignItems:'center'},
+ row:{flexDirection:'row',gap:8,marginTop:8},delete:{color:'#E28A78',fontWeight:'700',padding:8},smallAction:{backgroundColor:GOLD,borderRadius:7,padding:9,flex:1,alignItems:'center'},smallDanger:{backgroundColor:'#8B3A31',borderRadius:7,padding:9,flex:1,alignItems:'center'},
 });
