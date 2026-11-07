@@ -7,6 +7,7 @@ const MAX_FIELD_NAME=40;
 const MAX_FIELD_VALUE=240;
 const MAX_ATTACHMENTS=8;
 const MAX_ATTACHMENT_DATA_URI=5_500_000;
+const ALLOWED_CONTACT_MIME_TYPES=new Set(['image/jpeg','image/png','image/webp','application/pdf','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
 
 export function normalizeContactCustomFields(value:unknown):ContactCustomField[]{
  if(!Array.isArray(value))return [];
@@ -61,7 +62,7 @@ export function addContactAttachment(files:ContactAttachment[],file:ContactAttac
  const normalized=normalizeContactAttachments(files);
  if(normalized.length>=MAX_ATTACHMENTS)throw new Error('الحد الأقصى هو 8 صور لكل جهة اتصال');
  if(normalized.some(item=>item.id===file.id))throw new Error('معرف المرفق مكرر');
- if(!normalizeContactAttachments([file]).length)throw new Error('المرفق غير صالح؛ استعمل صورة JPG أو PNG أو WebP');
+ if(!normalizeContactAttachments([file]).length)throw new Error('المرفق غير صالح أو حجمه أكبر من الحد المسموح؛ استعمل JPG أو PNG أو WebP أو PDF أو DOC/DOCX أو XLS/XLSX أو TXT/CSV');
  return [...normalized,file];
 }
 
