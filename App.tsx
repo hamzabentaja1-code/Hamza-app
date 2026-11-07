@@ -184,14 +184,14 @@ export default function App() {
     const imported:Product[]=[];let rejected=0;
     for(const row of dataRows){
       const values=parse(row);
-      const [productName,reference,barcode,category,costText,priceText,qtyText,brand,unit,variant,kindText]=values;
+      const [productName,reference,barcode,category,costText,priceText,quotePriceText,invoicePriceText,qtyText,brand,unit,variant,kindText]=values;
       const number=(value:string|undefined)=>value===undefined||value===''?0:Number(value.replace(',','.').replace(/\s/g,''));
-      const cost=costText===undefined||costText===''?undefined:number(costText),salePrice=number(priceText),quantity=number(qtyText);
-      if(!productName||!priceText||(cost!==undefined&&(!Number.isFinite(cost)||cost<0))||!Number.isFinite(salePrice)||salePrice<0||!Number.isInteger(quantity)||quantity<0){rejected++;continue;}
+      const cost=costText===undefined||costText===''?undefined:number(costText),salePrice=number(priceText),quotePrice=quotePriceText===undefined||quotePriceText===''?undefined:number(quotePriceText),invoicePrice=invoicePriceText===undefined||invoicePriceText===''?undefined:number(invoicePriceText),quantity=number(qtyText);
+      if(!productName||!priceText||(cost!==undefined&&(!Number.isFinite(cost)||cost<0))||(quotePrice!==undefined&&(!Number.isFinite(quotePrice)||quotePrice<0))||(invoicePrice!==undefined&&(!Number.isFinite(invoicePrice)||invoicePrice<0))||!Number.isFinite(salePrice)||salePrice<0||!Number.isInteger(quantity)||quantity<0){rejected++;continue;}
       const ref=(reference||'').toLowerCase(),code=barcode||'';
       if((ref&&seenRefs.has(ref))||(code&&seenBarcodes.has(code))){rejected++;continue;}
       if(ref)seenRefs.add(ref);if(code)seenBarcodes.add(code);
-      const kind=kindText==='service'?'service':'product';if(kind==='service'&&quantity!==0){rejected++;continue;}imported.push({id:Date.now()+imported.length,name:productName,kind,reference:reference||undefined,barcode:barcode||undefined,category:category||undefined,brand:brand||undefined,unit:unit||undefined,variant:variant||undefined,costPrice:cost,price:salePrice,qty:quantity});
+      const kind=kindText==='service'?'service':'product';if(kind==='service'&&quantity!==0){rejected++;continue;}imported.push({id:Date.now()+imported.length,name:productName,kind,reference:reference||undefined,barcode:barcode||undefined,category:category||undefined,brand:brand||undefined,unit:unit||undefined,variant:variant||undefined,costPrice:cost,price:salePrice,quotePrice,invoicePrice,qty:quantity});
     }
     if(!imported.length){showAlert('ما تزاد حتى منتج',`الأسطر المرفوضة: ${rejected}. راجع الصيغة والمرجع والباركود.`);return;}
     try{
@@ -206,7 +206,7 @@ export default function App() {
   };
   const exportProductsCsv=async()=>{
     const quote=(value:unknown)=>{const text=String(value??'');return '"'+text.replace(/"/g,'""')+'"';};
-    const lines=[['Name','Reference','Barcode','Category','Cost price DH','Sale price DH','Quantity','Brand','Unit','Variant','Kind'].join(';'),...products.map(p=>[p.name,p.reference||'',p.barcode||'',p.category||'',p.costPrice||0,p.price,p.qty,p.brand||'',p.unit||'',p.variant||'',p.kind||'product'].map(quote).join(';'))];
+    const lines=[['Name','Reference','Barcode','Category','Cost price DH','Sale price DH','Quote price DH','Invoice price DH','Quantity','Brand','Unit','Variant','Kind'].join(';'),...products.map(p=>[p.name,p.reference||'',p.barcode||'',p.category||'',p.costPrice||0,p.price,p.quotePrice??'',p.invoicePrice??'',p.qty,p.brand||'',p.unit||'',p.variant||'',p.kind||'product'].map(quote).join(';'))];
     try{await Share.share({title:'HamZa products CSV',message:lines.join('\n')});}
     catch{showAlert('تعذر التصدير','ما قدرناش نشاركوا لائحة المنتجات.');}
   };
