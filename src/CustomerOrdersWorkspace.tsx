@@ -4,7 +4,7 @@ import {TText as Text,TTextInput as TextInput} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 import {CustomerOrder,CustomerOrderStatus} from './domain/customer-orders';
 import {QuoteRecord} from './QuoteWorkspace';
-const Pressable=AccessiblePressable;
+const Pressable = AccessiblePressable;
 const panel={backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'} as const;
 const input={backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRadius:9,padding:10,color:'#FFF',marginBottom:8,textAlign:'right' as const};
 const gold='#D6AE55';
