@@ -31,12 +31,17 @@ const money=(n:number)=>(n/100).toFixed(2)+' DH';
 export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,onConvert}:Props) {
   const [customerId,setCustomerId]=useState('');
   const [productId,setProductId]=useState('');
+  const [customerSearch,setCustomerSearch]=useState('');
+  const [productSearch,setProductSearch]=useState('');
+  const [customPrice,setCustomPrice]=useState('');
   const [quantity,setQuantity]=useState('1');
   const [discount,setDiscount]=useState('0');
   const [lines,setLines]=useState<QuoteLine[]>([]);
   const [notes,setNotes]=useState('');
   const selectedCustomer=customers.find(c=>String(c.id)===customerId);
   const selectedProduct=products.find(p=>String(p.id)===productId);
+  const filteredCustomers=customers.filter(c=>c.name.toLocaleLowerCase().includes(customerSearch.trim().toLocaleLowerCase()));
+  const filteredProducts=products.filter(p=>p.name.toLocaleLowerCase().includes(productSearch.trim().toLocaleLowerCase()));
 
   const calculation=useMemo(()=>{
     if(!lines.length) return null;
@@ -56,9 +61,13 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
     const qty=Number(quantity.replace(',','.'));
     if(!selectedProduct){Alert.alert('اختار المنتج','حدد المنتج اللي بغيتي تزيد.');return;}
     if(!Number.isFinite(qty)||qty<=0){Alert.alert('كمية غير صحيحة','دخل كمية أكبر من صفر.');return;}
-    const line:QuoteLine={productId:selectedProduct.id,productName:selectedProduct.name,qty,unitPrice:selectedProduct.price,total:qty*selectedProduct.price};
+    const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):selectedProduct.price;
+    if(!Number.isFinite(unitPrice)||unitPrice<0){Alert.alert('ثمن غير صحيح','دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.');return;}
+    const line:QuoteLine={productId:selectedProduct.id,productName:selectedProduct.name,qty,unitPrice,total:qty*unitPrice};
     setLines(current=>[...current,line]);
     setProductId('');
+    setProductSearch('');
+    setCustomPrice('');
     setQuantity('1');
   };
   const save=()=>{
@@ -85,11 +94,14 @@ export default function QuoteWorkspace({products,customers,quotes,onSave,onPdf,o
     <View style={panel}>
       <Text style={{color:gold,fontSize:19,fontWeight:'800',marginBottom:12}}>إنشاء عرض سعر متعدد المنتجات</Text>
       <Text style={{color:'#CCC',marginBottom:7}}>الزبون</Text>
-      {customers.map(c=><Pressable key={c.id} onPress={()=>setCustomerId(String(c.id))} style={[choice,customerId===String(c.id)&&active]}><Text style={{color:'#FFF',fontWeight:'700'}}>{c.name}</Text></Pressable>)}
+      <TextInput value={customerSearch} onChangeText={setCustomerSearch} placeholder="بحث عن الزبون بالاسم" placeholderTextColor="#888" style={input}/>
+      {filteredCustomers.map(c=><Pressable key={c.id} onPress={()=>setCustomerId(String(c.id))} style={[choice,customerId===String(c.id)&&active]}><Text style={{color:'#FFF',fontWeight:'700'}}>{c.name}</Text></Pressable>)}
       {customers.length===0&&<Text style={{color:'#999',padding:8}}>زيد زبون أولاً من قسم الزبناء.</Text>}
       <Text style={{color:'#CCC',marginVertical:8}}>المنتج</Text>
-      {products.map(p=><Pressable key={p.id} onPress={()=>setProductId(String(p.id))} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text></Pressable>)}
+      <TextInput value={productSearch} onChangeText={setProductSearch} placeholder="بحث عن المنتج بالاسم" placeholderTextColor="#888" style={input}/>
+      {filteredProducts.map(p=><Pressable key={p.id} onPress={()=>{setProductId(String(p.id));setCustomPrice(p.price.toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text></Pressable>)}
       {products.length===0&&<Text style={{color:'#999',padding:8}}>زيد المنتجات أولاً.</Text>}
+      {selectedProduct&&<TextInput value={customPrice} onChangeText={setCustomPrice} keyboardType="decimal-pad" placeholder="ثمن البيع لهذا العرض (DH)" placeholderTextColor="#888" style={input}/>}
       <View style={{flexDirection:'row',gap:8}}>
         <TextInput value={quantity} onChangeText={setQuantity} keyboardType="decimal-pad" placeholder="الكمية" placeholderTextColor="#888" style={[input,{flex:1}]}/>
         <Pressable onPress={addLine} style={[button,{flex:1,marginTop:0}]}><Text style={{color:'#151515',fontWeight:'900'}}>+ إضافة للسطر</Text></Pressable>
