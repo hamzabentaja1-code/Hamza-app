@@ -11,7 +11,7 @@ test('POS search prioritizes exact barcode and reference before name match', () 
   assert.equal(findPosProduct(products, '123456').id, '1');
   assert.equal(findPosProduct(products, 'CB-HD').id, '2');
   assert.equal(findPosProduct(products, 'camera').id, '1');
-  assert.equal(findPosProduct(products, '').undefined, true);
+  assert.equal(findPosProduct(products, ''), undefined);
 });
 
 test('POS cart adds items and prevents quantities above stock', () => {
