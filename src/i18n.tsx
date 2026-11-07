@@ -750,6 +750,9 @@ const fr: Record<string, string> = {
   "RIB : ": "RIB : ",
   "IBAN : ": "IBAN : ",
 
+  "البنك: ": "Banque : ",
+  "الحساب: ": "Compte : ",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
