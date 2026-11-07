@@ -50,6 +50,7 @@ const fr: Record<string, string> = {
   "إلغاء مرتجع": "Annulation de retour",
   "استلام تحويل": "Réception de transfert",
 
+  "مصفوفة مخزون النسخ حسب المخزن": "Matrice du stock des variantes par dépôt",
   "تحويل النسخة غير صالح": "Transfert de variante invalide",
   "اختار النسخة ومخزناً آخر وأدخل كمية صحيحة.": "Choisissez une variante, un autre dépôt et une quantité valide.",
   "تحويل النسخة بين المخازن": "Transférer la variante entre dépôts",
