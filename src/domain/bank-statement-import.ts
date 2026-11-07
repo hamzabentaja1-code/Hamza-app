@@ -49,6 +49,16 @@ export function parseBankStatementCsv(text:string):ParsedStatementRow[]{
  });
 }
 function normalizeDescription(value:string):string{return value.trim().toLocaleLowerCase().replace(/\s+/g,' ');}
+function normalizeFuzzyDescription(value:string):string{return value.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f\u064B-\u065F]/g,'').replace(/[^a-z0-9\u0600-\u06FF]+/g,' ').trim().replace(/\s+/g,' ');}
+function descriptionSimilarity(left:string,right:string):number{
+ const a=normalizeFuzzyDescription(left),b=normalizeFuzzyDescription(right);
+ if(!a||!b)return 0;if(a===b)return 1;
+ if(a.length>=8&&b.length>=8&&(a.includes(b)||b.includes(a)))return 0.95;
+ const aa=new Set(a.split(' ')),bb=new Set(b.split(' '));
+ const overlap=[...aa].filter(token=>bb.has(token)).length;
+ const union=new Set([...aa,...bb]).size;
+ return union?overlap/union:0;
+}
 export function importBankStatement(
  existing:BankMovement[],
  accountId:string,
@@ -58,17 +68,25 @@ export function importBankStatement(
  const rows=parseBankStatementCsv(text);
  let movements=existing.slice();let imported=0,matched=0,skipped=0;
  const seen=new Map<string,number>();
- const existingCounts=new Map<string,number>();
- const movementKey=(movement:{accountId:string;date:string;kind:string;amountCentimes:number;description:string})=>[
-  movement.accountId,movement.date.slice(0,10),movement.kind,movement.amountCentimes,normalizeDescription(movement.description),
+ const usedExisting=new Set<string>();
+ const baseKey=(movement:{accountId:string;date:string;kind:string;amountCentimes:number})=>[
+  movement.accountId,movement.date.slice(0,10),movement.kind,movement.amountCentimes,
  ].join('|');
- for(const movement of existing){const key=movementKey(movement);existingCounts.set(key,(existingCounts.get(key)||0)+1);}
+ const movementKey=(movement:{accountId:string;date:string;kind:string;amountCentimes:number;description:string})=>[
+  baseKey(movement),normalizeDescription(movement.description),
+ ].join('|');
+ const existingByBase=new Map<string,BankMovement[]>();
+ for(const movement of existing){const key=baseKey(movement);const list=existingByBase.get(key)||[];list.push(movement);existingByBase.set(key,list);}
  for(const row of rows){
   const kind=row.amountCentimes>0?'deposit':'withdrawal';
   const amountCentimes=Math.abs(row.amountCentimes);
-  const key=movementKey({accountId,date:row.date,kind,amountCentimes,description:row.description});
-  const availableMatches=existingCounts.get(key)||0;
-  if(availableMatches>0){existingCounts.set(key,availableMatches-1);matched++;continue;}
+  const candidate={accountId,date:row.date,kind,amountCentimes,description:row.description};
+  const key=movementKey(candidate);
+  const candidates=(existingByBase.get(baseKey(candidate))||[]).filter(item=>!usedExisting.has(item.id));
+  const exact=candidates.find(item=>normalizeDescription(item.description)===normalizeDescription(row.description));
+  if(exact){usedExisting.add(exact.id);matched++;continue;}
+  const fuzzy=candidates.filter(item=>descriptionSimilarity(item.description,row.description)>=0.8);
+  if(fuzzy.length===1){usedExisting.add(fuzzy[0].id);matched++;continue;}
   const occurrence=(seen.get(key)||0)+1;seen.set(key,occurrence);
   const id='statement-'+encodeURIComponent(key)+'-'+occurrence;
   if(movements.some(m=>m.id===id)){skipped++;continue;}
