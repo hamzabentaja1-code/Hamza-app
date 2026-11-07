@@ -101,7 +101,7 @@ export default function QuoteWorkspace({products,customers,quotes,quotePrefix,on
       customerName:selectedCustomer.name,qty:lines.reduce((n,x)=>n+x.qty,0),
       unitPrice:0,total:calculation.totalCentimes/100,
       date:new Date().toLocaleDateString('fr-MA'),status:'معلق',
-      notes:notes.trim(),
+      notes:notes.trim(),documentDiscount:calculation.discountCentimes/100,
       lines:lines.map((line,index)=>({...line,total:calculation.lines[index].lineTotalCentimes/100})),
     };
     onSave(record);
