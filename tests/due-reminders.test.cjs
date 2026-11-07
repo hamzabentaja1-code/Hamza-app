@@ -40,6 +40,7 @@ test('local reminders are opt-in, persisted and scheduled from invoice, supplier
  assert.ok(config.expo.plugins.some(plugin=>Array.isArray(plugin)&&plugin[0]==='expo-notifications'&&plugin[1].enableRemoteNotifications===false));
  assert.match(app,/notificationsEnabled,setNotificationsEnabled/);
  assert.match(app,/buildDueReminders\(/);
+ assert.match(app,/tasks:workTasks\.map/);
  assert.match(app,/syncScheduledDueNotifications\(dueReminders\)/);
  assert.match(app,/requestLocalNotificationPermission\(\)/);
  assert.match(app,/cancelScheduledDueNotifications\(\)/);
