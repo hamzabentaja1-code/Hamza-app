@@ -1,4 +1,4 @@
-export type PosProduct = { id: string; name: string; reference?: string; barcode?: string; salePrice: number; stock?: number; trackStock?: boolean };
+export type PosProduct = { id: string; name: string; reference?: string; barcode?: string; salePrice: number; stock?: number; trackStock?: boolean; productId?: number; variantId?: string; variantLabel?: string };
 export type PosLine = { productId: string; name: string; quantity: number; unitPrice: number; discount: number };
 export type PosCart = { customerId?: string; lines: PosLine[]; globalDiscount: number; paymentMethod: "cash" | "card" | "transfer" | "credit"; paidAmount: number };
 
