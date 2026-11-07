@@ -1268,6 +1268,14 @@ const fr: Record<string, string> = {
   "فئة المعدات موجودة من قبل": "Cette catégorie d’équipement existe déjà",
 
   "متوفر بالمخزون": "En stock",
+  "صلاحيات أنواع العمل": "Autorisations par type de travail",
+  "تركيب": "Installation",
+  "إصلاح": "Réparation",
+  "فحص": "Inspection",
+  "نوع العمل": "Type de travail",
+  "نوع العمل: ": "Type de travail : ",
+  "ما كاين حتى تقني عندو صلاحية لهذا النوع من العمل.": "Aucun technicien n’est autorisé pour ce type de travail.",
+  "التقني غير مخول لهذا النوع من الأعمال": "Le technicien n’est pas autorisé pour ce type de travail.",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
