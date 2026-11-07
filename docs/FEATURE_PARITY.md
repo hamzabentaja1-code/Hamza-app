@@ -25,7 +25,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Single product photo: choose, replace, remove, preview, and persist in local product data
 - [x] Product name search and product edit flow
 - [ ] Categories, brands, units, variants
-- [ ] Purchase and sale prices; separate price rules for quotes/orders vs invoices
+- [x] Basic product purchase cost, sale price, unit margin and estimated stock margin
+- [ ] Separate price rules for quotes/orders vs invoices
 - [ ] HT/TTC display mode and configurable tax rules where required
 - [ ] Stock tracking separately for delivery notes and invoices
 - [ ] Multiple warehouses/sites, transfers, stock counts, stock movements and audit
