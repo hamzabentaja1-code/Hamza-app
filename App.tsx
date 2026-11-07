@@ -12,6 +12,7 @@ import BankWorkspace from './src/BankWorkspace';
 import FieldOperationsWorkspace from './src/FieldOperationsWorkspace';
 import RecurringExpensesWorkspace from './src/RecurringExpensesWorkspace';
 import AgendaWorkspace from './src/AgendaWorkspace';
+import PeriodReportWorkspace from './src/PeriodReportWorkspace';
 import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/domain/document-conversion';
 import {applyPaymentToInvoice} from './src/domain/payment-allocation';
 import {calculateCustomerBalances} from './src/domain/customer-balances';
@@ -44,7 +45,7 @@ const modules = [
   {ar:'Bon de sortie',en:'Delivery notes',icon:'⇧'}, {ar:'إعدادات الشركة',en:'Company settings',icon:'⚙'}, {ar:'المصاريف',en:'Expenses',icon:'−'}, {ar:'المصاريف المتكررة',en:'Recurring expenses',icon:'⟳'}, {ar:'الأجندة',en:'Agenda & reminders',icon:'▦'}, {ar:'الصندوق',en:'Cash register',icon:'د.م'},
   {ar:'النسخ الاحتياطي',en:'Backup & Restore',icon:'↻'},
   {ar:'المشاريع والمهام',en:'Projects & tasks',icon:'📋'}, {ar:'طلبات التركيب',en:'Installation work orders',icon:'🛠'},
-  {ar:'الأداءات',en:'Payments',icon:'د.م'}, {ar:'التقارير',en:'Reports',icon:'▥'},
+  {ar:'الأداءات',en:'Payments',icon:'د.م'}, {ar:'التقارير',en:'Reports',icon:'▥'}, {ar:'تحليل الفترة',en:'Period analysis',icon:'▤'},
 ];
 type CompanyProfile = {name:string;address:string;phone:string;email:string;ice:string;rc:string;taxId:string;logoData?:string};
 const DEFAULT_COMPANY_PROFILE:CompanyProfile={name:'HamZa',address:'',phone:'',email:'',ice:'',rc:'',taxId:''};
@@ -675,6 +676,7 @@ export default function App() {
         {cashMovements.length===0&&<Text style={s.empty}>الصندوق فارغ. سجل الرصيد الافتتاحي أولاً.</Text>}
         <Pressable style={s.action} onPress={()=>exportPdf('Journal de caisse','',cashMovements.map(item=>new Date(item.date).toLocaleDateString('fr-MA')+' — '+item.description+' — '+(item.kind==='cash_out'?'-':'+')+(item.amountCentimes/100).toFixed(2)+' DH'),cashOnHand/100)}><Text style={s.actionText}>تصدير سجل الصندوق PDF</Text></Pressable>
       </>
+      :screen==='تحليل الفترة'?<PeriodReportWorkspace sales={sales.map(x=>({date:x.date,amount:x.total}))} salesReturns={salesReturns.map(x=>({date:x.date,amount:x.total}))} purchases={purchases.map(x=>({date:x.date,amount:x.total}))} supplierReturns={supplierReturns.map(x=>({date:x.date,amount:x.total}))} expenses={expenses.map(x=>({date:x.date,amount:x.amount}))}/>
       :screen==='التقارير'?<>
         <View style={s.panel}>
           <Text style={s.panelTitle}>تقرير النشاط التجاري</Text>
