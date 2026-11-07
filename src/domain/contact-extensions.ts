@@ -34,7 +34,7 @@ export function addContactCustomField(fields:ContactCustomField[],name:string,va
 }
 
 export function parseContactCustomFieldsText(value:string,idPrefix:string):ContactCustomField[]{
- const lines=value.split(/\\r?\\n/).map(line=>line.trim()).filter(Boolean);
+ const lines=value.split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
  if(lines.length>MAX_CUSTOM_FIELDS)throw new Error('الحد الأقصى هو 20 حقلاً مخصصاً');
  let fields:ContactCustomField[]=[];
  for(let index=0;index<lines.length;index++){
