@@ -95,6 +95,7 @@ appId: com.hamza.app
 - inputText: "المشتريات"
 - tapOn: "المشتريات"
 - assertVisible: "تسجيل شراء وإضافة للمخزون"
+- assertVisible: "سجل أداءات الموردين"
 - tapOn: "الرئيسية"
 
 - scrollUntilVisible:
@@ -238,4 +239,16 @@ appId: com.hamza.app
 - inputText: "المرتجعات"
 - tapOn: "Retours clients"
 - assertVisible: "Enregistrer un retour client"
+- tapOn: "Accueil"
+
+# French: supplier payment history is translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المشتريات"
+- tapOn: "Achats"
+- assertVisible: "Historique des paiements fournisseurs"
 - tapOn: "Accueil"
