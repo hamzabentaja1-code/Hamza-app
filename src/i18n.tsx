@@ -1103,6 +1103,8 @@ const fr: Record<string, string> = {
   "هاد المنتج عندو نسخ ولكن ما كايناش نسخة نشطة.": "Ce produit a des variantes, mais aucune n’est active.",
   "ما كايناش منتجات أو نسخ نشطة للبيع.": "Aucun produit ou variante active à vendre.",
   "ما كايناش نسخ نشطة لهذا المنتج.": "Aucune variante active pour ce produit.",
+  "لا يمكن حذف المنتج": "Impossible de supprimer le produit",
+  "خاصك تصفر مخزون النسخ أولاً قبل حذف المنتج.": "Videz d’abord le stock des variantes avant de supprimer le produit.",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
