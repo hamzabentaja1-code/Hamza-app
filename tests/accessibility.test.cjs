@@ -218,7 +218,7 @@ test('period report exports monthly trends and supplier comparison in PDF', () =
 
 test('expense category dictionary is persisted, backed up and selectable', () => {
   const app = read('App.tsx');
-  assert.match(app, /expenseCategories,language,companyProfile/);
+  assert.match(app, /expenseCategories,productCategories,productBrands,language,companyProfile/);
   assert.match(app, /setExpenseCategories\(Array\.isArray\(d\.expenseCategories\)/);
   assert.match(app, /expenseCategories\.map\(category/);
   assert.match(app, /حفظ تصنيف جديد/);
@@ -265,7 +265,7 @@ test('supplier payments can be allocated across purchases and reversed as one tr
 
 test('stock count UI accepts whole units only before submitting', () => {
   const app = read('App.tsx');
-  assert.match(app, /Number\\.isSafeInteger\\(counted\\)/);
+  assert.match(app, /Number\.isSafeInteger\(counted\)/);
   assert.match(app, /keyboardType="number-pad" placeholder="الكمية المعدودة فعلياً"/);
 });
 
