@@ -1073,6 +1073,11 @@ const fr: Record<string, string> = {
   "استلام هذا المنتج": "Recevoir ce produit",
   "تأكيد الاستلام وإضافة للمخزون": "Confirmer la réception et ajouter au stock",
   "إرجاع زبون لنفس النسخة": "Retour client sur la même variante",
+  "تعديل صلاحيات": "Modification des autorisations",
+  "سماح": "Autoriser",
+  "منع": "Interdire",
+  " فقط.": " uniquement.",
+  "حذف مستخدم": "Suppression d’utilisateur",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
