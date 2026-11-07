@@ -452,6 +452,8 @@ appId: com.hamza.app
 - assertVisible: "إضافة حساب بنكي"
 - assertVisible: "تحويل بين الحسابات"
 - assertVisible: "التسوية مع كشف البنك"
+- assertVisible: "تحويل بين الصندوق والبنك"
+- assertVisible: "تأكيد تحويل الصندوق والبنك"
 - tapOn: "الرئيسية"
 
 # French: bank accounts and reconciliation are translated.
@@ -467,4 +469,6 @@ appId: com.hamza.app
 - assertVisible: "Ajouter un compte bancaire"
 - assertVisible: "Virement entre comptes"
 - assertVisible: "Rapprochement bancaire"
+- assertVisible: "Transfert entre la caisse et la banque"
+- assertVisible: "Confirmer le transfert caisse-banque"
 - tapOn: "Accueil"
