@@ -114,7 +114,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
 - [x] Product category dictionary and category selection
 - [ ] Camera barcode scanning and advanced stock filters
-- [ ] Returns, parked sales and physical receipt-printer integration
+- [x] Parked POS sales persist across screens and app restarts and can be resumed or deleted
+- [ ] POS-linked returns, camera barcode scanning and physical receipt-printer integration
 
 ### Projects and field operations
 - [x] Installation work orders with requested, scheduled, in-progress, completed and cancelled lifecycle states, customer/project linkage and equipment allocation
