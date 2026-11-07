@@ -156,7 +156,7 @@ test('primary screens have no untranslated static Arabic labels', () => {
     const source = read(file);
     const labels = [...source.matchAll(/(['"])([^'"\\\n]{2,})\1/g)]
       .map(match => match[2])
-      .filter(value => /[\\u0600-\\u06FF]/.test(value) && !/[\\x60{}]/.test(value));
+      .filter(value => /[؀-ۿ]/.test(value) && !/[`{}]/.test(value));
     for (const label of new Set(labels)) {
       assert.ok(keys.has(label), file + ' has an untranslated Arabic label: ' + label);
     }
