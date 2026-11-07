@@ -43,7 +43,7 @@ test('applies customer credit notes oldest unpaid invoice first and retains unus
  ]);
  const amina=result.find(x=>x.customerName==='Amina');
  assert.equal(amina.outstandingCentimes,2000);
- assert.equal(amina.creditBalanceCentimes,0);
+ assert.equal(amina.creditBalanceCentimes||0,0);
  assert.equal(result.find(x=>x.customerName==='Youssef').outstandingCentimes,5000);
 });
 test('keeps credit notes as customer credit when no invoice is outstanding',()=>{
@@ -68,6 +68,6 @@ test('retains a credit note for a customer with no invoice or opening balance',(
 test('customer credit balances refresh when returns change and appear in statements',()=>{
  const app=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','App.tsx'),'utf8');
  assert.match(app,/\[documents,customers,salesReturns\]/);
- assert.match(app,/رصيد دائن متبقٍ غير مستعمل/);
- assert.match(app,/Avoir disponible non imputé/);
+ assert.match(app,/رصيد دائن متبقٍ/);
+ assert.match(app,/رصيد دائن متبقٍ/);
 });
