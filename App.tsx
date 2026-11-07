@@ -19,7 +19,7 @@ import VariantWorkspace from './src/VariantWorkspace';
 import UserAccessWorkspace from './src/UserAccessWorkspace';
 import ContactHistoryWorkspace from './src/ContactHistoryWorkspace';
 import {ContactInteraction, createContactInteraction} from './src/domain/contact-history';
-import {ContactCustomField, ContactAttachment, ContactPriceGroup, addContactCustomField, addContactAttachment, validateContactPriceGroups} from './src/domain/contact-extensions';
+import {ContactCustomField, ContactAttachment, ContactPriceGroup, addContactCustomField, addContactAttachment, normalizeContactCustomFields, normalizeContactAttachments, validateContactPriceGroups} from './src/domain/contact-extensions';
 import {UserAccount, normalizeUserAccounts, hasModuleAccess, canWriteModule} from './src/domain/user-access';
 import {ProductVariant, VariantStockMovement, createProductVariant, applyVariantStockMovement, transferVariantStockBetweenWarehouses, variantWarehouseBalance, migrateLegacyVariantOpeningMovements, totalVariantStock, variantStockValueCentimes, variantStockProfitCentimes} from './src/domain/variant-stock';
 import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/domain/document-conversion';
