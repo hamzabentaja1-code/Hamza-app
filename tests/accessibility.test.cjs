@@ -44,3 +44,12 @@ test('shared wrappers expose labels, focus, touch targets and state to assistive
   assert.match(button, /accessibilityState=\{/);
   assert.match(button, /accessibilityRole=\{props\.accessibilityRole \?\? 'button'\}/);
 });
+
+test('selected POS and banking choices expose selected state', () => {
+  const pos = read('src/PosWorkspace.tsx');
+  assert.match(pos, /accessibilityState=\{\{selected:method===m\.id\}\}/);
+  assert.match(pos, /accessibilityState=\{\{selected:customerId===''\}\}/);
+  const bank = read('src/BankWorkspace.tsx');
+  assert.match(bank, /accessibilityState=\{\{selected:kind===v\}\}/);
+  assert.match(bank, /accessibilityState=\{\{selected:destination===a\.id\}\}/);
+});
