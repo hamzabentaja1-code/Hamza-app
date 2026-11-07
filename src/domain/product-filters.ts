@@ -2,8 +2,8 @@ export type ProductStockFilter='all'|'in_stock'|'low_stock'|'out_of_stock'|'serv
 export type ProductFilterRecord={id:number;name:string;reference?:string;barcode?:string;category?:string;brand?:string;unit?:string;variant?:string;kind?:'product'|'service';qty:number};
 export type ProductVariantFilterRecord={productId:number;stockQty:number;active:boolean};
 export function productStockQuantity(product:ProductFilterRecord,variants:ProductVariantFilterRecord[]):number{
- const linked=variants.filter(item=>item.productId===product.id&&item.active);
- return linked.length?linked.reduce((sum,item)=>sum+item.stockQty,0):product.qty;
+ const linked=variants.filter(item=>item.productId===product.id);
+ return linked.length?linked.filter(item=>item.active).reduce((sum,item)=>sum+item.stockQty,0):product.qty;
 }
 export function filterProducts(products:ProductFilterRecord[],variants:ProductVariantFilterRecord[],search:string,filter:ProductStockFilter='all'):ProductFilterRecord[]{
  const query=search.trim().toLocaleLowerCase();
