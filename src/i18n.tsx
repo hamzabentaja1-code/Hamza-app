@@ -735,6 +735,21 @@ const fr: Record<string, string> = {
   "حقل إدخال": "Champ de saisie",
   "زر": "Bouton",
 
+  "المعلومات البنكية التي تظهر في الوثائق": "Coordonnées bancaires affichées sur les documents",
+  "اسم البنك": "Nom de la banque",
+  "رقم الحساب البنكي": "Numéro de compte bancaire",
+  "RIB": "RIB",
+  "IBAN (اختياري)": "IBAN (facultatif)",
+  "ترقيم الوثائق (بادئة السلسلة)": "Numérotation des documents (préfixe de série)",
+  "بادئة عروض الأسعار — DEV": "Préfixe des devis — DEV",
+  "بادئة الفواتير — FAC": "Préfixe des factures — FAC",
+  "بادئة سندات الخروج — BL": "Préfixe des bons de sortie — BL",
+  "بادئة أوامر الشراء — BC": "Préfixe des bons de commande — BC",
+  "Banque : ": "Banque : ",
+  "Compte : ": "Compte : ",
+  "RIB : ": "RIB : ",
+  "IBAN : ": "IBAN : ",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
