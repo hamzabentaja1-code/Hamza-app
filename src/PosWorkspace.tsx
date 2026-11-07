@@ -5,7 +5,7 @@ import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput, tr
 import AccessiblePressable from './AccessiblePressable';
 const Pressable = AccessiblePressable;
 
-type Product = {id:number; name:string; price:number; qty:number; photoData?:string};
+type Product = {id:number; name:string; price:number; qty:number; photoData?:string; kind?:'product'|'service'};
 type Customer = {id:number; name:string};
 type CheckoutLine = {productId:number; name:string; quantity:number; unitPrice:number; discount:number};
 type Props = {
@@ -33,7 +33,7 @@ export default function PosWorkspace({products,customers,bankAccountName,onCheck
   const [method,setMethod]=useState<'cash'|'card'|'transfer'>('cash');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
-  const mapped:PosProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,salePrice:p.price,stock:p.qty,trackStock:true})),[products]);
+  const mapped:PosProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,salePrice:p.price,stock:p.qty,trackStock:p.kind!=='service'})),[products]);
   const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>p.name.toLocaleLowerCase().includes(q)).slice(0,8);},[mapped,term]);
   const discount=Number(discountText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:0};
