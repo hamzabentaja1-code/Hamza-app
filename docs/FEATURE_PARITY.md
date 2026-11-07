@@ -41,7 +41,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Inventory ledger unit tests for movements, duplicate protection, negative stock prevention and stock-count variance
 - [x] Separate product quote prices and invoice prices; invoice conversion recalculates line/document totals while preserving discounts
 - [ ] Separate price rules for purchase orders and advanced customer price groups
-- [ ] HT/TTC display mode and configurable tax rules where required
+- [x] TTC-only PDF totals by default; optional HT/TVA/TTC breakdown with a configurable VAT rate in company settings
 - [x] Invoice and delivery-note conversions deduct stock only once per quote, regardless of conversion order; later document conversion does not double-deduct
 - [x] Persistent stock movement ledger for opening stock, purchases, manual sales, POS sales, delivery notes, product quantity corrections and physical stock counts
 - [x] Physical stock count variance is recorded as an auditable movement and updates the product quantity
