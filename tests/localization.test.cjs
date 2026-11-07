@@ -132,7 +132,7 @@ test('all Arabic alert titles and messages in primary workspaces have French tra
       const firstTwoArguments = source.slice(start, commas[1] ?? end - 1);
       for (const match of firstTwoArguments.matchAll(/'([^'\\]*(?:\\.[^'\\]*)*)'|"([^"\\]*(?:\\.[^"\\]*)*)"/g)) {
         const value = match[1] ?? match[2];
-        if (/[\\u0600-\\u06FF]/.test(value)) {
+        if (/[\u0600-\u06FF]/.test(value)) {
           assert.ok(keys.has(value), file + ' has an untranslated alert string: ' + value);
         }
       }
