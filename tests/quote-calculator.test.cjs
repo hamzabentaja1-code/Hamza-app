@@ -55,7 +55,8 @@ test('converts quote to invoice and deducts stock exactly once', () => {
     lines:[{productId:7,productName:'Widget',qty:2,unitPrice:500,total:1000}],
   },'invoice',[],products,99,'04/11/2026');
   assert.equal(result.document.number,'FAC-99');
-  assert.deepEqual(result.updatedProducts,[{id:7,qty:8}]);\n  assert.equal(result.stockDeducted,true);
+  assert.deepEqual(result.updatedProducts,[{id:7,qty:8}]);
+  assert.equal(result.stockDeducted,true);
 });
 
 test('service-only quote lines do not require or deduct stock', () => {
