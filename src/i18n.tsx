@@ -842,6 +842,13 @@ const fr: Record<string, string> = {
   "تسجيل أداء مورد": "Enregistrement d’un paiement fournisseur",
   "عكس أداء مورد": "Annulation d’un paiement fournisseur",
 
+  "اختار المورد ودخل مبلغ أداء صحيح.": "Sélectionnez le fournisseur et saisissez un montant valide.",
+  "طريقة أداء غير مدعومة": "Mode de paiement non pris en charge",
+  "الدفعة الموزعة كتدعم النقد أو التحويل البنكي فقط.": "Le paiement réparti prend uniquement en charge les espèces ou le virement bancaire.",
+  "دفعة موزعة • ": "Paiement réparti • ",
+  "راجع المبلغ والرصيد والحساب البنكي.": "Vérifiez le montant, le solde et le compte bancaire.",
+  "مرتجع مورد": "Retour fournisseur",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
