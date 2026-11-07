@@ -23,7 +23,7 @@ test('Arabic alerts and undefined values remain unchanged', () => {
 
 test('user access workspace routes every native alert through the translation wrapper', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'UserAccessWorkspace.tsx'), 'utf8');
-  assert.match(source, /const showAlert=\(title:string,message:string,buttons\?/);
+  assert.ok(source.includes('buttons?.map(button=>({...button,text:button.text?t(button.text):button.text}))'));
   assert.match(source, /Alert\.alert\(t\(title\),t\(message\)/);
   assert.match(source, /accessibilityState=\{\{selected:role===item\}\}/);
   assert.equal((source.match(/Alert\.alert\(/g) || []).length, 1);
