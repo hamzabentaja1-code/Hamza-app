@@ -5,6 +5,8 @@ export type ConversionLine = {
   unitPrice:number;
   total:number;
   trackStock?:boolean;
+  variantId?:string;
+  variantLabel?:string;
 };
 export type QuoteForConversion = {
   id:number;
