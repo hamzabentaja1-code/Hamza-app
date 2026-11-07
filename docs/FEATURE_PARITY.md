@@ -81,7 +81,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Cash-to-bank and bank-to-cash transfers update both ledgers atomically with overdraft protection
 - [ ] Cheque/draft lifecycle and bank statement file import
 - [x] Partial customer invoice payments and supplier purchase payments with centime-safe allocation and balance recalculation
-- [ ] Payment across multiple invoices/purchases, cheques, drafts, unpaid items and automated due-date reminders
+- [x] Customer payments can be allocated automatically, oldest invoice first, across multiple outstanding invoices; one cash/bank ledger entry is recorded for the full receipt
+- [ ] Supplier payments across multiple purchases, cheque/draft lifecycle and automated due-date reminders
 - [x] Manual statement-balance reconciliation with stored difference and adjustment entry
 - [ ] Bank statement file import and automatic transaction matching
 
