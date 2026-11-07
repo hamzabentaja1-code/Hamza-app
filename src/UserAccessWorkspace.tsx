@@ -1,6 +1,6 @@
-import React, {useMemo, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {View, ScrollView, StyleSheet, Alert} from 'react-native';
-import {TText as Text, TTextInput as TextInput} from './i18n';
+import {TText as Text, TTextInput as TextInput, LanguageContext, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 import {UserAccount, UserModule, UserRole, ROLE_LABELS, createUserAccount, setUserModuleAccess, canManageUsers} from './domain/user-access';
 
@@ -9,10 +9,11 @@ const GOLD='#D6AE55';
 type Props={users:UserAccount[];activeUserId:string;modules:UserModule[];onChange:(users:UserAccount[])=>void;onSelect:(id:string)=>void;onLog:(action:string,details:string)=>void};
 const roles:UserRole[]=['admin','sales','warehouse','accountant','viewer','custom'];
 export default function UserAccessWorkspace({users,activeUserId,modules,onChange,onSelect,onLog}:Props){
+ const language=useContext(LanguageContext);
  const [name,setName]=useState('');const [role,setRole]=useState<UserRole>('sales');const [selectedId,setSelectedId]=useState(activeUserId);
  const active=users.find(x=>x.id===activeUserId)||users[0];const selected=users.find(x=>x.id===selectedId)||active;
  const owner=canManageUsers(active);
- const add=()=>{try{const user=createUserAccount({name,role,moduleIds:modules.map(x=>x.id)});if(users.some(x=>x.name.toLocaleLowerCase()===user.name.toLocaleLowerCase()))throw new Error('كاين مستخدم بنفس الاسم.');onChange([user,...users]);setName('');setSelectedId(user.id);onLog('إضافة مستخدم',user.name+' • '+ROLE_LABELS[user.role]);}catch(e){Alert.alert('تعذر إنشاء المستخدم',e instanceof Error?e.message:'راجع المعلومات.');}};
+ const add=()=>{try{const user=createUserAccount({name,role,moduleIds:modules.map(x=>x.id)});if(users.some(x=>x.name.toLocaleLowerCase()===user.name.toLocaleLowerCase()))throw new Error('كاين مستخدم بنفس الاسم.');onChange([user,...users]);setName('');setSelectedId(user.id);onLog('إضافة مستخدم',user.name+' • '+ROLE_LABELS[user.role]);}catch(e){Alert.alert(translateText('تعذر إنشاء المستخدم',language)||'تعذر إنشاء المستخدم',translateText(e instanceof Error?e.message:'راجع المعلومات.',language)|| (e instanceof Error?e.message:'راجع المعلومات.'));}};
  const toggleModule=(moduleId:string,allowed:boolean)=>{if(!owner||selected.role==='owner')return;onChange(users.map(x=>x.id===selected.id?setUserModuleAccess(x,moduleId,allowed):x));onLog('تعديل صلاحيات',selected.name+' • '+moduleId+' • '+(allowed?'سماح':'منع'));};
  const setWrite=(value:boolean)=>{if(!owner||selected.role==='owner'||selected.role==='viewer')return;onChange(users.map(x=>x.id===selected.id?{...x,canWrite:value}:x));};
  const remove=()=>{if(!owner||selected.role==='owner')return;Alert.alert('حذف المستخدم؟','غادي يتحذف الحساب المحلي ديال '+selected.name+' فقط.',[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>{onChange(users.filter(x=>x.id!==selected.id));onLog('حذف مستخدم',selected.name);setSelectedId(activeUserId);}}]);};
