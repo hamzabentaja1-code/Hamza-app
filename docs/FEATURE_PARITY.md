@@ -90,8 +90,8 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Agenda and reports
 - [x] Basic task list with assignments, priorities, due dates, estimated durations and status changes
 - [ ] Calendar view, recurring tasks, attachments, reminders and advanced task filters
-- [ ] Sales/purchase/stock/cash/receivables/payables/profit reports
-- [ ] Filters, date ranges, export and print
+- [x] Basic sales/purchase/stock/cash/receivables/payables/gross-profit summary reports with PDF exports
+- [ ] Date-range filters, comparative periods, charts and advanced report exports
 
 ## Acceptance tests required before calling a module complete
 - Create, read, update and delete (with confirmation) persist after app restart.
