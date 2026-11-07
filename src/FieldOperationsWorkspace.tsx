@@ -2,7 +2,7 @@ import React,{useContext,useState} from 'react';
 import {Alert,View,StyleSheet} from 'react-native';
 import {TText as Text,TTextInput as TextInput,LanguageContext,translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
-import {Technician,Equipment,WorkOrder,WorkTimeEntry,createWorkOrder,createWorkTimeEntry,transitionWorkOrderStatus,workOrderHours,workOrderTimeCost} from './domain/field-operations';
+import {Technician,Equipment,WorkOrder,WorkTimeEntry,WorkOrderCategory,WORK_ORDER_CATEGORIES,technicianCanPerform,createWorkOrder,createWorkTimeEntry,transitionWorkOrderStatus,workOrderHours,workOrderTimeCost} from './domain/field-operations';
 
 type Props={
  technicians:Technician[];equipment:Equipment[];equipmentCategories:string[];orders:WorkOrder[];timeEntries:WorkTimeEntry[];
@@ -23,13 +23,13 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
   Alert.alert(translateText(title, language) || title, translateText(message, language) || message, translatedButtons, options);
  };
 
- const [techName,setTechName]=useState('');const [techPhone,setTechPhone]=useState('');const [techSpecialty,setTechSpecialty]=useState('');const [techRate,setTechRate]=useState('0');
+ const [techName,setTechName]=useState('');const [techPhone,setTechPhone]=useState('');const [techSpecialty,setTechSpecialty]=useState('');const [techRate,setTechRate]=useState('0');const [techPermissions,setTechPermissions]=useState<WorkOrderCategory[]>([...WORK_ORDER_CATEGORIES]);
  const [equipmentName,setEquipmentName]=useState('');const [equipmentRef,setEquipmentRef]=useState('');const [equipmentSerial,setEquipmentSerial]=useState('');const [equipmentCategory,setEquipmentCategory]=useState('');const [equipmentCategoryDraft,setEquipmentCategoryDraft]=useState('');
- const [orderTitle,setOrderTitle]=useState('');const [orderCustomer,setOrderCustomer]=useState('');const [orderProject,setOrderProject]=useState('');const [orderTechnician,setOrderTechnician]=useState('');const [orderDate,setOrderDate]=useState('');const [orderDescription,setOrderDescription]=useState('');
+ const [orderTitle,setOrderTitle]=useState('');const [orderCustomer,setOrderCustomer]=useState('');const [orderProject,setOrderProject]=useState('');const [orderTechnician,setOrderTechnician]=useState('');const [orderDate,setOrderDate]=useState('');const [orderDescription,setOrderDescription]=useState('');const [orderCategory,setOrderCategory]=useState<WorkOrderCategory>('installation');
  const [selectedEquipment,setSelectedEquipment]=useState<string[]>([]);
  const [timeOrder,setTimeOrder]=useState('');const [timeTechnician,setTimeTechnician]=useState('');const [timeHours,setTimeHours]=useState('');const [timeDate,setTimeDate]=useState(new Date().toISOString().slice(0,10));const [timeNote,setTimeNote]=useState('');
  const addTech=()=>{const rate=Number(techRate.replace(',','.'));if(!techName.trim()||!Number.isFinite(rate)||rate<0){showAlert(t('معلومات ناقصة'),t('دخل اسم التقني وسعر ساعة صحيح.'));return;}
-  onAddTechnician({id:'tech-'+Date.now(),name:techName.trim(),phone:techPhone.trim()||undefined,specialty:techSpecialty.trim()||undefined,hourlyRate:rate,active:true});setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('0');
+  onAddTechnician({id:'tech-'+Date.now(),name:techName.trim(),phone:techPhone.trim()||undefined,specialty:techSpecialty.trim()||undefined,hourlyRate:rate,active:true,permissions:[...techPermissions]});setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('0');setTechPermissions([...WORK_ORDER_CATEGORIES]);
  };
  const addEquipmentCategory=()=>{try{if(!equipmentCategoryDraft.trim())throw new Error('اسم فئة المعدات مطلوب');onAddEquipmentCategory(equipmentCategoryDraft);setEquipmentCategoryDraft('');}catch(error){showAlert(t('فئات المعدات'),error instanceof Error?(t(error.message)||error.message):t('تعذر إضافة الفئة.'));}};
  const addEquip=()=>{if(!equipmentName.trim()){showAlert(t('معلومات ناقصة'),t('دخل اسم المعدة.'));return;}
@@ -37,9 +37,10 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
  };
  const createOrder=()=>{const customer=customers.find(x=>String(x.id)===orderCustomer);if(!customer||!orderTitle.trim()){showAlert(t('معلومات ناقصة'),t('اختار الزبون ودخل عنوان أمر العمل.'));return;}
   if(orderDate.trim()&&!Number.isFinite(Date.parse(orderDate))){showAlert(t('تاريخ غير صالح'),t('تاريخ أمر العمل غير صالح'));return;}const now=new Date().toISOString();const scheduledAt=orderDate.trim()?new Date(orderDate).toISOString():undefined;
-  try{const order=createWorkOrder({id:'work-order-'+Date.now(),number:'WO-'+Date.now(),title:orderTitle.trim(),customerName:customer.name,projectId:orderProject?Number(orderProject):undefined,description:orderDescription.trim(),status:scheduledAt?'scheduled':'requested',priority:'normal',scheduledAt,technicianId:orderTechnician||undefined,equipmentIds:selectedEquipment,createdAt:now},technicians,equipment);onCreateOrder(order);setOrderTitle('');setOrderCustomer('');setOrderProject('');setOrderTechnician('');setOrderDate('');setOrderDescription('');setSelectedEquipment([]);}
+  try{const order=createWorkOrder({id:'work-order-'+Date.now(),number:'WO-'+Date.now(),title:orderTitle.trim(),customerName:customer.name,projectId:orderProject?Number(orderProject):undefined,description:orderDescription.trim(),category:orderCategory,status:scheduledAt?'scheduled':'requested',priority:'normal',scheduledAt,technicianId:orderTechnician||undefined,equipmentIds:selectedEquipment,createdAt:now},technicians,equipment);onCreateOrder(order);setOrderTitle('');setOrderCustomer('');setOrderProject('');setOrderTechnician('');setOrderDate('');setOrderDescription('');setSelectedEquipment([]);}
   catch(error){showAlert(t('أمر العمل'),error instanceof Error?(t(error.message)||error.message):t('تعذر إنشاء أمر العمل.'));}
  };
+ const chooseOrderCategory=(category:WorkOrderCategory)=>{setOrderCategory(category);const selected=technicians.find(item=>item.id===orderTechnician);if(selected&&!technicianCanPerform(selected,category))setOrderTechnician('');};
  const changeStatus=(order:WorkOrder,next:WorkOrder['status'])=>{try{onChangeOrder(transitionWorkOrderStatus(order,next));}catch(error){showAlert(t('حالة أمر العمل'),error instanceof Error?(t(error.message)||error.message):t('انتقال الحالة غير مسموح.'));}};
  const addTime=()=>{const order=orders.find(x=>x.id===timeOrder);const technician=technicians.find(x=>x.id===timeTechnician);const hours=Number(timeHours.replace(',','.'));if(!order||!technician){showAlert(t('معلومات ناقصة'),t('اختار أمر العمل والتقني.'));return;}
   if(!Number.isFinite(Date.parse(timeDate))){showAlert(t('تاريخ غير صالح'),t('تاريخ وساعات العمل غير صالحة'));return;}try{const entry=createWorkTimeEntry({id:'work-time-'+Date.now(),workOrderId:order.id,technicianId:technician.id,date:new Date(timeDate).toISOString(),hours,hourlyRate:technician.hourlyRate,notes:timeNote.trim()||undefined},order,technician);onAddTimeEntry(entry);setTimeHours('');setTimeNote('');}
@@ -51,6 +52,8 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
    <TextInput value={techPhone} onChangeText={setTechPhone} placeholder="الهاتف (اختياري)" placeholderTextColor="#888" style={styles.input}/>
    <TextInput value={techSpecialty} onChangeText={setTechSpecialty} placeholder="التخصص" placeholderTextColor="#888" style={styles.input}/>
    <TextInput value={techRate} onChangeText={setTechRate} keyboardType="decimal-pad" placeholder="ثمن ساعة العمل DH" placeholderTextColor="#888" style={styles.input}/>
+   <Text style={styles.note}>صلاحيات أنواع العمل</Text>
+   <View style={styles.row}>{WORK_ORDER_CATEGORIES.map(category=><AccessiblePressable key={category} accessibilityState={{checked:techPermissions.includes(category)}} onPress={()=>setTechPermissions(current=>current.includes(category)?current.filter(item=>item!==category):[...current,category])} style={[styles.choice,techPermissions.includes(category)&&styles.selected]}><Text style={styles.label}>{category==='installation'?'تركيب':category==='maintenance'?'صيانة':category==='repair'?'إصلاح':'فحص'}</Text></AccessiblePressable>)}</View>
    <AccessiblePressable style={styles.action} onPress={addTech}><Text style={styles.actionText}>إضافة تقني</Text></AccessiblePressable>
    {technicians.map(x=><Text key={x.id} style={styles.note}>{x.name} • {x.specialty||'بدون تخصص'} • {x.hourlyRate.toFixed(2)} DH/ساعة {x.active?'':'• غير نشط'}</Text>)}
   </View>
@@ -68,12 +71,14 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
   </View>
   <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>طلبات وأوامر التركيب</Text>
    <TextInput value={orderTitle} onChangeText={setOrderTitle} placeholder="عنوان أمر العمل" placeholderTextColor="#888" style={styles.input}/>
+   <Text style={styles.note}>نوع العمل</Text>
+   <View style={styles.row}>{WORK_ORDER_CATEGORIES.map(category=><AccessiblePressable key={category} accessibilityState={{selected:orderCategory===category}} onPress={()=>chooseOrderCategory(category)} style={[styles.choice,orderCategory===category&&styles.selected]}><Text style={styles.label}>{category==='installation'?'تركيب':category==='maintenance'?'صيانة':category==='repair'?'إصلاح':'فحص'}</Text></AccessiblePressable>)}</View>
    <Text style={styles.note}>الزبون</Text>
    {customers.map(x=><AccessiblePressable key={x.id} accessibilityState={{selected:orderCustomer===String(x.id)}} onPress={()=>setOrderCustomer(String(x.id))} style={[styles.choice,orderCustomer===String(x.id)&&styles.selected]}><Text style={styles.label}>{x.name}</Text></AccessiblePressable>)}
    <Text style={styles.note}>المشروع (اختياري)</Text>
    {projects.map(x=><AccessiblePressable key={x.id} accessibilityState={{selected:orderProject===String(x.id)}} onPress={()=>setOrderProject(String(x.id))} style={[styles.choice,orderProject===String(x.id)&&styles.selected]}><Text style={styles.label}>{x.name}</Text></AccessiblePressable>)}
    <Text style={styles.note}>التقني المسؤول</Text>
-   {technicians.filter(x=>x.active).map(x=><AccessiblePressable key={x.id} accessibilityState={{selected:orderTechnician===x.id}} onPress={()=>setOrderTechnician(x.id)} style={[styles.choice,orderTechnician===x.id&&styles.selected]}><Text style={styles.label}>{x.name}</Text></AccessiblePressable>)}
+   {technicians.filter(x=>x.active&&technicianCanPerform(x,orderCategory)).map(x=><AccessiblePressable key={x.id} accessibilityState={{selected:orderTechnician===x.id}} onPress={()=>setOrderTechnician(x.id)} style={[styles.choice,orderTechnician===x.id&&styles.selected]}><Text style={styles.label}>{x.name}</Text></AccessiblePressable>)}{technicians.some(x=>x.active&&technicianCanPerform(x,orderCategory))?null:<Text style={styles.note}>ما كاين حتى تقني عندو صلاحية لهذا النوع من العمل.</Text>}
    <TextInput value={orderDate} onChangeText={setOrderDate} placeholder="موعد التركيب (YYYY-MM-DD) اختياري" placeholderTextColor="#888" style={styles.input}/>
    <TextInput value={orderDescription} onChangeText={setOrderDescription} placeholder="تفاصيل وملاحظات" placeholderTextColor="#888" style={styles.input}/>
    <Text style={styles.note}>المعدات المتاحة</Text>
@@ -90,7 +95,7 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
   </View>
   <Text style={styles.section}>سجل أوامر العمل</Text>
   {orders.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(order=><View key={order.id} style={styles.order}>
-   <Text style={styles.label}>{order.number} • {order.title}</Text><Text style={styles.note}>{order.customerName} • {statusLabel(order.status)} • {order.scheduledAt||'غير مبرمج'}</Text>
+   <Text style={styles.label}>{order.number} • {order.title}</Text><Text style={styles.note}>{order.customerName} • {statusLabel(order.status)} • {order.scheduledAt||'غير مبرمج'}</Text><Text style={styles.note}>نوع العمل: {order.category==='installation'?'تركيب':order.category==='maintenance'?'صيانة':order.category==='repair'?'إصلاح':order.category==='inspection'?'فحص':'غير محدد'}</Text>
    <Text style={styles.note}>التقني: {technicians.find(x=>x.id===order.technicianId)?.name||'غير محدد'} • المعدات: {order.equipmentIds.length}</Text>
    <Text style={styles.note}>الوقت: {workOrderHours(timeEntries,order.id).toFixed(2)} ساعة • التكلفة: {(workOrderTimeCost(timeEntries,order.id)/100).toFixed(2)} DH</Text>
    <View style={styles.row}>
