@@ -20,7 +20,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Local user profiles, owner/admin/sales/warehouse/accountant/viewer roles, custom module allow-lists, read-only screen gating, active-profile switching, per-action activity attribution and backup persistence
 - [ ] PIN/password authentication and server-side authorization (current profiles are not a security boundary on a shared/unlocked device)
 - [x] Arabic/French static label coverage and language preference persistence across primary workspaces
-- [ ] Remaining non-alert dynamic-message localization audit and selectable light/dark theme (alert titles/messages now have automated French-coverage checks across 13 primary workspaces; other dynamic UI text and theme remain open)
+- [x] French coverage audit for static Arabic labels, alert messages and template-literal dynamic messages across 13 primary workspaces
+- [ ] Remaining dynamic concatenation strings in secondary screens and selectable light/dark theme
 - [ ] Document templates and custom fields
 - [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
 - [x] Serialized local-storage writes to prevent overlapping state saves from overwriting newer snapshots
