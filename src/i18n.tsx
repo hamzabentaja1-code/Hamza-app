@@ -791,6 +791,21 @@ const fr: Record<string, string> = {
   "معاينة صورة المنتج ": "Aperçu de la photo du produit ",
   "حذف الصورة ": "Supprimer la photo ",
 
+  "سجل النشاط": "Journal d’activité",
+  "آخر العمليات المسجلة محلياً فهاد الجهاز.": "Dernières opérations enregistrées localement sur cet appareil.",
+  "مسح سجل النشاط؟": "Effacer le journal d’activité ?",
+  "غادي يتحذف سجل النشاط فقط، وما غاديش تمس العمليات التجارية.": "Seul le journal sera effacé ; les opérations commerciales resteront intactes.",
+  "مسح السجل": "Effacer le journal",
+  "سجل النشاط فارغ.": "Le journal d’activité est vide.",
+  "تعديل منتج": "Modification d’un produit",
+  "إضافة منتج": "Ajout d’un produit",
+  "تسجيل بيع": "Enregistrement d’une vente",
+  "تسجيل شراء": "Enregistrement d’un achat",
+  "إصدار فاتورة": "Émission d’une facture",
+  "إصدار سند خروج": "Émission d’un bon de sortie",
+  "تسجيل أداء زبون": "Enregistrement d’un paiement client",
+  "تسجيل مصروف": "Enregistrement d’une dépense",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
