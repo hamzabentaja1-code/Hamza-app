@@ -36,3 +36,21 @@ test('delivery conversion rejects insufficient stock', () => {
   const quote = {id:3,productName:'Widget',customerName:'Client',qty:4,unitPrice:100,total:400,lines:[{productId:7,productName:'Widget',qty:4,unitPrice:100,total:400}]};
   assert.throws(() => convertQuote(quote,'delivery',[],[{id:7,qty:2}],102,'04/11/2026'));
 });
+
+test('service-only quote lines do not deduct inventory', () => {
+  const products=[{id:7,qty:10}];
+  const quote={id:50,productName:'Installation',customerName:'Client',qty:1,unitPrice:500,total:500,lines:[{productId:99,productName:'Installation',qty:1,unitPrice:500,total:500,trackStock:false}]};
+  const result=convertQuote(quote,'invoice',[],products,501,'07/11/2026');
+  assert.equal(result.stockDeducted,false);
+  assert.deepEqual(result.updatedProducts,products);
+});
+test('mixed product and service quote deducts only stock-tracked product lines', () => {
+  const products=[{id:7,qty:10},{id:8,qty:4}];
+  const quote={id:51,productName:'Mixed',customerName:'Client',qty:1,unitPrice:100,total:100,lines:[
+    {productId:7,productName:'Cable',qty:2,unitPrice:30,total:60,trackStock:true},
+    {productId:8,productName:'Installation',qty:1,unitPrice:40,total:40,trackStock:false}
+  ]};
+  const result=convertQuote(quote,'invoice',[],products,502,'07/11/2026');
+  assert.equal(result.updatedProducts.find(x=>x.id===7).qty,8);
+  assert.equal(result.updatedProducts.find(x=>x.id===8).qty,4);
+});
