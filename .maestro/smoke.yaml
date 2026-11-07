@@ -161,6 +161,7 @@ appId: com.hamza.app
 - inputText: "المصاريف"
 - tapOn: "المصاريف"
 - assertVisible: "إضافة مصروف"
+- assertVisible: "تصنيف المصروف (اختياري)"
 - tapOn: "الرئيسية"
 
 - scrollUntilVisible:
@@ -325,4 +326,16 @@ appId: com.hamza.app
 - assertVisible: "Solde initial dû (DH)"
 - assertVisible: "Plafond de crédit (DH)"
 - assertVisible: "Délai de paiement en jours (facultatif)"
+- tapOn: "Accueil"
+
+# French: expense categories are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "المصاريف"
+- tapOn: "Dépenses"
+- assertVisible: "Catégorie de dépense (facultatif)"
 - tapOn: "Accueil"
