@@ -31,7 +31,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Service-only catalog items with no stock balance or stock movements, supported in direct sales, POS, quotes and invoice conversion
 - [x] Variant management workspace with normalized size/color attributes, SKU/barcode uniqueness, per-variant stock and centime-safe cost/sale prices
 - [x] Variant stock movement validation for purchases, sales, returns and adjustments; variant records and movement history persist through local save and JSON backup/restore
-- [x] Connect variant selection and stock deduction to POS, direct sales, manual purchases, customer returns and supplier returns; purchase-order receiving and product-level stock valuation remain pending
+- [x] Connect variant selection and stock deduction to POS, direct sales, manual purchases, customer returns, supplier returns and purchase-order receipts; product-level stock valuation and warehouse-scoped variant balances remain pending
 - [ ] Camera-based barcode scanning
 - [x] Single product photo: choose, replace, remove, preview, and persist in local product data
 - [x] Product name search and product edit flow
