@@ -1248,6 +1248,7 @@ const fr: Record<string, string> = {
   "المتوفر": "En stock",
   "مخزون منخفض (1–5)": "Stock faible (1 à 5)",
   "ما لقيناش منتج بهاد الاسم أو الفلتر المختار.": "Aucun produit ne correspond à ce nom ou au filtre sélectionné.",
+  "ما كايناش منتجات كتوافق الفلاتر المختارة.": "Aucun produit ne correspond aux filtres sélectionnés.",
 
   "الملخص المالي": "Résumé financier",
   "مقارنة الفترتين": "Comparer les deux périodes",
