@@ -1375,6 +1375,7 @@ const fr: Record<string, string> = {
   "تعذر قراءة ملف CSV.": "Impossible de lire le fichier CSV.",
   "رصيد دائن متبقٍ": "Crédit client restant",
   "رصيد دائن متبقٍ غير مستعمل: ": "Crédit client non imputé : ",
+  "بحث عن المنتج بالاسم أو المرجع أو الباركود": "Rechercher un produit par nom, référence ou code-barres",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
