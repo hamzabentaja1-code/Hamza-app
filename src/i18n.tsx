@@ -272,6 +272,11 @@ const fr: Record<string, string> = {
   "دخل اسم المشروع وميزانية صحيحة أو صفر.": "Saisissez un nom de projet et un budget valide ou zéro.",
   "تاريخ نهاية المشروع خاصو يكون من بعد تاريخ البداية.": "La date de fin doit être postérieure à la date de début.",
   "دخل عنوان المهمة ومدة صحيحة واختار مشروعاً صالحاً إن وجد.": "Saisissez un titre et une durée valides, et choisissez un projet valide si nécessaire.",
+  "ربط المصروف بمشروع (اختياري)": "Associer la dépense à un projet (facultatif)",
+  "مصروف عام": "Dépense générale",
+  "دخل وصف المصروف ومبلغ صحيح واختار مشروعاً صالحاً إن وجد.": "Saisissez une description et un montant valides, et choisissez un projet valide si nécessaire.",
+  "استعمل صيغة YYYY-MM-DD لتاريخ المشروع.": "Utilisez le format YYYY-MM-DD pour les dates du projet.",
+  "استعمل صيغة YYYY-MM-DD لموعد المهمة.": "Utilisez le format YYYY-MM-DD pour l’échéance de la tâche.",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
