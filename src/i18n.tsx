@@ -1390,6 +1390,8 @@ const fr: Record<string, string> = {
   "+ إضافة قسم": "+ Ajouter une section",
   "عنوان القسم مطلوب": "Titre de section requis",
   "كتب عنواناً للقسم قبل إضافته.": "Saisissez un titre avant d’ajouter la section."
+  "العرض فارغ": "Devis vide",
+  "زيد منتجاً أو رسماً إضافياً قبل حفظ العرض.": "Ajoutez un produit ou des frais avant d’enregistrer le devis.",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
