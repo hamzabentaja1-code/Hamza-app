@@ -18,14 +18,16 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Configurable yearly sequential series for quotes, invoices, delivery notes and purchase orders; existing legacy documents remain unchanged
 - [x] Local activity history for product changes, sales, purchases, invoices, customer payments and expenses; persisted and included in backup/restore
 - [ ] User accounts, roles and granular permissions
-- [ ] Arabic/French complete localization, language persistence, theme
+- [x] Arabic/French static label coverage and language preference persistence across primary workspaces
+- [ ] Dynamic-message localization audit and selectable light/dark theme
 - [ ] Document templates and custom fields
 - [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
 - [x] Serialized local-storage writes to prevent overlapping state saves from overwriting newer snapshots
 - [ ] Automated scheduled backups and encrypted backup files
 
 ### Products and inventory
-- [ ] Product/service catalog with references, barcodes and multiple images
+- [x] Product catalog references, barcodes and up to four saved product photos
+- [ ] Service-only items and camera-based barcode scanning
 - [x] Single product photo: choose, replace, remove, preview, and persist in local product data
 - [x] Product name search and product edit flow
 - [x] Basic free-text category, brand, unit and variant metadata in product cards, search, bulk import and CSV export
@@ -51,18 +53,20 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Contacts
 - [x] Basic customer and supplier profiles with phone, address and ICE
-- [ ] Extended company identifiers (RC/IF) and contact communication history
+- [x] Company ICE, RC and IF fields appear in branded PDF documents
+- [ ] Contact communication history and extended identifiers on customer/supplier records
 - [x] Customer and supplier opening balances, credit ceilings and payment-term metadata
 - [x] Enforce customer credit ceiling when converting a quote to an invoice; calculate and show invoice due dates from payment terms
 - [x] Basic customer/supplier statement PDF exports from invoices, purchases and recorded payments
-- [ ] Attachments, contacts, custom fields, price groups
+- [ ] Contact attachments, custom fields and price groups
 
 ### Sales documents
 - [x] Basic multi-product quotes with conversion to invoices and delivery notes; duplicate conversion is prevented
 - [x] Invoice partial payments, paid/outstanding status and payment due dates
 - [x] Partial customer returns with optional restocking and net sales/profit adjustment
 - [ ] Customer orders, proforma invoices, formal credit-note documents and complete document lifecycle/reminders
-- [ ] Advanced fees, notes/sections, barcode entry and document numbering
+- [x] Configurable document numbering for quotes, invoices, delivery notes and purchase orders
+- [ ] Advanced fees, document sections and in-document barcode entry
 - [x] Basic PDF generation and sharing for quotes, invoices, delivery notes, receipts and statements, with company profile branding
 
 ### Purchases
@@ -85,11 +89,11 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Bank account reconciliation against a statement balance with an auditable adjustment and reconciliation history
 - [x] POS card and bank-transfer sales are posted to the selected bank account; checkout validates the account before committing stock and payment ledgers
 - [x] Cash-to-bank and bank-to-cash transfers update both ledgers atomically with overdraft protection
-- [ ] Cheque/draft lifecycle and bank statement file import
+- [ ] Cheque/draft lifecycle
 - [x] Partial customer invoice payments and supplier purchase payments with centime-safe allocation and balance recalculation
 - [x] Customer payments can be allocated automatically, oldest invoice first, across multiple outstanding invoices; one cash/bank ledger entry is recorded for the full receipt
 - [x] Supplier payments can be distributed oldest-first across multiple open purchases; one cash/bank movement is recorded and grouped reversal restores all allocations
-- [ ] Cheque/draft lifecycle and automated due-date reminders
+- [ ] Automated due-date reminders for unpaid invoices and supplier obligations
 - [x] Manual statement-balance reconciliation with stored difference and adjustment entry
 - [ ] Bank statement file import and automatic transaction matching
 
@@ -97,7 +101,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Product name search and stock-aware cart with quantity controls
 - [x] Customer selection, general discount, cash/card/transfer methods and checkout validation
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
-- [ ] Barcode scanning, categories and stock filters
+- [x] Product category dictionary and category selection
+- [ ] Camera barcode scanning and advanced stock filters
 - [ ] Returns, parked sales and physical receipt-printer integration
 
 ### Projects and field operations
