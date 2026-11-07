@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const {translateWithDictionary} = require('../.test-build/localization.js');
 
 const dictionary = {
@@ -28,4 +30,12 @@ test('Arabic remains unchanged and undefined input remains undefined', () => {
 
 test('leaves unknown dynamic values intact rather than deleting user data', () => {
   assert.equal(translateWithDictionary('REF-2026-0007', 'FR', dictionary), 'REF-2026-0007');
+});
+
+test('French dictionary has no duplicate literal keys',()=>{
+ const source=fs.readFileSync(path.join(__dirname,'..','src','i18n.tsx'),'utf8');
+ const keys=[...source.matchAll(/^\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*:/gm)].map(match=>match[1]);
+ const seen=new Set();
+ const duplicates=keys.filter(key=>seen.has(key)||!seen.add(key));
+ assert.deepEqual(duplicates,[]);
 });
