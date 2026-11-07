@@ -418,7 +418,7 @@ test('variant workspace uses accessible controls and is persisted, backed up and
   assert.match(workspace, /accessibilityState=\{\{selected:selected===v\.id\}\}/);
   assert.match(app, /<VariantWorkspace\b/);
   assert.match(app, /createProductVariant\(input,productVariants\)/);
-  assert.match(app, /applyVariantStockMovement\(productVariants,movement,variantStockMovements\)/);
+  assert.match(app, /applyVariantStockMovement\(productVariants,\{\.\.\.movement,warehouseId:movement\.warehouseId\|\|activeWarehouseId\},variantStockMovements\)/);
   assert.match(app, /productVariants,variantStockMovements/);
   assert.match(app, /setProductVariants\(normalizeProductVariants\(d\.productVariants\)\)/);
   assert.match(app, /setVariantStockMovements\(Array\.isArray\(d\.variantStockMovements\)/);
@@ -547,4 +547,17 @@ test('contact history is persisted, accessible and attributed to the selected co
   assert.match(workspace, /accessibilityState=\{\{selected:/);
   assert.match(workspace, /filterContactInteractions\(entries/);
   assert.match(workspace, /onDelete\(entry\.id\)/);
+});
+
+
+test('variant stock workspace uses the selected warehouse for counts, movements and the stock matrix', () => {
+  const workspace = read('src/VariantWorkspace.tsx');
+  const app = read('App.tsx');
+  const domain = read('src/domain/variant-stock.ts');
+  assert.match(app, /<VariantWorkspace[^>]*warehouses=\{warehouses\} activeWarehouseId=\{activeWarehouseId\}/);
+  assert.match(app, /warehouseId:activeWarehouseId,note:'رصيد افتتاحي عند إنشاء النسخة'/);
+  assert.match(workspace, /warehouseId:activeWarehouseId/);
+  assert.match(workspace, /variantWarehouseStockMatrix\(variants,movements,warehouses\)/);
+  assert.match(workspace, /variantWarehouseBalance\(selectedVariant\.id,movements,activeWarehouseId/);
+  assert.match(domain, /variantWarehouseBalance/);
 });
