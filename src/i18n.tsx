@@ -1338,6 +1338,7 @@ const fr: Record<string, string> = {
   "سيتم اقتراح هذا الثمن تلقائياً عند اختيار نفس المورد والمنتج.": "Ce prix sera proposé automatiquement lorsque vous sélectionnerez le même fournisseur et le même produit.",
   "اختار المورد والمنتج ودخل ثمن شراء صالح.": "Sélectionnez un fournisseur et un produit, puis saisissez un prix d’achat valide.",
   "حدد المقاس أو اللون قبل حفظ ثمن المورد.": "Sélectionnez la taille ou la couleur avant d’enregistrer le prix fournisseur.",
+  "حفظ ثمن المورد لأمر الشراء": "Enregistrer le prix fournisseur pour le bon de commande",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
