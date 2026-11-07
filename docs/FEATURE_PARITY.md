@@ -130,7 +130,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Date-range report filters with previous equal-length period comparisons; net sales and net purchases account for returns and invalid legacy dates are reported
 - [x] Monthly sales/purchase trends with returns and expenses, plus supplier comparisons in period analysis
 - [x] Detailed period-analysis PDF export includes period comparisons, monthly trends and supplier comparisons
-- [ ] CSV/XLSX export and configurable report layouts
+- [x] CSV export for period summary, monthly trends and supplier comparison
+- [ ] XLSX export and configurable report layouts
 
 ## Acceptance tests required before calling a module complete
 - Create, read, update and delete (with confirmation) persist after app restart.
