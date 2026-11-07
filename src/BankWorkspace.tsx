@@ -21,7 +21,7 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
  const [statement,setStatement]=useState('');const [reconcileNote,setReconcileNote]=useState('تسوية مع كشف الحساب');
  const active=accounts.find(a=>a.id===activeAccountId);
  const balance=active?bankBalance(movements,active.id):0;
- const add=()=>{const value=Number(opening.replace(',','.'));if(!name.trim()||!Number.isFinite(value)||value<0||!/^\\d{0,4}$/.test(reference.trim())){Alert.alert(t('معلومات ناقصة'),t('دخل اسم الحساب ورصيد افتتاحي صحيح، وآخر 4 أرقام فقط للحساب.'));return;}
+ const add=()=>{const value=Number(opening.replace(',','.'));if(!name.trim()||!Number.isFinite(value)||value<0||!/^\d{0,4}$/.test(reference.trim())){Alert.alert(t('معلومات ناقصة'),t('دخل اسم الحساب ورصيد افتتاحي صحيح، وآخر 4 أرقام فقط للحساب.'));return;}
   if(accounts.some(a=>a.name.trim().toLowerCase()===name.trim().toLowerCase())){Alert.alert(t('حساب موجود'),t('اسم الحساب مستعمل من قبل.'));return;}
   onAddAccount({id:'bank-'+Date.now(),name:name.trim(),bankName:bankName.trim()||undefined,accountNumberMasked:reference.trim()?('•••• '+reference.trim()):undefined,currency:'MAD',active:true} as BankAccount,Math.round(value*100));
   setName('');setBankName('');setReference('');setOpening('0');
