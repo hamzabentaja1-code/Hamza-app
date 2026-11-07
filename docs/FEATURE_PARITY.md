@@ -43,6 +43,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Physical stock count variance is recorded as an auditable movement and updates the product quantity
 - [x] Multiple warehouses with a persistent default warehouse; legacy movements without warehouse IDs are assigned to the default warehouse during balance calculation
 - [x] Warehouse-scoped stock counts and warehouse-level stock balances
+- [x] Stock movement history is filtered to the active warehouse; switching warehouses clears any pending stock-count form to prevent applying a stale count to another warehouse
+- [x] French translations for stocktaking, movement kinds, stock-count validation and inventory history labels
 - [x] Atomic inter-warehouse transfers recorded as paired transfer-out/transfer-in movements with duplicate and insufficient-source-stock protection; global stock remains unchanged
 - [x] Manual sales, POS sales, purchases, purchase-order receipts, delivery notes, returns and stock counts use the active/original warehouse ID
 - [x] Bulk paste import and CSV export, image/name/reference/barcode search, saved product catalog
