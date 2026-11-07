@@ -54,7 +54,7 @@ export function convertQuote(
   let updatedProducts=products;
   const stockAlreadyDeducted=documents.some(d=>d.sourceQuoteId===quote.id&&(d.type==='invoice'||d.type==='delivery'));
   const trackedLines=lines.filter(line=>line.trackStock!==false);
-  const shouldDeductStock=!stockAlreadyDeducted&&trackedLines.length>0;
+  const shouldDeductStock=type!=='proforma'&&!stockAlreadyDeducted&&trackedLines.length>0;
   if(type==='delivery'&&!lines.length)throw new Error('A new quote with linked products is required for a delivery note');
   if(shouldDeductStock) {
     if(trackedLines.some(line=>!line.productId)) {
