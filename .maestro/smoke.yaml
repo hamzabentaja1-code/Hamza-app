@@ -8,36 +8,66 @@ appId: com.hamza.app
 - assertVisible: "المنتجات"
 
 # Arabic: visit every primary module and verify its main screen renders.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المنتجات"
 - tapOn: "المنتجات"
 - assertVisible: "إضافة منتج جديد"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "نقطة البيع"
 - tapOn: "نقطة البيع"
 - assertVisible: "نقطة البيع POS"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "الزبناء"
 - tapOn: "الزبناء"
 - assertVisible: "إضافة زبون"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "الموردون"
 - tapOn: "الموردون"
 - assertVisible: "إضافة مورد"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المبيعات"
 - tapOn: "المبيعات"
 - assertVisible: "تسجيل عملية بيع"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "جرد وحركات المخزون"
 - tapOn: "جرد وحركات المخزون"
@@ -45,54 +75,99 @@ appId: com.hamza.app
 - assertVisible: "سجل حركات المخزون"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المشتريات"
 - tapOn: "المشتريات"
 - assertVisible: "تسجيل شراء وإضافة للمخزون"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المخزون"
 - tapOn: "المخزون"
 - assertVisible: "إضافة منتج جديد"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "عروض الأسعار"
 - tapOn: "عروض الأسعار"
 - assertVisible: "إنشاء عرض سعر متعدد المنتجات"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "الفواتير"
 - tapOn: "الفواتير"
 - assertVisible: "الفواتير"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "Bon de sortie"
 - tapOn: "Bon de sortie"
 - assertVisible: "سندات الخروج"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المصاريف"
 - tapOn: "المصاريف"
 - assertVisible: "إضافة مصروف"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "النسخ الاحتياطي"
 - tapOn: "النسخ الاحتياطي"
 - assertVisible: "حماية بياناتك"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "الأداءات"
 - tapOn: "الأداءات"
 - assertVisible: "تسجيل أداء زبون"
 - tapOn: "الرئيسية"
 
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "التقارير"
 - tapOn: "التقارير"
@@ -105,6 +180,11 @@ appId: com.hamza.app
 - assertVisible: "Produits"
 - assertVisible: "Point de vente"
 - tapOn: "الرئيسية"
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "المنتجات"
 - tapOn: "Produits"
