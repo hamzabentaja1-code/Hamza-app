@@ -91,7 +91,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Bank account reconciliation against a statement balance with an auditable adjustment and reconciliation history
 - [x] POS card and bank-transfer sales are posted to the selected bank account; checkout validates the account before committing stock and payment ledgers
 - [x] Cash-to-bank and bank-to-cash transfers update both ledgers atomically with overdraft protection
-- [ ] Cheque/draft lifecycle UI integration, persistent event history and bank-ledger posting\n- [x] Cheque lifecycle domain rules: centime-safe amounts, duplicate protection, strict dates, audited state transitions, bounced/redeposit flow and cleared-only bank effect (tests/cheques.test.cjs)
+- [x] Cheque lifecycle workspace with incoming/outgoing records, audited state transitions, deposit/bounce/cancel handling, persisted event history and bank-ledger posting only on clearing\n- [x] Cheque lifecycle domain rules: centime-safe amounts, duplicate protection, strict dates, audited state transitions, bounced/redeposit flow and cleared-only bank effect (tests/cheques.test.cjs)
 - [x] Partial customer invoice payments and supplier purchase payments with centime-safe allocation and balance recalculation
 - [x] Customer payments can be allocated automatically, oldest invoice first, across multiple outstanding invoices; one cash/bank ledger entry is recorded for the full receipt
 - [x] Supplier payments can be distributed oldest-first across multiple open purchases; one cash/bank movement is recorded and grouped reversal restores all allocations
