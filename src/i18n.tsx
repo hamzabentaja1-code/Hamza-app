@@ -1097,6 +1097,8 @@ const fr: Record<string, string> = {
   "إعادة للمخزون: ": "Remis en stock : ",
   "نعم": "Oui",
   "لا": "Non",
+  "إصدار إشعار دائن": "Émission d’un avoir",
+  "حذف إشعار دائن": "Suppression d’un avoir",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
