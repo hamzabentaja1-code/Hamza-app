@@ -1007,6 +1007,10 @@ const fr: Record<string, string> = {
   "تعذر تسجيل حركة المخزون": "Impossible d'enregistrer le mouvement de stock",
   "إضافة تنويعة": "Ajout d'une variante",
   "حركة مخزون نسخة": "Mouvement de stock d'une variante",
+  "سجل حركات النسخ": "Historique des mouvements de variantes",
+  "مازال ما تسجلات حتى حركة للنسخ.": "Aucun mouvement de variante enregistré.",
+  "رصيد افتتاحي": "Stock initial",
+
   "الماركة": "Marque",
 };
 
