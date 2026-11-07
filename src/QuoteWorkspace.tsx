@@ -61,6 +61,7 @@ export default function QuoteWorkspace({products,variants,customers,quotes,quote
   const [validUntil,setValidUntil]=useState('');
   const selectedCustomer=customers.find(c=>String(c.id)===customerId);
   const selectedProduct=products.find(p=>String(p.id)===productId);
+  const hasVariants=selectedProduct?variants.some(v=>v.productId===selectedProduct.id):false;
   const selectedVariants=selectedProduct?variants.filter(v=>v.productId===selectedProduct.id&&v.active):[];
   const selectedVariant=selectedVariants.find(v=>v.id===variantId);
   const filteredCustomers=customers.filter(c=>c.name.toLocaleLowerCase().includes(customerSearch.trim().toLocaleLowerCase()));
@@ -91,7 +92,7 @@ export default function QuoteWorkspace({products,variants,customers,quotes,quote
     const qty=Number(quantity.replace(',','.'));
     if(!selectedProduct){showAlert('اختار المنتج','حدد المنتج اللي بغيتي تزيد.');return;}
     if(!Number.isFinite(qty)||qty<=0){showAlert('كمية غير صحيحة','دخل كمية أكبر من صفر.');return;}
-    if(selectedVariants.length&&!selectedVariant){showAlert('اختار النسخة','هاد المنتج عندو تنويعات. اختار المقاس أو اللون قبل إضافته لعرض السعر.');return;}
+    if(hasVariants&&!selectedVariant){showAlert('اختار النسخة','هاد المنتج عندو تنويعات. اختار المقاس أو اللون قبل إضافته لعرض السعر.');return;}
     const defaultPrice=selectedVariant?.salePriceCentimes===undefined?(selectedProduct.quotePrice??selectedProduct.price):selectedVariant.salePriceCentimes/100;
     const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):defaultPrice;
     if(!Number.isFinite(unitPrice)||unitPrice<0){showAlert('ثمن غير صحيح','دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.');return;}
@@ -137,6 +138,7 @@ export default function QuoteWorkspace({products,variants,customers,quotes,quote
       {filteredProducts.map(p=><Pressable key={p.id} accessibilityState={{selected:productId===String(p.id)}} onPress={()=>{setProductId(String(p.id));setVariantId('');setCustomPrice((p.quotePrice??p.price).toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text></Pressable>)}
       {products.length===0&&<Text style={{color:'#999',padding:8}}>زيد المنتجات أولاً.</Text>}
       {selectedVariants.length>0&&<><Text style={{color:'#CCC',marginVertical:7}}>اختار النسخة (المقاس / اللون)</Text>{selectedVariants.map(v=><Pressable key={v.id} accessibilityState={{selected:variantId===v.id}} onPress={()=>{setVariantId(v.id);setCustomPrice((v.salePriceCentimes===undefined?(selectedProduct?.quotePrice??selectedProduct?.price??0):v.salePriceCentimes/100).toFixed(2));}} style={[choice,variantId===v.id&&active]}><Text style={{color:'#FFF'}}>{Object.values(v.attributes).join(' / ')} • المخزون: {v.stockQty} • {v.salePriceCentimes===undefined?(selectedProduct?.price??0).toFixed(2):(v.salePriceCentimes/100).toFixed(2)} DH</Text></Pressable>)}</>}
+      {selectedProduct&&hasVariants&&selectedVariants.length===0?<Text style={{color:'#E28A78',padding:8}}>ما كايناش نسخ نشطة لهذا المنتج.</Text>:null}
       {selectedProduct&&<TextInput value={customPrice} onChangeText={setCustomPrice} keyboardType="decimal-pad" placeholder="ثمن البيع لهذا العرض (DH)" placeholderTextColor="#888" style={input}/>}
       <View style={{flexDirection:'row',gap:8}}>
         <TextInput value={quantity} onChangeText={setQuantity} keyboardType="decimal-pad" placeholder="الكمية" placeholderTextColor="#888" style={[input,{flex:1}]}/>
