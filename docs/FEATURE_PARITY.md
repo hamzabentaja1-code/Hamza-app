@@ -52,7 +52,8 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Purchases
 - [ ] Price requests, supplier orders, goods receipts, supplier invoices
-- [ ] Supplier credit notes, returns, payment records
+- [x] Supplier partial payment history with centime-safe allocation, receipts, and reversible payment entries
+- [ ] Supplier credit notes and returns
 - [ ] Supplier comparison, purchase tracking and purchase reports
 - [ ] Link/convert purchase documents and update stock correctly
 
