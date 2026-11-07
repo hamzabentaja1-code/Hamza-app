@@ -149,6 +149,43 @@ jobs:
           "$APKSIGNER" verify --verbose --print-certs "$APK"
           echo "APK_PATH=$APK" >> "$GITHUB_ENV"
 
+      - name: Install JADX and APKTool for APK inspection
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/hamza-apk-tools"
+          curl -fL https://github.com/skylot/jadx/releases/download/v1.5.6/jadx-1.5.6.zip -o "$RUNNER_TEMP/hamza-apk-tools/jadx.zip"
+          unzip -q "$RUNNER_TEMP/hamza-apk-tools/jadx.zip" -d "$RUNNER_TEMP/hamza-apk-tools/jadx"
+          curl -fL https://github.com/iBotPeaches/Apktool/releases/download/v3.0.3/apktool_3.0.3.jar -o "$RUNNER_TEMP/hamza-apk-tools/apktool.jar"
+          java -version
+          "$RUNNER_TEMP/hamza-apk-tools/jadx/bin/jadx" --version
+          java -jar "$RUNNER_TEMP/hamza-apk-tools/apktool.jar" --version
+
+      - name: Inspect release APK with JADX and APKTool
+        shell: bash
+        run: |
+          APK="$(find android/app/build/outputs/apk/release -type f -name '*.apk' | head -n 1)"
+          mkdir -p inspection/apktool inspection/jadx
+          java -jar "$RUNNER_TEMP/hamza-apk-tools/apktool.jar" d -f "$APK" -o inspection/apktool
+          "$RUNNER_TEMP/hamza-apk-tools/jadx/bin/jadx" -d inspection/jadx "$APK"
+          grep -q 'package="com.hamza.app"' inspection/apktool/AndroidManifest.xml
+          cp inspection/apktool/AndroidManifest.xml inspection/AndroidManifest-decoded.xml
+          {
+            echo "HamZa APK static inspection"
+            echo "Application ID: com.hamza.app"
+            echo "APK SHA-256:"
+            sha256sum "$APK"
+            echo "Decoded manifest: PASS"
+            echo "JADX decompilation: PASS"
+          } > inspection/inspection-summary.txt
+
+      - name: Upload APK inspection report
+        uses: actions/upload-artifact@v4
+        with:
+          name: HamZa-APK-Inspection
+          path: inspection
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
@@ -156,6 +193,37 @@ jobs:
           path: android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 14
+
+  maestro-smoke:
+    name: Maestro Android emulator smoke test
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Download built APK
+        uses: actions/download-artifact@v4
+        with:
+          name: HamZa-APK
+          path: dist/apk
+
+      - name: Run Maestro UI smoke test on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          script: |
+            APK="$(find dist/apk -type f -name '*.apk' | head -n 1)"
+            test -n "$APK"
+            adb install "$APK"
+            curl -Ls "https://get.maestro.mobile.dev" | bash
+            export PATH="$HOME/.maestro/bin:$PATH"
+            maestro --version
+            maestro test .maestro/smoke.yaml
 
   mobsf:
     name: MobSF Android security scan
