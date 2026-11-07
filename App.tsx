@@ -329,6 +329,11 @@ export default function App() {
   const addExpense=()=>{const a=Number(expenseAmount.replace(',','.'));const projectId=expenseProjectId?Number(expenseProjectId):undefined;if(!expenseTitle.trim()||!Number.isFinite(a)||a<=0||(projectId!==undefined&&!projects.some(p=>p.id===projectId))){Alert.alert('معلومات ناقصة','دخل وصف المصروف ومبلغ صحيح واختار مشروعاً صالحاً إن وجد.');return;}setExpenses(v=>[{id:Date.now(),title:expenseTitle.trim(),amount:a,date:new Date().toLocaleDateString('fr-MA'),category:expenseCategory.trim()||undefined,projectId},...v]);setExpenseTitle('');setExpenseAmount('');setExpenseCategory('');setExpenseProjectId('');};
   const addQuote=()=>{const p=products.find(x=>String(x.id)===quoteProduct);const c=customers.find(x=>String(x.id)===quoteCustomer);const q=Number(quoteQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert('معلومات ناقصة','اختار المنتج والزبون والكمية.');return;}const x:Quote={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,date:new Date().toLocaleDateString('fr-MA'),status:'معلق'};setQuotes(v=>[x,...v]);setQuoteQty('1');Alert.alert('تم حفظ عرض السعر',`${x.total.toFixed(2)} DH`);};
   const convertQuote=(quote:Quote,type:QuoteConversionType)=>{
+    if(type==='delivery'){
+      const lines=quote.lines?.length?quote.lines:[{productId:products.find(p=>p.name===quote.productName)?.id||0,qty:quote.qty}];
+      const insufficient=lines.find(line=>inventoryBalanceForWarehouse(inventoryMovements,line.productId,activeWarehouseId)<line.qty);
+      if(insufficient){Alert.alert('المخزون غير كافٍ',`الكمية المتوفرة في المخزن النشط غير كافية للمنتج ${products.find(p=>p.id===insufficient.productId)?.name||quote.productName}.`);return;}
+    }
     try{
       const customer=customers.find(x=>x.name===quote.customerName);
       if(type==='invoice'&&customer?.creditLimitCentimes!==undefined){
