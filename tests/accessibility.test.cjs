@@ -241,3 +241,13 @@ test('product records support a four-photo gallery with accessible removal and p
   assert.match(app, /معاينة صورة المنتج /);
   assert.match(app, /حذف جميع الصور/);
 });
+
+test('activity history records key operations and survives backup restore', () => {
+  const app = read('App.tsx');
+  assert.match(app, /type ActivityEntry =/);
+  assert.match(app, /setActivityLog\(Array\.isArray\(d\.activityLog\)/);
+  assert.match(app, /activityLog,expenseCategories,productCategories/);
+  assert.match(app, /logActivity\('تسجيل بيع'/);
+  assert.match(app, /logActivity\('تسجيل شراء'/);
+  assert.match(app, /screen==='سجل النشاط'/);
+});
