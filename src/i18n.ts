@@ -287,7 +287,14 @@ const fr: Record<string, string> = {
   "متوفر:": "Disponible :",
   "مرجع: ": "Réf. : ",
   "باركود: ": "Code-barres : ",
-  "الصنف: ": "Catégorie : "
+  "الصنف: ": "Catégorie : ",
+  "معلومات الشركة": "Informations de l’entreprise",
+  "اسم الشركة أو النشاط": "Nom de l’entreprise ou de l’activité",
+  "الهاتف": "Téléphone",
+  "البريد الإلكتروني": "E-mail",
+  "العنوان": "Adresse",
+  "البنك": "Banque",
+  "معلومات الشركة كتتحفظ تلقائياً وكتظهر فوثائق PDF.": "Les informations de l’entreprise sont enregistrées automatiquement et apparaissent sur les documents PDF."
 };
 
 export function translate(language: AppLanguage, value: string): string {
