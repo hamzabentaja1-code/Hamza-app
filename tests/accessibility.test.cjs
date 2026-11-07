@@ -320,3 +320,10 @@ test('service items are excluded from stock and remain available in POS and quot
   assert.match(quote, /trackStock:selectedProduct\.kind!=='service'/);
   assert.match(conversion, /lines\.filter\(line=>line\.trackStock!==false\)/);
 });
+
+test('service items are not selectable for stock counts or warehouse transfers', () => {
+  const app = read('App.tsx');
+  assert.match(app, /products\.filter\(p=>p\.kind!=='service'\)\.map\(p=><Pressable key=\{p\.id\} accessibilityState=\{\{selected:stockCountProduct/);
+  assert.match(app, /products=\{products\.filter\(p=>p\.kind!=='service'\)/);
+  assert.match(app, /kindText==='service'\?'service':'product'/);
+});
