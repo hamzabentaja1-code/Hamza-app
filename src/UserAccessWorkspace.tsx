@@ -11,7 +11,7 @@ const roles:UserRole[]=['admin','sales','warehouse','accountant','viewer','custo
 export default function UserAccessWorkspace({users,activeUserId,modules,onChange,onSelect,onLog}:Props){
  const language=useContext(LanguageContext);
  const [name,setName]=useState('');const [role,setRole]=useState<UserRole>('sales');const [selectedId,setSelectedId]=useState(activeUserId);
- const active=users.find(x=>x.id===activeUserId)||users[0];const selected=users.find(x=>x.id===selectedId)||active;
+ const fallback:UserAccount={id:'',name:'',role:'owner',allowedModules:[],canWrite:true,active:true,createdAt:''};const active:UserAccount=users.find(x=>x.id===activeUserId)||users[0]||fallback;const selected:UserAccount=users.find(x=>x.id===selectedId)||active;
  const owner=canManageUsers(active);
  const add=()=>{try{const user=createUserAccount({name,role,moduleIds:modules.map(x=>x.id)});if(users.some(x=>x.name.toLocaleLowerCase()===user.name.toLocaleLowerCase()))throw new Error('كاين مستخدم بنفس الاسم.');onChange([user,...users]);setName('');setSelectedId(user.id);onLog('إضافة مستخدم',user.name+' • '+ROLE_LABELS[user.role]);}catch(e){Alert.alert(translateText('تعذر إنشاء المستخدم',language)||'تعذر إنشاء المستخدم',translateText(e instanceof Error?e.message:'راجع المعلومات.',language)|| (e instanceof Error?e.message:'راجع المعلومات.'));}};
  const toggleModule=(moduleId:string,allowed:boolean)=>{if(!owner||selected.role==='owner')return;onChange(users.map(x=>x.id===selected.id?setUserModuleAccess(x,moduleId,allowed):x));onLog('تعديل صلاحيات',selected.name+' • '+moduleId+' • '+(allowed?'سماح':'منع'));};
