@@ -1145,6 +1145,7 @@ const fr: Record<string, string> = {
   "راجع البريد الإلكتروني المسجل.": "Vérifiez l’adresse e-mail enregistrée.",
   "تعذر فتح البريد الإلكتروني": "Impossible d’ouvrir l’application de messagerie",
   "تحقق من تطبيق البريد.": "Vérifiez l’application de messagerie.",
+  "تحقق من بيانات التواصل أو التطبيق.": "Vérifiez les coordonnées ou l’application.",
   "البريد الإلكتروني (اختياري)": "Adresse e-mail (facultatif)",
   "RC (اختياري)": "RC (facultatif)",
   "IF (اختياري)": "IF (facultatif)",
