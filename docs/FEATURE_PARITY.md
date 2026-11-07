@@ -60,7 +60,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Link/convert purchase documents and update stock correctly
 
 ### Cash, payments and banking
-- [ ] Expenses and recurring expenses/categories
+- [x] Expenses with optional category, project association, PDF receipt and delete confirmation
+- [ ] Recurring expense schedules and category dictionaries
 - [x] Basic single-cashbox ledger with opening balance, cash income/expense entries, non-negative balance validation and PDF journal
 - [ ] Multiple cash registers, transfers between cash/bank accounts, cheques, drafts and bank reconciliation
 - [ ] Customer and supplier payments, allocations and balances
