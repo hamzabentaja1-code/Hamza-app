@@ -1232,6 +1232,12 @@ const fr: Record<string, string> = {
   "حذف المرفق": "Supprimer la pièce jointe",
   "فتح أو مشاركة المستند": "Ouvrir ou partager le document",
   "إضافة صورة (حتى 8 مرفقات إجمالاً)": "Ajouter une image (8 pièces jointes au total maximum)",
+  "تخصيص محتوى التقرير": "Personnaliser le contenu du rapport",
+  "الملخص المالي": "Résumé financier",
+  "مقارنة الفترتين": "Comparer les deux périodes",
+  "مقارنة الموردين": "Comparaison des fournisseurs",
+  "الأقسام المختارة فقط هي التي ستظهر في التقرير PDF وCSV وExcel. الإعدادات محفوظة على الهاتف.": "Seules les sections sélectionnées apparaîtront dans les rapports PDF, CSV et Excel. Les paramètres sont enregistrés sur le téléphone.",
+  "ملخص الفترة الحالية": "Résumé de la période actuelle",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
