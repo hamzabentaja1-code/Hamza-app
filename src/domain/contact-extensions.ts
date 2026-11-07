@@ -8,6 +8,7 @@ const MAX_FIELD_VALUE=240;
 const MAX_ATTACHMENTS=8;
 const MAX_ATTACHMENT_DATA_URI=5_500_000;
 const ALLOWED_CONTACT_MIME_TYPES=new Set(['image/jpeg','image/png','image/webp','application/pdf','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+const ALLOWED_CONTACT_MIME_TYPES=new Set(['image/jpeg','image/png','image/webp','application/pdf','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
 
 export function normalizeContactCustomFields(value:unknown):ContactCustomField[]{
  if(!Array.isArray(value))return [];
@@ -52,9 +53,9 @@ export function normalizeContactAttachments(value:unknown):ContactAttachment[]{
   if(!item||typeof item!=='object')return false;
   const file=item as Record<string,unknown>;
   return typeof file.id==='string'&&typeof file.name==='string'&&file.name.length>0&&file.name.length<=120&&
-   typeof file.mimeType==='string'&&/^image\/(jpeg|png|webp)$/.test(file.mimeType)&&
+   typeof file.mimeType==='string'&&ALLOWED_CONTACT_MIME_TYPES.has(file.mimeType)&&
    typeof file.dataUri==='string'&&file.dataUri.length<=MAX_ATTACHMENT_DATA_URI&&
-   /^data:image\/(jpeg|png|webp);base64,/.test(file.dataUri)&&typeof file.createdAt==='string';
+   file.dataUri.startsWith('data:'+file.mimeType+';base64,')&&typeof file.createdAt==='string';
  }).slice(0,MAX_ATTACHMENTS);
 }
 
