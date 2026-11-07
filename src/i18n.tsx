@@ -1369,6 +1369,7 @@ const fr: Record<string, string> = {
   "معلومات غير صالحة": "Informations invalides",
   "راجع الحقول.": "Vérifiez les champs.",
   "تعذر تصدير التقرير": "Impossible d’exporter le rapport",
+  "تعذر إضافة الفئة.": "Impossible d’ajouter la catégorie.",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
