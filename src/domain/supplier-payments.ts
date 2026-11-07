@@ -11,6 +11,7 @@ export type SupplierPaymentRecord = {
 export type PurchasePaymentState = {
   total: number;
   paidCentimes?: number;
+  returnedCentimes?: number;
 };
 
 export function allocateSupplierPayment(
@@ -19,15 +20,17 @@ export function allocateSupplierPayment(
 ): { paidCentimes: number; remainingCentimes: number } {
   const totalCentimes = Math.round(purchase.total * 100);
   const paidCentimes = purchase.paidCentimes ?? 0;
+  const returnedCentimes = purchase.returnedCentimes ?? 0;
   if (!Number.isSafeInteger(totalCentimes) || totalCentimes < 0 ||
       !Number.isSafeInteger(paidCentimes) || paidCentimes < 0 ||
-      paidCentimes > totalCentimes) {
+      paidCentimes > totalCentimes || !Number.isSafeInteger(returnedCentimes) ||
+      returnedCentimes < 0 || returnedCentimes > totalCentimes) {
     throw new Error("رصيد الشراء غير صالح");
   }
   if (!Number.isSafeInteger(amountCentimes) || amountCentimes <= 0) {
     throw new Error("مبلغ الأداء خاصو يكون موجب وبالسنتيم");
   }
-  const remainingCentimes = totalCentimes - paidCentimes;
+  const remainingCentimes = Math.max(0, totalCentimes - returnedCentimes - paidCentimes);
   if (amountCentimes > remainingCentimes) {
     throw new Error("الأداء أكبر من الدين المتبقي للمورد");
   }
