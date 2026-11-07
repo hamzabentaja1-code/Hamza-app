@@ -1143,6 +1143,7 @@ const fr: Record<string, string> = {
   "تعذر اختيار الصورة": "Impossible de sélectionner l’image",
   "حذف المرفق ": "Supprimer la pièce jointe ",
   " يوم": " jour",
+  "يوم": "jour",
   "حذف الصورة": "Supprimer l’image",
   "الاسم=القيمة (كل حقل في سطر)": "Nom=valeur (un champ par ligne)",
   "اكتب كل حقل بهذا الشكل: الاسم=القيمة": "Saisissez chaque champ sous la forme : nom=valeur",
