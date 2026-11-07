@@ -151,7 +151,7 @@ test('primary screens have no untranslated static Arabic labels', () => {
     'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx',
     'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx', 'src/AccessiblePressable.tsx', 'src/ChequeWorkspace.tsx'];
   const dictionary = read('src/i18n.tsx');
-  const keys = new Set([...dictionary.matchAll(/^\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*:/gm)].map(match => match[1]));
+  const keys = new Set([...dictionary.matchAll(/^\s*"((?:[^"\\]|\\.)*)"\s*:/gm)].map(match => match[1]));
   for (const file of files) {
     const source = read(file);
     const labels = [...source.matchAll(/(['"])([^'"\\\n]{2,})\1/g)]
