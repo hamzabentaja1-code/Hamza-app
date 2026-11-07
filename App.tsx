@@ -378,7 +378,7 @@ export default function App() {
     const openingBalance=customers.find(c=>c.name===customerName)?.openingBalanceCentimes||0;
     const lines=[
       ...(openingBalance>0?[language==='FR'?`Solde initial dû : ${(openingBalance/100).toFixed(2)} DH`:`دين افتتاحي: ${(openingBalance/100).toFixed(2)} درهم`]:[]),
-      ...invoices.map(d=>{const total=Math.round(d.total*100),paid=d.paidCentimes||0;return language==='FR'?`Facture ${d.number} • ${d.date} • Total ${(total/100).toFixed(2)} DH • Payé ${(paid/100).toFixed(2)} DH • Reste ${((total-paid)/100).toFixed(2)} DH`:`فاتورة ${d.number} • ${d.date} • المجموع ${(total/100).toFixed(2)} • المؤدى ${(paid/100).toFixed(2)} • الباقي ${((total-paid)/100).toFixed(2)} درهم`;}),
+      ...invoices.map(d=>{const total=Math.round(d.total*100),paid=d.paidCentimes||0,due=d.dueDate||'';return language==='FR'?`Facture ${d.number} • ${d.date} • Échéance ${due||'—'} • Total ${(total/100).toFixed(2)} DH • Payé ${(paid/100).toFixed(2)} DH • Reste ${((total-paid)/100).toFixed(2)} DH`:`فاتورة ${d.number} • ${d.date} • الاستحقاق ${due||'—'} • المجموع ${(total/100).toFixed(2)} • المؤدى ${(paid/100).toFixed(2)} • الباقي ${((total-paid)/100).toFixed(2)} درهم`;}),
       ...customerPayments.map(p=>language==='FR'?`Paiement • ${p.date} • ${p.method} • ${p.amount.toFixed(2)} DH${p.documentId?' • Facture '+p.documentId:''}`:`أداء • ${p.date} • ${p.method} • ${p.amount.toFixed(2)} درهم${p.documentId?' • الفاتورة '+p.documentId:''}`),
     ];
     if(!lines.length)lines.push(language==='FR'?'Aucune facture ou paiement enregistré.':'ما كايناش فواتير أو أداءات مسجلة.');
@@ -503,7 +503,7 @@ export default function App() {
       :screen==='الفواتير'||screen==='Bon de sortie'?<>
         <Text style={s.section}>{screen==='الفواتير'?'الفواتير':'سندات الخروج'}</Text>
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':'delivery')).map(d=><View key={d.id} style={s.listItem}>
-          <View style={{flex:1}}><Text style={s.itemTitle}>{d.number} • {d.customerName}</Text><Text style={s.itemSub}>{d.date} • {d.status} • {d.lines.length} سطر</Text></View>
+          <View style={{flex:1}}><Text style={s.itemTitle}>{d.number} • {d.customerName}</Text><Text style={s.itemSub}>{d.date} • {d.status} • {d.lines.length} سطر</Text>{d.dueDate?<Text style={s.itemSub}>تاريخ الاستحقاق: {d.dueDate}</Text>:null}</View>
           <Text style={s.itemPrice}>{d.total.toFixed(2)} DH</Text>
           <Pressable onPress={()=>exportPdf(d.type==='invoice'?'Facture':'Bon de sortie',d.customerName,d.lines.map(line=>line.productName+' × '+line.qty+' — '+line.total.toFixed(2)+' DH'),d.total)}><Text style={s.gold}>PDF</Text></Pressable>
         </View>)}
