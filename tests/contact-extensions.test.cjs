@@ -13,13 +13,13 @@ test('multiple custom fields parse one name=value pair per line',()=>{
  assert.throws(()=>ext.parseContactCustomFieldsText(['ICE=123','Sans valeur'].join(String.fromCharCode(10)),'c'),/الاسم=القيمة/);
  assert.throws(()=>ext.parseContactCustomFieldsText(['ICE=1','ice=2'].join(String.fromCharCode(10)),'c'),/موجود من قبل/);
 });
-test('contact image attachments accept only bounded base64 images and can be removed',()=>{
+test('contact attachments accept bounded images and office documents and can be removed',()=>{
  const file={id:'a1',name:'photo.png',mimeType:'image/png',dataUri:'data:image/png;base64,AA==',createdAt:'2026-01-01'};
  const saved=ext.addContactAttachment([],file);
  assert.equal(saved.length,1);
  assert.equal(ext.removeContactAttachment(saved,'a1').length,0);
  assert.equal(ext.normalizeContactAttachments([{...file,dataUri:'file:///secret'}]).length,0);
- assert.equal(ext.normalizeContactAttachments([{...file,mimeType:'application/pdf'}]).length,0);
+ const pdf={...file,id:'pdf1',name:'contract.pdf',mimeType:'application/pdf',dataUri:'data:application/pdf;base64,JVBERi0x'};\n assert.equal(ext.addContactAttachment(saved,pdf).length,2);\n assert.equal(ext.normalizeContactAttachments([{...pdf,dataUri:'data:image/png;base64,AA=='}]).length,0);\n assert.equal(ext.normalizeContactAttachments([{...pdf,dataUri:'data:application/pdf;base64,'+'A'.repeat(5_500_001)}]).length,0);
 });
 test('price groups validate names and apply centime-safe discounts',()=>{
  const group={id:'retail',name:'Retail',discountPercent:12.5,active:true};
@@ -41,7 +41,7 @@ test('contact custom fields and saved image gallery are integrated for customers
  assert.ok(app.includes("openContactEditor('customer',c.id)"));
  assert.ok(app.includes("openContactEditor('supplier',x.id)"));
  assert.ok(app.includes('const saveContactEditor=()=>'));
- assert.ok(app.includes('const addExistingContactImage=async()=>'));
+ assert.ok(app.includes('const addExistingContactImage=async()=>'));\n assert.ok(app.includes('const addExistingContactDocument=async()=>'));\n assert.ok(app.includes('DocumentPicker.getDocumentAsync'));\n assert.ok(app.includes('FileSystem.readAsStringAsync'));\n assert.ok(app.includes('openContactDocument'));\n assert.ok(app.includes('expo-document-picker'));
  assert.ok(app.includes('addContactAttachment(contact.attachments||[],file)'));
  assert.ok(app.includes('setPhotoPreview(file.dataUri)'));
  assert.ok(app.includes('تعديل بيانات الزبون'));
