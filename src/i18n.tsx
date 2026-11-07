@@ -767,6 +767,8 @@ const fr: Record<string, string> = {
   "توزيع تلقائي على جميع الفواتير المستحقة": "Répartition automatique sur toutes les factures impayées",
   "توزع الأداء تلقائياً على الفواتير المستحقة.": "Le paiement a été réparti automatiquement sur les factures impayées.",
 
+  "تصدير التقرير PDF": "Exporter le rapport en PDF",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
