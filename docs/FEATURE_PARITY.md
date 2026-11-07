@@ -40,7 +40,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Bulk paste import and CSV export, image/name/reference/barcode search, saved product catalog
 
 ### Contacts
-- [ ] Customer and supplier profiles with phone/WhatsApp, address, ICE/RC/IF
+- [x] Basic customer and supplier profiles with phone, address and ICE
+- [ ] Extended company identifiers (RC/IF) and contact communication history
 - [x] Customer and supplier opening balances, credit ceilings and payment-term metadata
 - [x] Basic customer/supplier statement PDF exports from invoices, purchases and recorded payments
 - [ ] Attachments, contacts, custom fields, price groups
@@ -53,7 +54,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] PDF layouts, print, share, document numbering and status tracking
 
 ### Purchases
-- [ ] Price requests, supplier orders, goods receipts, supplier invoices
+- [x] Supplier purchase orders with expected delivery dates, partial/full goods receipts, stock updates and order PDF
+- [ ] Price requests, supplier invoices and supplier order comparison
 - [x] Supplier partial payment history with centime-safe allocation, receipts, and reversible payment entries
 - [x] Partial supplier returns with stock deduction, purchase linkage, supplier credit balances, account statement rows and reversal on delete
 - [ ] Supplier comparison, purchase tracking and purchase reports
