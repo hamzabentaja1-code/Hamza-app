@@ -451,3 +451,13 @@ test('POS parked sales can be resumed or deleted and are persisted by the app', 
   assert.match(app, /parkedPosCarts/);
   assert.match(app, /users,activeUserId,parkedPosCarts/);
 });
+
+
+test('variant stock count records the exact physical-count variance', () => {
+  const workspace = read('src/VariantWorkspace.tsx');
+  const domain = read('src/domain/variant-stock.ts');
+  assert.match(workspace, /kind:'stock_count'/);
+  assert.match(workspace, /quantityDelta:difference/);
+  assert.match(workspace, /الكمية الفعلية للنسخة/);
+  assert.match(domain, /'stock_count'/);
+});
