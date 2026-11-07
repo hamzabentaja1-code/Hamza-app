@@ -700,7 +700,7 @@ export default function App() {
         {cashMovements.length===0&&<Text style={s.empty}>الصندوق فارغ. سجل الرصيد الافتتاحي أولاً.</Text>}
         <Pressable style={s.action} onPress={()=>exportPdf('Journal de caisse','',cashMovements.map(item=>new Date(item.date).toLocaleDateString('fr-MA')+' — '+item.description+' — '+(item.kind==='cash_out'?'-':'+')+(item.amountCentimes/100).toFixed(2)+' DH'),cashOnHand/100)}><Text style={s.actionText}>تصدير سجل الصندوق PDF</Text></Pressable>
       </>
-      :screen==='تحليل الفترة'?<PeriodReportWorkspace sales={sales.map(x=>({date:x.date,amount:x.total}))} salesReturns={salesReturns.map(x=>({date:x.date,amount:x.total}))} purchases={purchases.map(x=>({date:x.date,amount:x.total}))} supplierReturns={supplierReturns.map(x=>({date:x.date,amount:x.amountCentimes/100}))} expenses={expenses.map(x=>({date:x.date,amount:x.amount}))}/>
+      :screen==='تحليل الفترة'?<PeriodReportWorkspace sales={sales.map(x=>({date:x.date,amount:x.total}))} salesReturns={salesReturns.map(x=>({date:x.date,amount:x.total}))} purchases={purchases.map(x=>({date:x.date,amount:x.total}))} supplierReturns={supplierReturns.map(x=>({date:x.date,amount:x.amountCentimes/100}))} expenses={expenses.map(x=>({date:x.date,amount:x.amount}))} purchaseRows={purchases.map(x=>({date:x.date,supplierName:x.supplierName,amount:x.total}))} supplierReturnRows={supplierReturns.map(x=>({date:x.date,supplierName:x.supplierName,amount:x.amountCentimes/100}))}/>
       :screen==='التقارير'?<>
         <View style={s.panel}>
           <Text style={s.panelTitle}>تقرير النشاط التجاري</Text>
