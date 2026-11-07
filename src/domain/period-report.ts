@@ -15,9 +15,10 @@ export function buildPeriodReport(input:{sales:DatedAmount[];salesReturns:DatedA
  const days=Math.floor((toMs-fromMs)/86400000)+1;
  const previousTo=new Date(fromMs-86400000).toISOString().slice(0,10);
  const previousFrom=new Date(fromMs-days*86400000).toISOString().slice(0,10);
- let unparsedDates=0;
+ const allRows=[...input.sales,...input.salesReturns,...input.purchases,...input.supplierReturns,...input.expenses];
+ const unparsedDates=allRows.filter(row=>!agendaDateKey(row.date)).length;
  const filter=(rows:DatedAmount[],start:string,end:string)=>rows.filter(row=>{
-  const key=agendaDateKey(row.date);if(!key){unparsedDates++;return false;}return key>=start&&key<=end;
+  const key=agendaDateKey(row.date);return !!key&&key>=start&&key<=end;
  });
  const current=summarize({sales:filter(input.sales,from,to),salesReturns:filter(input.salesReturns,from,to),purchases:filter(input.purchases,from,to),supplierReturns:filter(input.supplierReturns,from,to),expenses:filter(input.expenses,from,to)});
  const previous=summarize({sales:filter(input.sales,previousFrom,previousTo),salesReturns:filter(input.salesReturns,previousFrom,previousTo),purchases:filter(input.purchases,previousFrom,previousTo),supplierReturns:filter(input.supplierReturns,previousFrom,previousTo),expenses:filter(input.expenses,previousFrom,previousTo)});
