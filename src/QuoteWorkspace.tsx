@@ -14,7 +14,7 @@ export type QuoteRecord = {
   unitPrice:number; total:number; date:string; status:string;
   lines?:QuoteLine[]; notes?:string; documentDiscount?:number; validUntil?:string;
 };
-export type QuoteConversionType = 'invoice' | 'delivery';
+export type QuoteConversionType = 'invoice' | 'delivery' | 'proforma';
 type Props = {
   products:Product[];
   customers:Customer[];
@@ -164,7 +164,7 @@ export default function QuoteWorkspace({products,customers,quotes,quotePrefix,on
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:8}}>
         <Pressable onPress={()=>onPdf('Devis '+(q.number||('DEV-'+q.id)),q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[])],q.total)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
         <Pressable onPress={()=>{if(q.status==='مرفوض'||(q.status!=='مقبول'&&q.validUntil&&q.validUntil<new Date().toISOString().slice(0,10))){showAlert('العرض غير صالح','ما يمكنش تحويل عرض مرفوض أو منتهي.');return;}onConvert(q,'delivery');}} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>سند خروج</Text></Pressable>
-        <Pressable onPress={()=>{if(q.status==='مرفوض'||(q.status!=='مقبول'&&q.validUntil&&q.validUntil<new Date().toISOString().slice(0,10))){showAlert('العرض غير صالح','ما يمكنش تحويل عرض مرفوض أو منتهي.');return;}onConvert(q,'invoice');}} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>فاتورة</Text></Pressable>
+        <Pressable onPress={()=>{if(q.status==='مرفوض'||(q.status!=='مقبول'&&q.validUntil&&q.validUntil<new Date().toISOString().slice(0,10))){showAlert('العرض غير صالح','ما يمكنش تحويل عرض مرفوض أو منتهي.');return;}onConvert(q,'invoice');}} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>فاتورة</Text></Pressable><Pressable onPress={()=>{if(q.status==='مرفوض'||(q.status!=='مقبول'&&q.validUntil&&q.validUntil<new Date().toISOString().slice(0,10))){showAlert('العرض غير صالح','ما يمكنش تحويل عرض مرفوض أو منتهي.');return;}onConvert(q,'proforma');}} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>Proforma</Text></Pressable>
         {q.status!=='مقبول'?<Pressable onPress={()=>onUpdate({...q,status:'مقبول'})} style={{padding:9,borderWidth:1,borderColor:'#4D9D82',borderRadius:8}}><Text style={{color:'#4D9D82',fontWeight:'800'}}>قبول العرض</Text></Pressable>:null}
         {q.status!=='مرفوض'?<Pressable onPress={()=>onUpdate({...q,status:'مرفوض'})} style={{padding:9,borderWidth:1,borderColor:'#B76C5A',borderRadius:8}}><Text style={{color:'#B76C5A',fontWeight:'800'}}>رفض العرض</Text></Pressable>:null}
         <Pressable onPress={()=>showAlert('حذف عرض السعر؟',q.number||q.customerName,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>onDelete(q.id)}])} style={{padding:9,borderWidth:1,borderColor:'#B76C5A',borderRadius:8}}><Text style={{color:'#B76C5A',fontWeight:'800'}}>حذف</Text></Pressable>
