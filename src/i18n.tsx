@@ -483,6 +483,25 @@ const fr: Record<string, string> = {
   "مرتجع مورد • ": "Retour fournisseur • ",
   "لنا رصيد عند المورد": "Avoir chez le fournisseur",
   "مازال ما تسجل حتى مرتجع للموردين.": "Aucun retour fournisseur enregistré.",
+
+  "الشهر السابق": "Mois précédent",
+  "الشهر التالي": "Mois suivant",
+  "عرض الشهر السابق في التقويم": "Afficher le mois précédent dans le calendrier",
+  "عرض الشهر التالي في التقويم": "Afficher le mois suivant dans le calendrier",
+  "الاثنين": "Lundi",
+  "الثلاثاء": "Mardi",
+  "الأربعاء": "Mercredi",
+  "الخميس": "Jeudi",
+  "الجمعة": "Vendredi",
+  "السبت": "Samedi",
+  "الأحد": "Dimanche",
+  "يوم من الشهر": "Jour du mois",
+  "يوم من شهر مجاور": "Jour d’un mois voisin",
+  "مواعيد": "événements",
+  "اضغط لعرض مواعيد هذا اليوم": "Appuyer pour afficher les événements de ce jour",
+  "اختار نهار باش تشوف المواعيد ديالو": "Choisissez un jour pour voir ses événements",
+  "فتح القسم المرتبط بهذا الموعد": "Ouvrir le module associé à cet événement",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
