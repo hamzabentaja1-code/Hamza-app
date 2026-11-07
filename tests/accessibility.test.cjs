@@ -446,7 +446,7 @@ test('POS parked sales can be resumed or deleted and are persisted by the app', 
   const app = read('App.tsx');
   assert.match(pos, /onPark\(currentCart\)/);
   assert.match(pos, /parkedCarts\.map/);
-  assert.match(pos, /onResume\(item\.id\)/);
+  assert.match(pos, /resume\(item\.id\)/);
   assert.match(pos, /onDeleteParked\(item\.id\)/);
   assert.match(app, /parkedPosCarts/);
   assert.match(app, /users,activeUserId,parkedPosCarts/);
