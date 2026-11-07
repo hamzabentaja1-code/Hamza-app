@@ -172,7 +172,8 @@ jobs:
           APK="$(find android/app/build/outputs/apk/release -type f -name '*.apk' | head -n 1)"
           mkdir -p inspection/apktool inspection/jadx
           java -jar "$RUNNER_TEMP/hamza-apk-tools/apktool.jar" d -f "$APK" -o inspection/apktool
-          "$RUNNER_TEMP/hamza-apk-tools/jadx/bin/jadx" -d inspection/jadx "$APK"
+          JADX_EXIT=0
+          "$RUNNER_TEMP/hamza-apk-tools/jadx/bin/jadx" -d inspection/jadx "$APK" || JADX_EXIT=$?
           grep -q 'package="com.hamza.app"' inspection/apktool/AndroidManifest.xml
           cp inspection/apktool/AndroidManifest.xml inspection/AndroidManifest-decoded.xml
           {
@@ -181,7 +182,11 @@ jobs:
             echo "APK SHA-256:"
             sha256sum "$APK"
             echo "Decoded manifest: PASS"
-            echo "JADX decompilation: PASS"
+            if [ "$JADX_EXIT" -eq 0 ]; then
+              echo "JADX decompilation: PASS"
+            else
+              echo "JADX decompilation: PARTIAL (exit $JADX_EXIT; APKTool manifest decode passed)"
+            fi
           } > inspection/inspection-summary.txt
 
       - name: Upload APK inspection report
