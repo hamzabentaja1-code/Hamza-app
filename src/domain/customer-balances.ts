@@ -3,6 +3,7 @@ export type InvoiceBalanceRecord = {
   customerName:string;
   total:number;
   paidCentimes?:number;
+  date?:string;
 };
 export type CustomerOpeningBalanceRecord = { customerName: string; openingBalanceCentimes?: number };
 export type CustomerCreditNoteRecord = {id?:number;customerName:string;total:number;date?:string};
@@ -70,8 +71,8 @@ export function calculateCustomerBalances(
   for(const [name,availableCredit] of creditsByCustomer){
     let remainingCredit=availableCredit;
     const invoices=(invoicesByCustomer.get(name)||[]).slice().sort((a,b)=>{
-      const dateA='date' in a&&typeof a.date==='string'?a.date:'';
-      const dateB='date' in b&&typeof b.date==='string'?b.date:'';
+      const dateA=a.date||'';
+      const dateB=b.date||'';
       return dateA.localeCompare(dateB);
     });
     for(const invoice of invoices){
