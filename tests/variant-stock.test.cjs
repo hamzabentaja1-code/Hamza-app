@@ -18,7 +18,9 @@ test('rejects duplicate IDs, SKU and normalized attribute combinations', () => {
   const first = createProductVariant(variant());
   assert.throws(() => createProductVariant(variant(),[first]), /معرف النسخة/);
   assert.throws(() => createProductVariant(variant({id:'v-2'}),[first]), /مرجع النسخة/);
-  assert.throws(() => createProductVariant(variant({id:'v-3',sku:'OTHER',attributes:{size:'m',color:'BLACK'}}),[first]), /نفس خصائص النسخة/);\n  assert.throws(() => createProductVariant(variant({id:'v-4',sku:'OTHER',barcode:'123456'}),[first]), /باركود النسخة/);\n  assert.throws(() => createProductVariant(variant({id:'v-5',sku:'OTHER',attributes:{Color:'black',color:'blue'}})), /أسماء مكررة/);
+  assert.throws(() => createProductVariant(variant({id:'v-3',sku:'OTHER',attributes:{size:'m',color:'BLACK'}}),[first]), /نفس خصائص النسخة/);
+  assert.throws(() => createProductVariant(variant({id:'v-4',sku:'OTHER',barcode:'123456'}),[first]), /باركود النسخة/);
+  assert.throws(() => createProductVariant(variant({id:'v-5',sku:'OTHER',attributes:{Color:'black',color:'blue'}})), /أسماء مكررة/);
 });
 
 test('rejects invalid stock, prices and empty attributes', () => {
@@ -35,7 +37,9 @@ test('purchase, sale and return movements update only the selected variant', () 
   const sold=applyVariantStockMovement(purchased.variants,{id:'m-2',variantId:'v-1',kind:'sale',quantityDelta:-2,date:'2026-11-02'},[purchased.movement]);
   assert.equal(sold.variants[0].stockQty,6);
   const returned=applyVariantStockMovement(sold.variants,{id:'m-3',variantId:'v-1',kind:'return_in',quantityDelta:1,date:'2026-11-03'},[purchased.movement,sold.movement]);
-  assert.equal(returned.variants[0].stockQty,7);\n  const adjusted=applyVariantStockMovement(returned.variants,{id:'m-4',variantId:'v-1',kind:'adjustment',quantityDelta:-2,date:'2026-11-04'},[purchased.movement,sold.movement,returned.movement]);\n  assert.equal(adjusted.variants[0].stockQty,5);
+  assert.equal(returned.variants[0].stockQty,7);
+  const adjusted=applyVariantStockMovement(returned.variants,{id:'m-4',variantId:'v-1',kind:'adjustment',quantityDelta:-2,date:'2026-11-04'},[purchased.movement,sold.movement,returned.movement]);
+  assert.equal(adjusted.variants[0].stockQty,5);
 });
 
 test('prevents negative stock, duplicate movements, wrong signs and inactive variants', () => {
