@@ -1196,6 +1196,7 @@ const fr: Record<string, string> = {
   "نسبة خصم مجموعة الأسعار غير صالحة": "Le taux de remise du groupe est invalide",
 
   "معلومات غير مكتملة": "Informations incomplètes",
+  "مساحة الملفات المؤقتة غير متاحة": "Espace de fichiers temporaire indisponible",
   "تصدير التقرير Excel (XLSX)": "Exporter le rapport Excel (XLSX)",
   "تعذر تصدير Excel": "Impossible d’exporter Excel",
   "ما قدرناش نوجدوا ملف Excel للمشاركة.": "Impossible de préparer le fichier Excel pour le partage.",
