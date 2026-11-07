@@ -13,8 +13,8 @@ test('allocates supplier payment oldest-first across open purchases',()=>{
  assert.equal(result.purchases.find(x=>x.id===3).paidCentimes,0);
 });
 test('supplier returns reduce allocatable purchase debt',()=>{
- const result=allocateSupplierPaymentAcrossPurchases([{id:1,supplierName:'Supplier A',total:100,paidCentimes:2000,returnedCentimes:3000}],'Supplier A',6500);
- assert.equal(result.purchases[0].paidCentimes,8500);
+ const result=allocateSupplierPaymentAcrossPurchases([{id:1,supplierName:'Supplier A',total:100,paidCentimes:2000,returnedCentimes:3000}],'Supplier A',5000);
+ assert.equal(result.purchases[0].paidCentimes,7000);
 });
 test('rejects overpayment and suppliers without outstanding purchases',()=>{
  assert.throws(()=>allocateSupplierPaymentAcrossPurchases(rows(),'Supplier A',16001));
