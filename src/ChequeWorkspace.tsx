@@ -46,7 +46,7 @@ export default function ChequeWorkspace({cheques,events,bankAccounts,onAdd,onTra
     return [];
   };
   const transition=(cheque:ChequeRecord,next:ChequeStatus)=>{
-    onTransition(cheque,next,{id:'cheque-event-'+Date.now(),date:new Date().toISOString().slice(0,10),note:''});
+    onTransition(cheque,next,{id:'cheque-event-'+cheque.id+'-'+events.length+'-'+Date.now(),date:new Date().toISOString().slice(0,10),note:''});
   };
   const incoming=cheques.filter(x=>x.direction==='incoming');
   const outgoing=cheques.filter(x=>x.direction==='outgoing');
