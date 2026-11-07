@@ -29,7 +29,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Product name search and product edit flow
 - [x] Basic free-text category, brand, unit and variant metadata in product cards, search, bulk import and CSV export
 - [x] Managed product category and brand dictionaries with quick selection and local backup/restore
-- [ ] Variant stock matrices and multiple images per product
+- [x] Product photo gallery supports up to four images, preview, per-image removal and persisted local product records
+- [ ] Variant stock matrices
 - [x] Product purchase cost, sale price and unit margin when cost is recorded
 - [x] Weighted average cost updates on purchases when the previous stock cost is known
 - [x] Sale-time cost snapshots and tested gross-profit calculation; legacy sales without a cost are excluded
