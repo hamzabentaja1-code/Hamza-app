@@ -33,6 +33,8 @@ import {calculateCustomerBalances} from './src/domain/customer-balances';
 import {calculateSalesProfit} from './src/domain/profit';
 import {calculateSupplierBalances} from './src/domain/supplier-balances';
 import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput, translateText} from './src/i18n';
+import {buildCommercialPdfHtml} from './src/domain/commercial-pdf';
+
 import AccessiblePressable from './src/AccessiblePressable';
 const Pressable = AccessiblePressable;
 import {InventoryMovement, Warehouse, DEFAULT_WAREHOUSE_ID, appendInventoryMovement, createStockCount, inventoryBalance, inventoryBalanceForWarehouse, createWarehouseTransfer} from './src/domain/inventory-ledger';
@@ -691,12 +693,7 @@ export default function App() {
   };
   const exportPdf=async(title:string,customerName:string,lines:string[],total:number,showTotal=true)=>{
     try{
-      const rtl=language==='AR';
-      const labels=rtl
-        ? {client:'الزبون',date:'التاريخ',total:'TTC',ht:'HT',vat:'TVA',thanks:'شكراً على ثقتكم'}
-        : {client:'Client',date:'Date',total:'TTC',ht:'HT',vat:'TVA',thanks:'Thank you for your trust'};
-      const direction=rtl?'rtl':'ltr';
-      const logo=companyProfile.logoData&&(companyProfile.logoData.startsWith('file://')||companyProfile.logoData.startsWith('data:image/'))?`<img src="${htmlSafe(companyProfile.logoData)}" style="max-width:110px;max-height:90px;object-fit:contain"/>`:'';const companyDetails=[companyProfile.address,companyProfile.phone,companyProfile.email,companyProfile.ice?'ICE: '+companyProfile.ice:'',companyProfile.rc?'RC: '+companyProfile.rc:'',companyProfile.taxId?'IF: '+companyProfile.taxId:'',companyProfile.bankName?(language==='FR'?'Banque : ':'البنك: ')+companyProfile.bankName:'',companyProfile.bankAccount?(language==='FR'?'Compte : ':'الحساب: ')+companyProfile.bankAccount:'',companyProfile.bankRib?(language==='FR'?'RIB : ':'RIB: ')+companyProfile.bankRib:'',companyProfile.bankIban?(language==='FR'?'IBAN : ':'IBAN: ')+companyProfile.bankIban:''].filter(Boolean).map(htmlSafe).join(' • ');const html=`<html lang="${rtl?'ar':'fr'}" dir="${direction}"><meta charset="utf-8"><body style="font-family:Arial,sans-serif;padding:28px;color:#222;direction:${direction};text-align:${rtl?'right':'left'}">${logo}<h1 style="color:#9A762D">${htmlSafe(companyProfile.name||'HamZa')}</h1><p>${companyDetails}</p><h2>${htmlSafe(title)}</h2><p>${labels.client}: ${htmlSafe(customerName||'—')}</p><p>${labels.date}: ${new Date().toLocaleDateString(rtl?'ar-MA':'fr-MA')}</p><hr/>${lines.map(x=>`<p>${htmlSafe(x)}</p>`).join('')}${showTotal?(companyProfile.showTaxFields?`<hr/><p>${labels.ht}: ${(total/(1+companyProfile.taxRate/100)).toFixed(2)} DH</p><p>${labels.vat} (${companyProfile.taxRate}%): ${(total-total/(1+companyProfile.taxRate/100)).toFixed(2)} DH</p><h2>${labels.total}: ${total.toFixed(2)} DH</h2>`:`<hr/><h2>${labels.total}: ${total.toFixed(2)} DH</h2>`):''}<p>${labels.thanks}</p></body></html>`;
+      const html=buildCommercialPdfHtml({language,title,customerName,lines,total,showTotal,companyProfile,dateLabel:new Date().toLocaleDateString(language==='AR'?'ar-MA':'fr-MA')});
       const file=await Print.printToFileAsync({html});
       if(await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri,{mimeType:'application/pdf',dialogTitle:title});
       else showAlert('PDF جاهز',file.uri);
