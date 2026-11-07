@@ -233,6 +233,8 @@ appId: com.hamza.app
 - inputText: "التقارير"
 - tapOn: "التقارير"
 - assertVisible: "تقرير النشاط التجاري"
+- assertVisible: "تقرير ديون الموردين"
+- assertVisible: "تقرير الصندوق"
 - tapOn: "الرئيسية"
 
 # French: verify the language switch and translated navigation/content.
@@ -393,4 +395,17 @@ appId: com.hamza.app
 - assertVisible: "Informations de l’entreprise et facturation"
 - assertVisible: "Nom de l’entreprise"
 - assertVisible: "Enregistrer les informations de l’entreprise"
+- tapOn: "Accueil"
+
+# French: supplier debt and cash reports are translated.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "التقارير"
+- tapOn: "Rapports"
+- assertVisible: "Rapport des dettes fournisseurs"
+- assertVisible: "Rapport de caisse"
 - tapOn: "Accueil"
