@@ -37,3 +37,11 @@ test('technician permissions are configurable in the field operations workspace'
  assert.match(workspace,/category:orderCategory/);
  assert.match(workspace,/WORK_ORDER_CATEGORIES\.map/);
 });
+
+test('time entries enforce the assigned technician and category permission',()=>{
+ const active={...transitionWorkOrderStatus(transitionWorkOrderStatus(order,'scheduled'),'in_progress'),technicianId:'tech1',category:'repair'};
+ const installer={...tech,permissions:['installation']};
+ assert.throws(()=>createWorkTimeEntry({id:'time-denied',workOrderId:'wo1',technicianId:'tech1',date:'2026-11-07',hours:1,hourlyRate:80},active,installer),/غير مخول/);
+ const allowed={...active,category:'installation'};
+ assert.throws(()=>createWorkTimeEntry({id:'time-other',workOrderId:'wo1',technicianId:'tech2',date:'2026-11-07',hours:1,hourlyRate:80},{...allowed,technicianId:'tech1'},{...tech,id:'tech2'}),/غير مخول/);
+});
