@@ -14,6 +14,7 @@ import {calculateSalesProfit} from './src/domain/profit';
 import {calculateSupplierBalances} from './src/domain/supplier-balances';
 import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput} from './src/i18n';
 import {InventoryMovement, appendInventoryMovement, createStockCount} from './src/domain/inventory-ledger';
+import {calculateSalesReturn, remainingReturnQuantity, totalReturnProfitAdjustment} from './src/domain/sales-returns';
 
 const GOLD = '#D6AE55';
 const htmlSafe=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
@@ -80,7 +81,7 @@ export default function App() {
   const potentialStockProfit=useMemo(()=>products.reduce((sum,p)=>sum+(p.price-(p.costPrice||0))*p.qty,0),[products]);
   const salesTotal=useMemo(()=>sales.reduce((a,x)=>a+x.total,0)-salesReturns.reduce((a,x)=>a+x.total,0),[sales,salesReturns]);
   const profitSummary=useMemo(()=>calculateSalesProfit(sales.map(x=>({total:x.total,quantity:x.qty,unitCost:x.costPrice}))),[sales]);
-  const grossProfit=profitSummary.grossProfit-salesReturns.reduce((sum,item)=>sum+(item.costPrice===undefined?0:item.total-item.qty*item.costPrice),0);
+  const grossProfit=profitSummary.grossProfit-totalReturnProfitAdjustment(salesReturns);
   const untrackedSalesCount=profitSummary.untrackedSalesCount;
   const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
   const customerBalances=useMemo(()=>calculateCustomerBalances(documents),[documents]);
@@ -142,11 +143,11 @@ export default function App() {
   const addSalesReturn=()=>{
     const sale=sales.find(item=>String(item.id)===returnSaleId);
     const quantity=Number(returnQuantity);
-    const alreadyReturned=salesReturns.filter(item=>item.saleId===sale?.id).reduce((sum,item)=>sum+item.qty,0);
-    if(!sale||!Number.isSafeInteger(quantity)||quantity<1||quantity>sale.qty-alreadyReturned){Alert.alert('كمية الإرجاع غير صالحة','اختار عملية بيع ودخل كمية لا تتجاوز الكمية التي لم تُرجع بعد.');return;}
+    if(!sale){Alert.alert('كمية الإرجاع غير صالحة','اختار عملية بيع صالحة أولاً.');return;}
+    let calculation;
+    try{calculation=calculateSalesReturn(sale,salesReturns,quantity);}catch(error){Alert.alert('كمية الإرجاع غير صالحة',error instanceof Error?error.message:'راجع كمية الإرجاع.');return;}
     const productId=sale.productId??products.find(p=>p.name===sale.productName)?.id;
-    const unitPrice=sale.total/sale.qty;
-    const record:SalesReturn={id:Date.now(),saleId:sale.id,productId,productName:sale.productName,customerName:sale.customerName,qty:quantity,unitPrice,total:Number((unitPrice*quantity).toFixed(2)),costPrice:sale.costPrice,date:new Date().toLocaleDateString('fr-MA'),reason:returnReason.trim(),restocked:returnRestock};
+    const record:SalesReturn={id:Date.now(),saleId:sale.id,productId,productName:sale.productName,customerName:sale.customerName,qty:quantity,unitPrice:calculation.unitPrice,total:calculation.total,costPrice:sale.costPrice,date:new Date().toLocaleDateString('fr-MA'),reason:returnReason.trim(),restocked:returnRestock};
     if(returnRestock){const product=products.find(p=>p.id===productId);if(!product){Alert.alert('المنتج غير موجود','لا يمكن إعادة الكمية للمخزون لأن المنتج غير موجود.');return;}if(!recordInventoryMovement({id:'return-in-'+record.id,productId:product.id,productName:product.name,kind:'return_in',quantityDelta:quantity,date:new Date().toISOString(),sourceId:String(sale.id),unitCost:sale.costPrice,note:record.reason||'إرجاع زبون وإعادة للمخزون'}))return;setProducts(current=>current.map(p=>p.id===product.id?{...p,qty:p.qty+quantity}:p));}
     setSalesReturns(current=>[record,...current]);setReturnSaleId('');setReturnQuantity('1');setReturnReason('');Alert.alert('تم تسجيل المرتجع','قيمة الإرجاع: '+record.total.toFixed(2)+' DH');
   };
@@ -311,7 +312,7 @@ export default function App() {
       :screen==='المرتجعات'?<>
          <View style={s.panel}>
            <Text style={s.panelTitle}>تسجيل مرتجع زبون</Text>
-           {sales.filter(sale=>sale.qty>salesReturns.filter(item=>item.saleId===sale.id).reduce((sum,item)=>sum+item.qty,0)).map(sale=>{const remaining=sale.qty-salesReturns.filter(item=>item.saleId===sale.id).reduce((sum,item)=>sum+item.qty,0);return <Pressable key={sale.id} onPress={()=>{setReturnSaleId(String(sale.id));setReturnQuantity('1');}} style={[s.choice,returnSaleId===String(sale.id)&&s.choiceActive]}><Text style={s.itemTitle}>{sale.productName} • {sale.customerName}</Text><Text style={s.itemSub}>{sale.date} • الكمية المتبقية للإرجاع: {remaining}</Text></Pressable>;})}
+           {sales.filter(sale=>remainingReturnQuantity(sale,salesReturns)>0).map(sale=>{const remaining=remainingReturnQuantity(sale,salesReturns);return <Pressable key={sale.id} onPress={()=>{setReturnSaleId(String(sale.id));setReturnQuantity('1');}} style={[s.choice,returnSaleId===String(sale.id)&&s.choiceActive]}><Text style={s.itemTitle}>{sale.productName} • {sale.customerName}</Text><Text style={s.itemSub}>{sale.date} • الكمية المتبقية للإرجاع: {remaining}</Text></Pressable>;})}
            {sales.length===0&&<Text style={s.empty}>ما كايناش مبيعات مسجلة.</Text>}
            <TextInput value={returnQuantity} onChangeText={setReturnQuantity} keyboardType="number-pad" placeholder="كمية الإرجاع" placeholderTextColor="#888" style={s.input}/>
            <TextInput value={returnReason} onChangeText={setReturnReason} placeholder="سبب الإرجاع (اختياري)" placeholderTextColor="#888" style={s.input}/>
