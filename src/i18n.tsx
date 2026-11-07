@@ -786,6 +786,11 @@ const fr: Record<string, string> = {
   "حفظ فئة جديدة": "Enregistrer une nouvelle catégorie",
   "حفظ ماركة جديدة": "Enregistrer une nouvelle marque",
 
+  "إضافة صور (حتى 4)": "Ajouter des photos (jusqu’à 4)",
+  "حذف جميع الصور": "Supprimer toutes les photos",
+  "معاينة صورة المنتج ": "Aperçu de la photo du produit ",
+  "حذف الصورة ": "Supprimer la photo ",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
