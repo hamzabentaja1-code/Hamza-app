@@ -1385,6 +1385,11 @@ const fr: Record<string, string> = {
   "دخل مبلغاً أكبر من صفر.": "Saisissez un montant supérieur à zéro.",
   "رسوم إضافية: ": "Frais supplémentaires : ",
   " درهم": " DH",
+  "إضافة عنوان قسم داخل العرض": "Ajouter un titre de section au devis",
+  "عنوان القسم": "Titre de section",
+  "+ إضافة قسم": "+ Ajouter une section",
+  "عنوان القسم مطلوب": "Titre de section requis",
+  "كتب عنواناً للقسم قبل إضافته.": "Saisissez un titre avant d’ajouter la section."
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
