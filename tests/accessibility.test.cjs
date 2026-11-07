@@ -268,3 +268,21 @@ test('stock count UI accepts whole units only before submitting', () => {
   assert.match(app, /Number\\.isSafeInteger\\(counted\\)/);
   assert.match(app, /keyboardType="number-pad" placeholder="الكمية المعدودة فعلياً"/);
 });
+
+test('inventory movement history is isolated to the active warehouse', () => {
+  const app = read('App.tsx');
+  assert.match(app, /inventoryMovements\.filter\(m=>\(m\.warehouseId\|\|DEFAULT_WAREHOUSE_ID\)===activeWarehouseId\)\.slice\(\)\.sort/);
+  assert.match(app, /سجل حركات المخزون \(\{inventoryMovements\.filter/);
+});
+
+test('stock count screen and movement labels have French translations', () => {
+  const translations = read('src/i18n.tsx');
+  for (const label of [
+    'سجل حركات المخزون', 'المسجل فالمخزن:', 'المخزون السابق: ',
+    'المعدود: ', 'الفرق: ', 'تم تسجيل الجرد', 'تعذر تسجيل الجرد',
+    'اختار المنتج ودخل الكمية المعدودة بشكل صحيح.',
+    'مازال ما تسجلات حتى حركة مخزون.',
+    'رصيد افتتاحي', 'شراء', 'بيع', 'سند خروج', 'جرد',
+    'إرجاع زبون', 'إلغاء مرتجع', 'استلام تحويل', 'تحويل صادر', 'تعديل',
+  ]) assert.ok(translations.includes('"' + label + '"'), 'missing French translation for ' + label);
+});
