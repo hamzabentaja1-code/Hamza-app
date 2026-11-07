@@ -395,3 +395,16 @@ test('proforma invoices have their own series and document screen without affect
   assert.match(quote, /onConvert\(q,'proforma'\)/);
   assert.match(conversion, /type!=='proforma'&&/);
 });
+
+test('period analytics exports summary, monthly trend and supplier comparison as CSV', () => {
+  const screen = read('src/PeriodReportWorkspace.tsx');
+  const app = read('App.tsx');
+  assert.match(screen, /onExportCsv:\(title:string,rows:string\[\]\[\]\)=>void/);
+  assert.match(screen, /const exportCsv=/);
+  assert.match(screen, /Tendance mensuelle/);
+  assert.match(screen, /Fournisseur/);
+  assert.match(screen, /تصدير التقرير CSV/);
+  assert.match(app, /onExportCsv=\{\(title,rows\)=>/);
+  assert.match(app, /join\('\\n'\)/);
+  assert.match(read('src/i18n.tsx'), /"تصدير التقرير CSV":/);
+});
