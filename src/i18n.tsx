@@ -923,6 +923,21 @@ const fr: Record<string, string> = {
   "العرض غير صالح": "Devis non valide",
   "ما يمكنش تحويل عرض مرفوض أو منتهي.": "Un devis refusé ou expiré ne peut pas être converti.",
 
+
+  "معرف الشيك ورقمه واسم الطرف الآخر مطلوبة": "L’identifiant, le numéro du chèque et le nom de l’autre partie sont obligatoires",
+  "معرف الشيك مسجل من قبل": "Cet identifiant de chèque existe déjà",
+  "رقم الشيك مسجل من قبل في نفس الاتجاه": "Ce numéro de chèque existe déjà dans le même sens",
+  "مبلغ الشيك خاصو يكون موجب وبالسنتيم": "Le montant du chèque doit être positif et exprimé en centimes",
+  "تاريخ الشيك غير صالح": "Date du chèque invalide",
+  "تاريخ الاستحقاق ما يقدرش يسبق تاريخ الشيك": "La date d’échéance ne peut pas précéder la date du chèque",
+  "الحساب البنكي غير صالح": "Compte bancaire invalide",
+  "معرف وتاريخ حركة الشيك مطلوبان": "L’identifiant et la date du mouvement de chèque sont obligatoires",
+  "تاريخ حركة الشيك ما يقدرش يسبق آخر تحديث": "La date du mouvement ne peut pas précéder la dernière mise à jour",
+  "انتقال حالة الشيك غير مسموح": "Cette transition de statut du chèque n’est pas autorisée",
+  "حدد الحساب البنكي قبل إيداع أو تسوية الشيك": "Sélectionnez un compte bancaire avant de déposer ou régler le chèque",
+  "حركة المخزون مسجلة من قبل أو معرفها غير صالح": "Ce mouvement est déjà enregistré ou son identifiant est invalide",
+  "النسخة غير موجودة أو غير نشطة": "La variante est introuvable ou inactive",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
