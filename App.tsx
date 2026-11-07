@@ -422,8 +422,8 @@ export default function App() {
     const qty=Number(supplierReturnQuantity);
     try{
       const record=calculateSupplierReturn(purchase,supplierReturns,{id:Date.now(),qty,date:new Date().toISOString(),reason:supplierReturnReason});
-      if(!recordInventoryMovement({id:'supplier-return-'+record.id,productId:product.id,productName:product.name,kind:'return_out',quantityDelta:-qty,date:record.date,sourceId:String(purchase.id),note:'مرتجع للمورد: '+record.reason,unitCost:purchase.unitCost,warehouseId:purchase.warehouseId||DEFAULT_WAREHOUSE_ID}))return;
-      setProducts(current=>current.map(x=>x.id===product.id?{...x,qty:inventoryBalance(inventoryMovements,x.id)-qty}:x));
+      if(purchase.variantId){if(!recordVariantMovement({id:'variant-supplier-return-'+record.id,variantId:purchase.variantId,kind:'return_out',quantityDelta:-qty,date:record.date.slice(0,10),reference:String(purchase.id),note:'مرتجع للمورد: '+record.reason}))return;}else{if(!recordInventoryMovement({id:'supplier-return-'+record.id,productId:product.id,productName:product.name,kind:'return_out',quantityDelta:-qty,date:record.date,sourceId:String(purchase.id),note:'مرتجع للمورد: '+record.reason,unitCost:purchase.unitCost,warehouseId:purchase.warehouseId||DEFAULT_WAREHOUSE_ID}))return;
+      setProducts(current=>current.map(x=>x.id===product.id?{...x,qty:inventoryBalance(inventoryMovements,x.id)-qty}:x));}
       setPurchases(current=>current.map(x=>x.id===purchase.id?{...x,returnedCentimes:(x.returnedCentimes||0)+record.amountCentimes}:x));
       setSupplierReturns(current=>[record,...current]);logActivity('مرتجع مورد',record.supplierName+' • '+(record.amountCentimes/100).toFixed(2)+' DH');
       setSupplierReturnPurchaseId(null);setSupplierReturnQuantity('1');setSupplierReturnReason('');
@@ -435,9 +435,9 @@ export default function App() {
     const product=purchase&&(products.find(x=>x.id===purchase.productId)||products.find(x=>x.name===purchase.productName));
     if(!purchase||!product){showAlert('تعذر حذف المرتجع','الشراء أو المنتج المرتبط غير موجود.');return;}
     try{
-      const next=appendInventoryMovement(inventoryMovements,{id:'supplier-return-reversal-'+item.id,productId:product.id,productName:product.name,kind:'adjustment',quantityDelta:item.qty,date:new Date().toISOString(),sourceId:String(item.id),warehouseId:purchase.warehouseId||DEFAULT_WAREHOUSE_ID,note:'عكس مرتجع المورد'});
+      if(purchase.variantId){if(!recordVariantMovement({id:'variant-supplier-return-reversal-'+item.id,variantId:purchase.variantId,kind:'adjustment',quantityDelta:item.qty,date:new Date().toISOString().slice(0,10),reference:String(item.id),note:'عكس مرتجع المورد'}))return;}else{const next=appendInventoryMovement(inventoryMovements,{id:'supplier-return-reversal-'+item.id,productId:product.id,productName:product.name,kind:'adjustment',quantityDelta:item.qty,date:new Date().toISOString(),sourceId:String(item.id),warehouseId:purchase.warehouseId||DEFAULT_WAREHOUSE_ID,note:'عكس مرتجع المورد'});
       setInventoryMovements(next);
-      setProducts(current=>current.map(x=>x.id===product.id?{...x,qty:inventoryBalance(next,product.id)}:x));
+      setProducts(current=>current.map(x=>x.id===product.id?{...x,qty:inventoryBalance(next,product.id)}:x));}
       setPurchases(current=>current.map(x=>x.id===purchase.id?{...x,returnedCentimes:Math.max(0,(x.returnedCentimes||0)-item.amountCentimes)}:x));
       setSupplierReturns(current=>current.filter(x=>x.id!==item.id));
     }catch(error){showAlert('تعذر عكس المرتجع',error instanceof Error?error.message:'راجع حركة المخزون.');}
