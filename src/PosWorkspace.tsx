@@ -68,7 +68,7 @@ export default function PosWorkspace({products,customers,bankAccountName,onCheck
           <Pressable accessibilityLabel={language==='AR'?'إنقاص كمية '+line.name:'Diminuer la quantité de '+line.name} onPress={()=>changeQty(line.productId,-1)} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>−</Text></Pressable>
           <Text style={{color:'#FFF'}}>{line.quantity}</Text>
           <Pressable accessibilityLabel={language==='AR'?'زيادة كمية '+line.name:'Augmenter la quantité de '+line.name} onPress={()=>{const p=mapped.find(x=>x.id===line.productId);if(p)add(p);}} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>+</Text></Pressable>
-          <Pressable onPress={()=>remove(line.productId)} style={{padding:5}}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
+          <Pressable accessibilityLabel={language==='AR'?'حذف '+line.name:'Supprimer '+line.name} accessibilityHint={language==='AR'?'إزالة هذا المنتج من سلة البيع':'Retirer ce produit du panier'} onPress={()=>remove(line.productId)} style={{padding:5}}><Text style={{color:'#E28A78'}}>حذف</Text></Pressable>
         </View>;
       })}
       <Text style={{color:'#CCC',marginTop:12,marginBottom:6}}>الزبون</Text>
