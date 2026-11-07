@@ -49,11 +49,12 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Attachments, contacts, custom fields, price groups
 
 ### Sales documents
-- [ ] Quotes, customer orders, delivery notes, invoices, proforma invoices
-- [ ] Customer credit notes and return documents
-- [ ] Document lifecycle, conversion/linking, reminders and follow-up
-- [ ] Discounts, fees, notes/sections, barcode entry, multi-line editing
-- [ ] PDF layouts, print, share, document numbering and status tracking
+- [x] Basic multi-product quotes with conversion to invoices and delivery notes; duplicate conversion is prevented
+- [x] Invoice partial payments, paid/outstanding status and payment due dates
+- [x] Partial customer returns with optional restocking and net sales/profit adjustment
+- [ ] Customer orders, proforma invoices, formal credit-note documents and complete document lifecycle/reminders
+- [ ] Advanced fees, notes/sections, barcode entry and document numbering
+- [x] Basic PDF generation and sharing for quotes, invoices, delivery notes, receipts and statements, with company profile branding
 
 ### Purchases
 - [x] Supplier purchase orders with expected delivery dates, partial/full goods receipts, stock updates and order PDF
@@ -69,8 +70,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Basic single-cashbox ledger with opening balance, cash income/expense entries, non-negative balance validation and PDF journal
 - [x] Cash POS checkouts are posted into the cash register ledger
 - [ ] Multiple cash registers, transfers between cash/bank accounts, cheques, drafts and bank reconciliation
-- [ ] Customer and supplier payments, allocations and balances
-- [ ] Cheques, drafts, unpaid items and due-date tracking
+- [x] Partial customer invoice payments and supplier purchase payments with centime-safe allocation and balance recalculation
+- [ ] Payment across multiple invoices/purchases, cheques, drafts, unpaid items and automated due-date reminders
 - [ ] Bank statement import and reconciliation
 
 ### POS
