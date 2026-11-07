@@ -473,3 +473,12 @@ test('quote workspace preserves variants through invoice and delivery conversion
   assert.match(app, /applyVariantStockMovement\(nextVariants/);
   assert.match(conversion, /variantId\?:string/);
 });
+
+
+test('customer returns receive a numbered credit-note PDF action', () => {
+  const app = read('App.tsx');
+  assert.match(app, /number:nextDocumentNumber\(companyProfile\.creditNotePrefix,salesReturns\)/);
+  assert.match(app, /إشعار دائن /);
+  assert.match(app, /exportPdf\('إشعار دائن/);
+  assert.match(app, /creditNotePrefix:string/);
+});
