@@ -14,7 +14,7 @@ test('all primary workspaces use the shared accessible button wrapper', () => {
     assert.match(source, /const Pressable = AccessiblePressable/,
       file + ' must route Pressable controls through AccessiblePressable');
   }
-  for (const file of ['src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx', 'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/ChequeWorkspace.tsx']) {
+  for (const file of ['src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx', 'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/ChequeWorkspace.tsx', 'src/VariantWorkspace.tsx']) {
     assert.match(read(file), /<AccessiblePressable\b/,
       file + ' must use accessible controls for interactive choices');
   }
@@ -22,7 +22,7 @@ test('all primary workspaces use the shared accessible button wrapper', () => {
 
 test('primary workspace text inputs use translated accessible labels', () => {
   for (const file of ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx',
-    'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx', 'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx', 'src/ChequeWorkspace.tsx']) {
+    'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx', 'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx', 'src/ChequeWorkspace.tsx', 'src/VariantWorkspace.tsx']) {
     const source = read(file);
     assert.match(source, /TTextInput as TextInput/,
       file + ' must use the shared translated TextInput');
@@ -149,7 +149,7 @@ test('dynamic product, quote, POS and agenda labels have French translations', (
 test('primary screens have no untranslated static Arabic labels', () => {
   const files = ['App.tsx', 'src/QuoteWorkspace.tsx', 'src/PosWorkspace.tsx',
     'src/WarehouseWorkspace.tsx', 'src/BankWorkspace.tsx', 'src/FieldOperationsWorkspace.tsx',
-    'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx', 'src/AccessiblePressable.tsx', 'src/ChequeWorkspace.tsx'];
+    'src/RecurringExpensesWorkspace.tsx', 'src/AgendaWorkspace.tsx', 'src/PeriodReportWorkspace.tsx', 'src/AccessiblePressable.tsx', 'src/ChequeWorkspace.tsx', 'src/VariantWorkspace.tsx'];
   const dictionary = read('src/i18n.tsx');
   const keys = new Set([...dictionary.matchAll(/^\s*"((?:[^"\\]|\\.)*)"\s*:/gm)].map(match => match[1]));
   for (const file of files) {
@@ -407,4 +407,25 @@ test('period analytics exports summary, monthly trend and supplier comparison as
   assert.match(app, /onExportCsv=\{\(title,rows\)=>/);
   assert.match(app, /join\('\\n'\)/);
   assert.match(read('src/i18n.tsx'), /"تصدير التقرير CSV":/);
+});
+
+test('variant workspace uses accessible controls and is persisted, backed up and restored', () => {
+  const workspace = read('src/VariantWorkspace.tsx');
+  const app = read('App.tsx');
+  assert.match(workspace, /<AccessiblePressable/);
+  assert.match(workspace, /<TextInput/);
+  assert.match(workspace, /accessibilityState=\{\{selected:productId===String\(p\.id\)\}\}/);
+  assert.match(workspace, /accessibilityState=\{\{selected:selected===v\.id\}\}/);
+  assert.match(app, /<VariantWorkspace\b/);
+  assert.match(app, /createProductVariant\(input,productVariants\)/);
+  assert.match(app, /applyVariantStockMovement\(productVariants,movement,variantStockMovements\)/);
+  assert.match(app, /productVariants,variantStockMovements/);
+  assert.match(app, /setProductVariants\(Array\.isArray\(d\.productVariants\)/);
+  assert.match(app, /setVariantStockMovements\(Array\.isArray\(d\.variantStockMovements\)/);
+  const translations = read('src/i18n.tsx');
+  for (const label of ['تنويعات المنتجات','تنويعات المنتجات والمخزون','المقاس (مثال: XL)','اللون (مثال: أسود)',
+    'إضافة النسخة','تعديل حركات المخزون','تسجيل حركة المخزون','تعذر إضافة النسخة','تعذر تسجيل حركة المخزون',
+    'SKU: ',' • المخزون: ','شراء: ',' • بيع: ']) {
+    assert.ok(translations.includes('"'+label+'"'), 'missing French translation for '+label);
+  }
 });
