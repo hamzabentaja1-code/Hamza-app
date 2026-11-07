@@ -37,7 +37,10 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Stock tracking separately for delivery notes and invoices
 - [x] Persistent stock movement ledger for opening stock, purchases, manual sales, POS sales, delivery notes, product quantity corrections and physical stock counts
 - [x] Physical stock count variance is recorded as an auditable movement and updates the product quantity
-- [ ] Multiple warehouses/sites, inter-warehouse transfers, multi-location stock counts and warehouse-level audit
+- [x] Multiple warehouses with a persistent default warehouse; legacy movements without warehouse IDs are assigned to the default warehouse during balance calculation
+- [x] Warehouse-scoped stock counts and warehouse-level stock balances
+- [x] Atomic inter-warehouse transfers recorded as paired transfer-out/transfer-in movements with duplicate and insufficient-source-stock protection; global stock remains unchanged
+- [x] Manual sales, POS sales, purchases, purchase-order receipts, delivery notes, returns and stock counts use the active/original warehouse ID
 - [x] Bulk paste import and CSV export, image/name/reference/barcode search, saved product catalog
 
 ### Contacts
