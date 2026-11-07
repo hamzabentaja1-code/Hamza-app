@@ -1,0 +1,25 @@
+const test=require('node:test');const assert=require('node:assert/strict');
+const ext=require('../.test-build/contact-extensions.js');
+test('custom contact fields are trimmed, unique and bounded',()=>{
+ const fields=ext.addContactCustomField([],'  ICE secondaire ','123','f1');
+ assert.deepEqual(fields,[{id:'f1',name:'ICE secondaire',value:'123'}]);
+ assert.throws(()=>ext.addContactCustomField(fields,'ice SECONDAIRE','x','f2'),/موجود من قبل/);
+ assert.throws(()=>ext.addContactCustomField(fields,'','x','f2'),/اسم الحقل/);
+ assert.equal(ext.normalizeContactCustomFields([{id:'x',name:'A',value:'1'},{id:'y',name:'a',value:'2'}]).length,1);
+});
+test('contact image attachments accept only bounded base64 images and can be removed',()=>{
+ const file={id:'a1',name:'photo.png',mimeType:'image/png',dataUri:'data:image/png;base64,AA==',createdAt:'2026-01-01'};
+ const saved=ext.addContactAttachment([],file);
+ assert.equal(saved.length,1);
+ assert.equal(ext.removeContactAttachment(saved,'a1').length,0);
+ assert.equal(ext.normalizeContactAttachments([{...file,dataUri:'file:///secret'}]).length,0);
+ assert.equal(ext.normalizeContactAttachments([{...file,mimeType:'application/pdf'}]).length,0);
+});
+test('price groups validate names and apply centime-safe discounts',()=>{
+ const group={id:'retail',name:'Retail',discountPercent:12.5,active:true};
+ assert.deepEqual(ext.validateContactPriceGroups([group]),[group]);
+ assert.equal(ext.priceForContactGroup(99.99,group),87.49);
+ assert.equal(ext.priceForContactGroup(99.99,{...group,active:false}),99.99);
+ assert.throws(()=>ext.validateContactPriceGroups([{...group},{...group,id:'other',name:' retail '}]),/غير صالحة/);
+ assert.throws(()=>ext.priceForContactGroup(-1),/غير صالح/);
+});
