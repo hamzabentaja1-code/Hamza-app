@@ -6,7 +6,7 @@ import {SupplierPriceRequest,SupplierInvoice,createSupplierPriceRequest,transiti
 type Supplier={id:number;name:string};
 type Product={id:number;name:string;reference?:string;barcode?:string;kind?:string};
 type Variant={id:string;productId:number;attributes:Record<string,string>;active:boolean};
-type PurchaseOrder={id:number;supplierName:string;status:'ordered'|'partially_received'|'received'|'cancelled';lines:Array<{productId:number;productName:string;quantity:number;receivedQuantity:number;unitCost:number;variantId?:string;variantLabel?:string}>};
+type PurchaseOrder={id:number;supplierName:string;supplierId?:string;status:'ordered'|'partially_received'|'received'|'cancelled';lines:Array<{productId:number;productName:string;quantity:number;receivedQuantity:number;unitCost:number;variantId?:string;variantLabel?:string}>};
 type Props={suppliers:Supplier[];products:Product[];variants:Variant[];requests:SupplierPriceRequest[];purchaseOrders:PurchaseOrder[];invoices:SupplierInvoice[];onSave:(item:SupplierPriceRequest)=>void;onUpdate:(item:SupplierPriceRequest)=>void;onSaveInvoice:(item:SupplierInvoice)=>void;onPdf:(title:string,customer:string,lines:string[],total:number)=>void};
 const gold='#D4AF62',panel={backgroundColor:'#1B1B1B',borderRadius:12,borderWidth:1,borderColor:'#383838',padding:13,marginBottom:12} as const;
 const input={backgroundColor:'#111',borderWidth:1,borderColor:'#3A3A3A',borderRadius:8,padding:10,color:'#FFF',marginBottom:8} as const;
@@ -88,7 +88,7 @@ export default function SupplierProcurementWorkspace({suppliers,products,variant
    <TextInput value={invoiceDueDate} onChangeText={setInvoiceDueDate} placeholder="تاريخ الاستحقاق YYYY-MM-DD (اختياري)" placeholderTextColor="#888" style={input}/>
    {selectedOrderId?action('تسجيل فاتورة الكميات المستلمة',()=>{
     const order=purchaseOrders.find(item=>String(item.id)===selectedOrderId);
-    const supplier=order&&suppliers.find(item=>item.name===order.supplierName);
+    const supplier=order&&(order.supplierId?suppliers.find(item=>String(item.id)===order.supplierId):suppliers.find(item=>item.name===order.supplierName));
     if(!order||!supplier){Alert.alert('المورد غير موجود','راجع المورد المرتبط بأمر الشراء.');return;}
     const receivedOrder={id:order.id,supplierId:String(supplier.id),status:order.status,lines:order.lines.map(line=>({productId:line.productId,variantId:line.variantId,productName:line.productName,quantity:line.quantity,receivedQuantity:line.receivedQuantity}))};
     const already=invoices.filter(invoice=>invoice.purchaseOrderId===order.id);
