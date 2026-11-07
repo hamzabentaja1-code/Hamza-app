@@ -42,7 +42,7 @@ test('builds a Monday-first month grid with events grouped by exact date',()=>{
  assert.equal(days.at(-1).date,'2026-12-06');
 });
 test('month grid handles 28-day and 31-day months and rejects invalid settings',()=>{
- assert.equal(buildAgendaMonthGrid(2026,2,[]).length,28);
+ assert.equal(buildAgendaMonthGrid(2026,2,[]).length,35);
  assert.equal(buildAgendaMonthGrid(2026,3,[]).length,42);
  assert.throws(()=>buildAgendaMonthGrid(2026,13,[]),/التقويم غير صالحة/);
  assert.throws(()=>buildAgendaMonthGrid(2026,1,[],7),/التقويم غير صالحة/);
