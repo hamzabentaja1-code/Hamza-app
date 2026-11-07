@@ -38,8 +38,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Basic free-text category, brand, unit and variant metadata in product cards, search, bulk import and CSV export
 - [x] Managed product category and brand dictionaries with quick selection and local backup/restore
 - [x] Product photo gallery supports up to four images, preview, per-image removal and persisted local product records
-- [ ] Variant stock matrix embedded in the product form
-- [x] Warehouse-scoped variant balances and per-variant warehouse matrix in the variant workspace, including legacy default-warehouse balances
+- [x] Variant stock matrix embedded in the product editor and warehouse-scoped variant balances in the variant workspace, including legacy default-warehouse balances
 - [x] Product-level stock selling value and potential gross profit aggregate active variant quantities and variant-specific prices using centime-safe calculations
 - [x] Product CSV exports one row per variant with its own cost, sale price, quantity and active/archive status
 - [x] Archived variants cannot silently fall back to stale parent-product stock in sales, purchases, POS, quotes, stock counts, warehouse transfers or stock reports; variants with remaining stock cannot be deactivated, and positive stock movements reactivate them
