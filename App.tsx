@@ -226,8 +226,8 @@ export default function App() {
       const productId=item.productId??products.find(p=>p.name===item.productName)?.id;
       const product=products.find(p=>p.id===productId);
       if(!product){showAlert('تعذر حذف المرتجع','المنتج المرتبط بالمرتجع غير موجود.');return;}
-      if(!recordInventoryMovement({id:'return-out-'+item.id,productId:product.id,productName:product.name,kind:'return_out',quantityDelta:-item.qty,date:new Date().toISOString(),sourceId:String(item.saleId),warehouseId:item.warehouseId||DEFAULT_WAREHOUSE_ID,note:'إلغاء مرتجع زبون'}))return;
-      setProducts(current=>current.map(p=>p.id===product.id?{...p,qty:p.qty-item.qty}:p));
+      if(item.variantId){if(!recordVariantMovement({id:'variant-return-reversal-'+item.id,variantId:item.variantId,kind:'adjustment',quantityDelta:-item.qty,date:new Date().toISOString().slice(0,10),reference:String(item.saleId),note:'إلغاء مرتجع زبون'}))return;}else{if(!recordInventoryMovement({id:'return-out-'+item.id,productId:product.id,productName:product.name,kind:'return_out',quantityDelta:-item.qty,date:new Date().toISOString(),sourceId:String(item.saleId),warehouseId:item.warehouseId||DEFAULT_WAREHOUSE_ID,note:'إلغاء مرتجع زبون'}))return;
+      setProducts(current=>current.map(p=>p.id===product.id?{...p,qty:p.qty-item.qty}:p));}
     }
     setSalesReturns(current=>current.filter(value=>value.id!==item.id));
   };
