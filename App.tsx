@@ -236,7 +236,7 @@ export default function App() {
       if(item.variantId){if(!recordVariantMovement({id:'variant-return-reversal-'+item.id,variantId:item.variantId,kind:'adjustment',quantityDelta:-item.qty,date:new Date().toISOString().slice(0,10),reference:String(item.saleId),note:'إلغاء مرتجع زبون'}))return;}else{if(!recordInventoryMovement({id:'return-out-'+item.id,productId:product.id,productName:product.name,kind:'return_out',quantityDelta:-item.qty,date:new Date().toISOString(),sourceId:String(item.saleId),warehouseId:item.warehouseId||DEFAULT_WAREHOUSE_ID,note:'إلغاء مرتجع زبون'}))return;
       setProducts(current=>current.map(p=>p.id===product.id?{...p,qty:p.qty-item.qty}:p));}
     }
-    setSalesReturns(current=>current.filter(value=>value.id!==item.id));
+    setSalesReturns(current=>current.filter(value=>value.id!==item.id));logActivity('حذف إشعار دائن',item.number||String(item.id));
   };
   const addSalesReturn=()=>{
     const sale=sales.find(item=>String(item.id)===returnSaleId);
@@ -247,7 +247,7 @@ export default function App() {
     const productId=sale.productId??products.find(p=>p.name===sale.productName)?.id;
     const record:SalesReturn={id:Date.now(),number:nextDocumentNumber(companyProfile.creditNotePrefix,salesReturns),saleId:sale.id,productId,variantId:sale.variantId,variantLabel:sale.variantLabel,productName:sale.productName,customerName:sale.customerName,qty:quantity,unitPrice:calculation.unitPrice,total:calculation.total,costPrice:sale.costPrice,date:new Date().toLocaleDateString('fr-MA'),reason:returnReason.trim(),restocked:returnRestock,warehouseId:sale.warehouseId||DEFAULT_WAREHOUSE_ID};
     if(returnRestock){const product=products.find(p=>p.id===productId);if(!product){showAlert('المنتج غير موجود','لا يمكن إعادة الكمية للمخزون لأن المنتج غير موجود.');return;}if(sale.variantId){if(!recordVariantMovement({id:'variant-return-in-'+record.id,variantId:sale.variantId,kind:'return_in',quantityDelta:quantity,date:new Date().toISOString().slice(0,10),reference:String(sale.id),note:record.reason||'إرجاع زبون لنفس النسخة'}))return;}else{if(!recordInventoryMovement({id:'return-in-'+record.id,productId:product.id,productName:product.name,kind:'return_in',quantityDelta:quantity,date:new Date().toISOString(),sourceId:String(sale.id),unitCost:sale.costPrice,warehouseId:record.warehouseId,note:record.reason||'إرجاع زبون وإعادة للمخزون'}))return;setProducts(current=>current.map(p=>p.id===product.id?{...p,qty:inventoryBalance(inventoryMovements,product.id)+quantity}:p));}}
-    setSalesReturns(current=>[record,...current]);setReturnSaleId('');setReturnQuantity('1');setReturnReason('');showAlert('تم تسجيل المرتجع','قيمة الإرجاع: '+record.total.toFixed(2)+' DH');
+    setSalesReturns(current=>[record,...current]);logActivity('إصدار إشعار دائن',record.number+' • '+record.customerName+' • '+record.total.toFixed(2)+' DH');setReturnSaleId('');setReturnQuantity('1');setReturnReason('');showAlert('تم تسجيل المرتجع','قيمة الإرجاع: '+record.total.toFixed(2)+' DH');
   };
   const addProject=()=>{
     const budget=Number(projectBudget.replace(',','.'));
