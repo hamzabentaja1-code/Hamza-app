@@ -12,7 +12,7 @@ test('creates valid cheque records in recorded state with centime-safe amounts',
   const cheque = createCheque(base());
   assert.equal(cheque.status, 'recorded');
   assert.equal(cheque.updatedAt, cheque.createdAt);
-  assert.equal(cheque.amountCentimes, 125050);
+  assert.equal(cheque.amountCentimes, 125050);\n  assert.equal(createCheque(base({createdAt:'2026-11-01T12:30:00.000Z'})).status, 'recorded');
 });
 
 test('rejects duplicate cheque IDs and duplicate numbers per direction', () => {
