@@ -35,11 +35,15 @@ export async function readAppData<T extends Record<string, unknown>>(fallback: T
   }
 }
 
+let writeQueue: Promise<void> = Promise.resolve();
+
 export async function writeAppData(data: Record<string, unknown>): Promise<void> {
-  await AsyncStorage.setItem(
-    HAMZA_STORAGE_KEY,
-    JSON.stringify({ ...data, schemaVersion: HAMZA_SCHEMA_VERSION }),
+  const snapshot = JSON.stringify({ ...data, schemaVersion: HAMZA_SCHEMA_VERSION });
+  const nextWrite = writeQueue.catch(() => undefined).then(() =>
+    AsyncStorage.setItem(HAMZA_STORAGE_KEY, snapshot),
   );
+  writeQueue = nextWrite;
+  await nextWrite;
 }
 
 export async function createBackup(data: Record<string, unknown>): Promise<string> {
