@@ -4,6 +4,7 @@ export type ConversionLine = {
   qty:number;
   unitPrice:number;
   total:number;
+  trackStock?:boolean;
 };
 export type QuoteForConversion = {
   id:number;
@@ -52,13 +53,15 @@ export function convertQuote(
   const lines=quote.lines?.length?quote.lines:[];
   let updatedProducts=products;
   const stockAlreadyDeducted=documents.some(d=>d.sourceQuoteId===quote.id);
-  const shouldDeductStock=!stockAlreadyDeducted;
-  if(shouldDeductStock&&(type==='delivery'||lines.length>0)) {
-    if(!lines.length||lines.some(line=>!line.productId)) {
+  const trackedLines=lines.filter(line=>line.trackStock!==false);
+  const shouldDeductStock=!stockAlreadyDeducted&&trackedLines.length>0;
+  if(type==='delivery'&&!lines.length)throw new Error('A new quote with linked products is required for a delivery note');
+  if(shouldDeductStock) {
+    if(trackedLines.some(line=>!line.productId)) {
       throw new Error('A new quote with linked products is required for a delivery note');
     }
     const required=new Map<number,number>();
-    lines.forEach(line=>required.set(line.productId,(required.get(line.productId)||0)+line.qty));
+    trackedLines.forEach(line=>required.set(line.productId,(required.get(line.productId)||0)+line.qty));
     const missing=Array.from(required.entries()).find(([productId,amount])=>{
       const product=products.find(p=>p.id===productId);
       return !product||product.qty<amount;
@@ -84,5 +87,5 @@ export function convertQuote(
     sourceQuoteId:quote.id,
     lines:documentLines,
   };
-  return {document,updatedProducts,stockDeducted:shouldDeductStock&&lines.length>0};
+  return {document,updatedProducts,stockDeducted:shouldDeductStock};
 }
