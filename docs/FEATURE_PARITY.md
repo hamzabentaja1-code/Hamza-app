@@ -72,7 +72,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Enforce customer credit ceiling when converting a quote to an invoice; calculate and show invoice due dates from payment terms
 - [x] Basic customer/supplier statement PDF exports from invoices, purchases and recorded payments
 - [x] One validated custom name/value field and one optional JPG/PNG/WebP image attachment can be saved on newly created customer/supplier contacts, shown in contact cards and preserved through JSON backup/restore
-- [ ] Multiple editable custom fields, saved-attachment gallery/preview/removal, non-image document attachments, and customer price-group selection integrated into quote/invoice pricing (price-group validation and centime-safe discount helper exists in `src/domain/contact-extensions.ts`, but UI/pricing integration remains pending)
+- [x] Customer price groups support named active/disabled groups, 0–90% discounts, customer assignment, automatic quote-line pricing, and preservation of the group discount when configured invoice prices override quote prices
+- [ ] Multiple editable custom fields, saved-attachment gallery/preview/removal, non-image document attachments, and editing custom fields/attachments on existing contacts
 
 ### Sales documents
 - [x] Basic multi-product quotes with conversion to invoices and delivery notes; duplicate conversion is prevented
