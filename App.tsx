@@ -11,6 +11,7 @@ import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/
 import {applyPaymentToInvoice} from './src/domain/payment-allocation';
 import {calculateCustomerBalances} from './src/domain/customer-balances';
 import {calculateSalesProfit} from './src/domain/profit';
+import {calculateSupplierBalances} from './src/domain/supplier-balances';
 
 const GOLD = '#D6AE55';
 const htmlSafe=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
@@ -62,7 +63,7 @@ export default function App() {
   const untrackedSalesCount=profitSummary.untrackedSalesCount;
   const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
   const customerBalances=useMemo(()=>calculateCustomerBalances(documents),[documents]);
-  const supplierBalances=useMemo(()=>suppliers.map(supplier=>{const total=purchases.filter(p=>p.supplierName===supplier.name).reduce((sum,p)=>sum+p.total,0);const paid=supplierPayments.filter(p=>p.supplierName===supplier.name).reduce((sum,p)=>sum+p.amount,0);return {supplierName:supplier.name,total,paid,outstanding:Math.max(0,total-paid)};}),[suppliers,purchases,supplierPayments]);
+  const supplierBalances=useMemo(()=>calculateSupplierBalances(suppliers,purchases,supplierPayments),[suppliers,purchases,supplierPayments]);
   const supplierPayablesTotal=useMemo(()=>supplierBalances.reduce((sum,x)=>sum+x.outstanding,0),[supplierBalances]);
   const balanceFor=(customerName:string)=>customerBalances.find(x=>x.customerName===customerName);
   const receivablesTotal=useMemo(()=>customerBalances.reduce((sum,x)=>sum+x.outstandingCentimes,0)/100,[customerBalances]);
