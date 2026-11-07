@@ -61,6 +61,7 @@ export function calculateCustomerBalances(
     if(!name||!Number.isSafeInteger(amount)||amount<0)throw new Error('Customer credit note is invalid');
     creditsByCustomer.set(name,(creditsByCustomer.get(name)||0)+amount);
     if(!Number.isSafeInteger(creditsByCustomer.get(name)))throw new Error('Customer credit balance is too large');
+    if(!balances.has(name))balances.set(name,{customerName:name,invoiceCount:0,totalCentimes:0,paidCentimes:0,openingBalanceCentimes:0,outstandingCentimes:0});
   }
   const invoicesByCustomer=new Map<string,InvoiceBalanceRecord[]>();
   for(const document of documents){
