@@ -154,7 +154,8 @@ test('primary screens have no untranslated static Arabic labels', () => {
   const keys = new Set([...dictionary.matchAll(/^\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*:/gm)].map(match => match[1]));
   for (const file of files) {
     const source = read(file);
-    const labels = [...source.matchAll(/(['"])([^'"\\\\\\n]{2,})\\1/g)]
+    const labels = [...source.matchAll(/(['"])([^'"\\\\\
+]{2,})\\1/g)]
       .map(match => match[2])
       .filter(value => /[\\u0600-\\u06FF]/.test(value) && !/[\\x60{}]/.test(value));
     for (const label of new Set(labels)) {
@@ -349,7 +350,8 @@ test('PDFs use TTC-only by default and allow optional HT/TVA/TTC breakdown', () 
   assert.ok(app.includes('labels.vat'));
 });
 
-\ntest('cheque workspace persists lifecycle records and posts cleared cheques to the bank ledger', () => {
+
+test('cheque workspace persists lifecycle records and posts cleared cheques to the bank ledger', () => {
   const app = read('App.tsx');
   const workspace = read('src/ChequeWorkspace.tsx');
   const domain = read('src/domain/cheques.ts');
