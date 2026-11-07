@@ -1072,6 +1072,7 @@ const fr: Record<string, string> = {
   "هاد المنتج عندو تنويعات. اختار المقاس أو اللون قبل إضافة أمر الشراء.": "Ce produit a des variantes. Choisissez une taille ou une couleur avant de l’ajouter à la commande.",
   "استلام هذا المنتج": "Recevoir ce produit",
   "تأكيد الاستلام وإضافة للمخزون": "Confirmer la réception et ajouter au stock",
+  "إرجاع زبون لنفس النسخة": "Retour client sur la même variante",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
