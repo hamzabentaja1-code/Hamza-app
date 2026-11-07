@@ -251,3 +251,13 @@ test('activity history records key operations and survives backup restore', () =
   assert.match(app, /logActivity\('تسجيل شراء'/);
   assert.match(app, /screen==='سجل النشاط'/);
 });
+
+test('supplier payments can be allocated across purchases and reversed as one transaction', () => {
+  const app = read('App.tsx');
+  const domain = read('src/domain/multi-supplier-payment.ts');
+  assert.match(app, /allocateSupplierPaymentAcrossPurchases\(purchases,supplierName/);
+  assert.match(app, /transactionId/);
+  assert.match(app, /const group=payment\.transactionId\?/);
+  assert.match(app, /دفعة موزعة/);
+  assert.match(domain, /sort\(\(a,b\)=>a\.purchase\.id-b\.purchase\.id\)/);
+});
