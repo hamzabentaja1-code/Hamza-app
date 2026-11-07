@@ -198,3 +198,11 @@ test('period analytics are connected to supplier purchase and return ledgers', (
   assert.match(screen, /buildSupplierPurchaseComparison/);
   assert.match(analytics, /netPurchases:row\.gross-row\.returned/);
 });
+
+test('customer payment screen offers automatic allocation across open invoices', () => {
+  const app = read('App.tsx');
+  const allocation = read('src/domain/multi-invoice-payment.ts');
+  assert.match(app, /allocatePaymentAcrossInvoices\(documents,cst\.name/);
+  assert.match(app, /توزيع تلقائي على جميع الفواتير المستحقة/);
+  assert.match(allocation, /sort\(\(a,b\)=>a\.document\.id-b\.document\.id\)/);
+});
