@@ -5,19 +5,21 @@ import AccessiblePressable from './AccessiblePressable';
 import {BankAccount,BankMovement,BankReconciliation,bankBalance} from './domain/banking';
 
 type Props={
- accounts:BankAccount[];movements:BankMovement[];reconciliations:BankReconciliation[];activeAccountId:string;
+ accounts:BankAccount[];movements:BankMovement[];reconciliations:BankReconciliation[];activeAccountId:string;cashBalanceCentimes:number;
  onSelectAccount:(id:string)=>void;
  onAddAccount:(account:BankAccount,openingBalanceCentimes:number)=>void;
  onMovement:(movement:BankMovement)=>boolean;
  onTransfer:(input:{id:string;fromAccountId:string;toAccountId:string;amountCentimes:number;date:string;description:string})=>boolean;
  onReconcile:(input:{id:string;accountId:string;statementBalanceCentimes:number;date:string;note?:string})=>boolean;
+ onCashTransfer:(input:{direction:'cash_to_bank'|'bank_to_cash';accountId:string;amountCentimes:number;date:string;description:string})=>boolean;
 };
 const GOLD='#D6AE55';
-export default function BankWorkspace({accounts,movements,reconciliations,activeAccountId,onSelectAccount,onAddAccount,onMovement,onTransfer,onReconcile}:Props){
+export default function BankWorkspace({accounts,movements,reconciliations,activeAccountId,cashBalanceCentimes,onSelectAccount,onAddAccount,onMovement,onTransfer,onReconcile,onCashTransfer}:Props){
  const language=useContext(LanguageContext);const t=(v:string)=>translateText(v,language)||v;
  const [name,setName]=useState('');const [bankName,setBankName]=useState('');const [reference,setReference]=useState('');const [opening,setOpening]=useState('0');
  const [amount,setAmount]=useState('');const [description,setDescription]=useState('');const [kind,setKind]=useState<'deposit'|'withdrawal'>('deposit');
  const [destination,setDestination]=useState('');const [transferAmount,setTransferAmount]=useState('');const [transferDescription,setTransferDescription]=useState('');
+ const [cashTransferDirection,setCashTransferDirection]=useState<'cash_to_bank'|'bank_to_cash'>('cash_to_bank');const [cashTransferAmount,setCashTransferAmount]=useState('');const [cashTransferDescription,setCashTransferDescription]=useState('تحويل بين الصندوق والبنك');
  const [statement,setStatement]=useState('');const [reconcileNote,setReconcileNote]=useState('تسوية مع كشف الحساب');
  const active=accounts.find(a=>a.id===activeAccountId);
  const balance=active?bankBalance(movements,active.id):0;
@@ -33,6 +35,10 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
  const transfer=()=>{const value=Number(transferAmount.replace(',','.'));if(!active||!destination||!Number.isFinite(value)||value<=0||!transferDescription.trim()){Alert.alert(t('معلومات ناقصة'),t('حدد الحساب الوجهة والمبلغ والوصف.'));return;}
   const ok=onTransfer({id:'bank-transfer-'+Date.now(),fromAccountId:active.id,toAccountId:destination,amountCentimes:Math.round(value*100),date:new Date().toISOString(),description:transferDescription.trim()});
   if(ok){setTransferAmount('');setTransferDescription('');setDestination('');}
+ };
+ const cashTransfer=()=>{const value=Number(cashTransferAmount.replace(',','.'));if(!active||!Number.isFinite(value)||value<=0||!cashTransferDescription.trim()){Alert.alert(t('معلومات ناقصة'),t('دخل مبلغ ووصف صحيحين.'));return;}
+  const ok=onCashTransfer({direction:cashTransferDirection,accountId:active.id,amountCentimes:Math.round(value*100),date:new Date().toISOString(),description:cashTransferDescription.trim()});
+  if(ok)setCashTransferAmount('');
  };
  const reconcile=()=>{const value=Number(statement.replace(',','.'));if(!active||!Number.isFinite(value)||value<0){Alert.alert(t('معلومات ناقصة'),t('دخل الرصيد الموجود في كشف البنك بشكل صحيح.'));return;}
   const ok=onReconcile({id:'bank-reconcile-'+Date.now(),accountId:active.id,statementBalanceCentimes:Math.round(value*100),date:new Date().toISOString(),note:reconcileNote.trim()});
@@ -62,6 +68,15 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
     <TextInput value={transferAmount} onChangeText={setTransferAmount} keyboardType="decimal-pad" placeholder="المبلغ DH" placeholderTextColor="#888" style={styles.input}/>
     <TextInput value={transferDescription} onChangeText={setTransferDescription} placeholder="سبب التحويل" placeholderTextColor="#888" style={styles.input}/>
     <AccessiblePressable style={styles.action} onPress={transfer}><Text style={styles.actionText}>تأكيد التحويل</Text></AccessiblePressable>
+   </View>
+   <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>تحويل بين الصندوق والبنك</Text>
+    <Text style={styles.note}>رصيد الصندوق المتوفر: {(cashBalanceCentimes/100).toFixed(2)} DH</Text>
+    <View style={styles.row}>
+     {([{id:'cash_to_bank',label:'من الصندوق إلى البنك'},{id:'bank_to_cash',label:'من البنك إلى الصندوق'}] as const).map(v=><AccessiblePressable key={v.id} accessibilityState={{selected:cashTransferDirection===v.id}} onPress={()=>setCashTransferDirection(v.id)} style={[styles.choice,{flex:1},cashTransferDirection===v.id&&styles.selected]}><Text style={styles.label}>{v.label}</Text></AccessiblePressable>)}
+    </View>
+    <TextInput value={cashTransferAmount} onChangeText={setCashTransferAmount} keyboardType="decimal-pad" placeholder="المبلغ DH" placeholderTextColor="#888" style={styles.input}/>
+    <TextInput value={cashTransferDescription} onChangeText={setCashTransferDescription} placeholder="وصف التحويل" placeholderTextColor="#888" style={styles.input}/>
+    <AccessiblePressable style={styles.action} onPress={cashTransfer}><Text style={styles.actionText}>تأكيد تحويل الصندوق والبنك</Text></AccessiblePressable>
    </View>
    <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>التسوية مع كشف البنك</Text>
     <Text style={styles.note}>دخل الرصيد النهائي الظاهر في كشف الحساب؛ التطبيق يسجل فرق التسوية ولا يغير الحركات السابقة.</Text>
