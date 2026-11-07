@@ -31,19 +31,21 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Service-only catalog items with no stock balance or stock movements, supported in direct sales, POS, quotes and invoice conversion
 - [x] Variant management workspace with normalized size/color attributes, SKU/barcode uniqueness, per-variant stock and centime-safe cost/sale prices
 - [x] Variant stock movement validation for purchases, sales, returns and adjustments; variant records and movement history persist through local save and JSON backup/restore
-- [x] Connect variant selection and stock deduction to POS, direct sales, multi-line quotes, first invoice/delivery conversion, manual purchases, customer returns, supplier returns and purchase-order receipts; warehouse-scoped variant balances remain pending
+- [x] Connect variant selection and stock deduction to POS, direct sales, multi-line quotes, first invoice/delivery conversion, manual purchases, customer returns, supplier returns and purchase-order receipts; variant movement history is assigned to the active/original warehouse
 - [ ] Camera-based barcode scanning
 - [x] Single product photo: choose, replace, remove, preview, and persist in local product data
 - [x] Product name search and product edit flow
 - [x] Basic free-text category, brand, unit and variant metadata in product cards, search, bulk import and CSV export
 - [x] Managed product category and brand dictionaries with quick selection and local backup/restore
 - [x] Product photo gallery supports up to four images, preview, per-image removal and persisted local product records
-- [ ] Variant stock matrix in product form and warehouse-scoped variant balances
+- [ ] Variant stock matrix embedded in the product form
+- [x] Warehouse-scoped variant balances and per-variant warehouse matrix in the variant workspace, including legacy default-warehouse balances
 - [x] Product-level stock selling value and potential gross profit aggregate active variant quantities and variant-specific prices using centime-safe calculations
 - [x] Product CSV exports one row per variant with its own cost, sale price, quantity and active/archive status
 - [x] Archived variants cannot silently fall back to stale parent-product stock in sales, purchases, POS, quotes, stock counts, warehouse transfers or stock reports; variants with remaining stock cannot be deactivated, and positive stock movements reactivate them
 - [x] Variant stock domain: normalized attribute combinations, duplicate SKU protection, centime-safe prices, per-variant movement validation, no-negative-stock rule and aggregate balances (tests/variant-stock.test.cjs)
-- [x] Physical stock counts for each variant record positive or negative variance in the variant movement ledger with a note and date
+- [x] Physical stock counts for each variant record positive or negative variance in the active warehouse movement ledger with a note and date
+- [x] Atomic variant transfers between warehouses create paired transfer-out/transfer-in movements, reject insufficient source stock and preserve aggregate variant stock
 - [x] Product purchase cost, sale price and unit margin when cost is recorded
 - [x] Weighted average cost updates on purchases when the previous stock cost is known
 - [x] Sale-time cost snapshots and tested gross-profit calculation; legacy sales without a cost are excluded
