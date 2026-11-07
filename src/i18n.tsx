@@ -851,6 +851,11 @@ const fr: Record<string, string> = {
   "سطر العرض يحتوي على كمية أو ثمن غير صالح": "Une ligne du devis contient une quantité ou un prix invalide",
   "ثمن الفاتورة غير صالح للمنتج ": "Prix de facture invalide pour le produit ",
 
+  "طريقة عرض الأثمنة في PDF": "Affichage des prix dans le PDF",
+  "إظهار HT و TVA و TTC": "Afficher HT, TVA et TTC",
+  "إظهار TTC فقط (افتراضي)": "Afficher TTC uniquement (par défaut)",
+  "نسبة TVA (%)": "Taux de TVA (%)",
+
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
