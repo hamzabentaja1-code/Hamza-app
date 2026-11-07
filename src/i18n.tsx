@@ -1,0 +1,89 @@
+import React, {useContext} from 'react';
+import {Text as NativeText, TextInput as NativeTextInput, TextProps, TextInputProps} from 'react-native';
+
+export type AppLanguage = 'AR' | 'FR';
+export const LanguageContext = React.createContext<AppLanguage>('AR');
+
+const fr: Record<string, string> = {
+  'الرئيسية':'Accueil','المنتجات':'Produits','نقطة البيع':'Point de vente','الزبناء':'Clients','الموردون':'Fournisseurs',
+  'المبيعات':'Ventes','المشتريات':'Achats','المخزون':'Stock','جرد وحركات المخزون':'Inventaire et mouvements',
+  'عروض الأسعار':'Devis','الفواتير':'Factures','المصاريف':'Dépenses','النسخ الاحتياطي':'Sauvegarde',
+  'الأداءات':'Paiements','التقارير':'Rapports','مرحبا بك في':'Bienvenue dans','تسيير تجارتك من مكان واحد':'Gérez votre activité au même endroit',
+  'المنتجات قليلة المخزون (5 أو أقل): ':'Produits en stock faible (5 ou moins) : ',
+  'المنتجات النافدة: ':'Produits en rupture : ','ما كايناش منتجات قليلة المخزون حالياً.':'Aucun produit en stock faible.',
+  'قلب على قسم...':'Rechercher un module...','تعديل المنتج':'Modifier le produit','إضافة منتج جديد':'Ajouter un produit',
+  'اسم المنتج':'Nom du produit','مرجع المنتج (اختياري)':'Référence (facultatif)','الباركود (اختياري)':'Code-barres (facultatif)',
+  'الصنف / الفئة (اختياري)':'Catégorie (facultatif)','ثمن البيع (DH)':'Prix de vente (DH)','الكمية':'Quantité',
+  'ثمن الشراء / التكلفة (DH)':'Coût d’achat (DH)','تغيير صورة المنتج':'Changer la photo','إضافة صورة المنتج':'Ajouter une photo',
+  'حذف الصورة':'Supprimer la photo','حفظ التعديلات':'Enregistrer les modifications','+ إضافة المنتج':'Ajouter le produit',
+  'إدخال جماعي للمنتجات':'Importation groupée des produits','بحث بالاسم أو المرجع أو الباركود أو الصنف...':'Rechercher par nom, référence, code-barres ou catégorie...',
+  'مازال ما زدتي حتى منتج.':'Aucun produit pour le moment.','تعديل':'Modifier','حذف':'Supprimer','إضافة مورد':'Ajouter un fournisseur',
+  'الهاتف (اختياري)':'Téléphone (facultatif)','العنوان (اختياري)':'Adresse (facultatif)','ICE (اختياري)':'ICE (facultatif)',
+  '+ إضافة المورد':'Ajouter le fournisseur','لائحة الموردين':'Liste des fournisseurs','لا توجد معلومات إضافية':'Aucune information supplémentaire',
+  'إضافة زبون':'Ajouter un client','الهاتف / WhatsApp (اختياري)':'Téléphone / WhatsApp (facultatif)',
+  '+ إضافة الزبون':'Ajouter le client','لائحة الزبناء':'Liste des clients','تسجيل عملية بيع':'Enregistrer une vente',
+  'اختار المنتج (ضغط عليه)':'Choisir un produit (appuyer dessus)','اختار الزبون':'Choisir un client',
+  'تأكيد البيع وتحديث المخزون':'Confirmer la vente et mettre à jour le stock','سجل المبيعات':'Historique des ventes',
+  'تسجيل شراء وإضافة للمخزون':'Enregistrer un achat et ajouter au stock','المنتج':'Produit','المورد':'Fournisseur',
+  'ثمن الوحدة':'Prix unitaire','تأكيد الشراء':'Confirmer l’achat','سجل المشتريات':'Historique des achats',
+  'إجمالي ديون الموردين: ':'Total dû aux fournisseurs : ','المؤدى: ':'Payé : ','الباقي: ':'Reste : ',
+  'تأكيد أداء المورد':'Confirmer le paiement fournisseur','دفعة':'Paiement','مخلص':'Soldé',
+  'إضافة مصروف':'Ajouter une dépense','وصف المصروف':'Description de la dépense','المبلغ DH':'Montant (DH)',
+  '+ تسجيل المصروف':'Enregistrer la dépense','سجل المصاريف':'Historique des dépenses','سندات الخروج':'Bons de sortie',
+  'تسجيل أداء زبون':'Enregistrer un paiement client','اختار الفاتورة (اختياري)':'Choisir une facture (facultatif)',
+  'نقداً':'Espèces','بطاقة':'Carte','تحويل':'Virement','شيك':'Chèque','ملاحظة (اختياري)':'Note (facultatif)',
+  'تسجيل الأداء':'Enregistrer le paiement','سجل الأداءات':'Historique des paiements',
+  'حماية بياناتك':'Protégez vos données','تصدير نسخة احتياطية':'Exporter une sauvegarde',
+  'استرجاع نسخة':'Restaurer une sauvegarde','استرجاع البيانات':'Restaurer les données',
+  'جرد المخزون':'Inventaire du stock','سجل حركات المخزون':'Historique des mouvements de stock',
+  'الكمية المعدودة فعلياً':'Quantité réellement comptée','ملاحظة الجرد (اختياري)':'Note d’inventaire (facultatif)',
+  'تأكيد الجرد وتحديث المخزون':'Valider l’inventaire et mettre à jour le stock',
+  'مازال ما تسجلات حتى حركة مخزون.':'Aucun mouvement de stock enregistré.',
+  'رصيد افتتاحي':'Stock initial','شراء':'Achat','بيع':'Vente','سند خروج':'Bon de sortie','جرد':'Inventaire','تعديل':'Ajustement',
+  'تقرير النشاط التجاري':'Rapport d’activité','تقرير ديون الزبناء':'Rapport des créances clients','تقرير المخزون':'Rapport de stock',
+  'إجمالي المبالغ المتبقية: ':'Total restant dû : ','عدد الفواتير: ':'Nombre de factures : ',
+  'عدد المنتجات: ':'Nombre de produits : ','قيمة المخزون بسعر البيع: ':'Valeur du stock au prix de vente : ',
+  'منتجات نافدة: ':'Produits en rupture : ','منتجات قليلة المخزون: ':'Produits en stock faible : ',
+  'تصدير تقرير النشاط PDF':'Exporter le rapport d’activité PDF','تصدير تقرير الديون PDF':'Exporter le rapport des créances PDF',
+  'تصدير حالة المخزون PDF':'Exporter l’état du stock PDF','الزبون':'Client','التاريخ':'Date','المجموع':'Total',
+  'شكراً على ثقتكم':'Merci pour votre confiance','حذف المورد؟':'Supprimer le fournisseur ?','حذف الزبون؟':'Supprimer le client ?',
+  'إلغاء':'Annuler','تأكيد':'Confirmer','رجوع':'Retour','PDF':'PDF',
+  'معلومات ناقصة':'Informations manquantes','المخزون غير كافٍ':'Stock insuffisant','المتوفر هو ':'Disponible : ',
+  'تم التعديل':'Modification enregistrée','تم تسجيل البيع':'Vente enregistrée','تم تسجيل الشراء':'Achat enregistré',
+  'تم تسجيل الجرد':'Inventaire enregistré','تعذر تسجيل الجرد':'Impossible d’enregistrer l’inventaire',
+  'تعذر تسجيل الأداء':'Impossible d’enregistrer le paiement','تم تسجيل الأداء':'Paiement enregistré',
+  'تم التحويل':'Conversion effectuée','تعذر التحويل':'Conversion impossible','تم الاستيراد':'Importation terminée',
+  'تم الاسترجاع':'Restauration terminée','تعذر الاسترجاع':'Restauration impossible','خطأ':'Erreur','تنبيه':'Attention',
+  'حركة المخزون':'Mouvement de stock','المبلغ كبير':'Montant trop élevé','الفاتورة غير موجودة':'Facture introuvable',
+  'طريقة الأداء: ':'Mode de paiement : ','مجموع المبيعات':'Total des ventes','ملخص النشاط':'Résumé de l’activité',
+  'قيمة المخزون بسعر البيع: ':'Valeur du stock au prix de vente : ','مجموع المبيعات':'Total des ventes',
+  'الربح بعد المصاريف المسجلة: ':'Bénéfice après dépenses enregistrées : ',
+  'مجمل ربح المبيعات المحسوب بالتكلفة المسجلة: ':'Marge brute calculée avec les coûts enregistrés : ',
+  'الربح المحتمل إذا تباع المخزون كامل: ':'Bénéfice potentiel si tout le stock est vendu : ',
+};
+
+export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
+  if (value === undefined || language === 'AR') return value;
+  if (fr[value]) return fr[value];
+  let result = value;
+  for (const [ar, translated] of Object.entries(fr).sort((a,b)=>b[0].length-a[0].length)) {
+    result = result.split(ar).join(translated);
+  }
+  return result;
+}
+
+export function TText(props: TextProps) {
+  const language = useContext(LanguageContext);
+  const children = React.Children.map(props.children, child =>
+    typeof child === 'string' ? translateText(child, language) : child,
+  );
+  return <NativeText {...props} style={[props.style, {writingDirection: language === 'AR' ? 'rtl' : 'ltr'}]}>{children}</NativeText>;
+}
+
+export function TTextInput(props: TextInputProps) {
+  const language = useContext(LanguageContext);
+  return <NativeTextInput {...props}
+    placeholder={translateText(props.placeholder, language)}
+    style={[props.style, {writingDirection: language === 'AR' ? 'rtl' : 'ltr', textAlign: language === 'AR' ? 'right' : 'left'}]}
+  />;
+}
