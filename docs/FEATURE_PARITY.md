@@ -41,7 +41,7 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Contacts
 - [ ] Customer and supplier profiles with phone/WhatsApp, address, ICE/RC/IF
-- [ ] Opening balances, credit ceilings, payment terms
+- [x] Customer and supplier opening balances, credit ceilings and payment-term metadata
 - [x] Basic customer/supplier statement PDF exports from invoices, purchases and recorded payments
 - [ ] Attachments, contacts, custom fields, price groups
 
