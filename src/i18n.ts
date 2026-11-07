@@ -175,6 +175,7 @@ Routeur;R-01;61100001;Réseau;150;220;5',
   'حذف المورد؟':'Supprimer le fournisseur ?',
   'حذف الزبون؟':'Supprimer le client ?',
   'إلغاء':'Annuler'
+  'المرجع:':'Référence :'
 };
 
 export function translate(language: AppLanguage, value: string): string {
