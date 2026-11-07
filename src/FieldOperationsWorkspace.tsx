@@ -5,14 +5,14 @@ import AccessiblePressable from './AccessiblePressable';
 import {Technician,Equipment,WorkOrder,WorkTimeEntry,createWorkOrder,createWorkTimeEntry,transitionWorkOrderStatus,workOrderHours,workOrderTimeCost} from './domain/field-operations';
 
 type Props={
- technicians:Technician[];equipment:Equipment[];orders:WorkOrder[];timeEntries:WorkTimeEntry[];
+ technicians:Technician[];equipment:Equipment[];equipmentCategories:string[];orders:WorkOrder[];timeEntries:WorkTimeEntry[];
  customers:{id:number;name:string}[];projects:{id:number;name:string}[];
- onAddTechnician:(item:Technician)=>void;onAddEquipment:(item:Equipment)=>void;
+ onAddTechnician:(item:Technician)=>void;onAddEquipment:(item:Equipment)=>void;onAddEquipmentCategory:(name:string)=>void;onDeleteEquipmentCategory:(name:string)=>void;
  onCreateOrder:(item:WorkOrder)=>void;onChangeOrder:(item:WorkOrder)=>void;onAddTimeEntry:(item:WorkTimeEntry)=>void;
 };
 const GOLD='#D6AE55';
 const statusLabel=(s:WorkOrder['status'])=>s==='requested'?'طلب جديد':s==='scheduled'?'مبرمج':s==='in_progress'?'قيد الإنجاز':s==='completed'?'مكتمل':'ملغى';
-export default function FieldOperationsWorkspace({technicians,equipment,orders,timeEntries,customers,projects,onAddTechnician,onAddEquipment,onCreateOrder,onChangeOrder,onAddTimeEntry}:Props){
+export default function FieldOperationsWorkspace({technicians,equipment,equipmentCategories,orders,timeEntries,customers,projects,onAddTechnician,onAddEquipment,onAddEquipmentCategory,onDeleteEquipmentCategory,onCreateOrder,onChangeOrder,onAddTimeEntry}:Props){
  const language=useContext(LanguageContext);const t=(v:string)=>translateText(v,language)||v;
  const showAlert = (...args: Parameters<typeof Alert.alert>) => {
   const [title, message, buttons, options] = args;
@@ -24,15 +24,15 @@ export default function FieldOperationsWorkspace({technicians,equipment,orders,t
  };
 
  const [techName,setTechName]=useState('');const [techPhone,setTechPhone]=useState('');const [techSpecialty,setTechSpecialty]=useState('');const [techRate,setTechRate]=useState('0');
- const [equipmentName,setEquipmentName]=useState('');const [equipmentRef,setEquipmentRef]=useState('');const [equipmentSerial,setEquipmentSerial]=useState('');
+ const [equipmentName,setEquipmentName]=useState('');const [equipmentRef,setEquipmentRef]=useState('');const [equipmentSerial,setEquipmentSerial]=useState('');const [equipmentCategory,setEquipmentCategory]=useState('');const [equipmentCategoryDraft,setEquipmentCategoryDraft]=useState('');
  const [orderTitle,setOrderTitle]=useState('');const [orderCustomer,setOrderCustomer]=useState('');const [orderProject,setOrderProject]=useState('');const [orderTechnician,setOrderTechnician]=useState('');const [orderDate,setOrderDate]=useState('');const [orderDescription,setOrderDescription]=useState('');
  const [selectedEquipment,setSelectedEquipment]=useState<string[]>([]);
  const [timeOrder,setTimeOrder]=useState('');const [timeTechnician,setTimeTechnician]=useState('');const [timeHours,setTimeHours]=useState('');const [timeDate,setTimeDate]=useState(new Date().toISOString().slice(0,10));const [timeNote,setTimeNote]=useState('');
  const addTech=()=>{const rate=Number(techRate.replace(',','.'));if(!techName.trim()||!Number.isFinite(rate)||rate<0){showAlert(t('معلومات ناقصة'),t('دخل اسم التقني وسعر ساعة صحيح.'));return;}
   onAddTechnician({id:'tech-'+Date.now(),name:techName.trim(),phone:techPhone.trim()||undefined,specialty:techSpecialty.trim()||undefined,hourlyRate:rate,active:true});setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('0');
  };
- const addEquip=()=>{if(!equipmentName.trim()){showAlert(t('معلومات ناقصة'),t('دخل اسم المعدة.'));return;}
-  onAddEquipment({id:'equipment-'+Date.now(),name:equipmentName.trim(),reference:equipmentRef.trim()||undefined,serialNumber:equipmentSerial.trim()||undefined,status:'available'});setEquipmentName('');setEquipmentRef('');setEquipmentSerial('');
+ const addEquipmentCategory=()=>{try{if(!equipmentCategoryDraft.trim())throw new Error('اسم فئة المعدات مطلوب');onAddEquipmentCategory(equipmentCategoryDraft);setEquipmentCategoryDraft('');}catch(error){showAlert(t('فئات المعدات'),error instanceof Error?(t(error.message)||error.message):t('تعذر إضافة الفئة.'));}};\n const addEquip=()=>{if(!equipmentName.trim()){showAlert(t('معلومات ناقصة'),t('دخل اسم المعدة.'));return;}
+  onAddEquipment({id:'equipment-'+Date.now(),name:equipmentName.trim(),category:equipmentCategory||undefined,reference:equipmentRef.trim()||undefined,serialNumber:equipmentSerial.trim()||undefined,status:'available'});setEquipmentName('');setEquipmentRef('');setEquipmentSerial('');setEquipmentCategory('');
  };
  const createOrder=()=>{const customer=customers.find(x=>String(x.id)===orderCustomer);if(!customer||!orderTitle.trim()){showAlert(t('معلومات ناقصة'),t('اختار الزبون ودخل عنوان أمر العمل.'));return;}
   if(orderDate.trim()&&!Number.isFinite(Date.parse(orderDate))){showAlert(t('تاريخ غير صالح'),t('تاريخ أمر العمل غير صالح'));return;}const now=new Date().toISOString();const scheduledAt=orderDate.trim()?new Date(orderDate).toISOString():undefined;
@@ -53,12 +53,17 @@ export default function FieldOperationsWorkspace({technicians,equipment,orders,t
    <AccessiblePressable style={styles.action} onPress={addTech}><Text style={styles.actionText}>إضافة تقني</Text></AccessiblePressable>
    {technicians.map(x=><Text key={x.id} style={styles.note}>{x.name} • {x.specialty||'بدون تخصص'} • {x.hourlyRate.toFixed(2)} DH/ساعة {x.active?'':'• غير نشط'}</Text>)}
   </View>
-  <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>المعدات</Text>
+  <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>فئات المعدات</Text>
+   <TextInput value={equipmentCategoryDraft} onChangeText={setEquipmentCategoryDraft} placeholder="اسم فئة جديدة" placeholderTextColor="#888" style={styles.input}/>
+   <AccessiblePressable style={styles.action} onPress={addEquipmentCategory}><Text style={styles.actionText}>إضافة فئة</Text></AccessiblePressable>
+   {equipmentCategories.map(category=><View key={category} style={styles.row}><AccessiblePressable accessibilityState={{selected:equipmentCategory===category}} onPress={()=>setEquipmentCategory(current=>current===category?'':category)} style={[styles.choice,{flex:1},equipmentCategory===category&&styles.selected]}><Text style={styles.label}>{category}</Text></AccessiblePressable><AccessiblePressable accessibilityRole="button" accessibilityLabel={'حذف فئة '+category} onPress={()=>showAlert('حذف الفئة؟',category,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>onDeleteEquipmentCategory(category)}])}><Text style={styles.delete}>حذف</Text></AccessiblePressable></View>)}
+   <Text style={styles.note}>الفئة المختارة للمعدة الجديدة: {equipmentCategory||'بدون فئة'}</Text>
+   <Text style={styles.title}>المعدات</Text>
    <TextInput value={equipmentName} onChangeText={setEquipmentName} placeholder="اسم المعدة" placeholderTextColor="#888" style={styles.input}/>
    <TextInput value={equipmentRef} onChangeText={setEquipmentRef} placeholder="المرجع (اختياري)" placeholderTextColor="#888" style={styles.input}/>
    <TextInput value={equipmentSerial} onChangeText={setEquipmentSerial} placeholder="الرقم التسلسلي (اختياري)" placeholderTextColor="#888" style={styles.input}/>
    <AccessiblePressable style={styles.action} onPress={addEquip}><Text style={styles.actionText}>إضافة معدة</Text></AccessiblePressable>
-   {equipment.map(x=><Text key={x.id} style={styles.note}>{x.name} • {x.reference||x.serialNumber||'بدون مرجع'} • {x.status==='available'?'متاحة':x.status==='assigned'?'مخصصة':'صيانة'}</Text>)}
+   {equipment.map(x=><Text key={x.id} style={styles.note}>{x.name} • {x.category||'بدون فئة'} • {x.reference||x.serialNumber||'بدون مرجع'} • {x.status==='available'?'متاحة':x.status==='assigned'?'مخصصة':'صيانة'}</Text>)}
   </View>
   <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>طلبات وأوامر التركيب</Text>
    <TextInput value={orderTitle} onChangeText={setOrderTitle} placeholder="عنوان أمر العمل" placeholderTextColor="#888" style={styles.input}/>
