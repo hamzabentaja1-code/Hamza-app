@@ -67,7 +67,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Basic customer and supplier profiles with phone, address and ICE
 - [x] Company ICE, RC and IF fields appear in branded PDF documents
 - [x] Contact communication history for customer/supplier calls, messages, meetings and notes, with per-contact filtering, deletion, activity attribution and backup restore
-- [ ] Extended contact identifiers and external communication integrations on customer/supplier records
+- [x] Extended customer/supplier email, RC and IF identifiers with validation and editing; contact cards expose WhatsApp, phone-call and email actions using validated international links (tests/contact-channels.test.cjs)
 - [x] Customer and supplier opening balances, credit ceilings and payment-term metadata
 - [x] Enforce customer credit ceiling when converting a quote to an invoice; calculate and show invoice due dates from payment terms
 - [x] Basic customer/supplier statement PDF exports from invoices, purchases and recorded payments
@@ -127,7 +127,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Camera barcode scanning from POS with exact barcode lookup and cart insertion (tests/pos.test.cjs)
 - [x] Advanced stock filters for in-stock, low-stock, out-of-stock and service-only products, with category filters, barcode/reference/name search and sorting by name, quantity or price; uses warehouse/variant-aware stock totals (tests/stock-filters.test.cjs)
 - [x] Parked POS sales persist across screens and app restarts and can be resumed or deleted
-- [ ] POS-linked returns and physical receipt-printer integration
+- [x] POS-linked returns: recent sales show remaining return quantity and open the existing validated partial-return workflow; permission-gated, with optional restocking, stock-ledger adjustment, profit correction and credit-note PDF (tests/pos.test.cjs, tests/sales-returns.test.cjs)
+- [ ] Physical receipt-printer integration
 
 ### Projects and field operations
 - [x] Installation work orders with requested, scheduled, in-progress, completed and cancelled lifecycle states, customer/project linkage and equipment allocation
