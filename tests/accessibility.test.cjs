@@ -291,3 +291,9 @@ test('changing the active warehouse clears stale stock-count form values', () =>
   const app = read('App.tsx');
   assert.match(app, /useEffect\(\(\)=>\{setStockCountProduct\(''\);setStockCountQuantity\(''\);setStockCountNote\(''\);\},\[activeWarehouseId\]\)/);
 });
+
+test('French translation dictionary contains unique keys', () => {
+  const dictionary = read('src/i18n.tsx');
+  const keys = [...dictionary.matchAll(/^\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*:/gm)].map(match => match[1]);
+  assert.equal(new Set(keys).size, keys.length, 'translation dictionary must not contain duplicate keys');
+});
