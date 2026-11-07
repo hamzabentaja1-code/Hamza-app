@@ -53,3 +53,21 @@ test('selected POS and banking choices expose selected state', () => {
   assert.match(bank, /accessibilityState=\{\{selected:kind===v\}\}/);
   assert.match(bank, /accessibilityState=\{\{selected:destination===a\.id\}\}/);
 });
+
+test('main app announces selected states for project, return, expense and payment choices', () => {
+  const app = read('App.tsx');
+  const patterns = [
+    /accessibilityState=\{\{selected:expenseProjectId===''\}\}/,
+    /accessibilityState=\{\{selected:expenseProjectId===String\(p\.id\)\}\}/,
+    /accessibilityState=\{\{selected:returnRestock\}\}/,
+    /accessibilityState=\{\{selected:!returnRestock\}\}/,
+    /accessibilityState=\{\{selected:project\.status===status\.value\}\}/,
+    /accessibilityState=\{\{selected:taskProjectId===''\}\}/,
+    /accessibilityState=\{\{selected:taskProjectId===String\(p\.id\)\}\}/,
+    /accessibilityState=\{\{selected:taskPriority===p\.value\}\}/,
+    /accessibilityState=\{\{selected:paymentCustomer===String\(c\.id\)\}\}/,
+    /accessibilityState=\{\{selected:paymentDocument===String\(d\.id\)\}\}/,
+    /accessibilityState=\{\{selected:paymentMethod===m\}\}/,
+  ];
+  for (const pattern of patterns) assert.match(app, pattern);
+});
