@@ -67,3 +67,9 @@ test('rejects supplier invoice linked to a different supplier or cancelled order
  assert.throws(()=>createSupplierInvoice({id:'i1',number:'FA-1',supplierId:'s1',purchaseOrder:{...order,status:'cancelled'},issuedAt:'2026-11-07',
   lines:[{productId:1,description:'Cable',quantity:1,unitCostCentimes:1200}]}),/غير صالحة/);
 });
+
+test('supplier procurement variant price inputs use the same composite key for display and save',()=>{
+ const fs=require('node:fs');
+ const source=fs.readFileSync(require('node:path').join(__dirname,'../src/SupplierProcurementWorkspace.tsx'),'utf8');
+ assert.match(source,/value=\{prices\[String\(line\.productId\)\+'::'\+\(line\.variantId\|\|' '\)\]\|\|''\}/);
+});
