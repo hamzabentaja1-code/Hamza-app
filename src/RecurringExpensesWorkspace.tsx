@@ -1,15 +1,25 @@
-import React,{useState} from 'react';
+import React,{useContext,useState} from 'react';
 import {Alert,View,StyleSheet} from 'react-native';
-import {TText as Text,TTextInput as TextInput} from './i18n';
+import {TText as Text,TTextInput as TextInput,LanguageContext,translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
 import {RecurringExpenseRule,RecurrenceFrequency} from './domain/recurring-expenses';
 
 type Props={rules:RecurringExpenseRule[];projects:{id:number;name:string}[];onAdd:(rule:RecurringExpenseRule)=>void;onToggle:(id:string)=>void;onGenerate:(today:string)=>void};
 const GOLD='#D6AE55';
 export default function RecurringExpensesWorkspace({rules,projects,onAdd,onToggle,onGenerate}:Props){
+ const language=useContext(LanguageContext);
+ const showAlert = (...args: Parameters<typeof Alert.alert>) => {
+  const [title, message, buttons, options] = args;
+  const translatedButtons = buttons?.map(button => ({
+   ...button,
+   text: button.text ? (translateText(button.text, language) || button.text) : button.text,
+  }));
+  Alert.alert(translateText(title, language) || title, translateText(message, language) || message, translatedButtons, options);
+ };
+
  const [title,setTitle]=useState('');const [amount,setAmount]=useState('');const [category,setCategory]=useState('');const [frequency,setFrequency]=useState<RecurrenceFrequency>('monthly');const [nextDate,setNextDate]=useState(new Date().toISOString().slice(0,10));const [projectId,setProjectId]=useState('');
- const add=()=>{const value=Number(amount.replace(',','.'));if(!title.trim()||!Number.isFinite(value)||value<=0||!/^\d{4}-\d{2}-\d{2}$/.test(nextDate)){Alert.alert('معلومات ناقصة','دخل الوصف والمبلغ والتاريخ بشكل صحيح.');return;}
-  const date=new Date(nextDate+'T00:00:00.000Z');if(!Number.isFinite(date.getTime())||date.toISOString().slice(0,10)!==nextDate){Alert.alert('تاريخ غير صالح','تاريخ الاستحقاق غير صالح.');return;}
+ const add=()=>{const value=Number(amount.replace(',','.'));if(!title.trim()||!Number.isFinite(value)||value<=0||!/^\d{4}-\d{2}-\d{2}$/.test(nextDate)){showAlert('معلومات ناقصة','دخل الوصف والمبلغ والتاريخ بشكل صحيح.');return;}
+  const date=new Date(nextDate+'T00:00:00.000Z');if(!Number.isFinite(date.getTime())||date.toISOString().slice(0,10)!==nextDate){showAlert('تاريخ غير صالح','تاريخ الاستحقاق غير صالح.');return;}
   onAdd({id:'rec-expense-'+Date.now(),title:title.trim(),amount:value,category:category.trim()||undefined,frequency,nextDueDate:nextDate,active:true,projectId:projectId?Number(projectId):undefined});
   setTitle('');setAmount('');setCategory('');setProjectId('');
  };
