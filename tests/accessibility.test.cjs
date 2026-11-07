@@ -223,3 +223,12 @@ test('expense category dictionary is persisted, backed up and selectable', () =>
   assert.match(app, /expenseCategories\.map\(category/);
   assert.match(app, /حفظ تصنيف جديد/);
 });
+
+test('product category and brand dictionaries persist and offer quick selection', () => {
+  const app = read('App.tsx');
+  assert.match(app, /productCategories,productBrands,language,companyProfile/);
+  assert.match(app, /setProductCategories\(Array\.isArray\(d\.productCategories\)/);
+  assert.match(app, /setProductBrands\(Array\.isArray\(d\.productBrands\)/);
+  assert.match(app, /productCategories\.map\(category/);
+  assert.match(app, /productBrands\.map\(brand/);
+});
