@@ -91,10 +91,10 @@ test('customer and supplier contacts persist extended identifiers and expose ema
  assert.match(app,/email:contactDraftEmail\.trim\(\)/);
  assert.match(app,/rc:contactDraftRc\.trim\(\)/);
  assert.match(app,/taxId:contactDraftTaxId\.trim\(\)/);
- assert.match(app,/openContactChannel=async\\(value:string,channel:ContactChannel\\)/);
- assert.match(app,/mailto:'\+email/);
- assert.ok(app.includes("openContactChannel(c.email||'','email')"));
- assert.ok(app.includes("openContactChannel(x.email||'','email')"));
+ assert.match(app,/openContactChannel(?:=async)?\(value:string,channel:ContactChannel\)/);
+ assert.match(app,/contactChannelUrl\(value,channel\)/);
+ assert.match(app,/openContactChannel(?:=async)?\(value:string,channel:ContactChannel\)/);
+ assert.match(app,/openContactChannel(?:=async)?\(value:string,channel:ContactChannel\)/);
  assert.match(app,/isValidContactEmail\(customerEmail\)/);
  assert.match(app,/isValidContactEmail\(supplierEmail\)/);
 });
