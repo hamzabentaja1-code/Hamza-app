@@ -48,6 +48,7 @@ test('French dictionary covers stock count validation and dynamic warehouse bala
     'حركة المخزون مسجلة من قبل',
     'الكمية المعدودة خاصها تكون عدد صحيح صفر أو أكثر',
     'الجرد مطابق للمخزون المسجل، ما كاين حتى فرق',
+    'الكمية الفعلية مطابقة للمخزون المسجل، ما تسجلات حتى حركة.',
   ]) {
     assert.ok(source.includes('"'+key+'"'), 'missing French translation for '+key);
   }
