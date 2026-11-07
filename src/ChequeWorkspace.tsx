@@ -15,6 +15,7 @@ type Props = {
 };
 
 const money = (centimes:number) => (centimes/100).toFixed(2)+' DH';
+const localDate = () => {const date=new Date();return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');};
 const labels:Record<ChequeStatus,string> = {
   recorded:'مسجل', deposited:'مودع', cleared:'مقبوض / مؤدى', bounced:'مرفوض', cancelled:'ملغى',
 };
@@ -24,7 +25,7 @@ export default function ChequeWorkspace({cheques,events,bankAccounts,onAdd,onTra
   const [number,setNumber]=useState('');
   const [counterparty,setCounterparty]=useState('');
   const [amount,setAmount]=useState('');
-  const [issueDate,setIssueDate]=useState(new Date().toISOString().slice(0,10));
+  const [issueDate,setIssueDate]=useState(localDate());
   const [dueDate,setDueDate]=useState('');
   const [bankAccountId,setBankAccountId]=useState(bankAccounts[0]?.id||'');
   const [notes,setNotes]=useState('');
@@ -46,7 +47,7 @@ export default function ChequeWorkspace({cheques,events,bankAccounts,onAdd,onTra
     return [];
   };
   const transition=(cheque:ChequeRecord,next:ChequeStatus)=>{
-    onTransition(cheque,next,{id:'cheque-event-'+cheque.id+'-'+events.length+'-'+Date.now(),date:new Date().toISOString().slice(0,10),note:''});
+    onTransition(cheque,next,{id:'cheque-event-'+cheque.id+'-'+events.length+'-'+Date.now(),date:localDate(),note:''});
   };
   const incoming=cheques.filter(x=>x.direction==='incoming');
   const outgoing=cheques.filter(x=>x.direction==='outgoing');
