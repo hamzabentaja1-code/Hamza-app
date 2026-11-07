@@ -420,7 +420,7 @@ test('variant workspace uses accessible controls and is persisted, backed up and
   assert.match(app, /createProductVariant\(input,productVariants\)/);
   assert.match(app, /applyVariantStockMovement\(productVariants,movement,variantStockMovements\)/);
   assert.match(app, /productVariants,variantStockMovements/);
-  assert.match(app, /setProductVariants\(Array\.isArray\(d\.productVariants\)/);
+  assert.match(app, /setProductVariants\(normalizeProductVariants\(d\.productVariants\)\)/);
   assert.match(app, /setVariantStockMovements\(Array\.isArray\(d\.variantStockMovements\)/);
   const translations = read('src/i18n.tsx');
   for (const label of ['تنويعات المنتجات','تنويعات المنتجات والمخزون','المقاس (مثال: XL)','اللون (مثال: أسود)',
