@@ -70,6 +70,7 @@ export default function ChequeWorkspace({cheques,events,bankAccounts,onAdd,onTra
       <TextInput value={issueDate} onChangeText={setIssueDate} placeholder="تاريخ الشيك YYYY-MM-DD" style={s.input}/>
       <TextInput value={dueDate} onChangeText={setDueDate} placeholder="تاريخ الاستحقاق (اختياري)" style={s.input}/>
       <Text style={s.label}>الحساب البنكي المرتبط</Text>
+      {bankAccounts.length===0?<Text style={s.empty}>خاصك تضيف حساب بنكي قبل إيداع الشيك أو تسويته.</Text>:null}
       {bankAccounts.map(account=><AccessiblePressable key={account.id} accessibilityState={{selected:bankAccountId===account.id}} onPress={()=>setBankAccountId(account.id)} style={[s.choice,bankAccountId===account.id&&s.active]}><Text style={s.choiceText}>{account.name} {account.bankName||''}</Text></AccessiblePressable>)}
       <TextInput value={notes} onChangeText={setNotes} placeholder="ملاحظات (اختياري)" style={s.input}/>
       <AccessiblePressable style={s.submit} onPress={submit}><Text style={s.submitText}>حفظ الشيك</Text></AccessiblePressable>
