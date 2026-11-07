@@ -34,3 +34,15 @@ test('cancels unreceived orders only',()=>{
  const received=receivePurchaseOrder(order(),{date:'2026-11-07',lines:[{productId:10,quantity:10},{productId:11,quantity:5}]}).order;
  assert.throws(()=>cancelPurchaseOrder(received));
 });
+
+test('allows cancellation after partial receipt but preserves received quantities',()=>{
+ const partial=receivePurchaseOrder(order(),{date:'2026-11-07',lines:[{productId:10,quantity:2}]}).order;
+ const cancelled=cancelPurchaseOrder(partial);
+ assert.equal(cancelled.status,'cancelled');
+ assert.equal(cancelled.lines[0].receivedQuantity,2);
+ assert.throws(()=>receivePurchaseOrder(cancelled,{date:'2026-11-08',lines:[{productId:10,quantity:1}]}));
+});
+test('rejects corrupted persisted order receipt counts',()=>{
+ const invalid={...order(),lines:[{...order().lines[0],receivedQuantity:11}]};
+ assert.throws(()=>receivePurchaseOrder(invalid,{date:'2026-11-07',lines:[{productId:10,quantity:1}]}),/غير صالح/);
+});
