@@ -1356,6 +1356,15 @@ const fr: Record<string, string> = {
   "اختار المورد والمنتج ودخل ثمن شراء صالح.": "Sélectionnez un fournisseur et un produit, puis saisissez un prix d’achat valide.",
   "حدد المقاس أو اللون قبل حفظ ثمن المورد.": "Sélectionnez la taille ou la couleur avant d’enregistrer le prix fournisseur.",
   "حفظ ثمن المورد لأمر الشراء": "Enregistrer le prix fournisseur pour le bon de commande",
+  ". راجع الصيغة والمرجع والباركود.": ". Vérifiez le format, la référence et le code-barres.",
+  "تزادو ": "Ajoutés ",
+  "هو ": "est ",
+  "درهم": "DH",
+  "• المؤدى ": "• Payé ",
+  "• الباقي ": "• Restant ",
+  "أداء • ": "Paiement • ",
+  "• المرتجع ": "• Retourné ",
+  "• رصيد دائن ": "• Solde créditeur ",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
