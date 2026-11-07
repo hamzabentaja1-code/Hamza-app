@@ -27,16 +27,16 @@ export default function PosWorkspace({language,products,customers,onCheckout}:Pr
   const discount=Number(discountText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:0};
   const totals=posTotals(currentCart);
-  const add=(p:PosProduct)=>{try{setCart(old=>addPosLine(old,p));setTerm('');}catch(e){Alert.alert('{tr('المخزون غير كافٍ')}',e instanceof Error?e.message:'تعذر إضافة المنتج');}};
+  const add=(p:PosProduct)=>{try{setCart(old=>addPosLine(old,p));setTerm('');}catch(e){Alert.alert(tr('المخزون غير كافٍ'),e instanceof Error?e.message:'تعذر إضافة المنتج');}};
   const changeQty=(productId:string,delta:number)=>{setCart(old=>({...old,lines:old.lines.map(line=>line.productId===productId?{...line,quantity:line.quantity+delta}:line).filter(line=>line.quantity>0)}));};
   const remove=(productId:string)=>setCart(old=>({...old,lines:old.lines.filter(line=>line.productId!==productId)}));
   const checkout=()=>{
-    if(!Number.isFinite(discount)||discount<0){Alert.alert('{tr('تخفيض غير صالح')}','{tr('دخل تخفيض صحيح.')}');return;}
+    if(!Number.isFinite(discount)||discount<0){Alert.alert(tr('تخفيض غير صالح'),tr('دخل تخفيض صحيح.'));return;}
     const validation=validateCheckout({...currentCart,paidAmount:totals.total});
-    if(validation.length){Alert.alert('{tr('راجع السلة')}',validation.join('\n'));return;}
+    if(validation.length){Alert.alert(tr('راجع السلة'),validation.join('\n'));return;}
     const lines:CheckoutLine[]=currentCart.lines.map(line=>({productId:Number(line.productId),name:line.name,quantity:line.quantity,unitPrice:line.unitPrice,discount:line.discount}));
     const name=customers.find(c=>String(c.id)===customerId)?.name||'زبون عابر';
-    Alert.alert('{tr('تأكيد البيع')}',`المجموع ${money(totals.total)}\nالزبون: ${name}\n${tr('طريقة الأداء')}: ${tr(method==='cash'?'نقداً':method==='card'?'بطاقة':'تحويل')}`,[
+    Alert.alert(tr('تأكيد البيع'),`${tr('المجموع النهائي:')} ${money(totals.total)}\n${tr('الزبون')}: ${name}\n${tr('طريقة الأداء')}: ${tr(method==='cash'?'نقداً':method==='card'?'بطاقة':'تحويل')}`,[
       {text:'رجوع',style:'cancel'},
       {text:'تأكيد',onPress:()=>{const accepted=onCheckout({customerName:name,lines,paymentMethod:method,total:totals.total});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');}}
     ]);
@@ -66,10 +66,10 @@ export default function PosWorkspace({language,products,customers,onCheckout}:Pr
           <Pressable onPress={()=>changeQty(line.productId,-1)} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>−</Text></Pressable>
           <Text style={{color:'#FFF'}}>{line.quantity}</Text>
           <Pressable onPress={()=>{const p=mapped.find(x=>x.id===line.productId);if(p)add(p);}} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>+</Text></Pressable>
-          <Pressable onPress={()=>remove(line.productId)} style={{padding:5}}><Text style={{color:'#E28A78'}}>{tr('حذف')}</Text></Pressable>
+          <Pressable onPress={()=>remove(line.productId)} style={{padding:5}}><Text style={{color:'#E28A78'}}{tr('حذف')}</Text></Pressable>
         </View>;
       })}
-      <Text style={{color:'#CCC',marginTop:12,marginBottom:6}}>{tr('الزبون')}</Text>
+      <Text style={{color:'#CCC',marginTop:12,marginBottom:6}}{tr('الزبون')}</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:6}}>
         <Pressable onPress={()=>setCustomerId('')} style={{borderWidth:1,borderColor:customerId===''?GOLD:'#444',borderRadius:8,padding:9}}><Text style={{color:'#FFF'}}>{tr('زبون عابر')}</Text></Pressable>
         {customers.map(c=><Pressable key={c.id} onPress={()=>setCustomerId(String(c.id))} style={{borderWidth:1,borderColor:customerId===String(c.id)?GOLD:'#444',borderRadius:8,padding:9}}><Text style={{color:'#FFF'}}>{c.name}</Text></Pressable>)}
@@ -84,7 +84,7 @@ export default function PosWorkspace({language,products,customers,onCheckout}:Pr
         <Text style={{color:'#DDD'}}>{tr('التخفيض:')} {money(totals.discount)}</Text>
         <Text style={{color:GOLD,fontWeight:'900',fontSize:21}}>{tr('المجموع النهائي:')} {money(totals.total)}</Text>
       </View>
-      <Pressable onPress={checkout} disabled={!cart.lines.length} style={{backgroundColor:cart.lines.length?GOLD:'#555',borderRadius:9,padding:14,alignItems:'center',marginTop:12}}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تأكيد البيع')}</Text></Pressable>
+      <Pressable onPress={checkout} disabled={!cart.lines.length} style={{backgroundColor:cart.lines.length?GOLD:'#555',borderRadius:9,padding:14,alignItems:'center',marginTop:12}}><Text style={{color:'#151515',fontWeight:'900'}}{tr('تأكيد البيع')}</Text></Pressable>
     </View>
   </View>;
 }
