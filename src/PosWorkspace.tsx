@@ -47,7 +47,7 @@ export default function PosWorkspace({products,customers,variants,bankAccountNam
     if(!Number.isFinite(discount)||discount<0){showAlert('تخفيض غير صالح','دخل تخفيض صحيح.');return;}
     const validation=validateCheckout({...currentCart,paidAmount:totals.total});
     if(validation.length){showAlert('راجع السلة',validation.join('\n'));return;}
-    const lines:CheckoutLine[]=currentCart.lines.map(line=>{const product=mapped.find(p=>p.id===line.productId);return {productId:product?.productId??Number(line.productId),variantId:product?.variantId,name:line.name,quantity:line.quantity,unitPrice:line.unitPrice,discount:line.discount};});
+    const lines:CheckoutLine[]=currentCart.lines.map(line=>({productId:line.sourceProductId??Number(line.productId),variantId:line.variantId,name:line.name,quantity:line.quantity,unitPrice:line.unitPrice,discount:line.discount}));
     const name=customers.find(c=>String(c.id)===customerId)?.name||'زبون عابر';
     showAlert('تأكيد البيع',`المجموع ${money(totals.total)}\nالزبون: ${name}\nطريقة الأداء: ${method==='cash'?'نقداً':method==='card'?'بطاقة':'تحويل'}`,[
       {text:'رجوع',style:'cancel'},
@@ -72,7 +72,7 @@ export default function PosWorkspace({products,customers,variants,bankAccountNam
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:GOLD,fontSize:17,fontWeight:'800',marginBottom:10}}>سلة البيع ({cart.lines.length})</Text>
       {cart.lines.length===0?<Text style={{color:'#999',textAlign:'center',padding:14}}>السلة فارغة. قلب على منتج وزيدو.</Text>:cart.lines.map(line=>{
-        const product=products.find(p=>String(p.id)===line.productId);
+        const product=products.find(p=>p.id===line.sourceProductId)||products.find(p=>String(p.id)===line.productId);
         return <View key={line.productId} style={{paddingVertical:10,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:8}}>
           {product?.photoData?<Image source={{uri:product.photoData}} style={{width:42,height:42,borderRadius:7}}/>:null}
           <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{line.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{money(line.unitPrice)} × {line.quantity}</Text></View>
