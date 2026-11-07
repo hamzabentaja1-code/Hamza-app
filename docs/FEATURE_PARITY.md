@@ -39,7 +39,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Weighted average cost updates on purchases when the previous stock cost is known
 - [x] Sale-time cost snapshots and tested gross-profit calculation; legacy sales without a cost are excluded
 - [x] Inventory ledger unit tests for movements, duplicate protection, negative stock prevention and stock-count variance
-- [ ] Separate price rules for quotes/orders vs invoices
+- [x] Separate product quote prices and invoice prices; invoice conversion recalculates line/document totals while preserving discounts
+- [ ] Separate price rules for purchase orders and advanced customer price groups
 - [ ] HT/TTC display mode and configurable tax rules where required
 - [x] Invoice and delivery-note conversions deduct stock only once per quote, regardless of conversion order; later document conversion does not double-deduct
 - [x] Persistent stock movement ledger for opening stock, purchases, manual sales, POS sales, delivery notes, product quantity corrections and physical stock counts
