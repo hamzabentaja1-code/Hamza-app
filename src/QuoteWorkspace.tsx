@@ -1,6 +1,7 @@
 import React, {useMemo, useState} from 'react';
-import {Alert, Pressable, ScrollView, Text, TextInput, View} from 'react-native';
+import {Alert, Pressable, ScrollView, Text as NativeText, TextInput as NativeTextInput, View} from 'react-native';
 import {calculateQuote} from './domain/quote-calculator';
+import {TText as Text, TTextInput as TextInput} from './i18n';
 
 type Product = {id:number; name:string; price:number; qty:number};
 type Customer = {id:number; name:string};
