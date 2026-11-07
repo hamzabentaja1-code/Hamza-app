@@ -219,7 +219,7 @@ const fr: Record<string, string> = {
   "أداء أمر العمل": "Paiement de l'ordre de travail",
   "اختار أمر العمل.": "Choisissez un ordre de travail.",
   "دخل مبلغاً صحيحاً.": "Saisissez un montant valide.",
-  "مبلغ أداء أكبر من صفر.": "Saisissez un paiement supérieur à zéro.",
+  "دخل مبلغ أداء أكبر من صفر.": "Saisissez un paiement supérieur à zéro.",
   "تعذر حفظ المبلغ.": "Impossible d'enregistrer le montant.",
   "تعذر تسجيل الأداء.": "Impossible d'enregistrer le paiement.",
   "أمر العمل": "Ordre de travail",
