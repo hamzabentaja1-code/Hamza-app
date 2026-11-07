@@ -114,3 +114,28 @@ test('customer return movements add stock and reversal removes it safely', () =>
   assert.equal(inventoryBalance(movements, 1), 6);
   assert.throws(() => appendInventoryMovement(movements, { ...opening, id: 'return-out-too-much', kind: 'return_out', quantityDelta: -7 }), /المخزون غير كافٍ/);
 });
+
+test('stock count can reconcile an empty shelf to zero and validates its movement metadata', () => {
+  const movements = appendInventoryMovement([], opening);
+  const result = createStockCount(movements, {
+    id: 'count-zero', productId: 1, productName: 'Cable', countedQuantity: 0,
+    date: '2026-11-07', warehouseId: DEFAULT_WAREHOUSE_ID,
+  });
+  assert.equal(result.expectedQuantity, 10);
+  assert.equal(result.countedQuantity, 0);
+  assert.equal(result.difference, -10);
+  assert.equal(result.movement.kind, 'stock_count');
+  assert.equal(inventoryBalanceForWarehouse([...movements, result.movement], 1), 0);
+  assert.throws(() => createStockCount(movements, {
+    id: 'count-bad-date', productId: 1, productName: 'Cable', countedQuantity: 2,
+    date: 'not-a-date',
+  }), /تاريخ الحركة غير صالح/);
+  assert.throws(() => createStockCount(movements, {
+    id: '', productId: 1, productName: 'Cable', countedQuantity: 2,
+    date: '2026-11-07',
+  }), /معرف الحركة إجباري/);
+  assert.throws(() => createStockCount(movements, {
+    id: 'count-duplicate', productId: 1, productName: 'Cable', countedQuantity: 2,
+    date: '2026-11-07',
+  }), /المخزون غير كافٍ/);
+});
