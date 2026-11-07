@@ -9,7 +9,7 @@
     "web": "expo start --web",
     "build:apk": "eas build --platform android --profile preview",
     "build:production": "eas build --platform android --profile production",
-    "test:quote": "tsc src/domain/quote-calculator.ts src/domain/document-conversion.ts src/domain/payment-allocation.ts src/domain/customer-balances.ts --target ES2020 --module commonjs --outDir .test-build && tsc src/pos.ts --target ES2020 --module commonjs --outDir .test-build && node --test tests/quote-calculator.test.cjs tests/document-conversion.test.cjs tests/payment-allocation.test.cjs tests/customer-balances.test.cjs tests/pos.test.cjs"
+    "test:quote": "tsc src/domain/quote-calculator.ts src/domain/document-conversion.ts src/domain/payment-allocation.ts src/domain/customer-balances.ts --target ES2020 --module commonjs --outDir .test-build && tsc src/pos.ts src/inventory.ts --target ES2020 --module commonjs --outDir .test-build && node --test tests/quote-calculator.test.cjs tests/document-conversion.test.cjs tests/payment-allocation.test.cjs tests/customer-balances.test.cjs tests/pos.test.cjs"
   },
   "dependencies": {
     "expo": "~54.0.0",
