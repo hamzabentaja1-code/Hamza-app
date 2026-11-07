@@ -76,3 +76,11 @@ test('physical variant stock counts apply positive and negative variance', () =>
   assert.equal(increased.variants[0].stockQty,9);
   assert.throws(()=>applyVariantStockMovement(increased.variants,{id:'count-negative',variantId:'v-count',kind:'stock_count',quantityDelta:-10,date:'2026-11-07'},[reduced.movement,increased.movement]),/مخزون النسخة غير كافٍ/);
 });
+
+
+test('delivery-note movement deducts stock from the selected variant', () => {
+  const initial = [{id:'v-delivery',productId:9,attributes:{size:'L'},stockQty:6,active:true}];
+  const result = applyVariantStockMovement(initial,{id:'delivery-1',variantId:'v-delivery',kind:'delivery',quantityDelta:-2,date:'2026-11-07'});
+  assert.equal(result.variants[0].stockQty,4);
+  assert.throws(()=>applyVariantStockMovement(result.variants,{id:'delivery-2',variantId:'v-delivery',kind:'delivery',quantityDelta:1,date:'2026-11-07'},[result.movement]),/اتجاه كمية الحركة/);
+});
