@@ -211,3 +211,24 @@ test('variant warehouse transfer rejects insufficient source stock, same warehou
   assert.throws(()=>transferVariantStockBetweenWarehouses(initial,[...history,...valid.movements],{...input,quantity:1}),/مسجل من قبل/);
   assert.equal(initial[0].stockQty,2);
 });
+
+
+const {migrateLegacyVariantOpeningMovements} = require('../.test-build/variant-stock.js');
+
+test('legacy variant quantities migrate once into the default warehouse opening ledger', () => {
+  const legacy=[createProductVariant(variant({id:'v-migrate',sku:'SKU-MIGRATE',barcode:'WH-MIGRATE',stockQty:6}))];
+  const migrated=migrateLegacyVariantOpeningMovements(legacy,[],'2026-11-07');
+  assert.equal(migrated.length,1);
+  assert.equal(migrated[0].kind,'opening');
+  assert.equal(migrated[0].quantityDelta,6);
+  assert.equal(migrated[0].warehouseId,DEFAULT_VARIANT_WAREHOUSE_ID);
+  assert.equal(variantWarehouseBalance('v-migrate',migrated,DEFAULT_VARIANT_WAREHOUSE_ID),6);
+  assert.equal(migrateLegacyVariantOpeningMovements(legacy,migrated,'2026-11-08').length,1);
+});
+
+test('legacy migration leaves variants with existing movements unchanged and rejects invalid dates', () => {
+  const legacy=[createProductVariant(variant({id:'v-migrate-existing',sku:'SKU-MIGRATE-E',barcode:'WH-MIGRATE-E',stockQty:6}))];
+  const history=[{id:'already-open',variantId:'v-migrate-existing',kind:'opening',quantityDelta:6,date:'2026-11-01',warehouseId:'warehouse-a'}];
+  assert.deepEqual(migrateLegacyVariantOpeningMovements(legacy,history,'2026-11-07'),history);
+  assert.throws(()=>migrateLegacyVariantOpeningMovements(legacy,[],'2026-02-31'),/تاريخ ترحيل/);
+});
