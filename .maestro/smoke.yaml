@@ -556,3 +556,31 @@ appId: com.hamza.app
 - assertVisible: "Agenda et échéances"
 - assertVisible: "Échéances par date"
 - tapOn: "Accueil"
+
+# Arabic: date range report with previous-period comparison.
+- scrollUntilVisible:
+    element:
+      text: "قلب على قسم..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "قلب على قسم..."
+- inputText: "تحليل الفترة"
+- tapOn: "تحليل الفترة"
+- assertVisible: "تحليل مالي حسب الفترة"
+- assertVisible: "الفترة الحالية مقابل الفترة السابقة"
+- assertVisible: "صافي المبيعات"
+- tapOn: "الرئيسية"
+
+# French: period comparison report labels.
+- scrollUntilVisible:
+    element:
+      text: "Rechercher un module..."
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Rechercher un module..."
+- inputText: "تحليل الفترة"
+- tapOn: "Analyse par période"
+- assertVisible: "Analyse financière par période"
+- assertVisible: "Période actuelle comparée à la précédente"
+- assertVisible: "Ventes nettes"
+- tapOn: "Accueil"
