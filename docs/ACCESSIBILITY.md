@@ -4,13 +4,19 @@
 
 - All shared Pressable controls in the main app, quote editor and POS use a common accessible button primitive.
 - Controls expose the button role, are keyboard-focusable, and receive an 8 dp hit-slop expansion by default.
+- Text inputs are explicitly accessible and focusable; caller-provided accessibility hints are translated with the selected app language.
+- Button accessibility hints are translated with the selected app language.
 - A control's visible child text is used as its screen-reader label; callers can override it with `accessibilityLabel`.
 - Disabled state is exposed to assistive technology.
-- Product and customer choices expose their selected state.
+- Product, customer, POS payment-method, bank movement-type and bank-transfer destination choices expose their selected state.
 - Image-only product preview controls and the language switch have explicit labels.
 - Text inputs expose a translated accessibility label based on their translated placeholder unless a caller supplies a better label.
 - React Native text scaling remains enabled; the wrappers do not disable system font scaling.
 - Arabic and French retain their respective writing directions.
+
+## Automated regression coverage
+
+The static accessibility regression suite (tests/accessibility.test.cjs) checks that the primary workspaces use the shared accessible controls and translated text inputs, and that selected states and translated hints remain wired into the wrappers. It is included in the normal test:quote script.
 
 ## Device verification still required
 
