@@ -9,7 +9,7 @@ const GOLD='#D6AE55';
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const monthStart=()=>today().slice(0,8)+'01';
 const money=(v:number)=>(Number.isFinite(v)?v:0).toFixed(2)+' DH';
-export default function PeriodReportWorkspace({sales,salesReturns,purchases,supplierReturns,expenses,purchaseRows,supplierReturnRows,onExportPdf,onExportCsv}:{sales:DatedAmount[];salesReturns:DatedAmount[];purchases:DatedAmount[];supplierReturns:DatedAmount[];expenses:DatedAmount[];purchaseRows:{date:string;supplierName:string;amount:number}[];supplierReturnRows:{date:string;supplierName:string;amount:number}[];onExportPdf:(title:string,lines:string[])=>void;onExportCsv:(title:string,rows:string[][])=>void}){
+export default function PeriodReportWorkspace({sales,salesReturns,purchases,supplierReturns,expenses,purchaseRows,supplierReturnRows,onExportPdf,onExportCsv,onExportXlsx}:{sales:DatedAmount[];salesReturns:DatedAmount[];purchases:DatedAmount[];supplierReturns:DatedAmount[];expenses:DatedAmount[];purchaseRows:{date:string;supplierName:string;amount:number}[];supplierReturnRows:{date:string;supplierName:string;amount:number}[];onExportPdf:(title:string,lines:string[])=>void;onExportCsv:(title:string,rows:string[][])=>void;onExportXlsx:(title:string,rows:string[][])=>void}){
  const [fromDate,setFromDate]=useState(monthStart());const [toDate,setToDate]=useState(today());
  const report=useMemo(()=>{try{return {data:buildPeriodReport({sales,salesReturns,purchases,supplierReturns,expenses,fromDate,toDate}),error:''};}catch(error){return {data:null,error:error instanceof Error?error.message:'فترة غير صالحة'};}},[sales,salesReturns,purchases,supplierReturns,expenses,fromDate,toDate]);
  const analytics=useMemo(()=>{try{return {trend:buildMonthlyTrend({sales,salesReturns,purchases,supplierReturns,expenses,fromDate,toDate}),suppliers:buildSupplierPurchaseComparison(purchaseRows,supplierReturnRows,fromDate,toDate),error:''};}catch(error){return {trend:[],suppliers:[],error:error instanceof Error?error.message:'تعذر تحليل الموردين'};}},[sales,salesReturns,purchases,supplierReturns,expenses,purchaseRows,supplierReturnRows,fromDate,toDate]);
@@ -27,16 +27,15 @@ export default function PeriodReportWorkspace({sales,salesReturns,purchases,supp
   ];
   onExportPdf('Rapport de période '+report.data.fromDate+' - '+report.data.toDate,lines);
  };
- const exportCsv=()=>{
-  if(!report.data)return;
-  const rows:string[][]=[
-   ['Type','Label','Période début','Période fin','Valeur actuelle DH','Valeur de comparaison DH','Détails'],
-   ...metrics.map(item=>['Résumé',item.label,report.data!.fromDate,report.data!.toDate,String(report.data!.current[item.key]),String(report.data!.previous[item.key]),'']),
-   ['Résumé','Indicateur opérationnel',report.data.fromDate,report.data.toDate,String(report.data.current.operatingIndicator),'','Indicateur préliminaire, pas un bénéfice comptable final'],
-   ...analytics.trend.map(row=>['Tendance mensuelle',row.month,row.month,row.month,String(row.sales),String(row.purchases),'Retours ventes '+row.salesReturns+'; retours fournisseurs '+row.supplierReturns+'; dépenses '+row.expenses]),
-   ...analytics.suppliers.map(row=>['Fournisseur',row.supplierName,report.data!.fromDate,report.data!.toDate,String(row.netPurchases),String(row.grossPurchases),'Retours '+row.returns+'; achats '+row.purchaseCount]),
-  ];  onExportCsv('HamZa - Rapport '+report.data.fromDate+' - '+report.data.toDate,rows);
- };
+ const buildExportRows=():string[][]=>[
+  ['Type','Label','Période début','Période fin','Valeur actuelle DH','Valeur de comparaison DH','Détails'],
+  ...metrics.map(item=>['Résumé',item.label,report.data!.fromDate,report.data!.toDate,String(report.data!.current[item.key]),String(report.data!.previous[item.key]),'']),
+  ['Résumé','Indicateur opérationnel',report.data!.fromDate,report.data!.toDate,String(report.data!.current.operatingIndicator),'','Indicateur préliminaire, pas un bénéfice comptable final'],
+  ...analytics.trend.map(row=>['Tendance mensuelle',row.month,row.month,row.month,String(row.sales),String(row.purchases),'Retours ventes '+row.salesReturns+'; retours fournisseurs '+row.supplierReturns+'; dépenses '+row.expenses]),
+  ...analytics.suppliers.map(row=>['Fournisseur',row.supplierName,report.data!.fromDate,report.data!.toDate,String(row.netPurchases),String(row.grossPurchases),'Retours '+row.returns+'; achats '+row.purchaseCount]),
+ ];
+ const exportCsv=()=>{if(!report.data)return;onExportCsv('HamZa - Rapport '+report.data.fromDate+' - '+report.data.toDate,buildExportRows());};
+ const exportXlsx=()=>{if(!report.data)return;onExportXlsx('HamZa - Rapport '+report.data.fromDate+' - '+report.data.toDate,buildExportRows());};
  const metrics=report.data?[
   {label:'المبيعات الإجمالية',key:'salesGross' as const},
   {label:'مرتجعات الزبناء',key:'salesReturns' as const},
@@ -62,6 +61,7 @@ export default function PeriodReportWorkspace({sales,salesReturns,purchases,supp
    <Text style={styles.note}>المؤشر التشغيلي الأولي = صافي المبيعات − صافي المشتريات − المصاريف. ليس ربحاً محاسبياً نهائياً ولا يشمل كل التكاليف والضرائب.</Text>
    <Pressable accessibilityRole="button" onPress={exportReport} style={styles.export}><Text style={styles.exportText}>تصدير التقرير PDF</Text></Pressable>
    <Pressable accessibilityRole="button" onPress={exportCsv} style={[styles.export,{backgroundColor:'#242424',borderWidth:1,borderColor:GOLD}]}><Text style={[styles.exportText,{color:GOLD}]}>تصدير التقرير CSV</Text></Pressable>
+   <Pressable accessibilityRole="button" onPress={exportXlsx} style={[styles.export,{backgroundColor:'#242424',borderWidth:1,borderColor:GOLD}]}><Text style={[styles.exportText,{color:GOLD}]}>تصدير التقرير Excel (XLSX)</Text></Pressable>
    <Text style={styles.section}>الاتجاه الشهري</Text>
    {analytics.trend.map(row=><View key={row.month} style={styles.metric}>
     <Text style={styles.label}>{row.month}</Text>
