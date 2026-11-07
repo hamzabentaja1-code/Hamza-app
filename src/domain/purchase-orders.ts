@@ -20,7 +20,10 @@ export type PurchaseReceipt = {
   received: PurchaseReceiptLine[];
   remaining: number;
 };
-function validDate(value: string): boolean {\nfunction validateOrder(order: PurchaseOrder): void {
+function validDate(value: string): boolean {
+  return !!value.trim() && Number.isFinite(Date.parse(value));
+}
+function validateOrder(order: PurchaseOrder): void {
   if (!Number.isSafeInteger(order.id) || order.id <= 0 || !order.supplierName.trim() ||
       !validDate(order.createdAt) || !Array.isArray(order.lines) || order.lines.length === 0 ||
       !['draft','ordered','partially_received','received','cancelled'].includes(order.status)) {
@@ -44,9 +47,6 @@ function validDate(value: string): boolean {\nfunction validateOrder(order: Purc
       (order.status === 'partially_received' && (!anyReceived || allReceived))) {
     throw new Error('حالة استلام أمر الشراء غير متطابقة مع الكميات');
   }
-}
-
-  return !!value.trim() && Number.isFinite(Date.parse(value));
 }
 export function createPurchaseOrder(input: {
   id:number; supplierName:string; createdAt:string; expectedDate?:string;
@@ -74,7 +74,8 @@ export function receivePurchaseOrder(
   order: PurchaseOrder,
   receipt: {lines:PurchaseReceiptLine[]; date:string},
 ): PurchaseReceipt {
-  validateOrder(order);\n  if(order.status==='cancelled'||order.status==='received') throw new Error('أمر الشراء ملغى أو مستلم بالكامل');
+  validateOrder(order);
+  if(order.status==='cancelled'||order.status==='received') throw new Error('أمر الشراء ملغى أو مستلم بالكامل');
   if(!validDate(receipt.date)||!Array.isArray(receipt.lines)||receipt.lines.length===0)
     throw new Error('بيانات استلام البضاعة غير صالحة');
   const requested=new Map<number,number>();
@@ -92,11 +93,11 @@ export function receivePurchaseOrder(
   });
   for(const id of requested.keys()) if(!order.lines.some(line=>line.productId===id))
     throw new Error('المنتج المستلم غير موجود في أمر الشراء');
-  if(!receipt.lines.some(line=>line.quantity>0)) throw new Error('حدد كمية واحدة على الأقل للاستلام');
   const allReceived=lines.every(line=>line.receivedQuantity===line.quantity);
   return {order:{...order,lines,status:allReceived?'received':'partially_received'},received:receipt.lines,remaining};
 }
 export function cancelPurchaseOrder(order:PurchaseOrder):PurchaseOrder {
+  validateOrder(order);
   if(order.status==='received'||order.status==='cancelled') throw new Error('لا يمكن إلغاء هذا الأمر');
   return {...order,status:'cancelled'};
 }
