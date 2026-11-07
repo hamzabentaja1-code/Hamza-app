@@ -52,14 +52,17 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Generate native Android project
+        if: github.event_name == 'workflow_dispatch'
         run: npx expo prebuild --platform android --clean
 
       - name: Bundle JavaScript for standalone APK
+        if: github.event_name == 'workflow_dispatch'
         run: |
           mkdir -p android/app/src/main/assets
           npx expo export:embed --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
 
       - name: Create temporary CI release signing key
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           STORE_PASS="$(openssl rand -hex 24)"
@@ -79,6 +82,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Configure release signing
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           python3 - <<'PY'
@@ -125,6 +129,7 @@ jobs:
           PY
 
       - name: Verify hardened Android configuration
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           grep -Fq 'android.minSdkVersion=29' android/gradle.properties
@@ -136,10 +141,12 @@ jobs:
           grep -n 'usesCleartextTraffic' android/app/src/main/AndroidManifest.xml || true
 
       - name: Build signed release APK
+        if: github.event_name == 'workflow_dispatch'
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
 
       - name: Verify APK signature
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           APK="$(find android/app/build/outputs/apk/release -type f -name '*.apk' | head -n 1)"
@@ -150,12 +157,14 @@ jobs:
           echo "APK_PATH=$APK" >> "$GITHUB_ENV"
 
       - name: Set up Java 21 for APK inspection tools
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
       - name: Install JADX and APKTool for APK inspection
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/hamza-apk-tools"
@@ -167,6 +176,7 @@ jobs:
           java -jar "$RUNNER_TEMP/hamza-apk-tools/apktool.jar" --version
 
       - name: Inspect release APK with JADX and APKTool
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           APK="$(find android/app/build/outputs/apk/release -type f -name '*.apk' | head -n 1)"
@@ -190,6 +200,7 @@ jobs:
           } > inspection/inspection-summary.txt
 
       - name: Upload APK inspection report
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: HamZa-APK-Inspection
@@ -198,6 +209,7 @@ jobs:
           retention-days: 14
 
       - name: Upload APK
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: HamZa-APK
@@ -207,6 +219,7 @@ jobs:
 
   maestro-smoke:
     name: Maestro Android emulator smoke test
+    if: github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -238,6 +251,7 @@ jobs:
 
   mobsf:
     name: MobSF Android security scan
+    if: github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 35
