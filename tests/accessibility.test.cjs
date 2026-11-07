@@ -531,6 +531,7 @@ test('variants with stock cannot be archived and restored stocked variants are r
   const app = read('App.tsx');
   assert.match(app, /if\(!active&&variant&&variant\.stockQty>0\)/);
   assert.match(app, /normalizeProductVariants\(d\.productVariants\)/);
+  assert.match(app, /active:variant\.stockQty>0\?true:variant\.active!==false/);
   assert.match(app, /createdVariant\.stockQty>0\?\{\.\.\.createdVariant,active:true\}:createdVariant/);
   assert.match(app, /movement\.quantityDelta>0\?\{\.\.\.v,active:true\}:v/);
 });
