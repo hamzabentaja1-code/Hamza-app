@@ -35,7 +35,7 @@ export default function CustomerOrdersWorkspace({quotes,orders,onCreate,onStatus
     {order.status==='draft'?<Pressable onPress={()=>onStatus(order.id,'confirmed')} style={{borderWidth:1,borderColor:'#4D9D82',padding:9,borderRadius:8}}><Text style={{color:'#4D9D82',fontWeight:'800'}}>تأكيد الطلب</Text></Pressable>:null}
     {order.status==='confirmed'||order.status==='partially_fulfilled'?<Pressable onPress={()=>{const values:Record<string,number>={};order.lines.forEach((line,index)=>{const raw=quantities[order.id]?.[String(index)];values[String(index)]=raw===undefined?Math.max(0,line.qty-line.fulfilledQty):Number(raw.replace(',','.'));});onDeliver(order,values);}} style={{borderWidth:1,borderColor:gold,padding:9,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>تسجيل التسليم</Text></Pressable>:null}
     {order.status!=='cancelled'&&order.status!=='fulfilled'?<Pressable onPress={()=>onStatus(order.id,'cancelled')} style={{borderWidth:1,borderColor:'#B76C5A',padding:9,borderRadius:8}}><Text style={{color:'#B76C5A',fontWeight:'800'}}>إلغاء الطلب</Text></Pressable>:null}
-    {order.status!=='cancelled'?<Pressable onPress={()=>onInvoice(order)} style={{borderWidth:1,borderColor:'#777',padding:9,borderRadius:8}}><Text style={{color:'#DDD',fontWeight:'800'}}>إنشاء فاتورة</Text></Pressable>:null}
+    {order.status==='fulfilled'?<Pressable onPress={()=>onInvoice(order)} style={{borderWidth:1,borderColor:'#777',padding:9,borderRadius:8}}><Text style={{color:'#DDD',fontWeight:'800'}}>إنشاء فاتورة</Text></Pressable>:null}
    </View>
    <Text style={{color:'#777',fontSize:11,marginTop:8}}>سندات التسليم: {order.deliveryDocumentIds.join(', ')||'—'} • الفواتير: {order.invoiceDocumentIds.join(', ')||'—'}</Text>
   </View>)}
