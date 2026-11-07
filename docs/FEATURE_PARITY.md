@@ -28,6 +28,9 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Products and inventory
 - [x] Product catalog references, barcodes and up to four saved product photos
 - [x] Service-only catalog items with no stock balance or stock movements, supported in direct sales, POS, quotes and invoice conversion
+- [x] Variant management workspace with normalized size/color attributes, SKU/barcode uniqueness, per-variant stock and centime-safe cost/sale prices
+- [x] Variant stock movement validation for purchases, sales, returns and adjustments; variant records and movement history persist through local save and JSON backup/restore
+- [ ] Connect variant selection and stock deduction to POS, direct sales, purchase receiving, returns and product-level stock valuation
 - [ ] Camera-based barcode scanning
 - [x] Single product photo: choose, replace, remove, preview, and persist in local product data
 - [x] Product name search and product edit flow
