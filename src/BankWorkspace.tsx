@@ -52,13 +52,13 @@ export default function BankWorkspace({accounts,movements,reconciliations,active
   {active&&<>
    <View style={[styles.hero,{marginTop:12}]}><Text style={styles.note}>الرصيد الحالي • {active.name}</Text><Text style={styles.balance}>{(balance/100).toFixed(2)} DH</Text></View>
    <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>حركة الحساب</Text>
-    <View style={styles.row}>{(['deposit','withdrawal'] as const).map(v=><AccessiblePressable key={v} onPress={()=>setKind(v)} style={[styles.choice,{flex:1},kind===v&&styles.selected]}><Text style={styles.label}>{v==='deposit'?'إيداع':'سحب'}</Text></AccessiblePressable>)}</View>
+    <View style={styles.row}>{(['deposit','withdrawal'] as const).map(v=><AccessiblePressable key={v} accessibilityState={{selected:kind===v}} onPress={()=>setKind(v)} style={[styles.choice,{flex:1},kind===v&&styles.selected]}><Text style={styles.label}>{v==='deposit'?'إيداع':'سحب'}</Text></AccessiblePressable>)}</View>
     <TextInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="المبلغ DH" placeholderTextColor="#888" style={styles.input}/>
     <TextInput value={description} onChangeText={setDescription} placeholder="وصف الحركة" placeholderTextColor="#888" style={styles.input}/>
     <AccessiblePressable style={styles.action} onPress={saveMovement}><Text style={styles.actionText}>تسجيل الحركة</Text></AccessiblePressable>
    </View>
    <View style={[styles.panel,{marginTop:12}]}><Text style={styles.title}>تحويل بين الحسابات</Text>
-    {accounts.filter(a=>a.id!==active.id).map(a=><AccessiblePressable key={a.id} onPress={()=>setDestination(a.id)} style={[styles.choice,destination===a.id&&styles.selected]}><Text style={styles.label}>{a.name}</Text></AccessiblePressable>)}
+    {accounts.filter(a=>a.id!==active.id).map(a=><AccessiblePressable key={a.id} accessibilityState={{selected:destination===a.id}} onPress={()=>setDestination(a.id)} style={[styles.choice,destination===a.id&&styles.selected]}><Text style={styles.label}>{a.name}</Text></AccessiblePressable>)}
     <TextInput value={transferAmount} onChangeText={setTransferAmount} keyboardType="decimal-pad" placeholder="المبلغ DH" placeholderTextColor="#888" style={styles.input}/>
     <TextInput value={transferDescription} onChangeText={setTransferDescription} placeholder="سبب التحويل" placeholderTextColor="#888" style={styles.input}/>
     <AccessiblePressable style={styles.action} onPress={transfer}><Text style={styles.actionText}>تأكيد التحويل</Text></AccessiblePressable>
