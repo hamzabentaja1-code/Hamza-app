@@ -59,6 +59,7 @@ export function normalizeUserAccounts(value: unknown, moduleIds: string[]): User
 
 export function hasModuleAccess(user: UserAccount | undefined, moduleId: string): boolean {
   if (!user || !user.active) return false;
+  if (moduleId === 'الرئيسية') return true;
   if (user.role === 'owner') return true;
   if (user.role === 'admin' && moduleId !== 'المستخدمون والصلاحيات') return true;
   return user.allowedModules.includes(moduleId);
