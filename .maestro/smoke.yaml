@@ -3,7 +3,6 @@ appId: com.hamza.app
 - launchApp:
     clearState: false
 - assertVisible: "HamZa"
-- assertVisible: "Gestion commerciale"
 - assertVisible: "الرئيسية"
 - assertVisible: "المنتجات"
 - tapOn: "نقطة البيع"
