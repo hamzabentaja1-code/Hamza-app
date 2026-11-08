@@ -653,6 +653,21 @@ const fr: Record<string, string> = {
   "خاصك تحيد ربط المهام بالمشروع قبل الحذف.": "Dissociez d’abord les tâches du projet avant sa suppression.",
   "لا يمكن حذف المهمة": "Impossible de supprimer la tâche",
   "كاين سجل ساعات مرتبط بهاد المهمة. حذف سجل العمل أولاً.": "Une saisie de travail est liée à cette tâche. Supprimez d’abord la saisie."
+  "لا يمكن حذف سجل الوقت": "Impossible de supprimer la saisie",
+  "كاينة تسوية أجرة مرتبطة بهاد الفني؛ خليه محفوظ باش يبقى الحساب صحيح.": "Un règlement est lié à ce technicien ; conservez la saisie pour garder un solde exact.",
+  "تسديد أجور الفنيين": "Paiement des techniciens",
+  "المستحق": "Dû",
+  "المؤدى": "Payé",
+  "سجل ساعات العمل أولاً باش يبان المستحق.": "Enregistrez d’abord les heures pour afficher le montant dû.",
+  "تسجيل تسوية الأجرة": "Enregistrer le règlement du salaire",
+  "سجل تسويات الأجرة": "Historique des règlements",
+  "معرف تسوية الأجرة ناقص أو مستعمل": "L’identifiant du règlement est manquant ou déjà utilisé",
+  "ما كايناش أجرة مستحقة لهاد الفني": "Aucun salaire dû à ce technicien",
+  "تاريخ تسوية الأجرة غير صالح": "La date du règlement est invalide",
+  "مبلغ التسوية خاصو يكون أكبر من صفر": "Le montant du règlement doit être supérieur à zéro",
+  "مبلغ التسوية أكبر من الأجرة الباقية": "Le règlement dépasse le solde dû",
+  "طريقة تسوية الأجرة غير صالحة": "Le mode de règlement est invalide",
+  "تم تسجيل تسوية الأجرة": "Règlement du salaire enregistré",
 };
 
 export function translate(language: AppLanguage, value: string): string {
