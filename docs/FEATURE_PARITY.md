@@ -55,7 +55,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Expense records with categories and manually generated recurring weekly/monthly/yearly expenses (recurring due dates are deduplicated; scheduled background generation remains pending)
 - [x] Local cash ledger with one opening balance, cash in/out, and automatic entries for cash POS sales, customer payments, cash expenses and supplier payments (bank transfers and reconciliation remain pending)
 - [x] Customer invoice payments, supplier payments, allocations and balances
-- [ ] Cheques, drafts, unpaid items and due-date tracking
+- [x] Invoice due dates, overdue-invoice list, and manual customer reminder sharing
+- [ ] Cheque/draft settlement, returned items and reminder history/scheduling
 - [ ] Bank statement import and reconciliation
 
 ### POS
