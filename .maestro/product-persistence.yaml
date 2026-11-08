@@ -1,0 +1,64 @@
+appId: com.hamza.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "HamZa"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "Products"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Products"
+- tapOn: "اسم المنتج"
+- inputText: "CI Router 01"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: 'ثمن البيع \(DH\)'
+    direction: DOWN
+- tapOn: 'ثمن البيع \(DH\)'
+- inputText: "150"
+- hideKeyboard
+- tapOn: "الكمية"
+- eraseText
+- inputText: "5"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: 'ثمن الشراء / التكلفة \(DH\)'
+    direction: DOWN
+- tapOn: 'ثمن الشراء / التكلفة \(DH\)'
+- inputText: "100"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: '\+ إضافة المنتج'
+    direction: DOWN
+- tapOn: '\+ إضافة المنتج'
+- scrollUntilVisible:
+    element:
+      text: "CI Router 01"
+    direction: DOWN
+    timeout: 20000
+- assertVisible: 'الكمية: 5.*'
+- takeScreenshot: artifacts/product-created
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "HamZa"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "Products"
+    direction: DOWN
+- tapOn: "Products"
+- scrollUntilVisible:
+    element:
+      text: "CI Router 01"
+    direction: DOWN
+    timeout: 20000
+- assertVisible: 'الكمية: 5.*'
+- takeScreenshot: artifacts/product-reopened
