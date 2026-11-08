@@ -288,8 +288,9 @@ appId: com.hamza.app
     element:
       text: إرجاع من فاتورة المورد.*
     direction: DOWN
+    speed: 85
     centerElement: true
-    timeout: 25000
+    timeout: 60000
 - tapOn: الكمية
 - inputText: "2"
 - pressKey: Enter
