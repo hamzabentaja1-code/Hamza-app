@@ -2,6 +2,9 @@ appId: com.hamza.app
 ---
 - launchApp:
     clearState: false
+- extendedWaitUntil:
+    visible: "HamZa"
+    timeout: 30000
 - assertVisible: "HamZa"
 - assertVisible: "الرئيسية"
 - assertVisible: "المنتجات"
