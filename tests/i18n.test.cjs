@@ -27,9 +27,11 @@ const fs = require('node:fs');
 test('static Arabic labels used by workspaces all have French translations',()=>{
   for (const file of ['App.tsx','src/QuoteWorkspace.tsx','src/ProjectsWorkspace.tsx','src/ContactHistoryWorkspace.tsx','src/PosWorkspace.tsx','src/CreditNoteWorkspace.tsx','src/PurchaseWorkspace.tsx','src/AgendaWorkspace.tsx','src/BankLedgerWorkspace.tsx','src/WorkLogWorkspace.tsx','src/InstallationRequestWorkspace.tsx','src/TechnicianWorkspace.tsx','src/EquipmentWorkspace.tsx','src/PosReturnWorkspace.tsx']) {
     const source = fs.readFileSync(file,'utf8');
-    for (const match of source.matchAll(/\btr\((['"])(.*?)\1\)/g)) {
+    for (const match of source.matchAll(/\btr\(\s*(['"])(.*?)\1(?:\s*,\s*(['"])(.*?)\3)?\s*\)/gs)) {
       const key = match[2].replace(/\\n/g,'\n');
-      if (/[ء-ي]/.test(key)) assert.notEqual(translate('FR',key),key,file + ': ' + key);
+      if (!/[ء-ي]/.test(key)) continue;
+      if (match[4] !== undefined) assert.ok(match[4].trim(),file + ': empty French label for ' + key);
+      else assert.notEqual(translate('FR',key),key,file + ': ' + key);
     }
   }
 });
