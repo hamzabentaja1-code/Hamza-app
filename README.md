@@ -27,3 +27,9 @@ GitHub Actions يشغّل اختبارات المستندات وفحص TypeScrip
 
 
 Recent workflow additions include linked purchase requests, orders, goods receipts and supplier invoices; supplier returns linked to confirmed supplier invoices and legacy purchases; supplier credit balances; latest supplier price comparison; categorized expenses; and manually generated recurring expenses.
+
+### Work logs
+
+- Record technician, task, date, minutes, hourly rate and notes.
+- Calculate labor time and cost totals; include dated entries in activity exports.
+- Work logs are stored locally and included in backup/restore.
