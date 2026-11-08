@@ -249,19 +249,7 @@ jobs:
           arch: x86_64
           profile: pixel_2
           emulator-boot-timeout: 1200
-          script: |
-            test -n "$(find dist/apk -type f -name '*.apk' -print -quit)"
-            adb install "$(find dist/apk -type f -name '*.apk' -print -quit)"
-            curl -Ls "https://get.maestro.mobile.dev" | bash
-            "$HOME/.maestro/bin/maestro" --version
-            set +e
-            "$HOME/.maestro/bin/maestro" test .maestro/smoke.yaml
-            SMOKE_STATUS=$?
-            set -e
-            mkdir -p artifacts
-            adb logcat -d > artifacts/android-logcat.txt || true
-            adb exec-out screencap -p > artifacts/android-screen.png || true
-            exit "$SMOKE_STATUS"
+          script: bash .github/scripts/android-smoke.sh
 
       - name: Upload Android smoke diagnostics
         if: failure()
