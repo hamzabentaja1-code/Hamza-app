@@ -1,5 +1,6 @@
 appId: com.hamza.app
 ---
+# The fixture omits stockMovements to exercise supported opening-stock migration.
 - launchApp:
     clearState: true
 - extendedWaitUntil:
@@ -23,11 +24,7 @@ appId: com.hamza.app
 - inputText: 'edAt":"2026-11-08T12:00:00.000Z","data":'
 - inputText: '{"language":"AR","products":[{"id":1,"na'
 - inputText: me":"CI Router 01","price":150,"costPric
-- inputText: e":100,"qty":5}],"stockMovements":[{"id"
-- inputText: :"ci-opening","productId":"1","warehouse
-- inputText: Id":"main","kind":"opening","quantity":5
-- inputText: ',"unitCost":100,"createdAt":"2026-11-08T'
-- inputText: 12:00:00.000Z"}],"customers":[{"id":1,"n
+- inputText: e":100,"qty":5}],"customers":[{"id":1,"n
 - inputText: ame":"CI Client"}],"documents":[{"id":10
 - inputText: 0,"number":"CI-INV-001","type":"invoice"
 - inputText: ',"customerName":"CI Client","total":150,'
@@ -73,9 +70,8 @@ appId: com.hamza.app
     timeout: 25000
 - tapOn: المبلغ DH
 - inputText: "40"
-- hideKeyboard
-- tapOn: تسجيل أداء زبون
-- hideKeyboard
+- pressKey: Enter
+- assertVisible: HamZa
 - repeat:
     times: 4
     commands:
@@ -109,9 +105,8 @@ appId: com.hamza.app
     timeout: 25000
 - tapOn: المبلغ DH
 - inputText: "110"
-- hideKeyboard
-- tapOn: تسجيل أداء زبون
-- hideKeyboard
+- pressKey: Enter
+- assertVisible: HamZa
 - repeat:
     times: 4
     commands:
