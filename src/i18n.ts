@@ -700,6 +700,22 @@ const fr: Record<string, string> = {
   "تعذر تغيير الحالة": "Impossible de modifier le statut",
   "راجع حالة طلب التركيب.": "Vérifiez le statut de la demande d’installation.",
   "خاصك تحيد ربط المهام وطلبات التركيب بالمشروع قبل الحذف.": "Dissociez les tâches et les demandes du projet avant sa suppression.",
+  "الفنيون": "Techniciens",
+  "الفني": "Technicien",
+  "إضافة فني": "Ajouter un technicien",
+  "تعديل الفني": "Modifier le technicien",
+  "التخصص": "Spécialité",
+  "حفظ الفني": "Enregistrer le technicien",
+  "بدون هاتف": "Sans téléphone",
+  "ساعة": "heure",
+  "مازال ما تسجل حتى فني.": "Aucun technicien enregistré.",
+  "اسم الفني مسجل من قبل": "Ce nom de technicien est déjà utilisé",
+  "تخصص الفني إجباري": "La spécialité du technicien est obligatoire",
+  "حالة الفني غير صالحة": "Le statut du technicien est invalide",
+  "معرف الفني ناقص أو مستعمل": "L’identifiant du technicien est manquant ou déjà utilisé",
+  "حذف الفني؟": "Supprimer le technicien ?",
+  "لا يمكن حذف الفني": "Impossible de supprimer le technicien",
+  "كاين سجل عمل أو تسوية مرتبطة بهاد الفني. عطلو بدل الحذف.": "Des heures ou règlements sont liés à ce technicien. Désactivez-le au lieu de le supprimer.",
 };
 
 export function translate(language: AppLanguage, value: string): string {
