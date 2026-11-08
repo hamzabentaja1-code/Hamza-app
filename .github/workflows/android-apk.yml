@@ -242,13 +242,11 @@ jobs:
           profile: pixel_2
           emulator-boot-timeout: 1200
           script: |
-            APK="$(find dist/apk -type f -name '*.apk' | head -n 1)"
-            test -n "$APK"
-            adb install "$APK"
+            test -n "$(find dist/apk -type f -name '*.apk' -print -quit)"
+            adb install "$(find dist/apk -type f -name '*.apk' -print -quit)"
             curl -Ls "https://get.maestro.mobile.dev" | bash
-            export PATH="$HOME/.maestro/bin:$PATH"
-            maestro --version
-            maestro test .maestro/smoke.yaml
+            "$HOME/.maestro/bin/maestro" --version
+            "$HOME/.maestro/bin/maestro" test .maestro/smoke.yaml
 
   mobsf:
     name: MobSF Android security scan
