@@ -19,12 +19,23 @@ appId: com.hamza.app
     centerElement: true
     timeout: 25000
 - tapOn: لصق محتوى ملف JSON هنا...
-- inputText: '{"schemaVersion":1,"app":"HamZa","exportedAt":"2026-11-08T12:00:00.000Z","data":{"language":"AR","products":[{"id":1,"name":"CI
-    Router
-    01","price":150,"costPrice":100,"qty":5}],"stockMovements":[{"id":"ci-opening","productId":"1","warehouseId":"main","kind":"opening","quantity":5,"unitCost":100,"createdAt":"2026-11-08T12:00:00.000Z"}],"customers":[{"id":1,"name":"CI
-    Client"}],"documents":[{"id":100,"number":"CI-INV-001","type":"invoice","customerName":"CI
-    Client","total":150,"date":"08/11/2026","status":"issued","sourceQuoteId":10,"paidCentimes":0,"lines":[{"productId":1,"productName":"CI
-    Router 01","qty":1,"unitPrice":150,"total":150}]}]}}'
+- inputText: '{"schemaVersion":1,"app":"HamZa","export'
+- inputText: 'edAt":"2026-11-08T12:00:00.000Z","data":'
+- inputText: '{"language":"AR","products":[{"id":1,"na'
+- inputText: me":"CI Router 01","price":150,"costPric
+- inputText: e":100,"qty":5}],"stockMovements":[{"id"
+- inputText: :"ci-opening","productId":"1","warehouse
+- inputText: Id":"main","kind":"opening","quantity":5
+- inputText: ',"unitCost":100,"createdAt":"2026-11-08T'
+- inputText: 12:00:00.000Z"}],"customers":[{"id":1,"n
+- inputText: ame":"CI Client"}],"documents":[{"id":10
+- inputText: 0,"number":"CI-INV-001","type":"invoice"
+- inputText: ',"customerName":"CI Client","total":150,'
+- inputText: '"date":"08/11/2026","status":"issued","s'
+- inputText: ourceQuoteId":10,"paidCentimes":0,"lines
+- inputText: '":[{"productId":1,"productName":"CI Rout'
+- inputText: er 01","qty":1,"unitPrice":150,"total":1
+- inputText: 50}]}]}}
 - hideKeyboard
 - scrollUntilVisible:
     element:
@@ -74,6 +85,12 @@ appId: com.hamza.app
     visible: تم تسجيل الأداء
     timeout: 30000
 - tapOn: OK
+- scrollUntilVisible:
+    element:
+      text: CI-INV-001.*110.00 DH
+    direction: UP
+    centerElement: true
+    timeout: 25000
 - assertVisible: CI-INV-001.*110.00 DH
 - takeScreenshot: artifacts/invoice-partially-paid
 - tapOn: CI-INV-001.*110.00 DH
