@@ -90,3 +90,9 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ## Status policy
 A screen appearing is not proof that its controls work. A module is marked complete only after its workflows and acceptance tests pass. Emulator smoke testing failed because the GitHub Linux runner's Android emulator remained offline and then returned broken pipe errors; no device-level pass is claimed. No live business data should be copied from the reference account.
+
+## Field work
+
+- [x] Agenda tasks linked to projects/customers and assigned staff.
+- [x] Technician work logs with date, duration, hourly rate, notes, cost totals and activity export.
+- [ ] Broader technician/equipment assignments, labor settlement history and field installation requests.
