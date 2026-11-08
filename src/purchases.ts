@@ -62,13 +62,53 @@ export function convertPurchaseDocument(
   if(existing.some(item=>item.sourceDocumentId===source.id&&item.kind===target))throw new Error('تم إنشاء الوثيقة المرتبطة من قبل');
   const document:PurchaseDocument={
     id,number,kind:target,status:target==='receipt'?'received':'draft',supplierId:source.supplierId,
-    ...((target==='order'||target==='receipt')?{warehouseId:source.warehouseId||warehouseId}:{}),sourceDocumentId:source.id,
+    ...((target==='order'||target==='receipt'||target==='supplier_invoice')?{warehouseId:source.warehouseId||warehouseId}:{}),sourceDocumentId:source.id,
     lines:source.lines.map(line=>({...line})),globalDiscount:source.globalDiscount,createdAt,
   };
   const errors=validatePurchase(document);
   if(errors.length)throw new Error(errors[0]);
   if(existing.some(item=>item.id===id||item.number===number))throw new Error('رقم وثيقة الشراء مستعمل من قبل');
   return document;
+}
+
+export function createSupplierCredit(
+  invoice:PurchaseDocument,
+  existing:PurchaseDocument[],
+  quantitiesByProduct:Record<string,number>,
+  id:string,
+  number:string,
+  createdAt:string,
+):PurchaseDocument{
+  if(invoice.kind!=='supplier_invoice'||invoice.status!=='confirmed')throw new Error('اختار فاتورة مورد مؤكدة');
+  const previous=existing.filter(item=>item.kind==='supplier_credit'&&item.sourceDocumentId===invoice.id&&item.status!=='cancelled');
+  const productIds=new Set(invoice.lines.map(line=>line.productId));
+  if(Object.keys(quantitiesByProduct).some(productId=>!productIds.has(productId)))throw new Error('المنتج غير موجود ففاتورة المورد');
+  const returnedLines:PurchaseLine[]=[];
+  for(const productId of productIds){
+    const requested=quantitiesByProduct[productId]||0;
+    if(!Number.isFinite(requested)||requested<0)throw new Error('كمية الإرجاع غير صحيحة');
+    if(requested===0)continue;
+    const sourceLines=invoice.lines.filter(line=>line.productId===productId);
+    const alreadyReturned=previous.reduce((sum,credit)=>sum+credit.lines.filter(line=>line.productId===productId).reduce((lineSum,line)=>lineSum+line.quantity,0),0);
+    const available=sourceLines.reduce((sum,line)=>sum+line.quantity,0)-alreadyReturned;
+    if(requested>available)throw new Error('كمية الإرجاع أكبر من الكمية المتبقية في الفاتورة');
+    let remaining=requested;
+    for(const sourceLine of sourceLines){
+      if(remaining<=0)break;
+      const quantity=Math.min(remaining,sourceLine.quantity);
+      if(quantity>0)returnedLines.push({...sourceLine,quantity,discount:sourceLine.discount*(quantity/sourceLine.quantity)});
+      remaining-=quantity;
+    }
+  }
+  if(!returnedLines.length)throw new Error('دخل كمية واحدة على الأقل للإرجاع');
+  const invoiceSubtotal=invoice.lines.reduce((sum,line)=>sum+Math.max(0,line.quantity*line.unitCost-line.discount),0);
+  const returnedSubtotal=returnedLines.reduce((sum,line)=>sum+Math.max(0,line.quantity*line.unitCost-line.discount),0);
+  const globalDiscount=invoiceSubtotal>0?invoice.globalDiscount*(returnedSubtotal/invoiceSubtotal):0;
+  const credit:PurchaseDocument={id,number,kind:'supplier_credit',status:'confirmed',supplierId:invoice.supplierId,sourceDocumentId:invoice.id,warehouseId:invoice.warehouseId,lines:returnedLines,globalDiscount,createdAt};
+  const errors=validatePurchase(credit);
+  if(errors.length)throw new Error(errors[0]);
+  if(existing.some(item=>item.id===id||item.number===number))throw new Error('رقم وثيقة الشراء مستعمل من قبل');
+  return credit;
 }
 
 const allowed: Record<PurchaseKind, PurchaseStatus[]> = {
