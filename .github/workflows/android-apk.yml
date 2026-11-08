@@ -241,6 +241,23 @@ jobs:
           name: HamZa-APK
           path: dist/apk
 
+      - name: Enable and verify KVM access
+        shell: bash
+        run: |
+          test -c /dev/kvm
+          sudo chmod a+rw /dev/kvm
+          python3 - <<'PY'
+          import os
+          import fcntl
+          fd = os.open('/dev/kvm', os.O_RDWR)
+          try:
+              version = fcntl.ioctl(fd, 0xAE00, 0)
+              if version != 12:
+                  raise SystemExit(f'Unexpected KVM API version: {version}')
+          finally:
+              os.close(fd)
+          PY
+
       - name: Run Maestro UI smoke test on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -249,6 +266,7 @@ jobs:
           arch: x86_64
           profile: pixel_2
           emulator-boot-timeout: 1200
+          disable-linux-hw-accel: false
           script: bash .github/scripts/android-smoke.sh
 
       - name: Upload Android smoke diagnostics
