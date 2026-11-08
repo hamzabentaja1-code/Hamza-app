@@ -554,7 +554,41 @@ const fr: Record<string, string> = {
   "تذكير بالأداء": "Rappel de paiement",
   "مشاركة تذكير": "Partager un rappel",
   "تاريخ اليوم غير صالح": "La date du jour est invalide"
-
+,
+  "المهام": "Tâches",
+  "إضافة مهمة": "Ajouter une tâche",
+  "عنوان المهمة": "Titre de la tâche",
+  "المكلف بالمهمة (اختياري)": "Responsable (facultatif)",
+  "المشروع (اختياري)": "Projet (facultatif)",
+  "الزبون (اختياري)": "Client (facultatif)",
+  "تاريخ الاستحقاق YYYY-MM-DD": "Échéance AAAA-MM-JJ",
+  "المدة بالدقائق": "Durée en minutes",
+  "منخفضة": "Basse",
+  "عادية": "Normale",
+  "عالية": "Élevée",
+  "ملاحظات المهمة": "Notes de la tâche",
+  "حفظ المهمة": "Enregistrer la tâche",
+  "مفتوحة": "Ouverte",
+  "قيد الإنجاز": "En cours",
+  "مكتملة": "Terminée",
+  "دقيقة": "min",
+  "المشروع:": "Projet :",
+  "زبون محذوف": "Client supprimé",
+  "مشروع محذوف": "Projet supprimé",
+  "بدء المهمة": "Démarrer la tâche",
+  "إكمال المهمة": "Terminer la tâche",
+  "حذف المهمة؟": "Supprimer la tâche ?",
+  "مازال ما كايناش مهام.": "Aucune tâche pour le moment",
+  "معرف المهمة ناقص أو مستعمل": "L’identifiant de la tâche est manquant ou déjà utilisé",
+  "عنوان المهمة إجباري": "Le titre de la tâche est obligatoire",
+  "أولوية المهمة غير صالحة": "La priorité de la tâche est invalide",
+  "حالة المهمة غير صالحة": "Le statut de la tâche est invalide",
+  "تاريخ استحقاق المهمة غير صالح": "La date d’échéance de la tâche est invalide",
+  "مدة المهمة خاصها تكون بالدقائق وأكبر من صفر": "La durée doit être un nombre de minutes supérieur à zéro"
+,
+  "الزبون:": "Client :",
+  "تعديل المهمة": "Modifier la tâche",
+  "إلغاء التعديل": "Annuler la modification"
 };
 
 export function translate(language: AppLanguage, value: string): string {
