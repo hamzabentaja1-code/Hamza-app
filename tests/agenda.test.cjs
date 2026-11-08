@@ -28,3 +28,15 @@ test('work log validates task linkage, dates, duration and rate',()=>{
   assert.ok(validateWorkLog(log,[projectTask],[log]).some(error=>error.includes('معرف')));
   assert.throws(()=>workLogCostCentimes({...log,durationMinutes:0}));
 });
+
+test('technician settlements support partial payment and reject overpayment',()=>{
+  const logs=[{id:'w1',taskId:'t1',projectId:'p1',technician:'Hamza',date:'2026-11-08',durationMinutes:90,hourlyRateCentimes:12000}];
+  const first={id:'s1',technician:'Hamza',date:'2026-11-08',amountCentimes:7000,method:'cash'};
+  assert.deepEqual(validateWorkLogSettlement(first,logs,[]),[]);
+  assert.equal(workLogPaidCentimes([first],'hamza'),7000);
+  assert.equal(workLogOutstandingCentimes(logs,[first],'Hamza'),11000);
+  assert.ok(validateWorkLogSettlement({...first,id:'s2',amountCentimes:12000},logs,[first]).some(error=>error.includes('أكبر من الأجرة')));
+  assert.ok(validateWorkLogSettlement({...first,id:'s3',amountCentimes:0},logs,[first]).some(error=>error.includes('أكبر من صفر')));
+  assert.ok(validateWorkLogSettlement({...first,id:'s4',method:'cheque',reference:''},logs,[]).some(error=>error.includes('مرجع الشيك')));
+  assert.ok(validateWorkLogSettlement({...first,id:'s5',technician:'Other'},logs,[]).some(error=>error.includes('ما كايناش أجرة')));
+});
