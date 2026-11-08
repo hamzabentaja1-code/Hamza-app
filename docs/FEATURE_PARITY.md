@@ -46,7 +46,7 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Purchases
 - [x] Draft purchase requests and orders, confirmed order-to-receipt conversion, warehouse stock posting, supplier invoices, PDF output and persistence
-- [x] Supplier returns for legacy purchase lines, posted as stock outflow and supplier credit; credit-note documents against the new invoice workflow remain pending
+- [x] Supplier returns from confirmed supplier invoices and legacy purchase lines post stock outflow and supplier credit balances
 - [ ] Supplier price comparison and advanced purchase tracking; basic purchase rows appear in filtered activity reports
 - [x] Linked request → order → receipt → supplier invoice conversions prevent duplicate child documents and post stock once
 
