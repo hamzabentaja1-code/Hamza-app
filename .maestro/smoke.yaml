@@ -17,3 +17,25 @@ appId: com.hamza.app
 - assertVisible: "البحث عن منتج"
 - tapOn: "⌂ الرئيسية"
 - assertVisible: "HamZa"
+- tapOn: "AR"
+- assertVisible: "Gestion commerciale"
+- assertVisible: "FR"
+- takeScreenshot: artifacts/home-fr
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Gestion commerciale"
+    timeout: 30000
+- assertVisible: "FR"
+- tapOn: "FR"
+- assertVisible: "تسيير تجاري"
+- assertVisible: "AR"
+- takeScreenshot: artifacts/home-ar
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "تسيير تجاري"
+    timeout: 30000
+- assertVisible: "AR"
