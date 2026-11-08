@@ -548,6 +548,12 @@ const fr: Record<string, string> = {
   "تغيير حالة الوثيقة غير مسموح": "Ce changement de statut n’est pas autorisé",
   "سجل سند الخروج قبل اعتبار الطلب مسلماً": "Enregistrez le bon de sortie avant de marquer la commande comme livrée",
   "راجع الحالة وحاول من جديد.": "Vérifiez le statut et réessayez"
+,
+  "فواتير تجاوزت تاريخ الأداء": "Factures échues",
+  "يوم تأخير": "jours de retard",
+  "تذكير بالأداء": "Rappel de paiement",
+  "مشاركة تذكير": "Partager un rappel",
+  "تاريخ اليوم غير صالح": "La date du jour est invalide"
 
 };
 
