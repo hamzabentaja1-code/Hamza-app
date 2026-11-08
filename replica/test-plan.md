@@ -41,3 +41,11 @@ No test is marked passed until it has actually run and its result has been obser
 - Automated validation: 93/93 domain tests passed; TypeScript validation passed in [GitHub Actions run 42485750649](https://github.com/hamzabentaja1-code/Hamza-app/actions/runs/42485750649).
 - The latest APK workflow before it was switched to manual-only completed APK packaging and MobSF scanning, but the emulator smoke test failed before confirming the home screen. This does not count as an Android UI pass.
 - Manual Android acceptance cases below remain pending. No APK was built by the validation-only workflow.
+
+
+## Voice input — manual Android acceptance pending
+
+- In Arabic mode, use the microphone beside product name, product list search, and POS search; verify recognized Arabic text fills only the selected field and filters/products update.
+- Repeat in French mode and verify French text, including accents, fills the selected field.
+- Deny microphone permission and verify the app explains the permission requirement and continues to work with typing.
+- Disable/uninstall the phone speech service and verify the app explains that voice recognition is unavailable without crashing.
