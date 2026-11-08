@@ -49,3 +49,11 @@ No test is marked passed until it has actually run and its result has been obser
 - Repeat in French mode and verify French text, including accents, fills the selected field.
 - Deny microphone permission and verify the app explains the permission requirement and continues to work with typing.
 - Disable/uninstall the phone speech service and verify the app explains that voice recognition is unavailable without crashing.
+
+
+## Product image search — manual Android acceptance pending
+
+- Add photos to several products, select one of those images in product image search, and verify the closest photo appears first with a lower fingerprint distance.
+- Select a visually unrelated image and verify there are no results; clear image search and verify normal text search returns.
+- Try the search when no products have photos; verify the app explains that saved product photos are needed.
+- Switch Arabic/French and verify the button, result count, no-match message, and clear action are translated.
