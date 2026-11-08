@@ -15,7 +15,7 @@ export type QuoteForConversion = {
   lines?:ConversionLine[];
 };
 export type StockProduct = {id:number; qty:number};
-export type DocumentKind = 'invoice'|'delivery';
+export type DocumentKind = 'invoice'|'delivery'|'proforma'|'customer_order';
 export type ConvertedDocument = {
   id:number;
   number:string;
@@ -71,12 +71,12 @@ export function convertQuote(
   }];
   const document:ConvertedDocument={
     id,
-    number:(type==='invoice'?'FAC-':'BL-')+id,
+    number:(type==='invoice'?'FAC-':type==='delivery'?'BL-':type==='proforma'?'PRO-':'CMD-')+id,
     type,
     customerName:quote.customerName,
     total:quote.total,
     date,
-    status:'صادرة',
+    status:type==='proforma'?'أولية':type==='customer_order'?'مؤكد':'صادرة',
     sourceQuoteId:quote.id,
     lines:documentLines,
   };
