@@ -529,7 +529,10 @@ const fr: Record<string, string> = {
   "المنتج غير موجود ففاتورة المورد": "Le produit n’existe pas dans la facture fournisseur",
   "كمية الإرجاع غير صحيحة": "La quantité retournée est invalide",
   "كمية الإرجاع أكبر من الكمية المتبقية في الفاتورة": "La quantité dépasse le solde retournable de la facture",
-  "دخل كمية واحدة على الأقل للإرجاع": "Saisissez au moins une quantité à retourner"
+  "دخل كمية واحدة على الأقل للإرجاع": "Saisissez au moins une quantité à retourner",
+  "مقارنة أسعار الموردين": "Comparaison des prix fournisseurs",
+  "فرق السعر:": "Écart de prix :",
+  "مازال ما تسجلات حتى أسعار شراء.": "Aucun prix d’achat enregistré pour le moment"
 };
 
 export function translate(language: AppLanguage, value: string): string {
