@@ -521,7 +521,15 @@ const fr: Record<string, string> = {
   "استلم المنتجات قبل إنشاء فاتورة المورد": "Réceptionnez les produits avant de créer la facture fournisseur",
   "تم إنشاء الوثيقة المرتبطة من قبل": "Le document associé a déjà été créé",
   "تأكيد وثيقة الشراء": "Confirmer le document d’achat",
-  "المنتوج": "Produit"
+  "المنتوج": "Produit",
+  "إرجاع من فاتورة المورد": "Retour depuis la facture fournisseur",
+  "المتبقي للإرجاع:": "Quantité restante à retourner :",
+  "تسجيل الإرجاع وإنشاء رصيد دائن": "Enregistrer le retour et créer un avoir",
+  "اختار فاتورة مورد مؤكدة": "Choisissez une facture fournisseur confirmée",
+  "المنتج غير موجود ففاتورة المورد": "Le produit n’existe pas dans la facture fournisseur",
+  "كمية الإرجاع غير صحيحة": "La quantité retournée est invalide",
+  "كمية الإرجاع أكبر من الكمية المتبقية في الفاتورة": "La quantité dépasse le solde retournable de la facture",
+  "دخل كمية واحدة على الأقل للإرجاع": "Saisissez au moins une quantité à retourner"
 };
 
 export function translate(language: AppLanguage, value: string): string {
