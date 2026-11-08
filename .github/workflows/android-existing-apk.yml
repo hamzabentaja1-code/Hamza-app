@@ -25,9 +25,15 @@ concurrency:
 
 jobs:
   android-existing-apk:
-    name: Android smoke on existing APK
+    name: Android acceptance - ${{ matrix.flow }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        flow: [smoke, product-persistence, sales-payments]
+    env:
+      MAESTRO_FLOW: .maestro/${{ matrix.flow }}.yaml
     steps:
       - uses: actions/checkout@v4
       - name: Download existing APK without rebuilding
@@ -79,7 +85,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: HamZa-Existing-APK-Android-Diagnostics
+          name: HamZa-Existing-APK-Android-Diagnostics-${{ matrix.flow }}
           path: artifacts
           if-no-files-found: error
           retention-days: 14

@@ -74,12 +74,19 @@ appId: com.hamza.app
 - tapOn: المبلغ DH
 - inputText: "40"
 - hideKeyboard
-- scrollUntilVisible:
-    element:
-      text: تسجيل الأداء
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- tapOn: تسجيل أداء زبون
+- hideKeyboard
+- repeat:
+    times: 4
+    commands:
+      - runFlow:
+          when:
+            notVisible: تسجيل الأداء
+          commands:
+            - swipe:
+                start: 3%,75%
+                end: 3%,35%
+                duration: 500
 - tapOn: تسجيل الأداء
 - extendedWaitUntil:
     visible: تم تسجيل الأداء
@@ -103,12 +110,19 @@ appId: com.hamza.app
 - tapOn: المبلغ DH
 - inputText: "110"
 - hideKeyboard
-- scrollUntilVisible:
-    element:
-      text: تسجيل الأداء
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- tapOn: تسجيل أداء زبون
+- hideKeyboard
+- repeat:
+    times: 4
+    commands:
+      - runFlow:
+          when:
+            notVisible: تسجيل الأداء
+          commands:
+            - swipe:
+                start: 3%,75%
+                end: 3%,35%
+                duration: 500
 - tapOn: تسجيل الأداء
 - extendedWaitUntil:
     visible: تم تسجيل الأداء

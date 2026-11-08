@@ -34,7 +34,7 @@ if [[ $install_status -ne 0 ]]; then
 fi
 
 "$HOME/.maestro/bin/maestro" --version
-"$HOME/.maestro/bin/maestro" test .maestro
+"$HOME/.maestro/bin/maestro" test "${MAESTRO_FLOW:-.maestro}"
 smoke_status=$?
 collect_diagnostics
 exit "$smoke_status"
