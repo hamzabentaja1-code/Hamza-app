@@ -71,8 +71,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Projects with customer, budget, payments, dates, status and CRUD
 - [ ] Installation requests and broader financial status workflow
 - [ ] Technician directory, specialties, equipment and equipment categories
-- [x] Task-linked technician time entries, hourly rates, cost totals and activity export
-- [ ] Labor settlement history and payment tracking
+- [x] Task-linked technician time entries, hourly rates, cost totals, settlement history and activity export
+- [x] Partial/full technician wage settlements, cheque references, history, and cash-box posting for cash payments
 
 ### Agenda and reports
 - [x] Tasks with assignee, priority, due date, duration, project/customer links, status and local persistence
@@ -96,5 +96,5 @@ A screen appearing is not proof that its controls work. A module is marked compl
 ## Field work
 
 - [x] Agenda tasks linked to projects/customers and assigned staff.
-- [x] Technician work logs with date, duration, hourly rate, notes, cost totals and activity export.
-- [ ] Broader technician/equipment assignments, labor settlement history and field installation requests.
+- [x] Technician work logs with date, duration, hourly rate, notes, cost totals, settlement history and activity export.
+- [ ] Technician/equipment directory and field installation requests.
