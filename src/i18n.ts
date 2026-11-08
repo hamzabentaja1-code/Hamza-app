@@ -588,7 +588,9 @@ const fr: Record<string, string> = {
 ,
   "الزبون:": "Client :",
   "تعديل المهمة": "Modifier la tâche",
-  "إلغاء التعديل": "Annuler la modification"
+  "إلغاء التعديل": "Annuler la modification",
+  "اسم المورد مستعمل": "Le nom du fournisseur est déjà utilisé",
+  "كل مورد خاصو اسم مختلف باش الحساب يبقى مربوط به.": "Chaque fournisseur doit avoir un nom distinct pour préserver les liens"
 };
 
 export function translate(language: AppLanguage, value: string): string {
