@@ -41,7 +41,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Quotes, invoices, delivery notes and linked customer credit notes/returns
 - [x] Customer order and proforma records can be created from a quote, listed separately and exported to PDF; conversions preserve stock and prevent duplicate same-type records
 - [x] Quote-linked order/proforma lifecycle, allowed status transitions, and delivery gate before marking an order delivered
-- [ ] Due-date reminders, follow-up history and broader document lifecycle actions
+- [x] Invoice due dates, overdue list and manual customer reminder sharing; [ ] reminder history/scheduling and broader document lifecycle actions
 - [ ] Discounts, fees, notes/sections, barcode entry, multi-line editing
 - [x] Basic PDF generation/sharing, document numbering and status tracking; print-layout refinement remains pending
 
@@ -68,9 +68,11 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Parked POS sales persist on the phone and can be resumed or deleted; [ ] POS returns and physical receipt-printer integration
 
 ### Projects and field operations
-- [ ] Installations/projects, installation requests and financial status
-- [ ] Technicians, specialties, equipment and equipment categories
-- [ ] Time entries, rates, costs, settlement and history
+- [x] Projects with customer, budget, payments, dates, status and CRUD
+- [ ] Installation requests and broader financial status workflow
+- [ ] Technician directory, specialties, equipment and equipment categories
+- [x] Task-linked technician time entries, hourly rates, cost totals and activity export
+- [ ] Labor settlement history and payment tracking
 
 ### Agenda and reports
 - [x] Tasks with assignee, priority, due date, duration, project/customer links, status and local persistence
