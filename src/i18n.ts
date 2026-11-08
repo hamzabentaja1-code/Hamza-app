@@ -649,6 +649,10 @@ const fr: Record<string, string> = {
   "مدة العمل خاصها تكون بالدقائق وأكبر من صفر": "La durée doit être un nombre de minutes supérieur à zéro",
   "الأجرة بالساعة غير صالحة": "Le tarif horaire est invalide"
 
+  "لا يمكن حذف المشروع": "Impossible de supprimer le projet",
+  "خاصك تحيد ربط المهام بالمشروع قبل الحذف.": "Dissociez d’abord les tâches du projet avant sa suppression.",
+  "لا يمكن حذف المهمة": "Impossible de supprimer la tâche",
+  "كاين سجل ساعات مرتبط بهاد المهمة. حذف سجل العمل أولاً.": "Une saisie de travail est liée à cette tâche. Supprimez d’abord la saisie."
 };
 
 export function translate(language: AppLanguage, value: string): string {
