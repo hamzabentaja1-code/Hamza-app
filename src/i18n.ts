@@ -624,6 +624,30 @@ const fr: Record<string, string> = {
   "الحركة البنكية مسواة من قبل": "Le mouvement bancaire est déjà rapproché",
   "ما يمكنش مطابقة هاد الحركة مع الأداء": "Ce mouvement ne peut pas être rapproché avec ce paiement"
 
+  "ساعات العمل": "Temps de travail",
+  "تسجيل ساعات العمل": "Saisir les heures de travail",
+  "اختار المهمة": "Choisir une tâche",
+  "اسم الفني": "Nom du technicien",
+  "التاريخ YYYY-MM-DD": "Date AAAA-MM-JJ",
+  "الدقائق": "Minutes",
+  "الأجرة بالساعة DH": "Tarif horaire DH",
+  "ملاحظات (اختياري)": "Notes (facultatif)",
+  "حفظ سجل الوقت": "Enregistrer le temps",
+  "إجمالي الساعات": "Total des heures",
+  "إجمالي كلفة العمل": "Coût total du travail",
+  "سجل ساعات العمل": "Historique du temps de travail",
+  "مهمة محذوفة": "Tâche supprimée",
+  "الأجرة بالساعة": "Tarif horaire",
+  "حذف سجل الوقت؟": "Supprimer cette saisie ?",
+  "مازال ما تسجل حتى وقت عمل.": "Aucune heure de travail enregistrée.",
+  "معرف سجل الوقت ناقص أو مستعمل": "L’identifiant de la saisie est manquant ou déjà utilisé",
+  "اختار مهمة مسجلة": "Choisissez une tâche enregistrée",
+  "المشروع ما مطابقش للمهمة": "Le projet ne correspond pas à la tâche",
+  "اسم الفني إجباري": "Le nom du technicien est obligatoire",
+  "تاريخ سجل الوقت غير صالح": "La date de la saisie est invalide",
+  "مدة العمل خاصها تكون بالدقائق وأكبر من صفر": "La durée doit être un nombre de minutes supérieur à zéro",
+  "الأجرة بالساعة غير صالحة": "Le tarif horaire est invalide"
+
 };
 
 export function translate(language: AppLanguage, value: string): string {
