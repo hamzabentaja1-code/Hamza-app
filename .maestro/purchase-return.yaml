@@ -1,13 +1,12 @@
 appId: com.hamza.app
 ---
 - runFlow: product-persistence.yaml
-- scrollUntilVisible:
-    element:
-      text: ⌂ الرئيسية
-    direction: UP
-    centerElement: true
-    timeout: 25000
-- tapOn: ⌂ الرئيسية
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
 - scrollUntilVisible:
     element:
       text: .*الموردون.*Suppliers
@@ -25,13 +24,12 @@ appId: com.hamza.app
     centerElement: true
     timeout: 25000
 - tapOn: \+ إضافة المورد
-- scrollUntilVisible:
-    element:
-      text: ⌂ الرئيسية
-    direction: UP
-    centerElement: true
-    timeout: 25000
-- tapOn: ⌂ الرئيسية
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
 - scrollUntilVisible:
     element:
       text: .*المشتريات.*Purchases
@@ -85,13 +83,12 @@ appId: com.hamza.app
     timeout: 30000
 - takeScreenshot: artifacts/purchase-pdf-share
 - back
-- scrollUntilVisible:
-    element:
-      text: ⌂ الرئيسية
-    direction: UP
-    centerElement: true
-    timeout: 25000
-- tapOn: ⌂ الرئيسية
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
 - scrollUntilVisible:
     element:
       text: .*المنتجات.*Products
@@ -107,13 +104,12 @@ appId: com.hamza.app
     timeout: 25000
 - assertVisible: "الكمية: 7.*"
 - takeScreenshot: artifacts/stock-after-purchase
-- scrollUntilVisible:
-    element:
-      text: ⌂ الرئيسية
-    direction: UP
-    centerElement: true
-    timeout: 25000
-- tapOn: ⌂ الرئيسية
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
 - scrollUntilVisible:
     element:
       text: .*المشتريات.*Purchases
@@ -190,13 +186,12 @@ appId: com.hamza.app
     timeout: 25000
 - assertVisible: "الكمية: 6.*"
 - takeScreenshot: artifacts/stock-after-return-restart
-- scrollUntilVisible:
-    element:
-      text: ⌂ الرئيسية
-    direction: UP
-    centerElement: true
-    timeout: 25000
-- tapOn: ⌂ الرئيسية
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
 - scrollUntilVisible:
     element:
       text: .*الموردون.*Suppliers

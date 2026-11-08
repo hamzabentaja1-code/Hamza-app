@@ -1,13 +1,12 @@
 appId: com.hamza.app
 ---
 - runFlow: product-persistence.yaml
-- scrollUntilVisible:
-    element:
-      text: ⌂ الرئيسية
-    direction: UP
-    centerElement: true
-    timeout: 25000
-- tapOn: ⌂ الرئيسية
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
 - scrollUntilVisible:
     element:
       text: .*نقطة البيع.*Point of Sale
