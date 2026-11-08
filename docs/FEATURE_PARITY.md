@@ -69,7 +69,8 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Projects and field operations
 - [x] Projects with customer, budget, payments, dates, status and CRUD
-- [ ] Installation requests and broader financial status workflow
+- [x] Installation requests linked to customers/projects, with dates and status lifecycle
+- [ ] Broader financial status workflow
 - [ ] Technician directory, specialties, equipment and equipment categories
 - [x] Task-linked technician time entries, hourly rates, cost totals, settlement history and activity export
 - [x] Partial/full technician wage settlements, cheque references, history, and cash-box posting for cash payments
