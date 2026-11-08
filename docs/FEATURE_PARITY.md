@@ -39,8 +39,9 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Sales documents
 - [x] Quotes, invoices, delivery notes and linked customer credit notes/returns
-- [ ] Customer orders and proforma invoices
-- [ ] Document lifecycle, conversion/linking, reminders and follow-up
+- [x] Customer order and proforma records can be created from a quote, listed separately and exported to PDF; conversions preserve stock and prevent duplicate same-type records
+- [x] Quote-linked order/proforma lifecycle, allowed status transitions, and delivery gate before marking an order delivered
+- [ ] Due-date reminders, follow-up history and broader document lifecycle actions
 - [ ] Discounts, fees, notes/sections, barcode entry, multi-line editing
 - [x] Basic PDF generation/sharing, document numbering and status tracking; print-layout refinement remains pending
 
