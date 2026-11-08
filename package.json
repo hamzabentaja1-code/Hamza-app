@@ -5,22 +5,24 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
+    "android": "expo run:android",
     "web": "expo start --web",
     "build:apk": "eas build --platform android --profile preview",
     "build:production": "eas build --platform android --profile production",
-    "test:quote": "tsc src/i18n.ts src/company-profile.ts src/domain/quote-calculator.ts src/domain/document-conversion.ts src/domain/payment-allocation.ts src/domain/customer-balances.ts src/pos.ts src/inventory.ts --target ES2020 --module commonjs --outDir .test-build && node --test tests/quote-calculator.test.cjs tests/document-conversion.test.cjs tests/payment-allocation.test.cjs tests/customer-balances.test.cjs tests/pos.test.cjs tests/inventory.test.cjs tests/i18n.test.cjs tests/company-profile.test.cjs"
+    "test:quote": "tsc src/i18n.ts src/company-profile.ts src/projects.ts src/profit.ts src/purchases.ts src/domain/quote-calculator.ts src/domain/document-conversion.ts src/domain/payment-allocation.ts src/domain/customer-balances.ts src/pos.ts src/inventory.ts --target ES2020 --module commonjs --outDir .test-build && node --test tests/quote-calculator.test.cjs tests/document-conversion.test.cjs tests/payment-allocation.test.cjs tests/customer-balances.test.cjs tests/pos.test.cjs tests/inventory.test.cjs tests/i18n.test.cjs tests/company-profile.test.cjs tests/projects.test.cjs tests/purchases.test.cjs tests/profit.test.cjs",
+    "ios": "expo run:ios"
   },
   "dependencies": {
-    "expo": "~54.0.0",
-    "expo-status-bar": "~3.0.0",
-    "react": "19.1.0",
-    "react-native": "0.81.5",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "~54.0.0",
+    "expo-build-properties": "~1.0.10",
+    "expo-image-picker": "~17.0.8",
     "expo-print": "~15.0.7",
     "expo-sharing": "~14.0.7",
-    "expo-build-properties": "~1.0.10",
-    "expo-image-picker": "~17.0.8"
+    "expo-status-bar": "~3.0.0",
+    "expo-system-ui": "~6.0.9",
+    "react": "19.1.0",
+    "react-native": "0.81.5"
   },
   "devDependencies": {
     "@types/react": "~19.1.10",

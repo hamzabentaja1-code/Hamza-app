@@ -327,7 +327,28 @@ const fr: Record<string, string> = {
   "معرف المخزن مستعمل من قبل": "Cet identifiant d’entrepôt est déjà utilisé",
   "اسم المخزن مسجل من قبل": "Ce nom d’entrepôt existe déjà",
   "المتوفر في المخزن المحدد هو": "Disponible dans l’entrepôt sélectionné :",
-  "راجع البيانات وحاول من جديد.": "Vérifiez les données et réessayez."
+  "راجع البيانات وحاول من جديد.": "Vérifiez les données et réessayez.",
+  "المشاريع": "Projets",
+  "المشاريع النشطة:": "Projets actifs :",
+  "المبالغ المتبقية للمشاريع:": "Soldes des projets :",
+  "المبلغ المتبقي للمورد:": "Solde fournisseur :",
+  "مورد محذوف": "Fournisseur supprimé",
+  "المتبقي للمورد:": "Solde fournisseur :",
+  "تسجيل أداء لمورد": "Enregistrer un paiement fournisseur",
+  "مبلغ الأداء DH": "Montant payé DH",
+  "تحويل بنكي": "Virement bancaire",
+  "مرجع الشيك": "Référence du chèque",
+  "تأكيد أداء المورد": "Confirmer le paiement fournisseur",
+  "سجل أداءات الموردين": "Historique des paiements fournisseurs",
+  "تحدّث رصيد المورد.": "Le solde fournisseur a été mis à jour.",
+  "المبلغ أكبر من الدين": "Le montant dépasse la dette",
+  "هامش المبيعات المحسوب من تكلفة البيع المحفوظة:": "Marge calculée à partir du coût enregistré à la vente :",
+  "مبيعات قديمة بلا تكلفة محفوظة:": "Anciennes ventes sans coût enregistré :",
+  "المورد إجباري": "Le fournisseur est obligatoire",
+  "مبلغ الأداء خاصو يكون أكبر من صفر": "Le montant payé doit être supérieur à zéro",
+  "تاريخ الأداء إجباري": "La date du paiement est obligatoire",
+  "مرجع الشيك إجباري": "La référence du chèque est obligatoire",
+  "اختار المورد.": "Choisissez un fournisseur."
 };
 
 export function translate(language: AppLanguage, value: string): string {

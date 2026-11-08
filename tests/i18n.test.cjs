@@ -33,3 +33,8 @@ test('static Arabic labels used by workspaces all have French translations',()=>
     }
   }
 });
+
+test('French translations cover supplier payment validation',()=>{
+  assert.equal(translate('FR','مرجع الشيك إجباري'),'La référence du chèque est obligatoire');
+  assert.equal(translate('FR','مبلغ الأداء خاصو يكون أكبر من صفر'),'Le montant payé doit être supérieur à zéro');
+});
