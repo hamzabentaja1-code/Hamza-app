@@ -53,3 +53,10 @@
 - JPEG decoding and fingerprint calculation stay on the device. Results are limited to the 20 closest photos within 14 bit differences, and each result displays its distance.
 - Added French labels, cached fingerprints per product photo, and JPEG/domain tests. Search requires saved product photos; it compares broad image structure and brightness, so product angles or backgrounds can affect matching.
 - Validation on the working tree: `npm ci`, 97/97 tests, `npx tsc --noEmit`, and `npx expo config --type public` passed. No APK was generated.
+
+
+## 2026-11-08 — bilingual PDF template
+
+- Extracted PDF HTML generation into a testable template with Arabic RTL and French LTR titles, metadata, labels, and safe HTML escaping.
+- Added company logo, business contact fields, ICE, RC, IF, bank, and RIB when available. Empty fields are omitted.
+- Local validation passed: 100/100 tests, TypeScript, Expo config, `npm ci`, and Expo Doctor (18/18). The current environment has no Android SDK or emulator, so native PDF rendering and microphone/image-picker behavior still need a physical-device check. No APK was generated.

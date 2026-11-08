@@ -57,3 +57,16 @@ No test is marked passed until it has actually run and its result has been obser
 - Select a visually unrelated image and verify there are no results; clear image search and verify normal text search returns.
 - Try the search when no products have photos; verify the app explains that saved product photos are needed.
 - Switch Arabic/French and verify the button, result count, no-match message, and clear action are translated.
+
+
+## PDF template — automated checks
+
+- Arabic documents use `lang=ar`, RTL direction, Arabic document titles and totals, and escape customer and company text.
+- French documents use `lang=fr`, LTR direction, French metadata and labels.
+- Company name, contact details, tax identifiers, logo, bank and RIB appear only when populated; invalid totals are rejected.
+
+## Physical Android acceptance remains pending
+
+- Verify Arabic glyph shaping, page breaks, logo, bank details, PDF preview and sharing on Android.
+- Verify microphone permission and Arabic/French recognition; test product photo search performance and matching against real product images.
+- No Android SDK or emulator is present in the current environment; do not mark these cases passed until tested on a device. No APK has been generated for these changes.
