@@ -787,7 +787,11 @@ const fr: Record<string, string> = {
 };
 
 export function translate(language: AppLanguage, value: string): string {
-  return language === 'FR' ? (fr[value] ?? value) : value;
+  const paymentStatuses: Record<string, Record<AppLanguage, string>> = {
+    paid: {AR: 'مؤداة', FR: 'Payée'},
+    partially_paid: {AR: 'مؤداة جزئياً', FR: 'Partiellement payée'},
+  };
+  return paymentStatuses[value]?.[language] ?? (language === 'FR' ? (fr[value] ?? value) : value);
 }
 
 export function getLayoutDirection(language: AppLanguage): LayoutDirection {
