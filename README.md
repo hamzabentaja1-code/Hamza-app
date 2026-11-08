@@ -43,3 +43,4 @@ Recent workflow additions include linked purchase requests, orders, goods receip
 - Track equipment by category, serial number and availability; installation requests can assign technicians and equipment.
 
 - Record partial POS returns against the original line, restore stock to the sale warehouse, calculate refunds in centimes and post cash refunds to the cash ledger.
+Android APK generation, APK inspection, emulator smoke testing, and MobSF analysis run on pushes to `feature/projects-workspace` and on manual dispatch.
