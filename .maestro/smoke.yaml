@@ -14,6 +14,6 @@ appId: com.hamza.app
     direction: DOWN
     timeout: 20000
 - tapOn: "نقطة البيع"
-- assertVisible: "نقطة البيع"
+- assertVisible: "البحث عن منتج"
 - tapOn: "الرئيسية"
 - assertVisible: "HamZa"
