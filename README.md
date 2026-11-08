@@ -5,7 +5,7 @@
 ## الموجود حالياً
 - المنتجات مع ثمن الشراء وثمن البيع وهامش ربح الوحدة والربح المحتمل للمخزون، وإضافة/تغيير/حذف صورة المنتج ومعاينة مكبرة والبحث والتعديل، مع حفظ محلي عبر AsyncStorage؛ الزبناء والموردون أيضاً.
 - نقطة بيع POS: بحث بالاسم والمرجع والباركود، تصفية الصنف والمخزون المتوفر، تعليق السلال واسترجاعها، تعديل الكمية، تخفيض عام، اختيار الزبون وطريقة الأداء، تحديث المخزون وإصدار وصل PDF.
-- المبيعات والمشتريات وتحديث كمية المخزون. دورة شراء مستقلة تدعم طلب الشراء وأمر الشراء والاستلام المرتبط بالمخزن وفاتورة المورد والإرجاع الجزئي المرتبط بها، مع تحديث المخزون ورصيد المورد وإصدار PDF.
+- المبيعات والمشتريات وتحديث كمية المخزون. دورة شراء مستقلة تدعم طلب الشراء وأمر الشراء والاستلام المرتبط بالمخزن وفاتورة المورد والإرجاع الجزئي المرتبط بها، مع تحديث المخزون ورصيد المورد ومقارنة آخر الأسعار وإصدار PDF.
 - المصاريف المصنفة والمتكررة، سجل الصندوق المرتبط بالأداءات النقدية، عروض الأسعار، الأداءات والتقارير الأولية.
 - إنشاء PDF ومشاركته لبعض وثائق البيع والمصاريف والأداءات.
 - أفوار مرتبط بفاتورة: يتحقق من الكمية المرجعة، يضيفها للمخزون، ويخفض الدين أو يسجل رصيداً للزبون.
@@ -26,4 +26,4 @@ GitHub Actions يشغّل اختبارات المستندات وفحص TypeScrip
 هذا مشروع مستقل لإعادة تنفيذ الوظائف المعروفة، وليس نسخة مطابقة من YanCommerce، ولا يتصل بخادمه أو حساباته. البيانات محلية على الجهاز. المشروع ما زال نموذجاً أولياً، ويلزم استكمال الواجهات والاختبارات قبل الاستعمال التجاري.
 
 
-Recent workflow additions include linked purchase requests, orders, goods receipts and supplier invoices; supplier returns linked to confirmed supplier invoices and legacy purchases; supplier credit balances; categorized expenses; and manually generated recurring expenses.
+Recent workflow additions include linked purchase requests, orders, goods receipts and supplier invoices; supplier returns linked to confirmed supplier invoices and legacy purchases; supplier credit balances; latest supplier price comparison; categorized expenses; and manually generated recurring expenses.
