@@ -21,14 +21,10 @@
 - Added unit tests for aggregation, settled invoices, delivery exclusion, sorting and invalid balances.
 - CI run after this change is pending; do not treat the feature as build-verified until that run completes.
 
-## Remaining
+## Current verification gaps
 
-- Re-run npm run test:quote and npx tsc --noEmit after the customer receivables change.
-- Verify PDF Arabic shaping, layout and sharing on Android.
-- Add company profile fields (business name, address, phone, ICE, RC and IF) to PDF.
-- Implement partial delivery and customer statements; payment allocation and customer outstanding balances are now implemented.
-- Add stock movement ledger/audit trail and purchase posting.
-- Install and smoke-test APK on a physical Android device before calling this build verified.
+- Run Android device acceptance for voice recognition, photo search responsiveness, partial-delivery screens, local persistence, and PDF Arabic shaping/sharing.
+- The current environment has no Android SDK or emulator, so those native/device checks have not been run. The latest work only exported the Android JavaScript bundle; it did not generate an APK.
 
 ## 2026-11-08 — full domain validation
 
