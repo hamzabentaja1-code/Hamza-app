@@ -2,6 +2,7 @@ export type InvoiceForPayment = {
   type:'invoice'|'delivery';
   total:number;
   paidCentimes?:number;
+  creditedCentimes?:number;
   status:string;
 };
 export type PaymentResult = {
@@ -20,13 +21,14 @@ export function applyPaymentToInvoice(
   }
   const totalCentimes=Math.round(invoice.total*100);
   const paidCentimes=invoice.paidCentimes||0;
-  const remainingCentimes=totalCentimes-paidCentimes;
-  if(!Number.isSafeInteger(totalCentimes)||totalCentimes<0||paidCentimes<0||paidCentimes>totalCentimes) {
+  const creditedCentimes=invoice.creditedCentimes||0;
+  const remainingCentimes=totalCentimes-paidCentimes-creditedCentimes;
+  if(!Number.isSafeInteger(totalCentimes)||totalCentimes<0||!Number.isSafeInteger(paidCentimes)||paidCentimes<0||!Number.isSafeInteger(creditedCentimes)||creditedCentimes<0) {
     throw new Error('Invoice balance is invalid');
   }
   if(paymentCentimes>remainingCentimes) throw new Error('Payment exceeds the remaining invoice balance');
   const nextPaid=paidCentimes+paymentCentimes;
-  const remaining=totalCentimes-nextPaid;
+  const remaining=totalCentimes-nextPaid-creditedCentimes;
   return {
     invoice:{...invoice,paidCentimes:nextPaid,status:remaining===0?'paid':'partially_paid'},
     remainingCentimes:remaining,

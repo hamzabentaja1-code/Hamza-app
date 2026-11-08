@@ -2,26 +2,25 @@
 
 This project is an independent implementation of the workflows observed in YanCommerce. It must use HamZa branding and original code/assets; it must not copy proprietary source code or private account data.
 
-## Current baseline verified in App.tsx
-- Local AsyncStorage persistence for products, customers, suppliers, sales, purchases, expenses, quotes and payments.
-- Basic create flows for those records.
-- Sale reduces stock; purchase increases stock.
-- Basic PDF generation/sharing for quotes, sales documents, expenses and payment receipts.
-- Basic summary screen.
-- The current UI explicitly contains placeholder sections. It is not feature complete.
+## Current implemented baseline
+- Local AsyncStorage persistence for products, customers, suppliers, sales, purchases, expenses, quotes, invoices, delivery notes, credit notes, payments, projects, warehouses and stock movements.
+- Basic create/update flows for products, quotes and projects; sales, purchases, invoices, delivery notes and customer returns update stock or balances.
+- Partial customer/supplier payments, receivable balances, supplier balances and credit-note balances.
+- Arabic/French UI, RTL/LTR direction, company profile, PDF sharing, Excel-readable CSV exports and JSON backup/restore.
+- Feature parity remains partial: the modules below track missing workflows separately from the screens being present.
 
 ## Required functional modules
 
 ### Dashboard and core setup
-- [ ] Company profile, logo, address, Moroccan identifiers (ICE, RC, IF), banking details
+- [x] Company profile, logo, address and Moroccan identifiers (ICE, RC, IF); banking details remain pending
 - [ ] Users, roles, permissions, activity history
-- [ ] Arabic/French complete localization, language persistence, theme
+- [x] Arabic/French labels for current screens, language persistence and RTL/LTR; final device visual review remains pending
 - [ ] Numbering series, document templates, custom fields
 - [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
 - [ ] Automated scheduled backups and encrypted backup files
 
 ### Products and inventory
-- [ ] Product/service catalog with references, barcodes and multiple images
+- [x] Product catalog with references and barcode fields/search; multiple images and camera barcode scan remain pending
 - [x] Single product photo: choose, replace, remove, preview, and persist in local product data
 - [x] Product name search and product edit flow
 - [x] Categories, brands, units, variants
@@ -34,16 +33,16 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Bulk product import/export with name search and saved product catalog (image search remains pending)
 
 ### Contacts
-- [ ] Customer and supplier profiles with phone/WhatsApp, address, ICE/RC/IF
+- [x] Customer and supplier profiles with phone, address and ICE; editing, RC/IF variants and price groups remain pending
 - [ ] Opening balances, credit ceilings, payment terms, account statements
 - [ ] Attachments, contacts, custom fields, price groups
 
 ### Sales documents
-- [ ] Quotes, customer orders, delivery notes, invoices, proforma invoices
-- [ ] Customer credit notes and return documents
+- [x] Quotes, invoices, delivery notes and linked customer credit notes/returns
+- [ ] Customer orders and proforma invoices
 - [ ] Document lifecycle, conversion/linking, reminders and follow-up
 - [ ] Discounts, fees, notes/sections, barcode entry, multi-line editing
-- [ ] PDF layouts, print, share, document numbering and status tracking
+- [x] Basic PDF generation/sharing, document numbering and status tracking; print-layout refinement remains pending
 
 ### Purchases
 - [ ] Price requests, supplier orders, goods receipts, supplier invoices
@@ -54,7 +53,7 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Cash, payments and banking
 - [ ] Expenses and recurring expenses/categories
 - [ ] Cash registers, opening balance, cash in/out and transfers
-- [ ] Customer and supplier payments, allocations and balances
+- [x] Customer invoice payments, supplier payments, allocations and balances
 - [ ] Cheques, drafts, unpaid items and due-date tracking
 - [ ] Bank statement import and reconciliation
 
@@ -72,8 +71,8 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Agenda and reports
 - [ ] Tasks, assignments, priorities, due dates, durations and attachments
-- [ ] Sales/purchase/stock/cash/receivables/payables/profit reports
-- [ ] Filters, date ranges, export and print
+- [x] Sales, purchase, stock, receivables, payables, profit and project summary reports
+- [x] PDF reports and XLSX workbook export; report filters/date ranges remain pending
 
 ## Acceptance tests required before calling a module complete
 - Create, read, update and delete (with confirmation) persist after app restart.
@@ -86,4 +85,4 @@ This project is an independent implementation of the workflows observed in YanCo
 - APK builds successfully and is installed/tested on Android.
 
 ## Status policy
-A screen appearing is not proof that its controls work. A module is marked complete only after its workflows and acceptance tests pass. No live business data should be copied from the reference account.
+A screen appearing is not proof that its controls work. A module is marked complete only after its workflows and acceptance tests pass. Emulator smoke testing failed because the GitHub Linux runner's Android emulator remained offline and then returned broken pipe errors; no device-level pass is claimed. No live business data should be copied from the reference account.

@@ -19,3 +19,9 @@ test('overpayment and non-invoice allocations are rejected', () => {
   assert.throws(() => applyPaymentToInvoice({type:'invoice',total:100,status:'صادرة'},10001));
   assert.throws(() => applyPaymentToInvoice({type:'delivery',total:100,status:'صادرة'},100));
 });
+
+test('credit notes reduce the amount due and prevent payment above the revised balance',()=>{
+  const result=applyPaymentToInvoice({type:'invoice',total:100,paidCentimes:0,creditedCentimes:2500,status:'صادرة'},7500);
+  assert.equal(result.remainingCentimes,0);
+  assert.throws(()=>applyPaymentToInvoice({type:'invoice',total:100,paidCentimes:0,creditedCentimes:2500,status:'صادرة'},7501),/exceeds/);
+});

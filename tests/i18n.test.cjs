@@ -25,7 +25,7 @@ test('French translations cover POS validation and backup guidance',()=>{
 
 const fs = require('node:fs');
 test('static Arabic labels used by workspaces all have French translations',()=>{
-  for (const file of ['App.tsx','src/QuoteWorkspace.tsx','src/PosWorkspace.tsx']) {
+  for (const file of ['App.tsx','src/QuoteWorkspace.tsx','src/PosWorkspace.tsx','src/CreditNoteWorkspace.tsx']) {
     const source = fs.readFileSync(file,'utf8');
     for (const match of source.matchAll(/\btr\((['"])(.*?)\1\)/g)) {
       const key = match[2].replace(/\\n/g,'\n');

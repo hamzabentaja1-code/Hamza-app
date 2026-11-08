@@ -236,10 +236,11 @@ jobs:
       - name: Run Maestro UI smoke test on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
-          target: google_apis
+          api-level: 29
+          target: default
           arch: x86_64
-          profile: pixel_6
+          profile: pixel_2
+          emulator-boot-timeout: 1200
           script: |
             APK="$(find dist/apk -type f -name '*.apk' | head -n 1)"
             test -n "$APK"
