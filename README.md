@@ -36,3 +36,5 @@ Recent workflow additions include linked purchase requests, orders, goods receip
 - Work logs are stored locally and included in backup/restore.
 
 - Track installation requests by customer, service type, site, date and project with a validated status workflow.
+
+- Maintain technicians with specialty and default hourly rate; linked history prevents deleting a technician with work records.
