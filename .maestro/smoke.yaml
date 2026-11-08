@@ -15,5 +15,5 @@ appId: com.hamza.app
     timeout: 20000
 - tapOn: "نقطة البيع"
 - assertVisible: "البحث عن منتج"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 - assertVisible: "HamZa"
