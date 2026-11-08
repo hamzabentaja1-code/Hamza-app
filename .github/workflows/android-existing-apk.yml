@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flow: [smoke, product-persistence, sales-payments, pos-sale]
+        flow: [smoke, product-persistence, sales-payments, pos-sale, purchase-return]
     env:
       MAESTRO_FLOW: .maestro/${{ matrix.flow }}.yaml
     steps:
