@@ -532,7 +532,23 @@ const fr: Record<string, string> = {
   "دخل كمية واحدة على الأقل للإرجاع": "Saisissez au moins une quantité à retourner",
   "مقارنة أسعار الموردين": "Comparaison des prix fournisseurs",
   "فرق السعر:": "Écart de prix :",
-  "مازال ما تسجلات حتى أسعار شراء.": "Aucun prix d’achat enregistré pour le moment"
+  "مازال ما تسجلات حتى أسعار شراء.": "Aucun prix d’achat enregistré pour le moment",
+  "طلبات الزبناء": "Commandes clients",
+  "الطلبات والفواتير الأولية": "Commandes et factures pro forma",
+  "فاتورة أولية": "Facture pro forma",
+  "طلب زبون": "Commande client",
+  "مازال ما كاين حتى طلب ولا فاتورة أولية.": "Aucune commande ni facture pro forma pour le moment"
+,
+  "مقبولة": "Acceptée",
+  "مرفوضة": "Refusée",
+  "ملغاة": "Annulée",
+  "قيد التجهيز": "En préparation",
+  "جاهز": "Prête",
+  "مسلم": "Livrée",
+  "تغيير حالة الوثيقة غير مسموح": "Ce changement de statut n’est pas autorisé",
+  "سجل سند الخروج قبل اعتبار الطلب مسلماً": "Enregistrez le bon de sortie avant de marquer la commande comme livrée",
+  "راجع الحالة وحاول من جديد.": "Vérifiez le statut et réessayez"
+
 };
 
 export function translate(language: AppLanguage, value: string): string {
