@@ -35,3 +35,9 @@ Run with: npm run test:quote
 - Restore an older backup; verify existing records are preserved and new documents default to an empty list.
 
 No test is marked passed until it has actually run and its result has been observed.
+
+## Observed CI result — 2026-11-08
+
+- Automated validation: 93/93 domain tests passed; TypeScript validation passed in [GitHub Actions run 42485750649](https://github.com/hamzabentaja1-code/Hamza-app/actions/runs/42485750649).
+- The latest APK workflow before it was switched to manual-only completed APK packaging and MobSF scanning, but the emulator smoke test failed before confirming the home screen. This does not count as an Android UI pass.
+- Manual Android acceptance cases below remain pending. No APK was built by the validation-only workflow.

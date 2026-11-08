@@ -241,7 +241,23 @@ jobs:
             adb install "$(find dist/apk -type f -name '*.apk' -print -quit)"
             curl -Ls "https://get.maestro.mobile.dev" | bash
             "$HOME/.maestro/bin/maestro" --version
+            set +e
             "$HOME/.maestro/bin/maestro" test .maestro/smoke.yaml
+            SMOKE_STATUS=$?
+            set -e
+            mkdir -p artifacts
+            adb logcat -d > artifacts/android-logcat.txt || true
+            adb exec-out screencap -p > artifacts/android-screen.png || true
+            exit "$SMOKE_STATUS"
+
+      - name: Upload Android smoke diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: HamZa-Android-Smoke-Diagnostics
+          path: artifacts
+          if-no-files-found: ignore
+          retention-days: 14
 
   mobsf:
     name: MobSF Android security scan

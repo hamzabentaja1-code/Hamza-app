@@ -29,3 +29,10 @@
 - Implement partial delivery and customer statements; payment allocation and customer outstanding balances are now implemented.
 - Add stock movement ledger/audit trail and purchase posting.
 - Install and smoke-test APK on a physical Android device before calling this build verified.
+
+## 2026-11-08 — full domain validation
+
+- The working branch now compiles and runs all 27 domain test files, including the previously omitted contact-history suite and new tests for contact ledgers, sales-document transitions, stock effects and the cash ledger.
+- GitHub Actions validation passed: 93 tests passed, 0 failed; `npx tsc --noEmit` passed.
+- Android APK generation is manual-dispatch only while feature work continues.
+- The prior Android CI build and MobSF scan completed successfully, but its emulator smoke test failed at the initial app-title assertion. A later run had passed that title but failed an obsolete French subtitle assertion. The workflow now stores logcat and a screenshot when smoke testing fails. No successful UI/device acceptance run is recorded yet.
