@@ -33,7 +33,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Bulk product import/export with name search and saved product catalog (image search remains pending)
 
 ### Contacts
-- [x] Customer and supplier profiles with phone, address and ICE; editing, RC/IF variants and price groups remain pending
+- [x] Customer and supplier profiles with phone, address and ICE, editable without breaking linked customer records; RC/IF variants and price groups remain pending
 - [x] Opening balances, credit ceilings enforced on invoice conversion, payment terms added to invoice due dates and PDF account statements (editing customer limits after creation and aging/reminder logic remain pending)
 - [ ] Attachments, contacts, custom fields, price groups
 
