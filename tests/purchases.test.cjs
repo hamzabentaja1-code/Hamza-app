@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {purchaseTotals,validatePurchase,changePurchaseStatus,supplierOutstanding,supplierCreditBalance,validateSupplierPayment}=require('../.test-build/purchases.js');
+const {purchaseTotals,validatePurchase,changePurchaseStatus,createPurchaseDocument,convertPurchaseDocument,supplierOutstanding,supplierCreditBalance,validateSupplierPayment}=require('../.test-build/purchases.js');
 
 const doc=(overrides={})=>({id:'p1',number:'ACH-1',kind:'supplier_invoice',status:'draft',supplierId:'s1',lines:[{productId:'prod1',description:'Caméra',quantity:2,unitCost:100,discount:10}],globalDiscount:5,createdAt:'2026-11-08',...overrides});
 
@@ -24,4 +24,23 @@ test('supplier return credits offset debt and produce a supplier credit after se
   const payments=[{id:'p1',supplierId:'s1',amount:6000,date:'2026-11-08',method:'cash'}];
   assert.equal(supplierOutstanding(10000,payments,'s1',2000),2000);
   assert.equal(supplierCreditBalance(10000,payments,'s1',12000),8000);
+});
+test('purchase workflow links request, order, receipt, and supplier invoice without duplicate stock documents',()=>{
+  const request=createPurchaseDocument({...doc(),kind:'request',status:undefined},[]);
+  const confirmedRequest=changePurchaseStatus(request,'confirmed');
+  const order=convertPurchaseDocument(confirmedRequest,'order',[request,confirmedRequest],'p2','CMD-2','2026-11-08','main');
+  const confirmedOrder=changePurchaseStatus(order,'confirmed');
+  const receipt=convertPurchaseDocument(confirmedOrder,'receipt',[request,confirmedRequest,order,confirmedOrder],'p3','REC-3','2026-11-08','main');
+  assert.equal(receipt.status,'received');
+  const invoice=convertPurchaseDocument(receipt,'supplier_invoice',[request,confirmedRequest,order,confirmedOrder,receipt],'p4','FAC-4','2026-11-08');
+  assert.equal(invoice.status,'draft');
+  assert.equal(invoice.sourceDocumentId,receipt.id);
+  assert.throws(()=>convertPurchaseDocument(confirmedOrder,'receipt',[request,confirmedRequest,order,confirmedOrder,receipt],'p5','REC-5','2026-11-08','main'),/من قبل/);
+});
+
+test('purchase conversions require confirmed sources and valid inventory receipt warehouse',()=>{
+  const request=createPurchaseDocument({...doc(),kind:'request'},[]);
+  assert.throws(()=>convertPurchaseDocument(request,'order',[request],'p2','CMD-2','2026-11-08'),/أكد طلب/);
+  const order={...doc(),id:'o1',number:'CMD-1',kind:'order',status:'confirmed'};
+  assert.throws(()=>convertPurchaseDocument(order,'receipt',[order],'r1','REC-1','2026-11-08'),/المخزن/);
 });
