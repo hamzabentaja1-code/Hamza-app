@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {validateTask,changeTaskStatus,sortTasks}=require('../.test-build/agenda.js');
+const {validateTask,changeTaskStatus,sortTasks,validateWorkLog,workLogCostCentimes,validateWorkLogSettlement,workLogOutstandingCentimes,workLogPaidCentimes}=require('../.test-build/agenda.js');
 
 const task=(overrides={})=>({id:'t1',title:'Install camera',priority:'high',status:'open',dueDate:'2026-11-09',durationMinutes:90,createdAt:'2026-11-08T00:00:00Z',...overrides});
 
@@ -18,6 +18,7 @@ test('task sorting groups active tasks by priority and deadline before completed
   assert.deepEqual(result.map(item=>item.id),['urgent','normal','low','done']);
 });
 
+
 test('work log validates task linkage, dates, duration and rate',()=>{
   const projectTask=task({projectId:'p1'});
   const log={id:'w1',taskId:'t1',projectId:'p1',technician:'Hamza',date:'2026-11-08',durationMinutes:90,hourlyRateCentimes:12000};
@@ -28,6 +29,7 @@ test('work log validates task linkage, dates, duration and rate',()=>{
   assert.ok(validateWorkLog(log,[projectTask],[log]).some(error=>error.includes('معرف')));
   assert.throws(()=>workLogCostCentimes({...log,durationMinutes:0}));
 });
+
 
 test('technician settlements support partial payment and reject overpayment',()=>{
   const logs=[{id:'w1',taskId:'t1',projectId:'p1',technician:'Hamza',date:'2026-11-08',durationMinutes:90,hourlyRateCentimes:12000}];

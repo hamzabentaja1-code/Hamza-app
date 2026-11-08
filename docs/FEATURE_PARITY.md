@@ -65,14 +65,14 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Customer selection, general discount, cash/card/transfer methods and checkout validation
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
 - [x] POS search by name/reference/barcode, category filtering and in-stock filter (camera barcode scanning remains pending)
-- [x] Parked POS sales persist on the phone and can be resumed or deleted; [ ] POS returns and physical receipt-printer integration
+- [x] Parked POS sales persist on the phone and can be resumed or deleted; [x] POS partial returns restore stock, prorate original amounts and post cash refunds; [ ] physical receipt-printer integration
 
 ### Projects and field operations
 - [x] Projects with customer, budget, payments, dates, status and CRUD
 - [x] Installation requests linked to customers/projects, with dates and status lifecycle
 - [ ] Broader financial status workflow
-- [ ] Technician directory, specialties, equipment and equipment categories
-- [x] Task-linked technician time entries, hourly rates, cost totals, settlement history and activity export
+- [x] Technician directory, specialties, equipment and equipment categories
+- [x] Task-linked technician time entries, hourly rates, cost totals and activity export
 - [x] Partial/full technician wage settlements, cheque references, history, and cash-box posting for cash payments
 
 ### Agenda and reports
@@ -94,8 +94,11 @@ This project is an independent implementation of the workflows observed in YanCo
 ## Status policy
 A screen appearing is not proof that its controls work. A module is marked complete only after its workflows and acceptance tests pass. Emulator smoke testing failed because the GitHub Linux runner's Android emulator remained offline and then returned broken pipe errors; no device-level pass is claimed. No live business data should be copied from the reference account.
 
+
 ## Field work
 
 - [x] Agenda tasks linked to projects/customers and assigned staff.
 - [x] Technician work logs with date, duration, hourly rate, notes, cost totals, settlement history and activity export.
-- [ ] Technician/equipment directory and field installation requests.
+- [x] Technician directory with specialties, default hourly rates and active/inactive status
+- [x] Equipment directory with category, serial number and maintenance/retirement status
+- [x] Installation requests can assign active technicians and available equipment.
