@@ -635,6 +635,7 @@ const fr: Record<string, string> = {
   "حفظ سجل الوقت": "Enregistrer le temps",
   "إجمالي الساعات": "Total des heures",
   "إجمالي كلفة العمل": "Coût total du travail",
+  "كلفة العمل المسجلة:": "Coût du travail enregistré :",
   "سجل ساعات العمل": "Historique du temps de travail",
   "مهمة محذوفة": "Tâche supprimée",
   "الأجرة بالساعة": "Tarif horaire",
