@@ -284,13 +284,31 @@ appId: com.hamza.app
     centerElement: true
     timeout: 25000
 - tapOn: .*دورة الشراء.*Purchase workflow
-- scrollUntilVisible:
-    element:
-      text: إرجاع من فاتورة المورد.*
-    direction: DOWN
-    speed: 85
-    centerElement: true
-    timeout: 60000
+- evalScript: ${output.purchaseReturnFound = 0}
+- evalScript: ${output.purchaseReturnScrolls = 0}
+- runFlow:
+    when:
+      visible:
+        text: إرجاع من فاتورة المورد.*
+    commands:
+      - evalScript: ${output.purchaseReturnFound = 1}
+- repeat:
+    times: 12
+    while:
+      true: ${output.purchaseReturnFound == 0}
+    commands:
+      - swipe:
+          start: 2%, 85%
+          end: 2%, 35%
+          duration: 500
+      - evalScript: ${output.purchaseReturnScrolls = output.purchaseReturnScrolls + 1}
+      - runFlow:
+          when:
+            visible:
+              text: إرجاع من فاتورة المورد.*
+          commands:
+            - evalScript: ${output.purchaseReturnFound = 1}
+- assertVisible: إرجاع من فاتورة المورد.*
 - tapOn: الكمية
 - inputText: "2"
 - pressKey: Enter
