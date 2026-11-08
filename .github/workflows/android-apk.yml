@@ -1,11 +1,6 @@
 name: Build HamZa Android APK
 
 on:
-  push:
-    branches: [main, feature/projects-workspace]
-    paths-ignore:
-      - '.devcontainer/**'
-      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:

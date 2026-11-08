@@ -1,0 +1,37 @@
+name: Validate HamZa
+
+on:
+  push:
+    branches: [main, feature/projects-workspace]
+  pull_request:
+    branches: [main, feature/projects-workspace]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hamza-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Run all domain tests
+        run: npm run test:quote
+
+      - name: TypeScript validation
+        run: npx tsc --noEmit
