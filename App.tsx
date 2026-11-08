@@ -76,6 +76,7 @@ export default function App() {
   const [search,setSearch]=useState(''); const [productSearch,setProductSearch]=useState(''); const [photoData,setPhotoData]=useState(''); const [photoPreview,setPhotoPreview]=useState<string|null>(null);
   const [imageSearchActive,setImageSearchActive]=useState(false); const [imageSearchBusy,setImageSearchBusy]=useState(false); const [imageSearchPreview,setImageSearchPreview]=useState<string|null>(null); const [imageSearchMatches,setImageSearchMatches]=useState<Array<{id:number;distance:number}>>([]);
   const imageFingerprintCache=useRef(new Map<number,{photo:string;fingerprint:string}>());
+  const mainScroll=useRef<ScrollView|null>(null);
   const [language,setLanguage]=useState<'AR'|'FR'>('AR');
   const [companyProfile,setCompanyProfile]=useState<CompanyProfile>({...EMPTY_COMPANY_PROFILE});
   const updateCompanyProfile=(key:keyof CompanyProfile,value:string)=>setCompanyProfile(current=>({...current,[key]:value}));
@@ -358,12 +359,12 @@ export default function App() {
     return true;
   };
   const recordPosReturn=(sale:Sale,quantity:number,method:PosReturn['method'],reference?:string)=>{try{const result=createPosReturn(sale as PosSaleLine,posReturns,{id:'pos-return-'+Date.now(),quantity,date:new Date().toISOString().slice(0,10),method,reference});const product=products.find(item=>item.id===result.productId);if(!product)throw new Error('المنتج المرتجع غير موجود');const warehouseId=result.warehouseId;if(!warehouses.some(item=>item.id===warehouseId))throw new Error('المخزن المرتبط بالبيع غير موجود');if(method==='cash'&&result.totalCentimes>0){const nextCash=postCashMovement({id:'pos-refund-'+result.id,kind:'cash_out',amountCentimes:result.totalCentimes,date:result.date,note:'استرجاع بيع نقطة البيع '+result.id},cashMovements);setCashMovements(nextCash);}setProducts(current=>current.map(item=>item.id===result.productId?{...item,qty:item.qty+result.quantity}:item));setStockMovements(current=>[...current,{id:'return-pos-'+result.id,productId:String(result.productId),warehouseId,kind:'return_in',quantity:result.quantity,unitCost:product.costPrice||0,createdAt:new Date().toISOString(),reference:String(result.saleId),note:'إرجاع من نقطة البيع'}]);setPosReturns(current=>[result,...current]);Alert.alert(tr('تم تسجيل الإرجاع'),`${result.quantity} · ${(result.totalCentimes/100).toFixed(2)} DH`);}catch(error){Alert.alert(tr('تعذر تسجيل الإرجاع'),error instanceof Error?tr(error.message):tr('راجع الكمية والمبلغ ورصيد الصندوق.'));}};
-  const go=(s:string)=>{setScreen(s);setSearch('');};
+  const go=(s:string)=>{setScreen(s);setSearch('');requestAnimationFrame(()=>mainScroll.current?.scrollTo({y:0,animated:false}));};
   if(!loaded)return <SafeAreaView style={s.safe}><StatusBar style="light"/><ActivityIndicator color={GOLD} style={{flex:1}}/></SafeAreaView>;
   const productImageDistance=new Map(imageSearchMatches.map(match=>[match.id,match.distance]));
   const visibleProducts=products.filter(product=>imageSearchActive?productImageDistance.has(product.id):[product.name,product.reference||'',product.barcode||'',product.category||'',product.brand||'',product.unit||'',product.variant||''].some(value=>value.toLowerCase().includes(productSearch.trim().toLowerCase()))).sort((left,right)=>imageSearchActive?(productImageDistance.get(left.id)??65)-(productImageDistance.get(right.id)??65):0);
   return <SafeAreaView style={[s.safe,{direction:getLayoutDirection(language)}]}><StatusBar style="light"/><View style={s.header}><View><Text style={s.brand}>HamZa</Text><Text style={s.sub}>{language==='FR'?'Gestion commerciale':'تسيير تجاري'}</Text></View><Pressable onPress={()=>setLanguage(language==='AR'?'FR':'AR')} style={s.lang}><Text style={s.gold}>{language}</Text></Pressable></View>
-    <ScrollView contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
+    <ScrollView ref={mainScroll} contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
       <View style={s.topline}><Pressable onPress={()=>go('الرئيسية')}><Text style={s.back}>{tr('⌂ الرئيسية')}</Text></Pressable><Text style={s.heading}>{tr(screen)}</Text></View>
       {screen==='الرئيسية'?<>
         <View style={s.hero}><Text style={s.heroLabel}>{tr('مرحبا بك في')}</Text><Text style={s.heroTitle}>HamZa</Text><Text style={s.heroText}>{tr('تسيير تجارتك من مكان واحد')}</Text></View>
