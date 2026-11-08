@@ -1,7 +1,7 @@
 appId: com.hamza.app
 ---
 - launchApp:
-    clearState: false
+    clearState: true
 - extendedWaitUntil:
     visible: "HamZa"
     timeout: 30000
