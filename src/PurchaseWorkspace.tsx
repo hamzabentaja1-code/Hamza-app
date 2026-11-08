@@ -15,12 +15,13 @@ type Props={
   onCreate:(input:{kind:'request'|'order';supplierId:string;warehouseId:string;lines:PurchaseLine[];globalDiscount:number})=>void;
   onChangeStatus:(document:PurchaseDocument,status:'confirmed'|'cancelled')=>void;
   onConvert:(document:PurchaseDocument,target:'order'|'receipt'|'supplier_invoice')=>void;
+  onSupplierReturn:(invoice:PurchaseDocument,quantities:Record<string,number>)=>void;
   onPdf?:(document:PurchaseDocument,total:number)=>void;
 };
 const gold='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PurchaseWorkspace({language,suppliers,products,warehouses,documents,onCreate,onChangeStatus,onConvert,onPdf}:Props){
+export default function PurchaseWorkspace({language,suppliers,products,warehouses,documents,onCreate,onChangeStatus,onConvert,onSupplierReturn,onPdf}:Props){
   const tr=(value:string)=>translate(language,value);
   const [kind,setKind]=useState<'request'|'order'>('order');
   const [supplierId,setSupplierId]=useState('');
@@ -30,6 +31,7 @@ export default function PurchaseWorkspace({language,suppliers,products,warehouse
   const [unitCost,setUnitCost]=useState('');
   const [globalDiscount,setGlobalDiscount]=useState('0');
   const [lines,setLines]=useState<PurchaseLine[]>([]);
+  const [returnQuantities,setReturnQuantities]=useState<Record<string,Record<string,string>>>({});
   const addLine=()=>{
     const product=products.find(item=>String(item.id)===productId);
     const qty=Number(quantity.replace(',','.'));
@@ -81,6 +83,19 @@ export default function PurchaseWorkspace({language,suppliers,products,warehouse
         </View>
       </View>;
     })}
+    {documents.filter(document=>document.kind==='supplier_invoice'&&document.status==='confirmed').map(invoice=>{
+      const productIds=[...new Set(invoice.lines.map(line=>line.productId))];
+      const available=(productId:string)=>invoice.lines.filter(line=>line.productId===productId).reduce((sum,line)=>sum+line.quantity,0)-documents.filter(document=>document.kind==='supplier_credit'&&document.sourceDocumentId===invoice.id&&document.status!=='cancelled').reduce((sum,credit)=>sum+credit.lines.filter(line=>line.productId===productId).reduce((lineSum,line)=>lineSum+line.quantity,0),0);
+      return <View key={'return-'+invoice.id} style={{backgroundColor:'#1B1B1B',padding:12,borderRadius:10,borderWidth:1,borderColor:'#444',gap:8}}>
+        <Text style={{color:gold,fontWeight:'900'}}>{tr('إرجاع من فاتورة المورد')} · {invoice.number}</Text>
+        {productIds.map(productId=>{
+          const line=invoice.lines.find(item=>item.productId===productId)!;
+          return <View key={productId} style={{flexDirection:'row',alignItems:'center',gap:8}}><Text style={{color:'#FFF',flex:1}}>{line.description} · {tr('المتبقي للإرجاع:')} {available(productId)}</Text><TextInput value={returnQuantities[invoice.id]?.[productId]||''} onChangeText={value=>setReturnQuantities(current=>({...current,[invoice.id]:{...current[invoice.id],[productId]:value}}))} keyboardType="decimal-pad" placeholder={tr('الكمية')} placeholderTextColor="#888" style={{width:82,backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:8,padding:8,color:'#FFF'}}/></View>;
+        })}
+        <Pressable onPress={()=>{const quantities:Record<string,number>={};for(const [productId,raw] of Object.entries(returnQuantities[invoice.id]||{})){const value=Number(raw.replace(',','.'));if(Number.isFinite(value)&&value>0)quantities[productId]=value;}onSupplierReturn(invoice,quantities);}} style={{backgroundColor:gold,borderRadius:8,padding:11,alignItems:'center'}}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تسجيل الإرجاع وإنشاء رصيد دائن')}</Text></Pressable>
+      </View>;
+    })}
+    {documents.filter(document=>document.kind==='supplier_credit').map(credit=><View key={credit.id} style={{backgroundColor:'#1B1B1B',padding:10,borderRadius:9,borderWidth:1,borderColor:'#333'}}><Text style={{color:'#FFF',fontWeight:'800'}}>{tr('إشعار دائن للمورد')} · {credit.number}</Text><Text style={{color:gold}}>{money(purchaseTotals(credit).total)} · {tr('فاتورة الأصل')}: {documents.find(item=>item.id===credit.sourceDocumentId)?.number||''}</Text></View>)}
     {documents.length===0&&<Text style={{color:'#888',textAlign:'center',padding:12}}>{tr('مازال ما كايناش وثائق شراء.')}</Text>}
   </View>;
 }
