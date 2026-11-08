@@ -6,6 +6,9 @@ test('installation request validates customer, site, dates and linked project',(
   assert.deepEqual(validateInstallationRequest(request(),[],[1],[10]),[]);
   assert.ok(validateInstallationRequest(request({siteAddress:'',requestedDate:'2026-02-30'}),[],[2],[11]).length>=3);
   assert.ok(validateInstallationRequest(request(),[request()],[1],[10]).some(error=>error.includes('معرف')));
+  assert.ok(validateInstallationRequest(request({technicianIds:['bad'],equipmentIds:['bad']}),[],[1],[10],['tech1'],['eq1']).length>=2);
+  const booked=request({id:'booked',status:'scheduled',equipmentIds:['eq1']});
+  assert.ok(validateInstallationRequest(request({equipmentIds:['eq1'],status:'scheduled'}),[booked],[1],[10],[],['eq1']).some(error=>error.includes('محجوزة')));
 });
 test('installation request status follows a forward workflow and terminal states stay closed',()=>{
   const scheduled=changeInstallationRequestStatus(request(),'scheduled');
