@@ -72,7 +72,7 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Agenda and reports
 - [ ] Tasks, assignments, priorities, due dates, durations and attachments
-- [x] Sales, purchase, stock, receivables, payables, profit and project summary reports
+- [x] Sales, quote-derived invoices, purchase, stock, receivables, payables, profit and project summary reports
 - [x] PDF reports and XLSX workbook export with inclusive date range filters for activity, payments, expenses, returns, stock movements and projects
 
 ## Acceptance tests required before calling a module complete
