@@ -2,6 +2,7 @@ import React,{useState} from 'react';
 import {Alert,Pressable,Text,TextInput,View} from 'react-native';
 import {PurchaseDocument,PurchaseKind,PurchaseLine,purchaseTotals} from './purchases';
 import {Warehouse} from './inventory';
+import {compareSupplierPrices,SupplierPriceObservation} from './supplier-price-comparison';
 import {translate} from './i18n';
 
 type Supplier={id:number;name:string};
@@ -11,6 +12,7 @@ type Props={
   suppliers:Supplier[];
   products:Product[];
   warehouses:Warehouse[];
+  priceHistory:SupplierPriceObservation[];
   documents:PurchaseDocument[];
   onCreate:(input:{kind:'request'|'order';supplierId:string;warehouseId:string;lines:PurchaseLine[];globalDiscount:number})=>void;
   onChangeStatus:(document:PurchaseDocument,status:'confirmed'|'cancelled')=>void;
@@ -21,7 +23,7 @@ type Props={
 const gold='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PurchaseWorkspace({language,suppliers,products,warehouses,documents,onCreate,onChangeStatus,onConvert,onSupplierReturn,onPdf}:Props){
+export default function PurchaseWorkspace({language,suppliers,products,warehouses,priceHistory,documents,onCreate,onChangeStatus,onConvert,onSupplierReturn,onPdf}:Props){
   const tr=(value:string)=>translate(language,value);
   const [kind,setKind]=useState<'request'|'order'>('order');
   const [supplierId,setSupplierId]=useState('');
@@ -96,6 +98,9 @@ export default function PurchaseWorkspace({language,suppliers,products,warehouse
       </View>;
     })}
     {documents.filter(document=>document.kind==='supplier_credit').map(credit=><View key={credit.id} style={{backgroundColor:'#1B1B1B',padding:10,borderRadius:9,borderWidth:1,borderColor:'#333'}}><Text style={{color:'#FFF',fontWeight:'800'}}>{tr('إشعار دائن للمورد')} · {credit.number}</Text><Text style={{color:gold}}>{money(purchaseTotals(credit).total)} · {tr('فاتورة الأصل')}: {documents.find(item=>item.id===credit.sourceDocumentId)?.number||''}</Text></View>)}
+    <Text style={{color:'#FFF',fontSize:17,fontWeight:'900',marginTop:8}}>{tr('مقارنة أسعار الموردين')}</Text>
+    {compareSupplierPrices(priceHistory).map(group=><View key={group.productId} style={{backgroundColor:'#1B1B1B',padding:12,borderRadius:10,borderWidth:1,borderColor:'#333',gap:6}}><Text style={{color:gold,fontWeight:'900'}}>{group.productName}</Text>{group.options.map(option=><View key={option.supplierId} style={{flexDirection:'row',justifyContent:'space-between'}}><Text style={{color:option.best?'#D6AE55':'#DDD',flex:1}}>{option.best?'✓ ':''}{option.supplierName} · {option.date}</Text><Text style={{color:option.best?'#D6AE55':'#FFF'}}>{money(option.unitCost)}</Text></View>)}{group.saving>0&&<Text style={{color:'#AAA'}}>{tr('فرق السعر:')} {money(group.saving)}</Text>}</View>)}
+    {!priceHistory.length&&<Text style={{color:'#888',textAlign:'center',padding:8}}>{tr('مازال ما تسجلات حتى أسعار شراء.')}</Text>}
     {documents.length===0&&<Text style={{color:'#888',textAlign:'center',padding:12}}>{tr('مازال ما كايناش وثائق شراء.')}</Text>}
   </View>;
 }
