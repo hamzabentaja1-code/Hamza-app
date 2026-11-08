@@ -2,6 +2,19 @@ name: Build HamZa Android APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - feature/projects-workspace
+    paths:
+      - 'App.tsx'
+      - 'src/**'
+      - 'assets/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'app.json'
+      - 'app.config.*'
+      - '.github/workflows/android-apk.yml'
+      - '.maestro/**'
 
 permissions:
   contents: read
