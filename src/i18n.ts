@@ -2,6 +2,7 @@ export type AppLanguage = 'AR' | 'FR';
 export type LayoutDirection = 'rtl' | 'ltr';
 
 const fr: Record<string, string> = {
+  "عملية": "opération(s)",
   "الرئيسية": "Accueil",
   "المنتجات": "Produits",
   "نقطة البيع": "Point de vente",

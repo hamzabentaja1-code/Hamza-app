@@ -2,9 +2,19 @@ appId: com.hamza.app
 ---
 - launchApp:
     clearState: true
+- runFlow:
+    when:
+      visible: "Wait"
+    commands:
+      - tapOn: "Wait"
 - extendedWaitUntil:
     visible: "HamZa"
     timeout: 30000
+- runFlow:
+    when:
+      visible: "Wait"
+    commands:
+      - tapOn: "Wait"
 - assertVisible: "HamZa"
 - assertVisible: "الرئيسية"
 - assertVisible: "المنتجات"

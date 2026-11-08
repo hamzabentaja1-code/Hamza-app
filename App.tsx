@@ -372,7 +372,7 @@ export default function App() {
         <View style={s.summary}>
           <Text style={s.panelTitle}>{tr('ملخص النشاط')}</Text>
           <Text style={s.summaryText}>{tr('قيمة المخزون بسعر البيع:')} {stockValue.toFixed(2)} DH</Text><Text style={s.summaryText}>{tr('الربح المحتمل إذا تباع المخزون كامل:')} {potentialStockProfit.toFixed(2)} DH</Text>
-          <Text style={s.summaryText}>{tr('المبيعات المسجلة:')} {salesTotal.toFixed(2)} DH • {sales.length} عملية</Text>
+          <Text style={s.summaryText}>{tr('المبيعات المسجلة:')} {salesTotal.toFixed(2)} DH • {sales.length} {tr("عملية")}</Text>
           <Text style={s.summaryText}>{tr('المشتريات:')} {purchaseTotal.toFixed(2)} DH</Text>
           <Text style={s.summaryText}>{tr('المصاريف:')} {expenseTotal.toFixed(2)} DH</Text>
           <Text style={s.summaryText}>{tr('الصافي الأولي:')} {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text>
@@ -388,7 +388,7 @@ export default function App() {
         <View style={s.summary}>
           <Text style={s.summaryText}>{tr('المنتجات قليلة المخزون (5 أو أقل):')} {lowStockProducts.length}</Text>
           <Text style={s.summaryText}>{tr('المنتجات النافدة:')} {outOfStockCount}</Text>
-          {lowStockProducts.slice(0,4).map(p=><Text key={p.id} style={s.note}>{p.name} — باقي {p.qty}</Text>)}
+          {lowStockProducts.slice(0,4).map(p=><Text key={p.id} style={s.note}>{p.name} — {tr("باقي")} {p.qty}</Text>)}
           {lowStockProducts.length===0&&<Text style={s.summaryText}>{tr('ما كايناش منتجات قليلة المخزون حالياً.')}</Text>}
         </View>
         <TextInput value={search} onChangeText={setSearch} placeholder={tr('قلب على قسم...')} placeholderTextColor="#888" style={s.search}/>
