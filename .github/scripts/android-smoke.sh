@@ -4,6 +4,9 @@ set -uo pipefail
 mkdir -p artifacts
 
 collect_diagnostics() {
+  if [[ -d "$HOME/.maestro/tests" ]]; then
+    cp -R "$HOME/.maestro/tests" artifacts/maestro-debug 2>/dev/null || true
+  fi
   adb logcat -d > artifacts/android-logcat.txt 2>&1 || true
   adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1 || true
   adb pull /sdcard/window.xml artifacts/android-ui.xml >/dev/null 2>&1 || true
