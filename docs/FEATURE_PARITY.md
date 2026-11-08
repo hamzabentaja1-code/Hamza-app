@@ -57,7 +57,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Customer invoice payments, supplier payments, allocations and balances
 - [x] Invoice due dates, overdue-invoice list, and manual customer reminder sharing
 - [ ] Cheque/draft settlement, returned items and reminder history/scheduling
-- [ ] Bank statement import and reconciliation
+- [x] Manual bank-entry recording, CSV statement import, payment matching and date-filtered reconciliation report
+- [ ] Multiple bank accounts, account opening-balance controls and automated statement feeds
 
 ### POS
 - [x] Product name search and stock-aware cart with quantity controls
