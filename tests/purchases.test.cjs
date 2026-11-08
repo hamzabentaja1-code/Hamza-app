@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {purchaseTotals,validatePurchase,changePurchaseStatus,createPurchaseDocument,convertPurchaseDocument,supplierOutstanding,supplierCreditBalance,validateSupplierPayment}=require('../.test-build/purchases.js');
+const {purchaseTotals,validatePurchase,changePurchaseStatus,createPurchaseDocument,convertPurchaseDocument,createSupplierCredit,supplierOutstanding,supplierCreditBalance,validateSupplierPayment}=require('../.test-build/purchases.js');
 
 const doc=(overrides={})=>({id:'p1',number:'ACH-1',kind:'supplier_invoice',status:'draft',supplierId:'s1',lines:[{productId:'prod1',description:'Caméra',quantity:2,unitCost:100,discount:10}],globalDiscount:5,createdAt:'2026-11-08',...overrides});
 
@@ -43,4 +43,17 @@ test('purchase conversions require confirmed sources and valid inventory receipt
   assert.throws(()=>convertPurchaseDocument(request,'order',[request],'p2','CMD-2','2026-11-08'),/أكد طلب/);
   const order={...doc(),id:'o1',number:'CMD-1',kind:'order',status:'confirmed'};
   assert.throws(()=>convertPurchaseDocument(order,'receipt',[order],'r1','REC-1','2026-11-08'),/المخزن/);
+});
+
+
+test('supplier credit returns confirmed invoice quantities once and prorates discounts',()=>{
+  const invoice=doc({kind:'supplier_invoice',status:'confirmed',warehouseId:'main',globalDiscount:10});
+  const credit=createSupplierCredit(invoice,[invoice],{prod1:1},'cr1','AV-1','2026-11-08');
+  assert.equal(credit.kind,'supplier_credit');
+  assert.equal(credit.status,'confirmed');
+  assert.equal(credit.warehouseId,'main');
+  assert.equal(credit.lines[0].quantity,1);
+  assert.equal(Math.round(purchaseTotals(credit).total*100),9000);
+  assert.throws(()=>createSupplierCredit(invoice,[invoice,credit],{prod1:2},'cr2','AV-2','2026-11-08'),/المتبقية/);
+  assert.throws(()=>createSupplierCredit(invoice,[invoice],{missing:1},'cr3','AV-3','2026-11-08'),/غير موجود/);
 });
