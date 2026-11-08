@@ -168,3 +168,32 @@ appId: com.hamza.app
 - assertVisible: سجل الأداءات.*2.*
 - assertNotVisible: CI-INV-001.*
 - takeScreenshot: artifacts/payments-after-restart
+
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*الفواتير.*Invoices
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*الفواتير.*Invoices
+- assertVisible: CI-INV-001.*
+- tapOn: PDF
+- extendedWaitUntil:
+    visible: Bluetooth
+    timeout: 30000
+- takeScreenshot: artifacts/invoice-pdf-share-ar
+- back
+- tapOn: AR
+- assertVisible: FR
+- tapOn: PDF
+- extendedWaitUntil:
+    visible: Bluetooth
+    timeout: 30000
+- takeScreenshot: artifacts/invoice-pdf-share-fr
+- back
