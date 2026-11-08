@@ -25,6 +25,17 @@
         {
           "photosPermission": "السماح لـ HamZa باختيار صور المنتجات من جهازك."
         }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "السماح لـ HamZa باستعمال الميكروفون لإدخال النص بالصوت.",
+          "speechRecognitionPermission": "السماح لـ HamZa بالتعرف على الكلام لإدخال أسماء المنتجات.",
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox",
+            "com.google.android.tts"
+          ]
+        }
       ]
     ],
     "android": {
