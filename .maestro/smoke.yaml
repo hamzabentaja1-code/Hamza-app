@@ -8,6 +8,11 @@ appId: com.hamza.app
 - assertVisible: "HamZa"
 - assertVisible: "الرئيسية"
 - assertVisible: "المنتجات"
+- scrollUntilVisible:
+    element:
+      text: "نقطة البيع"
+    direction: DOWN
+    timeout: 20000
 - tapOn: "نقطة البيع"
 - assertVisible: "نقطة البيع"
 - tapOn: "الرئيسية"
