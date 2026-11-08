@@ -67,7 +67,7 @@ test('delivery conversion deducts stock once and blocks duplicates', () => {
   const result = convertQuote(quote,'delivery',[],products,100,'04/11/2026');
   assert.equal(result.document.number,'BL-100');
   assert.equal(result.updatedProducts[0].qty,5);
-  assert.throws(() => convertQuote(quote,'delivery',[result.document],products,101,'04/11/2026'),/already been converted/);
+  assert.throws(() => convertQuote(quote,'delivery',[result.document],products,101,'04/11/2026'),/already been delivered/);
 });
 
 test('delivery conversion refuses insufficient stock', () => {

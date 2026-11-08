@@ -60,3 +60,11 @@
 - Extracted PDF HTML generation into a testable template with Arabic RTL and French LTR titles, metadata, labels, and safe HTML escaping.
 - Added company logo, business contact fields, ICE, RC, IF, bank, and RIB when available. Empty fields are omitted.
 - Local validation passed: 100/100 tests, TypeScript, Expo config, `npm ci`, and Expo Doctor (18/18). The current environment has no Android SDK or emulator, so native PDF rendering and microphone/image-picker behavior still need a physical-device check. No APK was generated.
+
+
+## 2026-11-08 — partial delivery from quotes
+
+- Added delivery quantities per quote line, with prior delivery notes reducing the remaining quantities.
+- Each partial delivery deducts only its selected quantities from stock and creates its own delivery note. The note value is allocated proportionally so all completed delivery notes add up to the quote total, including a quote discount.
+- Duplicate products on different quote lines keep their quote-line identity and unit prices; a customer order is marked delivered only after every quoted quantity is delivered.
+- Validation on the working tree: 103/103 tests passed, TypeScript passed, Android JavaScript bundle exported successfully, and Expo Doctor previously passed 18/18. No Android SDK or emulator is available here; no APK was generated.

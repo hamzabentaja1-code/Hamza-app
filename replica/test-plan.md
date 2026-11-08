@@ -70,3 +70,12 @@ No test is marked passed until it has actually run and its result has been obser
 - Verify Arabic glyph shaping, page breaks, logo, bank details, PDF preview and sharing on Android.
 - Verify microphone permission and Arabic/French recognition; test product photo search performance and matching against real product images.
 - No Android SDK or emulator is present in the current environment; do not mark these cases passed until tested on a device. No APK has been generated for these changes.
+
+
+## Partial delivery — automated checks
+
+- Deliver a quote across three separate notes; stock decreases by only each note’s quantity and remaining quote quantities reach zero once.
+- Confirm the totals of all delivery notes equal the discounted quote total exactly.
+- Reject zero quantity, stock shortage, an unknown product, and quantities above the remaining amount.
+- For duplicate product rows at different prices, deliver from one selected quote row and preserve that row’s name and unit price.
+- Manual Android test remains pending: open delivery modal, edit line quantities, save successive partial notes, and verify stock/history on device.

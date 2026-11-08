@@ -1,7 +1,8 @@
 import React, {useMemo, useState} from 'react';
-import {Alert, Pressable, ScrollView, Text, TextInput, View} from 'react-native';
+import {Alert, Modal, Pressable, ScrollView, Text, TextInput, View} from 'react-native';
 import {calculateQuote} from './domain/quote-calculator';
 import {translate, getLayoutDirection} from './i18n';
+import {DeliveryRequestLine, ExistingDocument, remainingDeliveryLines} from './domain/document-conversion';
 
 type Product = {id:number; name:string; price:number; qty:number};
 type Customer = {id:number; name:string};
@@ -19,7 +20,8 @@ type Props = {
   quotes:QuoteRecord[];
   onSave:(quote:QuoteRecord)=>void;
   onPdf:(title:string, customerName:string, lines:string[], total:number)=>void;
-  onConvert:(quote:QuoteRecord,type:QuoteConversionType)=>void;
+  deliveryDocuments:ExistingDocument[];
+  onConvert:(quote:QuoteRecord,type:QuoteConversionType,deliveryLines?:DeliveryRequestLine[])=>void;
 };
 
 const gold='#D6AE55';
@@ -30,7 +32,7 @@ const choice={borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marg
 const active={borderColor:gold,backgroundColor:'#302819'};
 const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
-export default function QuoteWorkspace({language,products,customers,quotes,onSave,onPdf,onConvert}:Props) {
+export default function QuoteWorkspace({language,products,customers,quotes,deliveryDocuments,onSave,onPdf,onConvert}:Props) {
   const tr=(value:string)=>translate(language,value);
   const [customerId,setCustomerId]=useState('');
   const [productId,setProductId]=useState('');
@@ -41,10 +43,35 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
   const [discount,setDiscount]=useState('0');
   const [lines,setLines]=useState<QuoteLine[]>([]);
   const [notes,setNotes]=useState('');
+  const [deliveryQuote,setDeliveryQuote]=useState<QuoteRecord|null>(null);
+  const [deliveryQuantities,setDeliveryQuantities]=useState<Record<string,string>>({});
   const selectedCustomer=customers.find(c=>String(c.id)===customerId);
   const selectedProduct=products.find(p=>String(p.id)===productId);
   const filteredCustomers=customers.filter(c=>c.name.toLocaleLowerCase().includes(customerSearch.trim().toLocaleLowerCase()));
   const filteredProducts=products.filter(p=>p.name.toLocaleLowerCase().includes(productSearch.trim().toLocaleLowerCase()));
+  const remainingFor=(quote:QuoteRecord)=>remainingDeliveryLines(quote.lines||[],deliveryDocuments.filter(document=>document.sourceQuoteId===quote.id));
+  const requestDelivery=(quote:QuoteRecord)=>{
+    if(!quote.lines?.length){onConvert(quote,'delivery');return;}
+    const remaining=remainingFor(quote).filter(line=>line.remainingQty>0);
+    if(!remaining.length){Alert.alert(tr('سند خروج'),tr('ما بقا حتى منتج للتسليم فهاد العرض.'));return;}
+    setDeliveryQuantities(Object.fromEntries(remaining.map(line=>[String(line.lineIndex),String(line.remainingQty)])));
+    setDeliveryQuote(quote);
+  };
+  const confirmDelivery=()=>{
+    if(!deliveryQuote)return;
+    const remaining=remainingFor(deliveryQuote).filter(line=>line.remainingQty>0);
+    const request:DeliveryRequestLine[]=[];
+    for(const line of remaining){
+      const raw=(deliveryQuantities[String(line.lineIndex)]??String(line.remainingQty)).replace(',','.');
+      const quantity=Number(raw);
+      if(!Number.isFinite(quantity)||quantity<0||quantity>line.remainingQty){Alert.alert(tr('كمية غير صحيحة'),tr('دخل كمية صحيحة بين صفر والكمية المتبقية.'));return;}
+      if(quantity>0)request.push({productId:line.productId,qty:quantity,lineIndex:line.lineIndex});
+    }
+    if(!request.length){Alert.alert(tr('راجع الكمية'),tr('اختار كمية واحدة على الأقل.'));return;}
+    onConvert(deliveryQuote,'delivery',request);
+    setDeliveryQuote(null);
+    setDeliveryQuantities({});
+  };
 
   const calculation=useMemo(()=>{
     if(!lines.length) return null;
@@ -100,7 +127,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
     ? quote.lines.map(line=>`${line.productName} × ${line.qty} — ${line.total.toFixed(2)} DH`)
     : [`${quote.productName} × ${quote.qty} — ${quote.total.toFixed(2)} DH`];
 
-  return <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom:20}}>
+  return <><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom:20}}>
     <View style={panel}>
       <Text style={{color:gold,fontSize:19,fontWeight:'800',marginBottom:12}}>{tr('إنشاء عرض سعر متعدد المنتجات')}</Text>
       <Text style={{color:'#CCC',marginBottom:7}}>{tr('الزبون')}</Text>
@@ -145,12 +172,13 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:8}}>
         <Pressable onPress={()=>onPdf('Devis',q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[])],q.total)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
-        <Pressable onPress={()=>onConvert(q,'delivery')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('سند خروج')}</Text></Pressable>
+        <Pressable onPress={()=>requestDelivery(q)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('سند خروج')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'invoice')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'proforma')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة أولية')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'customer_order')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('طلب زبون')}</Text></Pressable>
       </View>
     </View>)}
     {quotes.length===0&&<Text style={{color:'#999',textAlign:'center',padding:12}}>{tr('مازال ما كاين حتى عرض سعر.')}</Text>}
-  </ScrollView>;
+  </ScrollView><Modal visible={!!deliveryQuote} transparent animationType="slide" onRequestClose={()=>setDeliveryQuote(null)}><View style={{flex:1,backgroundColor:'rgba(0,0,0,0.82)',justifyContent:'center',padding:18}}><View style={{backgroundColor:'#1B1B1B',borderColor:'#5D4A25',borderWidth:1,borderRadius:14,padding:16,maxHeight:'85%'}}><Text style={{color:gold,fontSize:18,fontWeight:'900',marginBottom:12}}>{tr('تحديد كمية التسليم')}</Text><ScrollView keyboardShouldPersistTaps="handled">{deliveryQuote&&remainingFor(deliveryQuote).filter(line=>line.remainingQty>0).map(line=><View key={line.lineIndex} style={{borderBottomWidth:1,borderBottomColor:'#333',paddingVertical:9}}><Text style={{color:'#FFF',fontWeight:'700'}}>{line.productName}</Text><Text style={{color:'#AAA',fontSize:12,marginVertical:5}}>{tr('المتبقي للتسليم')}: {line.remainingQty}</Text><TextInput value={deliveryQuantities[String(line.lineIndex)]??String(line.remainingQty)} onChangeText={value=>setDeliveryQuantities(current=>({...current,[String(line.lineIndex)]:value}))} keyboardType="decimal-pad" placeholder={tr('الكمية في هذا التسليم')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRadius:8,padding:10,color:'#FFF'}}/></View>)}</ScrollView><View style={{flexDirection:'row',gap:8,marginTop:12}}><Pressable onPress={()=>setDeliveryQuote(null)} style={{flex:1,padding:12,borderWidth:1,borderColor:'#555',borderRadius:8,alignItems:'center'}}><Text style={{color:'#DDD'}}>{tr('إلغاء')}</Text></Pressable><Pressable onPress={confirmDelivery} style={{flex:1,padding:12,backgroundColor:gold,borderRadius:8,alignItems:'center'}}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تأكيد سند الخروج')}</Text></Pressable></View></View></View></Modal></>;
+
 }
