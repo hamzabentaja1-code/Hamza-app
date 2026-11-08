@@ -45,10 +45,10 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Basic PDF generation/sharing, document numbering and status tracking; print-layout refinement remains pending
 
 ### Purchases
-- [ ] Price requests, supplier orders, goods receipts, supplier invoices
-- [x] Supplier returns linked to purchase lines, posted as stock outflow and supplier credit; payment records (supplier invoice and credit note documents remain pending)
-- [ ] Supplier comparison, purchase tracking and purchase reports
-- [ ] Link/convert purchase documents and update stock correctly
+- [x] Draft purchase requests and orders, confirmed order-to-receipt conversion, warehouse stock posting, supplier invoices, PDF output and persistence
+- [x] Supplier returns for legacy purchase lines, posted as stock outflow and supplier credit; credit-note documents against the new invoice workflow remain pending
+- [ ] Supplier price comparison and advanced purchase tracking; basic purchase rows appear in filtered activity reports
+- [x] Linked request → order → receipt → supplier invoice conversions prevent duplicate child documents and post stock once
 
 ### Cash, payments and banking
 - [x] Expense records with categories and manually generated recurring weekly/monthly/yearly expenses (recurring due dates are deduplicated; scheduled background generation remains pending)
