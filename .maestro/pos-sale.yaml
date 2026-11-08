@@ -18,7 +18,7 @@ appId: com.hamza.app
 - tapOn: الاسم أو المرجع أو الباركود
 - inputText: CI Router 01
 - pressKey: Enter
-- tapOn: CI Router 01
+- tapOn: '\+ أضف'
 - scrollUntilVisible:
     element:
       text: تأكيد البيع
