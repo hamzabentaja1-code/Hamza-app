@@ -34,7 +34,7 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Contacts
 - [x] Customer and supplier profiles with phone, address and ICE; editing, RC/IF variants and price groups remain pending
-- [ ] Opening balances, credit ceilings, payment terms, account statements
+- [x] Opening balances, credit ceilings enforced on invoice conversion, payment terms added to invoice due dates and PDF account statements (editing customer limits after creation and aging/reminder logic remain pending)
 - [ ] Attachments, contacts, custom fields, price groups
 
 ### Sales documents
@@ -46,13 +46,13 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Purchases
 - [ ] Price requests, supplier orders, goods receipts, supplier invoices
-- [ ] Supplier credit notes, returns, payment records
+- [x] Supplier returns linked to purchase lines, posted as stock outflow and supplier credit; payment records (supplier invoice and credit note documents remain pending)
 - [ ] Supplier comparison, purchase tracking and purchase reports
 - [ ] Link/convert purchase documents and update stock correctly
 
 ### Cash, payments and banking
-- [ ] Expenses and recurring expenses/categories
-- [ ] Cash registers, opening balance, cash in/out and transfers
+- [x] Expense records with categories and manually generated recurring weekly/monthly/yearly expenses (recurring due dates are deduplicated; scheduled background generation remains pending)
+- [x] Local cash ledger with one opening balance, cash in/out, and automatic entries for cash POS sales, customer payments, cash expenses and supplier payments (bank transfers and reconciliation remain pending)
 - [x] Customer invoice payments, supplier payments, allocations and balances
 - [ ] Cheques, drafts, unpaid items and due-date tracking
 - [ ] Bank statement import and reconciliation
@@ -61,8 +61,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Product name search and stock-aware cart with quantity controls
 - [x] Customer selection, general discount, cash/card/transfer methods and checkout validation
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
-- [ ] Barcode scanning, categories and stock filters
-- [ ] Returns, parked sales and physical receipt-printer integration
+- [x] POS search by name/reference/barcode, category filtering and in-stock filter (camera barcode scanning remains pending)
+- [x] Parked POS sales persist on the phone and can be resumed or deleted; [ ] POS returns and physical receipt-printer integration
 
 ### Projects and field operations
 - [ ] Installations/projects, installation requests and financial status
@@ -72,7 +72,7 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Agenda and reports
 - [ ] Tasks, assignments, priorities, due dates, durations and attachments
 - [x] Sales, purchase, stock, receivables, payables, profit and project summary reports
-- [x] PDF reports and XLSX workbook export; report filters/date ranges remain pending
+- [x] PDF reports and XLSX workbook export with inclusive date range filters for activity, payments, expenses, returns, stock movements and projects
 
 ## Acceptance tests required before calling a module complete
 - Create, read, update and delete (with confirmation) persist after app restart.

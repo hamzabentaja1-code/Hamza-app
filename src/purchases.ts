@@ -43,9 +43,20 @@ export function changePurchaseStatus(doc: PurchaseDocument, next: PurchaseStatus
   return { ...doc, status: next };
 }
 
-export function supplierOutstanding(invoiceTotal: number, payments: SupplierPayment[], supplierId: string): number {
+export function supplierOutstanding(invoiceTotal: number, payments: SupplierPayment[], supplierId: string, credits = 0): number {
+  if (!Number.isSafeInteger(invoiceTotal) || invoiceTotal < 0 || !Number.isSafeInteger(credits) || credits < 0) {
+    throw new Error('رصيد المورد غير صالح');
+  }
   const paid = payments.filter(p => p.supplierId === supplierId).reduce((sum, p) => sum + Math.max(0, p.amount), 0);
-  return Math.max(0, invoiceTotal - paid);
+  return Math.max(0, invoiceTotal - paid - credits);
+}
+
+export function supplierCreditBalance(invoiceTotal: number, payments: SupplierPayment[], supplierId: string, credits = 0): number {
+  if (!Number.isSafeInteger(invoiceTotal) || invoiceTotal < 0 || !Number.isSafeInteger(credits) || credits < 0) {
+    throw new Error('رصيد المورد غير صالح');
+  }
+  const paid = payments.filter(p => p.supplierId === supplierId).reduce((sum, p) => sum + Math.max(0, p.amount), 0);
+  return Math.max(0, credits + paid - invoiceTotal);
 }
 
 export function validateSupplierPayment(payment: SupplierPayment): string[] {

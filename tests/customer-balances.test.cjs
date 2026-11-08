@@ -28,3 +28,20 @@ test('rejects invalid paid amounts and sorts largest debt first',()=>{
  const result=calculateCustomerBalances([{type:'invoice',customerName:'A',total:10},{type:'invoice',customerName:'B',total:30}]);
  assert.equal(result[0].customerName,'B');
 });
+
+test('opening balances enter receivables and unallocated payments settle them',()=>{
+  const result=calculateCustomerBalances([], [{name:'Hamza Client',openingBalanceCentimes:10000}], [
+    {customerName:'Hamza Client',amount:40},
+  ]);
+  assert.equal(result[0].totalCentimes,10000);
+  assert.equal(result[0].paidCentimes,4000);
+  assert.equal(result[0].outstandingCentimes,6000);
+});
+
+test('unallocated payments above opening balance become customer credit',()=>{
+  const result=calculateCustomerBalances([], [{name:'Hamza Client',openingBalanceCentimes:10000}], [
+    {customerName:'Hamza Client',amount:150},
+  ]);
+  assert.equal(result[0].outstandingCentimes,0);
+  assert.equal(result[0].customerCreditCentimes,5000);
+});
