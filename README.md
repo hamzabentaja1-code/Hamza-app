@@ -31,5 +31,6 @@ Recent workflow additions include linked purchase requests, orders, goods receip
 ### Work logs
 
 - Record technician, task, date, minutes, hourly rate and notes.
-- Calculate labor time and cost totals; include dated entries in activity exports.
+- Calculate labor time and cost totals; include dated entries and wage settlements in activity exports.
+- Record partial/full wage settlements; cash settlements post to the cash ledger.
 - Work logs are stored locally and included in backup/restore.
