@@ -1,0 +1,4 @@
+# Phone Harness: remote Android/iPhone control via OAuth.
+# Sign in from Codex CLI with: codex mcp login phone-harness
+[mcp_servers.phone-harness]
+url = "https://mcp.phone-harness.com/mcp"
