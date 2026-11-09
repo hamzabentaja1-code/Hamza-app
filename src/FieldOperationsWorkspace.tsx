@@ -153,7 +153,7 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
   </View>)}
   <Modal visible={!!evidencePreview} transparent animationType="fade" onRequestClose={()=>setEvidencePreview(null)}><View style={{flex:1,backgroundColor:'rgba(0,0,0,0.95)',padding:18,justifyContent:'center',alignItems:'center'}}>
    {evidencePreview?<Image source={{uri:evidencePreview}} resizeMode="contain" style={{width:'100%',height:'80%'}}/>:null}
-   <AccessiblePressable accessibilityRole="button" accessibilityLabel="إغلاق الصورة" onPress={()=>setEvidencePreview(null)} style={[styles.action,{minWidth:120,minHeight:48}]}><Text style={styles.actionText}>إغلاق</Text></AccessiblePressable>
+   <AccessiblePressable accessibilityRole="button" accessibilityLabel={t('إغلاق الصورة')} onPress={()=>setEvidencePreview(null)} style={[styles.action,{minWidth:120,minHeight:48}]}><Text style={styles.actionText}>إغلاق</Text></AccessiblePressable>
   </View></Modal>
  </View>;
 }
