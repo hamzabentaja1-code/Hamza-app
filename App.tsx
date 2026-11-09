@@ -761,7 +761,7 @@ export default function App() {
       const file=await Print.printToFileAsync({html});
       if(await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri,{mimeType:'application/pdf',dialogTitle:title});
       else showAlert('PDF جاهز',file.uri);
-    }catch(e){showAlert('خطأ','تعذر إنشاء PDF. تأكد من تثبيت مكتبات expo-print و expo-sharing.');}
+    }catch(e){const message=e instanceof Error&&/حقل|الوثيقة|الحقول/.test(e.message)?e.message:'تعذر إنشاء PDF. تأكد من تثبيت مكتبات expo-print و expo-sharing.';showAlert('خطأ',message);}
   };
   const exportCustomerStatement=(customerName:string)=>{
     const invoices=documents.filter(d=>d.type==='invoice'&&d.customerName===customerName);
