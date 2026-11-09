@@ -6,6 +6,20 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "نموذج الوثائق PDF": "Modèle des documents PDF",
+  "النموذج الكلاسيكي": "Modèle classique",
+  "النموذج المختصر": "Modèle compact",
+  "حقول مخصصة للوثائق (الاسم=القيمة، سطر لكل حقل)": "Champs personnalisés du document (nom=valeur, un par ligne)",
+  "حقول مخصصة للوثائق": "Champs personnalisés du document",
+  "ملاحظة أسفل الوثيقة": "Note en bas du document",
+  "ملاحظة أسفل الوثيقة (اختياري)": "Note en bas du document (facultatif)",
+  "المرجع=ABC-001": "Référence=ABC-001",
+  "النص ديال الحقول المخصصة طويل بزاف": "Le texte des champs personnalisés est trop long",
+  "الحد الأقصى ستة حقول للوثائق": "Six champs maximum par document",
+  "اكتب الحقول بالشكل: الاسم=القيمة": "Saisissez les champs au format nom=valeur",
+  "اسم الحقل أو القيمة غير صالح": "Nom ou valeur de champ non valide",
+  "اسم الحقل مكرر": "Nom de champ en double",
+  "مجموع الوثيقة غير صالح": "Total du document non valide",
   "سجل تغييرات أمر العمل": "Historique des modifications de l’ordre de travail",
   "تغيير حالة أمر العمل": "Changement de statut de l’ordre de travail",
   "إضافة صورة العمل": "Ajout d’une photo du chantier",
