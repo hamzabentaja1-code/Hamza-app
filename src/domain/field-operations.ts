@@ -4,7 +4,7 @@ export type Technician={id:string;name:string;phone?:string;specialty?:string;ho
 export type Equipment={id:string;name:string;category?:string;reference?:string;serialNumber?:string;status:'available'|'assigned'|'maintenance';notes?:string};
 export type WorkOrderStatus='requested'|'scheduled'|'in_progress'|'completed'|'cancelled';
 export type WorkOrderPriority='low'|'normal'|'high'|'urgent';
-export type WorkOrder={id:string;number:string;title:string;customerName:string;projectId?:number;description:string;category?:WorkOrderCategory;status:WorkOrderStatus;priority:WorkOrderPriority;scheduledAt?:string;technicianId?:string;equipmentIds:string[];createdAt:string;notes?:string;settlement?:WorkOrderSettlement};
+export type WorkOrder={id:string;number:string;title:string;customerName:string;projectId?:number;description:string;category?:WorkOrderCategory;status:WorkOrderStatus;priority:WorkOrderPriority;scheduledAt?:string;technicianId?:string;equipmentIds:string[];createdAt:string;notes?:string;settlement?:WorkOrderSettlement;evidence?:WorkOrderEvidence[]};
 export type WorkTimeEntry={id:string;workOrderId:string;technicianId:string;date:string;hours:number;hourlyRate:number;costCentimes:number;notes?:string};
 
 const validDate=(value:string)=>!!value.trim()&&Number.isFinite(Date.parse(value));
@@ -76,4 +76,47 @@ export function addWorkOrderSettlementPayment(
 ):WorkOrderSettlement{
  const validated=summarizeWorkOrderSettlement(current.quotedAmountCentimes,current.payments);
  return summarizeWorkOrderSettlement(validated.quotedAmountCentimes,[...validated.payments,payment]);
+}
+
+export type WorkOrderEvidence = {id:string;dataUri:string;createdAt:string;caption?:string};
+export const MAX_WORK_ORDER_EVIDENCE = 4;
+const MAX_WORK_ORDER_EVIDENCE_URI_LENGTH = 1_500_000;
+const evidenceImagePattern = /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/;
+
+function validateEvidenceFile(file:unknown):file is WorkOrderEvidence {
+ if(!file||typeof file!=='object'||Array.isArray(file))return false;
+ const item=file as Record<string,unknown>;
+ return typeof item.id==='string'&&item.id.trim().length>0&&item.id.length<=120&&
+  typeof item.dataUri==='string'&&item.dataUri.length<=MAX_WORK_ORDER_EVIDENCE_URI_LENGTH&&
+  evidenceImagePattern.test(item.dataUri)&&
+  typeof item.createdAt==='string'&&validDate(item.createdAt)&&
+  (item.caption===undefined||(typeof item.caption==='string'&&item.caption.length<=160));
+}
+
+/** Older work orders may not have any photo evidence. */
+export function normalizeWorkOrderEvidence(value:unknown):WorkOrderEvidence[] {
+ if(!Array.isArray(value))return [];
+ const results:WorkOrderEvidence[]=[];
+ const ids=new Set<string>();
+ for(const item of value){
+  if(!validateEvidenceFile(item)||ids.has(item.id))continue;
+  ids.add(item.id);
+  results.push({...item});
+  if(results.length===MAX_WORK_ORDER_EVIDENCE)break;
+ }
+ return results;
+}
+
+export function addWorkOrderEvidence(order:WorkOrder,file:WorkOrderEvidence):WorkOrder {
+ if(!validateEvidenceFile(file))throw new Error('صورة العمل غير صالحة أو أكبر من الحد المسموح');
+ const previous=normalizeWorkOrderEvidence(order.evidence);
+ if(previous.length>=MAX_WORK_ORDER_EVIDENCE)throw new Error('الحد الأقصى أربع صور لكل أمر عمل');
+ if(previous.some(item=>item.id===file.id))throw new Error('صورة العمل مسجلة من قبل');
+ return {...order,evidence:[...previous,{...file}]};
+}
+
+export function removeWorkOrderEvidence(order:WorkOrder,evidenceId:string):WorkOrder {
+ const previous=normalizeWorkOrderEvidence(order.evidence);
+ if(!previous.some(item=>item.id===evidenceId))throw new Error('صورة العمل غير موجودة');
+ return {...order,evidence:previous.filter(item=>item.id!==evidenceId)};
 }
