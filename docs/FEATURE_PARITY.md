@@ -92,7 +92,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - APK builds successfully and is installed/tested on Android.
 
 ## Status policy
-A screen appearing is not proof that its controls work. A module is marked complete only after its workflows and acceptance tests pass. Emulator smoke testing failed because the GitHub Linux runner's Android emulator remained offline and then returned broken pipe errors; no device-level pass is claimed. No live business data should be copied from the reference account.
+A screen appearing is not proof that its controls work. A module is marked complete only after its workflows and acceptance tests pass. On 2026-11-09, the source validation workflow passed all domain tests and TypeScript validation. All six Android acceptance scenarios (smoke, product persistence, sales/payments, POS sale, purchase return, and purchase cycle) also passed on an emulator. Those device tests installed the existing APK from build run 42498948756; they do not validate source changes that were not included in that APK. Visual inspection of that older APK found one Arabic word left untranslated in the French dashboard count; the current branch includes the French translation and its i18n test passed. No new APK was built, so the final current-source APK build and device verification remain pending. No live business data should be copied from the reference account.
 
 
 ## Field work
