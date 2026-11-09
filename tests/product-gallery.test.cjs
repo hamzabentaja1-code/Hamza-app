@@ -26,3 +26,12 @@ test('product photo serialization rejects duplicates and filters malformed persi
   assert.deepEqual(productPhotos({photoGallery: [], photoData: 'legacy'}), ['legacy']);
   assert.deepEqual(productPhotos({photoGallery: ['one','two','three','four','five']}), ['one','two','three','four']);
 });
+
+test('product form and list actually use the shared gallery helpers', () => {
+  const app = require('node:fs').readFileSync('App.tsx', 'utf8');
+  assert.match(app, /setPhotoGallery\(productPhotos\(p\)\)/);
+  assert.match(app, /serializeProductPhotos\(photoGallery\)/);
+  assert.match(app, /photoGallery\.map\(\(uri,index\)/);
+  assert.match(app, /removeProductPhoto\(current,index\)/);
+  assert.match(app, /disabled=\{photoGallery\.length>=4\}/);
+});
