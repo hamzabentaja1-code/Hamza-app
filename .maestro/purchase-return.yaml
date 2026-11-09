@@ -78,10 +78,6 @@ appId: com.hamza.app
     centerElement: true
     timeout: 25000
 - tapOn: PDF
-- extendedWaitUntil:
-    visible: Bluetooth
-    timeout: 30000
-- takeScreenshot: artifacts/purchase-pdf-share
 - back
 - stopApp
 - launchApp:
