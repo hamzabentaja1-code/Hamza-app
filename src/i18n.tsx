@@ -6,6 +6,11 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "جميع الأنواع": "Tous les types",
+  "أوامر التركيب": "Ordres d’intervention",
+  "استحقاقات الفواتير": "Échéances des factures",
+  "البحث في المواعيد": "Rechercher dans l’agenda",
+  "المتأخرة فقط": "En retard uniquement",
   "تم إنشاء طلب الزبون": "Commande client créée",
   "تعذر إنشاء الطلب": "Impossible de créer la commande",
   "راجع عرض السعر.": "Vérifiez le devis.",
