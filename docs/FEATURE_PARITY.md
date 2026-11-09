@@ -22,7 +22,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Arabic/French static label coverage and language preference persistence across primary workspaces
 - [x] French coverage audit for static Arabic labels, alert messages and template-literal dynamic messages across App and all 13 primary workspaces
 - [ ] Selectable light/dark theme
-- [ ] Document templates and custom fields
+- [x] Commercial document templates: selectable classic/compact layout, optional custom name=value header fields (up to six), custom footer, persisted company defaults and escaped Arabic/French PDF HTML (tests/commercial-pdf.test.cjs).
+- [ ] Per-document template overrides, drag-and-drop layouts and visual paper print review.
 - [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
 - [x] Customer order lifecycle from accepted quotes: create immutable order snapshots, confirm/cancel, track partial and full deliveries, deduct stock per delivery, link delivery documents and invoices, persist and include orders in backup/restore (tests/customer-orders.test.cjs)
 - [x] Serialized local-storage writes to prevent overlapping state saves from overwriting newer snapshots.
