@@ -13,7 +13,7 @@ import BarcodeScanButton from './src/BarcodeScanButton';
 import {fingerprintJpegDataUri} from './src/image-fingerprint';
 import {appendProductPhoto, productPhotos, removeProductPhoto, serializeProductPhotos} from './src/product-gallery';
 import {buildPdfHtml} from './src/pdf-template';
-import {rankImageMatches} from './src/domain/image-search';
+import {rankUniqueProductImageMatches} from './src/domain/image-search';
 import ProjectsWorkspace from './src/ProjectsWorkspace';
 import AgendaWorkspace from './src/AgendaWorkspace';
 import BankLedgerWorkspace from './src/BankLedgerWorkspace';
@@ -77,7 +77,7 @@ export default function App() {
   const [screen,setScreen]=useState('الرئيسية');
   const [search,setSearch]=useState(''); const [productSearch,setProductSearch]=useState(''); const [photoGallery,setPhotoGallery]=useState<string[]>([]); const [photoPreview,setPhotoPreview]=useState<string|null>(null);
   const [imageSearchActive,setImageSearchActive]=useState(false); const [imageSearchBusy,setImageSearchBusy]=useState(false); const [imageSearchPreview,setImageSearchPreview]=useState<string|null>(null); const [imageSearchMatches,setImageSearchMatches]=useState<Array<{id:number;distance:number}>>([]);
-  const imageFingerprintCache=useRef(new Map<number,{photo:string;fingerprint:string}>());
+  const imageFingerprintCache=useRef(new Map<string,{photo:string;fingerprint:string}>());
   const mainScroll=useRef<ScrollView|null>(null);
   const [language,setLanguage]=useState<'AR'|'FR'>('AR');
   const [companyProfile,setCompanyProfile]=useState<CompanyProfile>({...EMPTY_COMPANY_PROFILE});
@@ -159,7 +159,7 @@ export default function App() {
   const pickProductPhoto=async()=>{if(photoGallery.length>=4){Alert.alert(tr('صور المنتج'),tr('الحد الأقصى أربع صور للمنتج.'));return;}try{const permission=await ImagePicker.requestMediaLibraryPermissionsAsync();if(!permission.granted){Alert.alert(tr('إذن الصور مطلوب'),tr('سمح للتطبيق بالوصول للصور لاختيار صورة المنتج.'));return;}const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,aspect:[1,1],quality:0.55,base64:true});if(result.canceled)return;const asset=result.assets[0];if(!asset.base64){Alert.alert(tr('تعذر تحميل الصورة'),tr('اختار صورة أخرى.'));return;}const uri='data:image/jpeg;base64,'+asset.base64;setPhotoGallery(current=>appendProductPhoto(current,uri));}catch{Alert.alert(tr('خطأ'),tr('ما قدرناش نختارو الصورة.'));}};
   const clearImageSearch=()=>{setImageSearchActive(false);setImageSearchPreview(null);setImageSearchMatches([]);};
   const searchProductsByImage=async()=>{
-    if(!products.some(product=>!!product.photoData)){Alert.alert(tr('البحث بالصورة'),tr('ما كايناش صور المنتجات. زيد صورة لكل منتج ثم عاود البحث.'));return;}
+    if(!products.some(product=>productPhotos(product).length>0)){Alert.alert(tr('البحث بالصورة'),tr('ما كايناش صور المنتجات. زيد صورة لكل منتج ثم عاود البحث.'));return;}
     try{
       const permission=await ImagePicker.requestMediaLibraryPermissionsAsync();
       if(!permission.granted){Alert.alert(tr('إذن الصور مطلوب'),tr('سمح للتطبيق بالوصول للصور لاختيار صورة المنتج.'));return;}
@@ -173,18 +173,18 @@ export default function App() {
       setProductSearch('');setImageSearchPreview(queryData);setImageSearchMatches([]);setImageSearchActive(true);
       const queryFingerprint=fingerprintJpegDataUri(queryData);
       const candidates:Array<{item:Product;fingerprint:string}>=[];
-      const photoProducts=products.filter(product=>!!product.photoData);
-      for(let index=0;index<photoProducts.length;index++){
-        const product=photoProducts[index],photo=product.photoData!;
+      const photos=products.flatMap(product=>productPhotos(product).map((photo,index)=>({product,photo,key:product.id+':'+index})));
+      for(let index=0;index<photos.length;index++){
+        const {product,photo,key}=photos[index];
         try{
-          const cached=imageFingerprintCache.current.get(product.id);
+          const cached=imageFingerprintCache.current.get(key);
           const fingerprint=cached?.photo===photo?cached.fingerprint:fingerprintJpegDataUri(photo);
-          if(cached?.photo!==photo)imageFingerprintCache.current.set(product.id,{photo,fingerprint});
+          if(cached?.photo!==photo)imageFingerprintCache.current.set(key,{photo,fingerprint});
           candidates.push({item:product,fingerprint});
         }catch{}
         if(index%4===3)await new Promise(resolve=>setTimeout(resolve,0));
       }
-      const matches=rankImageMatches(queryFingerprint,candidates,14,20);
+      const matches=rankUniqueProductImageMatches(queryFingerprint,candidates,14,20);
       setProductSearch('');setImageSearchPreview(queryData);setImageSearchMatches(matches.map(match=>({id:match.item.id,distance:match.distance})));setImageSearchActive(true);
     }catch(error){Alert.alert(tr('تعذر تحميل الصورة'),error instanceof Error?error.message:tr('اختار صورة أخرى.'));}
     finally{setImageSearchBusy(false);}
