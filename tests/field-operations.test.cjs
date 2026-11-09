@@ -65,3 +65,40 @@ test('work order settlement rejects duplicate, invalid and excessive payments wi
  assert.equal(current.paidCentimes,4000);
  assert.throws(()=>summarizeWorkOrderSettlement(1000,[{id:'p',amountCentimes:1001,date:'2026-11-07',method:'cash'}]),/تجاوز/);
 });
+
+test('work-order photo evidence survives order changes and remains backed up with the order',()=>{
+ const {addWorkOrderEvidence,removeWorkOrderEvidence,normalizeWorkOrderEvidence,MAX_WORK_ORDER_EVIDENCE}=require('../.test-build/field-operations.js');
+ const photo=n=>({id:'photo-'+n,dataUri:'data:image/jpeg;base64,AA==',createdAt:'2026-11-09T09:00:00.000Z',caption:'Après installation '+n});
+ let current={...order};
+ for(let i=1;i<=MAX_WORK_ORDER_EVIDENCE;i++)current=addWorkOrderEvidence(current,photo(i));
+ assert.equal(current.evidence.length,4);
+ assert.equal(normalizeWorkOrderEvidence(JSON.parse(JSON.stringify(current)).evidence).length,4);
+ assert.deepEqual(normalizeWorkOrderEvidence(undefined),[]);
+ assert.throws(()=>addWorkOrderEvidence(current,photo(5)),/أربع صور/);
+ const next=transitionWorkOrderStatus(current,'scheduled');
+ assert.equal(next.evidence.length,4);
+ const removed=removeWorkOrderEvidence(next,'photo-2');
+ assert.deepEqual(removed.evidence.map(x=>x.id),['photo-1','photo-3','photo-4']);
+ assert.equal(current.evidence.length,4);
+ assert.throws(()=>removeWorkOrderEvidence(removed,'not-found'),/غير موجودة/);
+});
+test('work-order evidence blocks invalid formats, oversize data and duplicate image identifiers',()=>{
+ const {addWorkOrderEvidence,normalizeWorkOrderEvidence}=require('../.test-build/field-operations.js');
+ const original={id:'valid',dataUri:'data:image/png;base64,AAAA',createdAt:'2026-11-09'};
+ assert.deepEqual(normalizeWorkOrderEvidence([original,{...original,id:'duplicate',dataUri:'data:text/html;base64,AAAA'},original]).map(x=>x.id),['valid']);
+ assert.throws(()=>addWorkOrderEvidence(order,{...original,dataUri:'data:text/html;base64,AAAA'}),/غير صالحة/);
+ assert.throws(()=>addWorkOrderEvidence(order,{...original,dataUri:'data:image/jpeg;base64,'+'A'.repeat(1500001)}),/غير صالحة/);
+ assert.throws(()=>addWorkOrderEvidence({...order,evidence:[original]},original),/مسجلة/);
+ assert.throws(()=>addWorkOrderEvidence(order,{...original,createdAt:'bad'}),/غير صالحة/);
+ assert.throws(()=>addWorkOrderEvidence(order,{...original,caption:'x'.repeat(161)}),/غير صالحة/);
+ assert.deepEqual(normalizeWorkOrderEvidence([original,{...original,id:'valid'}]).length,1);
+});
+test('photo buttons are wired to persisted work-order updates and confirmation',()=>{
+ const fs=require('node:fs');
+ const source=fs.readFileSync('src/FieldOperationsWorkspace.tsx','utf8');
+ assert.match(source,/onChangeOrder\(addWorkOrderEvidence\(order,file\)\)/);
+ assert.match(source,/removeWorkOrderEvidence\(order,file\.id\)/);
+ assert.match(source,/launchCameraAsync\(/);
+ assert.match(source,/launchImageLibraryAsync\(/);
+ assert.match(source,/normalizeWorkOrderEvidence\(order\.evidence\)/);
+});
