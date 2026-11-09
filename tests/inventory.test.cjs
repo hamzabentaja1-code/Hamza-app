@@ -106,3 +106,10 @@ test('warehouse deactivation keeps history, requires zero stock, and allows reac
   assert.equal(changeWarehouseStatus(inactive,movements,'annex',false),inactive);
   assert.equal(normalizeWarehouses([{id:'main',name:'Main',active:false}])[0].active,true);
 });
+
+test('warehouse controls are wired to App and stock summary uses selected warehouse',()=>{
+  const app=require('node:fs').readFileSync('App.tsx','utf8');
+  assert.match(app,/changeWarehouseStatus\(warehouses,stockMovements,warehouse\.id,!warehouse\.active\)/);
+  assert.match(app,/warehouses\.some\(w=>w\.id===transferTargetId&&w\.active\)/);
+  assert.match(app,/products\.reduce\(\(sum,p\)=>sum\+warehouseStock\(stockMovements,String\(p\.id\),activeWarehouseId\),0\)/);
+});
