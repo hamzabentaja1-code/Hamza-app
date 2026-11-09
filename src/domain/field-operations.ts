@@ -51,8 +51,9 @@ function appendWorkOrderHistory(order:WorkOrder,entry:Omit<WorkOrderHistoryEvent
 }
 export function recordWorkOrderHistory(order:WorkOrder,entry:Omit<WorkOrderHistoryEvent,'id'>):WorkOrder{
  const history=appendWorkOrderHistory(order,entry);
- if(history[history.length-1]?.at!==entry.at||history[history.length-1]?.kind!==entry.kind)throw new Error('بيانات سجل أمر العمل غير صالحة');
- return {...order,history};
+ const normalized=normalizeWorkOrderHistory(history);
+ if(normalized.length!==history.length||normalized[normalized.length-1]?.at!==entry.at||normalized[normalized.length-1]?.kind!==entry.kind)throw new Error('بيانات سجل أمر العمل غير صالحة');
+ return {...order,history:normalized};
 }
 export function technicianCanPerform(technician:Technician,category:WorkOrderCategory):boolean{
  return !technician.permissions||technician.permissions.includes(category);
