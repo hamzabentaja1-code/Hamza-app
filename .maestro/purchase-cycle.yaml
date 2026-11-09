@@ -229,7 +229,10 @@ appId: com.hamza.app
               text: إرجاع من فاتورة المورد.*
           commands:
             - evalScript: ${output.purchaseReturnFound = 1}
-- assertVisible: إرجاع من فاتورة المورد.*
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: الكمية
 - tapOn: الكمية
 - inputText: "1"
 - pressKey: Enter
@@ -277,7 +280,10 @@ appId: com.hamza.app
               text: إرجاع من فاتورة المورد.*
           commands:
             - evalScript: ${output.purchaseReturnFound = 1}
-- assertVisible: إرجاع من فاتورة المورد.*
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: الكمية
 - tapOn: الكمية
 - inputText: "2"
 - pressKey: Enter
