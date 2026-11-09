@@ -7,22 +7,18 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*الموردون.*Suppliers
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*الموردون.*Suppliers"
 - tapOn: .*الموردون.*Suppliers
 - tapOn: اسم المورد
 - inputText: CI Supplier
 - pressKey: Enter
-- scrollUntilVisible:
-    element:
-      text: \+ إضافة المورد
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "\\+ إضافة المورد"
 - tapOn: \+ إضافة المورد
 - stopApp
 - launchApp:
@@ -30,38 +26,30 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*دورة الشراء.*Purchase workflow
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
 - tapOn: .*دورة الشراء.*Purchase workflow
 - tapOn: CI Supplier
-- scrollUntilVisible:
-    element:
-      text: CI Router 01.*الشراء:.*100.00 DH
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "CI Router 01.*الشراء:.*100.00 DH"
 - tapOn: CI Router 01.*الشراء:.*100.00 DH
 - tapOn: "1"
 - eraseText
 - inputText: "2"
 - pressKey: Enter
-- scrollUntilVisible:
-    element:
-      text: إضافة للسند
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "إضافة للسند"
 - tapOn: إضافة للسند
-- scrollUntilVisible:
-    element:
-      text: حفظ مسودة الشراء
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "حفظ مسودة الشراء"
 - tapOn: حفظ مسودة الشراء
 - extendedWaitUntil:
     visible: تم حفظ وثيقة الشراء
@@ -73,19 +61,15 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*المنتجات.*Products
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*المنتجات.*Products"
 - tapOn: .*المنتجات.*Products
-- scrollUntilVisible:
-    element:
-      text: CI Router 01
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "CI Router 01"
 - assertVisible: "الكمية: 5.*"
 - takeScreenshot: artifacts/draft-does-not-add-stock
 - stopApp
@@ -94,30 +78,24 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*دورة الشراء.*Purchase workflow
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
 - tapOn: .*دورة الشراء.*Purchase workflow
-- scrollUntilVisible:
-    element:
-      text: تأكيد الوثيقة
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "تأكيد الوثيقة"
 - tapOn: تأكيد الوثيقة
 - extendedWaitUntil:
     visible: تم تحديث الوثيقة
     timeout: 30000
 - tapOn: OK
-- scrollUntilVisible:
-    element:
-      text: استلام وتحديث المخزون
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "استلام وتحديث المخزون"
 - tapOn: استلام وتحديث المخزون
 - extendedWaitUntil:
     visible: تم الاستلام وتحديث المخزون
@@ -129,19 +107,15 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*المنتجات.*Products
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*المنتجات.*Products"
 - tapOn: .*المنتجات.*Products
-- scrollUntilVisible:
-    element:
-      text: CI Router 01
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "CI Router 01"
 - assertVisible: "الكمية: 7.*"
 - takeScreenshot: artifacts/receipt-adds-stock-once
 - stopApp
@@ -150,19 +124,15 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*دورة الشراء.*Purchase workflow
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
 - tapOn: .*دورة الشراء.*Purchase workflow
-- scrollUntilVisible:
-    element:
-      text: استلام وتحديث المخزون
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "استلام وتحديث المخزون"
 - tapOn: استلام وتحديث المخزون
 - extendedWaitUntil:
     visible: تعذر تحويل وثيقة الشراء
@@ -175,19 +145,15 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*دورة الشراء.*Purchase workflow
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
 - tapOn: .*دورة الشراء.*Purchase workflow
-- scrollUntilVisible:
-    element:
-      text: إنشاء فاتورة المورد
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "إنشاء فاتورة المورد"
 - tapOn: إنشاء فاتورة المورد
 - extendedWaitUntil:
     visible: تم إنشاء الوثيقة
@@ -199,19 +165,15 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*دورة الشراء.*Purchase workflow
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
 - tapOn: .*دورة الشراء.*Purchase workflow
-- scrollUntilVisible:
-    element:
-      text: تأكيد الوثيقة
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "تأكيد الوثيقة"
 - tapOn: تأكيد الوثيقة
 - extendedWaitUntil:
     visible: تم تحديث الوثيقة
@@ -223,19 +185,15 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*المنتجات.*Products
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*المنتجات.*Products"
 - tapOn: .*المنتجات.*Products
-- scrollUntilVisible:
-    element:
-      text: CI Router 01
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "CI Router 01"
 - assertVisible: "الكمية: 7.*"
 - takeScreenshot: artifacts/supplier-invoice-does-not-add-stock-again
 - stopApp
@@ -244,12 +202,10 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*دورة الشراء.*Purchase workflow
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
 - tapOn: .*دورة الشراء.*Purchase workflow
 - evalScript: ${output.purchaseReturnFound = 0}
 - runFlow:
@@ -277,12 +233,10 @@ appId: com.hamza.app
 - tapOn: الكمية
 - inputText: "1"
 - pressKey: Enter
-- scrollUntilVisible:
-    element:
-      text: تسجيل الإرجاع وإنشاء رصيد دائن
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "تسجيل الإرجاع وإنشاء رصيد دائن"
 - tapOn: تسجيل الإرجاع وإنشاء رصيد دائن
 - extendedWaitUntil:
     visible: تم إرجاع المنتجات للمورد
@@ -294,12 +248,10 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*دورة الشراء.*Purchase workflow
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
 - tapOn: .*دورة الشراء.*Purchase workflow
 - evalScript: ${output.purchaseReturnFound = 0}
 - evalScript: ${output.purchaseReturnScrolls = 0}
@@ -329,12 +281,10 @@ appId: com.hamza.app
 - tapOn: الكمية
 - inputText: "2"
 - pressKey: Enter
-- scrollUntilVisible:
-    element:
-      text: تسجيل الإرجاع وإنشاء رصيد دائن
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "تسجيل الإرجاع وإنشاء رصيد دائن"
 - tapOn: تسجيل الإرجاع وإنشاء رصيد دائن
 - extendedWaitUntil:
     visible: تعذر إرجاع المنتجات
@@ -347,19 +297,15 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*المنتجات.*Products
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*المنتجات.*Products"
 - tapOn: .*المنتجات.*Products
-- scrollUntilVisible:
-    element:
-      text: CI Router 01
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "CI Router 01"
 - assertVisible: "الكمية: 6.*"
 - takeScreenshot: artifacts/invoice-return-stock-after-restart
 - stopApp
@@ -368,18 +314,14 @@ appId: com.hamza.app
 - extendedWaitUntil:
     visible: HamZa
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: .*الموردون.*Suppliers
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*الموردون.*Suppliers"
 - tapOn: .*الموردون.*Suppliers
-- scrollUntilVisible:
-    element:
-      text: "المشتريات: 200.00 DH.*المتبقي للمورد: 100.00 DH.*"
-    direction: DOWN
-    centerElement: true
-    timeout: 25000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "المشتريات: 200.00 DH.*المتبقي للمورد: 100.00 DH.*"
 - assertVisible: "المشتريات: 200.00 DH.*المتبقي للمورد: 100.00 DH.*"
 - takeScreenshot: artifacts/supplier-invoice-credit-balance
