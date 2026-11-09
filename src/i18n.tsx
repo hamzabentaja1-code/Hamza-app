@@ -16,6 +16,8 @@ const fr: Record<string, string> = {
   "هذا الملف مضاف من قبل": "Ce fichier est déjà ajouté",
   "الحد الأقصى لحجم الملف هو 4 MB.": "La taille maximale du fichier est de 4 Mo.",
   "تعذر إرفاق الملف": "Impossible de joindre le fichier",
+  "تعذر قراءة الملف.": "Impossible de lire le fichier.",
+  "تعذر فتح الملف.": "Impossible d’ouvrir le fichier.",
   "تعذر مشاركة الملف": "Impossible de partager le fichier",
   "مجلد الملفات المؤقتة غير متاح": "Le dossier temporaire est indisponible",
 
