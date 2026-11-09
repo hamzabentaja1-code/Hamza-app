@@ -1632,6 +1632,19 @@ const fr: Record<string, string> = {
   "• رصيد": "• Crédit",
   "• المرتجع": "• Retourné",
   "• رصيد دائن": "• Crédit client",
+  "العروض المحفوظة للمهام": "Vues de tâches enregistrées",
+  "اسم العرض الجديد": "Nom de la nouvelle vue",
+  "حفظ العرض الحالي": "Enregistrer la vue actuelle",
+  "مازال ما تسجلات حتى عروض محفوظة.": "Aucune vue enregistrée pour le moment.",
+  "حذف العرض": "Supprimer la vue",
+  "تعذر حفظ العرض": "Impossible d’enregistrer la vue",
+  "دخل اسماً للعرض المحفوظ.": "Saisissez un nom pour la vue enregistrée.",
+  "راجع اسم العرض والفلاتر.": "Vérifiez le nom de la vue et ses filtres.",
+  "حذف العرض؟": "Supprimer cette vue ?",
+  "معلومات العرض المحفوظ غير صالحة": "Les informations de la vue enregistrée sont invalides",
+  "يوجد عرض محفوظ بهذا الاسم": "Une vue enregistrée porte déjà ce nom",
+  "وصلت للحد الأقصى ديال العروض المحفوظة": "La limite de vues enregistrées est atteinte",
+  "فتح": "Ouvrir",
 };
 
 export function translateText(value: string | undefined, language: AppLanguage): string | undefined {
