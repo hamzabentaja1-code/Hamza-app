@@ -3,7 +3,7 @@ import {Alert,View,StyleSheet,Image,Modal} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {TText as Text,TTextInput as TextInput,LanguageContext,translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
-import {Technician,Equipment,WorkOrder,WorkTimeEntry,WorkOrderCategory,WORK_ORDER_CATEGORIES,technicianCanPerform,createWorkOrder,createWorkTimeEntry,transitionWorkOrderStatus,workOrderHours,workOrderTimeCost,summarizeWorkOrderSettlement,addWorkOrderSettlementPayment,WorkOrderSettlement,WorkOrderSettlementPayment,WorkOrderEvidence,normalizeWorkOrderEvidence,addWorkOrderEvidence,removeWorkOrderEvidence,MAX_WORK_ORDER_EVIDENCE} from './domain/field-operations';
+import {Technician,Equipment,WorkOrder,WorkTimeEntry,WorkOrderCategory,WORK_ORDER_CATEGORIES,technicianCanPerform,createWorkOrder,createWorkTimeEntry,transitionWorkOrderStatus,workOrderHours,workOrderTimeCost,summarizeWorkOrderSettlement,addWorkOrderSettlementPayment,WorkOrderSettlement,WorkOrderSettlementPayment,WorkOrderEvidence,normalizeWorkOrderEvidence,normalizeWorkOrderHistory,addWorkOrderEvidence,removeWorkOrderEvidence,MAX_WORK_ORDER_EVIDENCE} from './domain/field-operations';
 
 type Props={
  technicians:Technician[];equipment:Equipment[];equipmentCategories:string[];orders:WorkOrder[];timeEntries:WorkTimeEntry[];
@@ -149,6 +149,11 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
     {order.status==='scheduled'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'in_progress')}><Text style={styles.actionText}>بدء العمل</Text></AccessiblePressable>}
     {order.status==='in_progress'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'completed')}><Text style={styles.actionText}>إكمال</Text></AccessiblePressable>}
     {!['completed','cancelled'].includes(order.status)&&<AccessiblePressable style={styles.smallDanger} onPress={()=>changeStatus(order,'cancelled')}><Text style={styles.actionText}>إلغاء</Text></AccessiblePressable>}
+   </View>
+   <View style={{marginTop:10,borderTopWidth:1,borderTopColor:'#333',paddingTop:8}}>
+    <Text style={styles.label}>{t('سجل تغييرات أمر العمل')}</Text>
+    {normalizeWorkOrderHistory(order.history).slice().reverse().map((event,index)=><Text key={event.id+'-'+index} style={styles.note}>{event.at.replace('T',' ').slice(0,16)} • {event.kind==='created'?t('إنشاء أمر العمل'):event.kind==='status_changed'?t('تغيير حالة أمر العمل')+': '+t(statusLabel(event.toStatus!)):event.kind==='evidence_added'?t('إضافة صورة العمل'):t('حذف صورة العمل')}</Text>)}
+    {normalizeWorkOrderHistory(order.history).length===0?<Text style={styles.note}>{t('لا يوجد سجل بعد')}</Text>:null}
    </View>
   </View>)}
   <Modal visible={!!evidencePreview} transparent animationType="fade" onRequestClose={()=>setEvidencePreview(null)}><View style={{flex:1,backgroundColor:'rgba(0,0,0,0.95)',padding:18,justifyContent:'center',alignItems:'center'}}>
