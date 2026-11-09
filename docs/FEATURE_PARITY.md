@@ -29,7 +29,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Separate price rules for quotes/orders vs invoices
 - [x] Prices are handled as TTC in DH with no TVA, matching the requested setup (configurable HT/TTC and tax rules are not part of this version)
 - [ ] Stock tracking separately for delivery notes and invoices
-- [x] Multiple warehouse records, active warehouse selection, paired stock transfers, per-warehouse stock counts, warehouse-filtered movement ledger and persistent audit trail (normal purchase/sale/POS/delivery operations use the selected warehouse; warehouse deactivation and location/site hierarchies remain pending)
+- [x] Multiple warehouse records, active warehouse selection, paired stock transfers, per-warehouse stock counts, warehouse-filtered movement ledger and persistent audit trail; safe deactivation/reactivation of empty non-primary warehouses preserves movement history and prevents accidental operations against disabled warehouses (location/site hierarchies remain pending)
 - [x] Bulk product import/export with name search and saved product catalog (image search remains pending)
 
 ### Contacts
