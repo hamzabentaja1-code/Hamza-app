@@ -153,7 +153,7 @@ export function addWorkOrderEvidence(order:WorkOrder,file:WorkOrderEvidence):Wor
 
 export function removeWorkOrderEvidence(order:WorkOrder,evidenceId:string,removedAt=new Date().toISOString()):WorkOrder {
  const previous=normalizeWorkOrderEvidence(order.evidence);
- if(!previous.some(item=>item.id===evidenceId))throw new Error('صورة العمل غير موجودة');
  if(!validDate(removedAt))throw new Error('تاريخ حذف الصورة غير صالح');
+ if(!previous.some(item=>item.id===evidenceId))throw new Error('صورة العمل غير موجودة');
  return {...order,evidence:previous.filter(item=>item.id!==evidenceId),history:appendWorkOrderHistory(order,{kind:'evidence_removed',at:removedAt,evidenceId})};
 }
