@@ -1048,6 +1048,8 @@ export default function App() {
              <Pressable accessibilityRole="button" accessibilityState={{selected:taskListProject==='unassigned'}} onPress={()=>setTaskListProject('unassigned')} style={[s.choice,{minWidth:105},taskListProject==='unassigned'&&s.choiceActive]}><Text style={s.itemTitle}>بدون مشروع</Text></Pressable>
              {projects.map(project=><Pressable key={'filter-'+project.id} accessibilityRole="button" accessibilityLabel={project.name} accessibilityState={{selected:taskListProject===project.id}} onPress={()=>setTaskListProject(project.id)} style={[s.choice,{minWidth:105},taskListProject===project.id&&s.choiceActive]}><Text style={s.itemTitle}>{project.name}</Text></Pressable>)}
            </View>
+         </View>
+         <View style={[s.panel,{marginBottom:10}]}>
            <Text style={s.fieldLabel}>العروض المحفوظة للمهام</Text>
            <TextInput value={taskViewName} onChangeText={setTaskViewName} placeholder="اسم العرض الجديد" placeholderTextColor="#888" style={s.input}/>
            <Pressable accessibilityRole="button" onPress={saveCurrentTaskView} style={s.action}><Text style={s.actionText}>حفظ العرض الحالي</Text></Pressable>
