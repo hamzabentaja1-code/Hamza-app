@@ -26,10 +26,6 @@ appId: com.hamza.app
     timeout: 25000
 - tapOn: تأكيد البيع
 - tapOn: تأكيد
-- extendedWaitUntil:
-    visible: Bluetooth
-    timeout: 30000
-- takeScreenshot: artifacts/sale-pdf-share
 - back
 - stopApp
 - launchApp:
