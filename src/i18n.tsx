@@ -6,6 +6,16 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "البحث في المهام": "Rechercher des tâches",
+  "تصفية حسب الحالة": "Filtrer par statut",
+  "جميع الحالات": "Tous les statuts",
+  "غير مكتملة": "Non terminées",
+  "متأخرة": "En retard",
+  "تصفية حسب الأولوية": "Filtrer par priorité",
+  "جميع الأولويات": "Toutes les priorités",
+  "تصفية حسب المشروع": "Filtrer par projet",
+  "جميع المشاريع": "Tous les projets",
+  "ما كايناش مهام مطابقة للبحث.": "Aucune tâche ne correspond à votre recherche.",
   "حماية البيانات المحلية": "Protection des données locales",
   "تعذر قراءة البيانات المحفوظة. التطبيق أوقف التعديلات لحماية السجلات الأصلية. لا تحذف التطبيق ولا تمسح بياناته.": "Impossible de lire les données locales. Les modifications sont bloquées pour protéger les enregistrements. Ne désinstallez pas l’application et n’effacez pas ses données.",
   "لصق نسخة احتياطية صالحة لاسترجاع البيانات": "Collez une sauvegarde valide pour restaurer les données",
