@@ -2,21 +2,46 @@ export type PdfLanguage = 'AR' | 'FR';
 export type PdfCompanyProfile = {
  name?:string;logoData?:string;address?:string;phone?:string;email?:string;ice?:string;rc?:string;taxId?:string;
  bankName?:string;bankAccount?:string;bankRib?:string;bankIban?:string;showTaxFields?:boolean;taxRate?:number;
+ pdfTemplate?:'classic'|'compact';pdfFooter?:string;pdfCustomFields?:string;
 };
 export type CommercialPdfInput = {
  language:PdfLanguage;title:string;customerName:string;lines:string[];total:number;showTotal?:boolean;
  companyProfile:PdfCompanyProfile;dateLabel:string;
 };
 const escapeHtml=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+export type CommercialPdfField={label:string;value:string};
+
+/** Parse up to six safe, document-wide field pairs in "label=value" format. */
+export function parseCommercialPdfFields(value:string):CommercialPdfField[]{
+ if(value.length>700)throw new Error('النص ديال الحقول المخصصة طويل بزاف');
+ const rows=value.split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
+ if(rows.length>6)throw new Error('الحد الأقصى ستة حقول للوثائق');
+ const names=new Set<string>();
+ return rows.map(line=>{
+  const separator=line.indexOf('=');
+  if(separator<1||separator===line.length-1)throw new Error('اكتب الحقول بالشكل: الاسم=القيمة');
+  const label=line.slice(0,separator).trim(),fieldValue=line.slice(separator+1).trim();
+  if(!label||!fieldValue||label.length>40||fieldValue.length>160)throw new Error('اسم الحقل أو القيمة غير صالح');
+  const key=label.toLocaleLowerCase();
+  if(names.has(key))throw new Error('اسم الحقل مكرر');
+  names.add(key);
+  return {label,value:fieldValue};
+ });
+}
 export function buildCommercialPdfHtml(input:CommercialPdfInput):string {
  const rtl=input.language==='AR';
- const labels=rtl?{client:'الزبون',date:'التاريخ',total:'TTC',ht:'HT',vat:'TVA',thanks:'شكراً على ثقتكم'}:{client:'Client',date:'Date',total:'TTC',ht:'HT',vat:'TVA',thanks:'Thank you for your trust'};
+ const labels=rtl?{client:'الزبون',date:'التاريخ',total:'TTC',ht:'HT',vat:'TVA',thanks:'شكراً على ثقتكم'}:{client:'Client',date:'Date',total:'TTC',ht:'HT',vat:'TVA',thanks:'Merci pour votre confiance'};
  const profile=input.companyProfile;
+ if(!Number.isFinite(input.total)||input.total<0)throw new Error('مجموع الوثيقة غير صالح');
+ const template=profile.pdfTemplate==='compact'?'compact':'classic';
+ const fields=parseCommercialPdfFields(profile.pdfCustomFields||'').map(field=>'<p><strong>'+escapeHtml(field.label)+':</strong> '+escapeHtml(field.value)+'</p>').join('');
+ const footer=(profile.pdfFooter||'').trim();
+ const footerHtml=footer?'<p style="margin-top:24px">'+escapeHtml(footer)+'</p>':'';
  const logo=profile.logoData&&(profile.logoData.startsWith('file://')||profile.logoData.startsWith('data:image/'))?'<img src="'+escapeHtml(profile.logoData)+'" style="max-width:110px;max-height:90px;object-fit:contain"/>':'';
  const details=[profile.address,profile.phone,profile.email,profile.ice?'ICE: '+profile.ice:'',profile.rc?'RC: '+profile.rc:'',profile.taxId?'IF: '+profile.taxId:'',profile.bankName?(rtl?'البنك: ':'Banque : ')+profile.bankName:'',profile.bankAccount?(rtl?'الحساب: ':'Compte : ')+profile.bankAccount:'',profile.bankRib?(rtl?'RIB: ':'RIB : ')+profile.bankRib:'',profile.bankIban?(rtl?'IBAN: ':'IBAN : ')+profile.bankIban:''].filter(Boolean).map(value=>escapeHtml(String(value))).join(' • ');
  const taxRate=Number.isFinite(profile.taxRate)&&Number(profile.taxRate)>-100?Number(profile.taxRate):0;
  const totals=input.showTotal===false?'':profile.showTaxFields?'<hr/><p>'+labels.ht+': '+(input.total/(1+taxRate/100)).toFixed(2)+' DH</p><p>'+labels.vat+' ('+taxRate+'%): '+(input.total-input.total/(1+taxRate/100)).toFixed(2)+' DH</p><h2>'+labels.total+': '+input.total.toFixed(2)+' DH</h2>':'<hr/><h2>'+labels.total+': '+input.total.toFixed(2)+' DH</h2>';
- return '<html lang="'+(rtl?'ar':'fr')+'" dir="'+(rtl?'rtl':'ltr')+'"><meta charset="utf-8"><body style="font-family:Arial,sans-serif;padding:28px;color:#222;direction:'+(rtl?'rtl':'ltr')+';text-align:'+(rtl?'right':'left')+'">'+logo+'<h1 style="color:#9A762D">'+escapeHtml(profile.name||'HamZa')+'</h1><p>'+details+'</p><h2>'+escapeHtml(input.title)+'</h2><p>'+labels.client+': '+escapeHtml(input.customerName||'—')+'</p><p>'+labels.date+': '+escapeHtml(input.dateLabel)+'</p><hr/>'+input.lines.map(line=>'<p>'+escapeHtml(line)+'</p>').join('')+totals+'<p>'+labels.thanks+'</p></body></html>';
+ return '<html lang="'+(rtl?'ar':'fr')+'" dir="'+(rtl?'rtl':'ltr')+'" data-hamza-template="'+template+'"><meta charset="utf-8"><body style="font-family:Arial,sans-serif;padding:'+(template==='compact'?'14px':'28px')+';color:#222;direction:'+(rtl?'rtl':'ltr')+';text-align:'+(rtl?'right':'left')+';line-height:'+(template==='compact'?'1.25':'1.5')+'">'+logo+'<h1 style="color:#9A762D">'+escapeHtml(profile.name||'HamZa')+'</h1><p>'+details+'</p><h2>'+escapeHtml(input.title)+'</h2><p>'+labels.client+': '+escapeHtml(input.customerName||'—')+'</p><p>'+labels.date+': '+escapeHtml(input.dateLabel)+'</p>'+fields+'<hr/>'+input.lines.map(line=>'<p>'+escapeHtml(line)+'</p>').join('')+totals+footerHtml+'<p>'+labels.thanks+'</p></body></html>';
 }
 
 export function localizeCommercialPdfTitle(title:string,language:PdfLanguage):string {
