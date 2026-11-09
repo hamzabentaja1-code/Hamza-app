@@ -160,7 +160,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Recurring task rules for weekly/monthly/yearly schedules; completion creates the next occurrence, clamps month-end/leap-year dates, honors an optional end date and prevents duplicate generation (tests/recurring-tasks.test.cjs)
 - [x] Permission-gated local notifications for upcoming open task due dates, alongside invoice, supplier and recurring-expense reminders
 - [x] Combined agenda filters: event kind, overdue-only and searchable title/customer/status/date, accessible selection state and Arabic/French labels (tests/agenda.test.cjs)
-- [ ] Task attachments and advanced task-specific filters
+- [x] Task list filtering by text (title, assignee, project), open/done/overdue, priority and project, with French/Arabic labels and regression tests (tests/task-filters.test.cjs).
+- [ ] Task file attachments and advanced saved task views
 - [x] Basic sales/purchase/stock/cash/receivables/payables/gross-profit summary reports with PDF exports
 - [x] Date-range report filters with previous equal-length period comparisons; net sales and net purchases account for returns and invalid legacy dates are reported
 - [x] Monthly sales/purchase trends with returns and expenses, plus supplier comparisons in period analysis
