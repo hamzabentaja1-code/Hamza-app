@@ -44,3 +44,19 @@ export function buildAgendaMonthGrid(year:number,month:number,events:AgendaEvent
   return {date:key,day:date.getUTCDate(),inMonth:date.getUTCMonth()===month-1,events:byDate.get(key)||[]};
  });
 }
+
+export type AgendaFilters = {
+ type: AgendaEventType | 'all';
+ overdueOnly: boolean;
+ query: string;
+};
+
+/** Filter a combined agenda without changing its chronological ordering. */
+export function filterAgendaEvents(events: AgendaEvent[], filters: AgendaFilters): AgendaEvent[] {
+ const query=filters.query.trim().toLocaleLowerCase();
+ return events.filter(event=>
+   (filters.type==='all'||event.type===filters.type)&&
+   (!filters.overdueOnly||event.overdue)&&
+   (!query||[event.title,event.subtitle,event.status,event.date].some(value=>value.toLocaleLowerCase().includes(query)))
+ );
+}
