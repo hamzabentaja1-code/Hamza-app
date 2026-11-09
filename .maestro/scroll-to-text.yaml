@@ -1,3 +1,5 @@
+appId: com.hamza.app
+---
 - evalScript: ${output._scrollTargetFound = 0}
 - runFlow:
     when:
