@@ -48,7 +48,7 @@ test('task views are saved, restored and applied by the Projects screen in Arabi
  assert.match(app,/normalizeSavedWorkTaskViews\(d\.workTaskViews\)/g);
  assert.match(app,/workTaskViews:savedTaskViews/);
  assert.match(app,/savedTaskViews,recurringExpenseRules/);
- assert.match(app,/saveWorkTaskView\(current,view\)/);
+ assert.match(app,/saveWorkTaskView\(savedTaskViews,view\)/);
  assert.match(app,/removeSavedTaskView\(current,view\.id\)/);
  assert.match(app,/applySavedTaskView=\(view:SavedWorkTaskView\)=>\{setTaskListQuery/);
  assert.match(app,/savedTaskViews\.map\(view=>/);
