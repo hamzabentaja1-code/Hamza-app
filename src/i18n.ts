@@ -2,6 +2,20 @@ export type AppLanguage = 'AR' | 'FR';
 export type LayoutDirection = 'rtl' | 'ltr';
 
 const fr: Record<string, string> = {
+  "تعطيل المخزن": "Désactiver l’entrepôt",
+  "تفعيل المخزن": "Activer l’entrepôt",
+  "المخزن نشط": "Entrepôt actif",
+  "المخزن متوقف": "Entrepôt désactivé",
+  "تعذر تغيير حالة المخزن": "Impossible de modifier l’entrepôt",
+  "ما يمكنش تعطيل المخزن الرئيسي": "Impossible de désactiver l’entrepôt principal",
+  "ما يمكنش تعطيل مخزن فيه رصيد. حوّل أو صفّي المخزون أولاً": "Impossible de désactiver un entrepôt avec du stock. Transférez ou videz le stock d’abord",
+  "المخزن غير نشط": "L’entrepôt est désactivé",
+  "المخزن غير موجود": "Entrepôt introuvable",
+  "راجع رصيد المخزون.": "Vérifiez le stock de l’entrepôt.",
+  "صور المنتج": "Photos du produit",
+  "حذف الصور": "Supprimer toutes les photos",
+  "الحد الأقصى أربع صور للمنتج.": "Quatre photos maximum par produit.",
+  "عملية": "opération(s)",
   "الرئيسية": "Accueil",
   "المنتجات": "Produits",
   "نقطة البيع": "Point de vente",
@@ -786,7 +800,11 @@ const fr: Record<string, string> = {
 };
 
 export function translate(language: AppLanguage, value: string): string {
-  return language === 'FR' ? (fr[value] ?? value) : value;
+  const paymentStatuses: Record<string, Record<AppLanguage, string>> = {
+    paid: {AR: 'مؤداة', FR: 'Payée'},
+    partially_paid: {AR: 'مؤداة جزئياً', FR: 'Partiellement payée'},
+  };
+  return paymentStatuses[value]?.[language] ?? (language === 'FR' ? (fr[value] ?? value) : value);
 }
 
 export function getLayoutDirection(language: AppLanguage): LayoutDirection {

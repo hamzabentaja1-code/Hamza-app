@@ -1,0 +1,205 @@
+appId: com.hamza.app
+---
+- runFlow: product-persistence.yaml
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*الموردون.*Suppliers
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*الموردون.*Suppliers
+- tapOn: اسم المورد
+- inputText: CI Supplier
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      text: \+ إضافة المورد
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: \+ إضافة المورد
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*المشتريات.*Purchases
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*المشتريات.*Purchases
+- tapOn: CI Router 01
+- tapOn: CI Supplier
+- tapOn: "1"
+- eraseText
+- inputText: "2"
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      text: ثمن الوحدة
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: ثمن الوحدة
+- eraseText
+- inputText: "100"
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      text: تأكيد الشراء
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: تأكيد الشراء
+- extendedWaitUntil:
+    visible: تم تسجيل الشراء
+    timeout: 30000
+- tapOn: OK
+- scrollUntilVisible:
+    element:
+      text: سجل المشتريات.*1.*
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- assertVisible: CI Router 01 × 2
+- scrollUntilVisible:
+    element:
+      text: PDF
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: PDF
+- back
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*المنتجات.*Products
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*المنتجات.*Products
+- scrollUntilVisible:
+    element:
+      text: CI Router 01
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- assertVisible: "الكمية: 7.*"
+- takeScreenshot: artifacts/stock-after-purchase
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*المشتريات.*Purchases
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*المشتريات.*Purchases
+- scrollUntilVisible:
+    element:
+      text: CI Router 01 · CI Supplier
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: CI Router 01 · CI Supplier
+- scrollUntilVisible:
+    element:
+      text: تأكيد إرجاع المورد
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: تأكيد إرجاع المورد
+- extendedWaitUntil:
+    visible: تم إرجاع المنتجات للمورد
+    timeout: 30000
+- tapOn: OK
+- scrollUntilVisible:
+    element:
+      text: سجل مرتجعات الموردين.*1.*
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- assertVisible: سجل مرتجعات الموردين.*1.*
+- takeScreenshot: artifacts/supplier-return-recorded
+- scrollUntilVisible:
+    element:
+      text: إرجاع منتج للمورد
+    direction: UP
+    centerElement: true
+    timeout: 25000
+- tapOn: "1"
+- eraseText
+- inputText: "2"
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      text: تأكيد إرجاع المورد
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: تأكيد إرجاع المورد
+- extendedWaitUntil:
+    visible: تعذر إرجاع المنتجات
+    timeout: 30000
+- assertVisible: كمية الإرجاع تجاوزت الكمية المشتراة
+- tapOn: OK
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*المنتجات.*Products
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*المنتجات.*Products
+- scrollUntilVisible:
+    element:
+      text: CI Router 01
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- assertVisible: "الكمية: 6.*"
+- takeScreenshot: artifacts/stock-after-return-restart
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*الموردون.*Suppliers
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*الموردون.*Suppliers
+- scrollUntilVisible:
+    element:
+      text: "المشتريات: 200.00 DH.*المتبقي للمورد: 100.00 DH.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- assertVisible: "المشتريات: 200.00 DH.*المتبقي للمورد: 100.00 DH.*"
+- takeScreenshot: artifacts/supplier-balance-after-return

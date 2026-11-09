@@ -36,6 +36,13 @@
             "com.google.android.tts"
           ]
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "السماح لـ HamZa بقراءة الباركود بالكاميرا. Autoriser HamZa à scanner les codes-barres.",
+          "recordAudioAndroid": false
+        }
       ]
     ],
     "android": {

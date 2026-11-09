@@ -29,7 +29,8 @@ export function normalizeWarehouses(value: unknown): Warehouse[] {
     active: item.active !== false,
   })).filter(item => item.id && item.name && !seen.has(item.id) && (seen.add(item.id), true));
   if (!normalized.some(item => item.id === DEFAULT_WAREHOUSE.id)) normalized.unshift({ ...DEFAULT_WAREHOUSE });
-  return normalized.length ? normalized : [{ ...DEFAULT_WAREHOUSE }];
+  // The main warehouse must always remain available as a safe fallback.
+  return normalized.map(item => item.id === DEFAULT_WAREHOUSE.id ? {...item, active: true} : item);
 }
 export type StockCountLine = {
   productId: string;
@@ -176,4 +177,26 @@ export function validateWarehouse(warehouse: Partial<Warehouse>, existing: Wareh
   if (warehouse.id && existing.some(item => item.id === warehouse.id)) errors.push("معرف المخزن مستعمل من قبل");
   if (warehouse.name && existing.some(item => item.name.trim().toLocaleLowerCase() === warehouse.name!.trim().toLocaleLowerCase())) errors.push("اسم المخزن مسجل من قبل");
   return errors;
+}
+
+/** Disable a warehouse without deleting its movement history or orphaning stock. */
+export function changeWarehouseStatus(
+  warehouses: Warehouse[],
+  movements: StockMovement[],
+  warehouseId: string,
+  active: boolean,
+): Warehouse[] {
+  const warehouse = warehouses.find(item => item.id === warehouseId);
+  if (!warehouse) throw new Error('المخزن غير موجود');
+  if (warehouseId === DEFAULT_WAREHOUSE.id && !active) throw new Error('ما يمكنش تعطيل المخزن الرئيسي');
+  if (warehouse.active === active) return warehouses;
+  if (!active) {
+    const productIds = new Set(movements.filter(item => item.warehouseId === warehouseId).map(item => item.productId));
+    for (const productId of productIds) {
+      if (warehouseStock(movements, productId, warehouseId) !== 0) {
+        throw new Error('ما يمكنش تعطيل مخزن فيه رصيد. حوّل أو صفّي المخزون أولاً');
+      }
+    }
+  }
+  return warehouses.map(item => item.id === warehouseId ? {...item, active} : item);
 }

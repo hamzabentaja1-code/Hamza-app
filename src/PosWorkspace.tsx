@@ -3,6 +3,7 @@ import {Alert, Image, Pressable, Text, TextInput, View} from 'react-native';
 import {addPosLine, emptyPosCart, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
 import {translate, getLayoutDirection} from './i18n';
 import VoiceInputButton from './VoiceInputButton';
+import BarcodeScanButton from './BarcodeScanButton';
 
 type Product = {id:number; name:string; price:number; qty:number; reference?:string; barcode?:string; category?:string; photoData?:string};
 type Customer = {id:number; name:string};
@@ -66,7 +67,7 @@ export default function PosWorkspace({language,products,customers,parkedSales,on
     </View>
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>{tr('البحث عن منتج')}</Text>
-      <View style={{flexDirection:'row',alignItems:'center',gap:8}}><TextInput value={term} onChangeText={setTerm} placeholder={tr('الاسم أو المرجع أو الباركود')} placeholderTextColor="#888" style={{flex:1,backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto'}}/><VoiceInputButton language={language} onText={setTerm}/></View>
+      <View style={{flexDirection:'row',alignItems:'center',gap:8}}><TextInput value={term} onChangeText={setTerm} placeholder={tr('الاسم أو المرجع أو الباركود')} placeholderTextColor="#888" style={{flex:1,backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto'}}/><VoiceInputButton language={language} onText={setTerm}/></View><View style={{alignSelf:'flex-end',marginTop:8}}><BarcodeScanButton language={language} onCode={setTerm}/></View>
       {(categories.length>0||availableOnly)&&<View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginTop:9}}><Pressable onPress={()=>setCategory('')} style={{borderWidth:1,borderColor:category===''?GOLD:'#444',borderRadius:8,padding:8}}><Text style={{color:'#FFF'}}>{tr('كل الأصناف')}</Text></Pressable>{categories.map(item=><Pressable key={item} onPress={()=>setCategory(item)} style={{borderWidth:1,borderColor:category===item?GOLD:'#444',borderRadius:8,padding:8}}><Text style={{color:'#FFF'}}>{item}</Text></Pressable>)}</View>}
       <Pressable onPress={()=>setAvailableOnly(value=>!value)} style={{alignSelf:'flex-start',borderWidth:1,borderColor:availableOnly?GOLD:'#444',borderRadius:8,padding:8,marginTop:8}}><Text style={{color:'#FFF'}}>{availableOnly?tr('كل المنتجات'):tr('المخزون المتوفر فقط')}</Text></Pressable>
       {matches.map(p=><Pressable key={p.id} onPress={()=>add({id:String(p.id),name:p.name,reference:p.reference,barcode:p.barcode,salePrice:p.price,stock:p.qty,trackStock:true})} style={{padding:11,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:10}}>

@@ -20,8 +20,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Automated scheduled backups and encrypted backup files
 
 ### Products and inventory
-- [x] Product catalog with references and barcode fields/search; multiple images and camera barcode scan remain pending
-- [x] Single product photo: choose, replace, remove, preview, and persist in local product data
+- [x] Product catalog with references and barcode fields/search; up to four product photos with edit/preview/remove and legacy single-photo compatibility; camera barcode scan integrated in product editor and search (current-head Android verification remains pending)
+- [x] Four-photo gallery per product: choose, preview, individually remove or clear, save with the product and export through JSON backup; original primary-photo field stays compatible with older data; image search checks every saved photo and deduplicates results by product
 - [x] Product name search and product edit flow
 - [x] Categories, brands, units, variants
 - [x] Basic product purchase cost, sale price, unit margin and estimated stock margin
@@ -29,7 +29,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Separate price rules for quotes/orders vs invoices
 - [x] Prices are handled as TTC in DH with no TVA, matching the requested setup (configurable HT/TTC and tax rules are not part of this version)
 - [ ] Stock tracking separately for delivery notes and invoices
-- [x] Multiple warehouse records, active warehouse selection, paired stock transfers, per-warehouse stock counts, warehouse-filtered movement ledger and persistent audit trail (normal purchase/sale/POS/delivery operations use the selected warehouse; warehouse deactivation and location/site hierarchies remain pending)
+- [x] Multiple warehouse records, active warehouse selection, paired stock transfers, per-warehouse stock counts, warehouse-filtered movement ledger and persistent audit trail; safe deactivation/reactivation of empty non-primary warehouses preserves movement history and prevents accidental operations against disabled warehouses (location/site hierarchies remain pending)
 - [x] Bulk product import/export with name search and saved product catalog (image search remains pending)
 
 ### Contacts
@@ -64,7 +64,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Product name search and stock-aware cart with quantity controls
 - [x] Customer selection, general discount, cash/card/transfer methods and checkout validation
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
-- [x] POS search by name/reference/barcode, category filtering and in-stock filter (camera barcode scanning remains pending)
+- [x] POS search by name/reference/barcode, category filtering and in-stock filter (camera scanner wired into the source; current-head device verification pending)
 - [x] Parked POS sales persist on the phone and can be resumed or deleted; [x] POS partial returns restore stock, prorate original amounts and post cash refunds; [ ] physical receipt-printer integration
 
 ### Projects and field operations
@@ -92,7 +92,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - APK builds successfully and is installed/tested on Android.
 
 ## Status policy
-A screen appearing is not proof that its controls work. A module is marked complete only after its workflows and acceptance tests pass. Emulator smoke testing failed because the GitHub Linux runner's Android emulator remained offline and then returned broken pipe errors; no device-level pass is claimed. No live business data should be copied from the reference account.
+A screen appearing is not proof that its controls work. A module is marked complete only after its workflows and acceptance tests pass. On 2026-11-09, the source validation workflow passed all domain tests and TypeScript validation. All six Android acceptance scenarios (smoke, product persistence, sales/payments, POS sale, purchase return, and purchase cycle) also passed on an emulator. Those device tests installed the existing APK from build run 42498948756; they do not validate source changes that were not included in that APK. Visual inspection of that older APK found one Arabic word left untranslated in the French dashboard count; the current branch includes the French translation and its i18n test passed. No new APK was built, so the final current-source APK build and device verification remain pending. The four-photo gallery is source code only until the current commit passes CI and Android acceptance. No live business data should be copied from the reference account.
 
 
 ## Field work

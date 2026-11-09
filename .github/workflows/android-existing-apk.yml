@@ -1,0 +1,91 @@
+name: Test existing HamZa APK
+
+on:
+  pull_request:
+    branches: [feature/projects-workspace]
+    paths:
+      - '.github/workflows/android-existing-apk.yml'
+      - '.github/scripts/android-smoke.sh'
+      - '.maestro/**'
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: Successful APK build run containing HamZa-APK
+        required: true
+        default: '42498948756'
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: hamza-existing-apk-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-existing-apk:
+    name: Android acceptance - ${{ matrix.flow }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        flow: [smoke, product-persistence, sales-payments, pos-sale, purchase-return, purchase-cycle]
+    env:
+      MAESTRO_FLOW: .maestro/${{ matrix.flow }}.yaml
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download existing APK without rebuilding
+        uses: actions/download-artifact@v4
+        with:
+          name: HamZa-APK
+          path: dist/apk
+          run-id: ${{ inputs.source_run_id || '42498948756' }}
+          github-token: ${{ github.token }}
+      - name: Record tested APK and source
+        shell: bash
+        env:
+          SOURCE_RUN_ID: ${{ inputs.source_run_id || '42498948756' }}
+        run: |
+          mkdir -p artifacts
+          {
+            echo "APK source run: $SOURCE_RUN_ID"
+            echo "Test configuration ref: $GITHUB_SHA"
+            echo 'This test uses an existing APK; it does not validate unbuilt application changes.'
+            sha256sum dist/apk/*.apk
+          } | tee artifacts/test-provenance.txt
+      - name: Enable and verify KVM access
+        shell: bash
+        run: |
+          test -c /dev/kvm
+          sudo chmod a+rw /dev/kvm
+          python3 - <<'PY'
+          import os
+          import fcntl
+          fd = os.open('/dev/kvm', os.O_RDWR)
+          try:
+              version = fcntl.ioctl(fd, 0xAE00, 0)
+              if version != 12:
+                  raise SystemExit(f'Unexpected KVM API version: {version}')
+          finally:
+              os.close(fd)
+          PY
+      - name: Test existing APK on Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: default
+          arch: x86_64
+          profile: pixel_2
+          emulator-boot-timeout: 600
+          disable-linux-hw-accel: false
+          script: bash .github/scripts/android-smoke.sh
+      - name: Upload Android diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: HamZa-Existing-APK-Android-Diagnostics-${{ matrix.flow }}
+          path: artifacts
+          if-no-files-found: error
+          retention-days: 14

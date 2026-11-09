@@ -1,0 +1,50 @@
+appId: com.hamza.app
+---
+- runFlow: product-persistence.yaml
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*نقطة البيع.*Point of Sale
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*نقطة البيع.*Point of Sale
+- tapOn: الاسم أو المرجع أو الباركود
+- inputText: CI Router 01
+- pressKey: Enter
+- tapOn: '\+ أضف'
+- scrollUntilVisible:
+    element:
+      text: تأكيد البيع
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: تأكيد البيع
+- tapOn: تأكيد
+- back
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*المنتجات.*Products
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*المنتجات.*Products
+- scrollUntilVisible:
+    element:
+      text: CI Router 01
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- assertVisible: "الكمية: 4.*"
+- takeScreenshot: artifacts/stock-after-sale

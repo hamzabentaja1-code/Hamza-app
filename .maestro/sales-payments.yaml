@@ -1,0 +1,199 @@
+appId: com.hamza.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*النسخ الاحتياطي.*Backup & Restore
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*النسخ الاحتياطي.*Backup & Restore
+- scrollUntilVisible:
+    element:
+      text: لصق محتوى ملف JSON هنا...
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: لصق محتوى ملف JSON هنا...
+- inputText: '{"schemaVersion":1,"app":"HamZa","export'
+- inputText: 'edAt":"2026-11-08T12:00:00.000Z","data":'
+- inputText: '{"language":"AR","products":[{"id":1,"na'
+- inputText: me":"CI Router 01","price":150,"costPric
+- inputText: e":100,"qty":5}],"customers":[{"id":1,"n
+- inputText: ame":"CI Client"}],"documents":[{"id":10
+- inputText: 0,"number":"CI-INV-001","type":"invoice"
+- inputText: ',"customerName":"CI Client","total":150,'
+- inputText: '"date":"08/11/2026","status":"issued","s'
+- inputText: ourceQuoteId":10,"paidCentimes":0,"lines
+- inputText: '":[{"productId":1,"productName":"CI Rout'
+- inputText: er 01","qty":1,"unitPrice":150,"total":1
+- inputText: 50}]}]}}
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: استرجاع البيانات
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: استرجاع البيانات
+- tapOn: استرجاع
+- extendedWaitUntil:
+    visible: تم الاسترجاع
+    timeout: 30000
+- tapOn: OK
+- scrollUntilVisible:
+    element:
+      text: ⌂ الرئيسية
+    direction: UP
+    centerElement: true
+    timeout: 25000
+- tapOn: ⌂ الرئيسية
+- scrollUntilVisible:
+    element:
+      text: .*الأداءات.*Payments
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*الأداءات.*Payments
+- tapOn: CI Client
+- tapOn: CI-INV-001.*150.00 DH
+- scrollUntilVisible:
+    element:
+      text: المبلغ DH
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: المبلغ DH
+- inputText: "40"
+- pressKey: Enter
+- assertVisible: HamZa
+- repeat:
+    times: 4
+    commands:
+      - runFlow:
+          when:
+            notVisible: تسجيل الأداء
+          commands:
+            - swipe:
+                start: 3%,75%
+                end: 3%,35%
+                duration: 500
+- tapOn: تسجيل الأداء
+- extendedWaitUntil:
+    visible: تم تسجيل الأداء
+    timeout: 30000
+- tapOn: OK
+- scrollUntilVisible:
+    element:
+      text: CI-INV-001.*110.00 DH
+    direction: UP
+    centerElement: true
+    timeout: 25000
+- assertVisible: CI-INV-001.*110.00 DH
+- takeScreenshot: artifacts/invoice-partially-paid
+- tapOn: CI-INV-001.*110.00 DH
+- scrollUntilVisible:
+    element:
+      text: المبلغ DH
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: المبلغ DH
+- inputText: "110"
+- pressKey: Enter
+- assertVisible: HamZa
+- repeat:
+    times: 4
+    commands:
+      - runFlow:
+          when:
+            notVisible: تسجيل الأداء
+          commands:
+            - swipe:
+                start: 3%,75%
+                end: 3%,35%
+                duration: 500
+- tapOn: تسجيل الأداء
+- extendedWaitUntil:
+    visible: تم تسجيل الأداء
+    timeout: 30000
+- tapOn: OK
+- assertNotVisible: CI-INV-001.*
+- takeScreenshot: artifacts/invoice-fully-paid
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*الزبناء.*Customers
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*الزبناء.*Customers
+- scrollUntilVisible:
+    element:
+      text: "إجمالي ديون الزبناء: 0.00 DH"
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- assertVisible: "إجمالي ديون الزبناء: 0.00 DH"
+- takeScreenshot: artifacts/customer-debt-cleared
+- scrollUntilVisible:
+    element:
+      text: ⌂ الرئيسية
+    direction: UP
+    centerElement: true
+    timeout: 25000
+- tapOn: ⌂ الرئيسية
+- scrollUntilVisible:
+    element:
+      text: .*الأداءات.*Payments
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*الأداءات.*Payments
+- scrollUntilVisible:
+    element:
+      text: سجل الأداءات.*2.*
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- assertVisible: سجل الأداءات.*2.*
+- assertNotVisible: CI-INV-001.*
+- takeScreenshot: artifacts/payments-after-restart
+
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: .*الفواتير.*Invoices
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- tapOn: .*الفواتير.*Invoices
+- assertVisible: CI-INV-001.*
+- tapOn: PDF
+- extendedWaitUntil:
+    visible: Bluetooth
+    timeout: 30000
+- takeScreenshot: artifacts/invoice-pdf-share-ar
+- back
+- tapOn: AR
+- assertVisible: FR
+- tapOn: PDF
+- extendedWaitUntil:
+    visible: Bluetooth
+    timeout: 30000
+- takeScreenshot: artifacts/invoice-pdf-share-fr
+- back

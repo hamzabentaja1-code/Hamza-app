@@ -40,3 +40,11 @@ test('French translations cover supplier payment validation',()=>{
   assert.equal(translate('FR','مرجع الشيك إجباري'),'La référence du chèque est obligatoire');
   assert.equal(translate('FR','مبلغ الأداء خاصو يكون أكبر من صفر'),'Le montant payé doit être supérieur à zéro');
 });
+
+
+test('invoice payment status codes are localized in Arabic and French',()=>{
+  assert.equal(translate('AR','paid'),'مؤداة');
+  assert.equal(translate('AR','partially_paid'),'مؤداة جزئياً');
+  assert.equal(translate('FR','paid'),'Payée');
+  assert.equal(translate('FR','partially_paid'),'Partiellement payée');
+});

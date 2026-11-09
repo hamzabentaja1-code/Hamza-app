@@ -44,3 +44,11 @@ Recent workflow additions include linked purchase requests, orders, goods receip
 
 - Record partial POS returns against the original line, restore stock to the sale warehouse, calculate refunds in centimes and post cash refunds to the cash ledger.
 Android APK generation, APK inspection, emulator smoke testing, and MobSF analysis run on pushes to `feature/projects-workspace` and on manual dispatch. The APK includes ARM phone and x86_64 emulator ABIs. Emulator commands use direct APK and Maestro paths so each runner command is self-contained.
+
+
+### Camera barcode scanner — source implemented, native acceptance pending
+
+- Scan product barcodes into the product form, product search or POS search using the rear camera. EAN/UPC, Code 128/39/93, ITF, Codabar, Data Matrix, PDF417, Aztec and QR are supported by Expo Camera.
+- Arabic/French controls include torch, close, permission retry/settings and manual-entry fallback. The preview is unmounted while closed or in the background, and stale/duplicate callbacks are ignored.
+- Eight mocked component tests cover permission denial, unavailable camera, duplicate scans, preserved leading zeroes, background sessions, mount errors and permission recovery. They do not establish physical camera decoding success.
+- Uses the Expo SDK 54 compatible expo-camera ~17.0.10. No APK was built for this addition. Native permission behavior and real barcode decoding remain pending until the final native build is authorized and tested.

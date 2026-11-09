@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {differenceHash,fingerprintDistance,rankImageMatches}=require('../.test-build/domain/image-search.js');
+const {differenceHash,fingerprintDistance,rankImageMatches,rankUniqueProductImageMatches}=require('../.test-build/domain/image-search.js');
 
 const solid=(r,g,b)=>{
   const data=new Uint8Array(16*8*4);
@@ -30,4 +30,20 @@ test('image candidates rank nearest visual fingerprints and honor threshold and 
   assert.deepEqual(ranked,[{item:'exact',distance:0}]);
   assert.deepEqual(rankImageMatches(query,[{item:'far',fingerprint:'ffffffffffffffff'}],8),[]);
   assert.throws(()=>rankImageMatches(query,[],65),/between 0 and 64/);
+});
+
+test('multi-photo product search returns each product once using its nearest photo',()=>{
+  const query='0000000000000000';
+  const first={id:1,name:'First'};
+  const second={id:2,name:'Second'};
+  const ranked=rankUniqueProductImageMatches(query,[
+    {item:first,fingerprint:'000000000000001f'},
+    {item:second,fingerprint:'0000000000000003'},
+    {item:first,fingerprint:'0000000000000000'},
+  ],10,20);
+  assert.deepEqual(ranked,[{item:first,distance:0},{item:second,distance:2}]);
+  assert.equal(rankUniqueProductImageMatches(query,[
+    {item:first,fingerprint:query},
+    {item:second,fingerprint:'0000000000000003'},
+  ],10,1).length,1);
 });

@@ -1,0 +1,333 @@
+appId: com.hamza.app
+---
+- runFlow: product-persistence.yaml
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*الموردون.*Suppliers"
+- tapOn: .*الموردون.*Suppliers
+- tapOn: اسم المورد
+- inputText: CI Supplier
+- pressKey: Enter
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "\\+ إضافة المورد"
+- tapOn: \+ إضافة المورد
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
+- tapOn: .*دورة الشراء.*Purchase workflow
+- tapOn: CI Supplier
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "CI Router 01.*الشراء:.*100.00 DH"
+- tapOn: CI Router 01.*الشراء:.*100.00 DH
+- tapOn: "1"
+- eraseText
+- inputText: "2"
+- pressKey: Enter
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "إضافة للسند"
+- tapOn: إضافة للسند
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "حفظ مسودة الشراء"
+- tapOn: حفظ مسودة الشراء
+- extendedWaitUntil:
+    visible: تم حفظ وثيقة الشراء
+    timeout: 30000
+- tapOn: OK
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*المنتجات.*Products"
+- tapOn: .*المنتجات.*Products
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "CI Router 01"
+- assertVisible: "الكمية: 5.*"
+- takeScreenshot: artifacts/draft-does-not-add-stock
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
+- tapOn: .*دورة الشراء.*Purchase workflow
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "تأكيد الوثيقة"
+- tapOn: تأكيد الوثيقة
+- extendedWaitUntil:
+    visible: تم تحديث الوثيقة
+    timeout: 30000
+- tapOn: OK
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "استلام وتحديث المخزون"
+- tapOn: استلام وتحديث المخزون
+- extendedWaitUntil:
+    visible: تم الاستلام وتحديث المخزون
+    timeout: 30000
+- tapOn: OK
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*المنتجات.*Products"
+- tapOn: .*المنتجات.*Products
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "CI Router 01"
+- assertVisible: "الكمية: 7.*"
+- takeScreenshot: artifacts/receipt-adds-stock-once
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
+- tapOn: .*دورة الشراء.*Purchase workflow
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "استلام وتحديث المخزون"
+- tapOn: استلام وتحديث المخزون
+- extendedWaitUntil:
+    visible: تعذر تحويل وثيقة الشراء
+    timeout: 30000
+- assertVisible: تم إنشاء الوثيقة المرتبطة من قبل
+- tapOn: OK
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
+- tapOn: .*دورة الشراء.*Purchase workflow
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "إنشاء فاتورة المورد"
+- tapOn: إنشاء فاتورة المورد
+- extendedWaitUntil:
+    visible: تم إنشاء الوثيقة
+    timeout: 30000
+- tapOn: OK
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
+- tapOn: .*دورة الشراء.*Purchase workflow
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "تأكيد الوثيقة"
+- tapOn: تأكيد الوثيقة
+- extendedWaitUntil:
+    visible: تم تحديث الوثيقة
+    timeout: 30000
+- tapOn: OK
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*المنتجات.*Products"
+- tapOn: .*المنتجات.*Products
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "CI Router 01"
+- assertVisible: "الكمية: 7.*"
+- takeScreenshot: artifacts/supplier-invoice-does-not-add-stock-again
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
+- tapOn: .*دورة الشراء.*Purchase workflow
+- evalScript: ${output.purchaseReturnFound = 0}
+- runFlow:
+    when:
+      visible:
+        text: إرجاع من فاتورة المورد.*
+    commands:
+      - evalScript: ${output.purchaseReturnFound = 1}
+- repeat:
+    times: 12
+    while:
+      true: ${output.purchaseReturnFound == 0}
+    commands:
+      - swipe:
+          start: 2%, 85%
+          end: 2%, 35%
+          duration: 500
+      - runFlow:
+          when:
+            visible:
+              text: إرجاع من فاتورة المورد.*
+          commands:
+            - evalScript: ${output.purchaseReturnFound = 1}
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: الكمية
+- tapOn: الكمية
+- inputText: "1"
+- pressKey: Enter
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "تسجيل الإرجاع وإنشاء رصيد دائن"
+- tapOn: تسجيل الإرجاع وإنشاء رصيد دائن
+- extendedWaitUntil:
+    visible: تم إرجاع المنتجات للمورد
+    timeout: 30000
+- tapOn: OK
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*دورة الشراء.*Purchase workflow"
+- tapOn: .*دورة الشراء.*Purchase workflow
+- evalScript: ${output.purchaseReturnFound = 0}
+- evalScript: ${output.purchaseReturnScrolls = 0}
+- runFlow:
+    when:
+      visible:
+        text: إرجاع من فاتورة المورد.*
+    commands:
+      - evalScript: ${output.purchaseReturnFound = 1}
+- repeat:
+    times: 12
+    while:
+      true: ${output.purchaseReturnFound == 0}
+    commands:
+      - swipe:
+          start: 2%, 85%
+          end: 2%, 35%
+          duration: 500
+      - evalScript: ${output.purchaseReturnScrolls = output.purchaseReturnScrolls + 1}
+      - runFlow:
+          when:
+            visible:
+              text: إرجاع من فاتورة المورد.*
+          commands:
+            - evalScript: ${output.purchaseReturnFound = 1}
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: الكمية
+- tapOn: الكمية
+- inputText: "2"
+- pressKey: Enter
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "تسجيل الإرجاع وإنشاء رصيد دائن"
+- tapOn: تسجيل الإرجاع وإنشاء رصيد دائن
+- extendedWaitUntil:
+    visible: تعذر إرجاع المنتجات
+    timeout: 30000
+- assertVisible: كمية الإرجاع أكبر من الكمية المتبقية في الفاتورة
+- tapOn: OK
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*المنتجات.*Products"
+- tapOn: .*المنتجات.*Products
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "CI Router 01"
+- assertVisible: "الكمية: 6.*"
+- takeScreenshot: artifacts/invoice-return-stock-after-restart
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: HamZa
+    timeout: 30000
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: ".*الموردون.*Suppliers"
+- tapOn: .*الموردون.*Suppliers
+- runFlow:
+    file: scroll-to-text.yaml
+    env:
+      TARGET_TEXT: "المشتريات: 200.00 DH.*المتبقي للمورد: 100.00 DH.*"
+- assertVisible: "المشتريات: 200.00 DH.*المتبقي للمورد: 100.00 DH.*"
+- takeScreenshot: artifacts/supplier-invoice-credit-balance

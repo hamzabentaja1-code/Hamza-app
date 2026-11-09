@@ -79,3 +79,13 @@ No test is marked passed until it has actually run and its result has been obser
 - Reject zero quantity, stock shortage, an unknown product, and quantities above the remaining amount.
 - For duplicate product rows at different prices, deliver from one selected quote row and preserve that row’s name and unit price.
 - Manual Android test remains pending: open delivery modal, edit line quantities, save successive partial notes, and verify stock/history on device.
+
+
+## Latest acceptance checkpoint — 2026-11-08
+
+- Existing APK source: application commit 1a3420f, build run 42498948756. No new APK was built for the following source changes.
+- All five Android flows passed in run 42507556855: navigation/AR-FR restart persistence, product persistence, invoice payment settlement, POS sale/PDF sharing/stock deduction, and legacy purchase/supplier return.
+- Purchase of 2 units at 100 MAD moves stock 5 → 7; returning 1 moves it to 6 and supplier debt 200 → 100 MAD. Excess return is rejected; stock and balance survive restart.
+- Source validation: 113 business/storage tests plus 8 mocked camera component tests, TypeScript, Expo dependency check and Android JS export pass locally. Camera integration has not been rebuilt into the existing APK or validated with real decoding hardware.
+- The next expanded CI run checks request/order receipt and supplier-invoice credit behavior and exports native-generated PDFs for AR/FR invoice layout inspection. These checks remain pending until the actual results are observed.
+- Local Android SDK absence does not prevent remote UI tests: Android emulators run in GitHub Actions. WhatsApp and physical speech/barcode acceptance remain pending.
