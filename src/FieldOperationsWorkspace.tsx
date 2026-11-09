@@ -1,8 +1,9 @@
 import React,{useContext,useState} from 'react';
-import {Alert,View,StyleSheet} from 'react-native';
+import {Alert,View,StyleSheet,Image,Modal} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import {TText as Text,TTextInput as TextInput,LanguageContext,translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
-import {Technician,Equipment,WorkOrder,WorkTimeEntry,WorkOrderCategory,WORK_ORDER_CATEGORIES,technicianCanPerform,createWorkOrder,createWorkTimeEntry,transitionWorkOrderStatus,workOrderHours,workOrderTimeCost,summarizeWorkOrderSettlement,addWorkOrderSettlementPayment,WorkOrderSettlement,WorkOrderSettlementPayment} from './domain/field-operations';
+import {Technician,Equipment,WorkOrder,WorkTimeEntry,WorkOrderCategory,WORK_ORDER_CATEGORIES,technicianCanPerform,createWorkOrder,createWorkTimeEntry,transitionWorkOrderStatus,workOrderHours,workOrderTimeCost,summarizeWorkOrderSettlement,addWorkOrderSettlementPayment,WorkOrderSettlement,WorkOrderSettlementPayment,WorkOrderEvidence,normalizeWorkOrderEvidence,addWorkOrderEvidence,removeWorkOrderEvidence,MAX_WORK_ORDER_EVIDENCE} from './domain/field-operations';
 
 type Props={
  technicians:Technician[];equipment:Equipment[];equipmentCategories:string[];orders:WorkOrder[];timeEntries:WorkTimeEntry[];
@@ -28,6 +29,8 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
  const [orderTitle,setOrderTitle]=useState('');const [orderCustomer,setOrderCustomer]=useState('');const [orderProject,setOrderProject]=useState('');const [orderTechnician,setOrderTechnician]=useState('');const [orderDate,setOrderDate]=useState('');const [orderDescription,setOrderDescription]=useState('');const [orderCategory,setOrderCategory]=useState<WorkOrderCategory>('installation');
  const [selectedEquipment,setSelectedEquipment]=useState<string[]>([]);
  const [settlementOrder,setSettlementOrder]=useState('');const [settlementQuote,setSettlementQuote]=useState('');const [settlementPayment,setSettlementPayment]=useState('');const [settlementMethod,setSettlementMethod]=useState<WorkOrderSettlementPayment['method']>('cash');
+ const [evidencePreview,setEvidencePreview]=useState<string|null>(null);
+ const [evidenceBusy,setEvidenceBusy]=useState<string|null>(null);
  const [timeOrder,setTimeOrder]=useState('');const [timeTechnician,setTimeTechnician]=useState('');const [timeHours,setTimeHours]=useState('');const [timeDate,setTimeDate]=useState(new Date().toISOString().slice(0,10));const [timeNote,setTimeNote]=useState('');
  const addTech=()=>{const rate=Number(techRate.replace(',','.'));if(!techName.trim()||!Number.isFinite(rate)||rate<0){showAlert(t('معلومات ناقصة'),t('دخل اسم التقني وسعر ساعة صحيح.'));return;}
   onAddTechnician({id:'tech-'+Date.now(),name:techName.trim(),phone:techPhone.trim()||undefined,specialty:techSpecialty.trim()||undefined,hourlyRate:rate,active:true,permissions:[...techPermissions]});setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('0');setTechPermissions([...WORK_ORDER_CATEGORIES]);
@@ -40,6 +43,28 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
   if(orderDate.trim()&&!Number.isFinite(Date.parse(orderDate))){showAlert(t('تاريخ غير صالح'),t('تاريخ أمر العمل غير صالح'));return;}const now=new Date().toISOString();const scheduledAt=orderDate.trim()?new Date(orderDate).toISOString():undefined;
   try{const order=createWorkOrder({id:'work-order-'+Date.now(),number:'WO-'+Date.now(),title:orderTitle.trim(),customerName:customer.name,projectId:orderProject?Number(orderProject):undefined,description:orderDescription.trim(),category:orderCategory,status:scheduledAt?'scheduled':'requested',priority:'normal',scheduledAt,technicianId:orderTechnician||undefined,equipmentIds:selectedEquipment,createdAt:now},technicians,equipment);onCreateOrder(order);setOrderTitle('');setOrderCustomer('');setOrderProject('');setOrderTechnician('');setOrderDate('');setOrderDescription('');setSelectedEquipment([]);}
   catch(error){showAlert(t('أمر العمل'),error instanceof Error?(t(error.message)||error.message):t('تعذر إنشاء أمر العمل.'));}
+ };
+ const chooseEvidencePhoto=async(order:WorkOrder,source:'camera'|'gallery')=>{
+  if(evidenceBusy)return;
+  if(normalizeWorkOrderEvidence(order.evidence).length>=MAX_WORK_ORDER_EVIDENCE){showAlert('صور الأشغال','الحد الأقصى أربع صور لكل أمر عمل');return;}
+  setEvidenceBusy(order.id);
+  try{
+   const permission=source==='camera'?await ImagePicker.requestCameraPermissionsAsync():await ImagePicker.requestMediaLibraryPermissionsAsync();
+   if(!permission.granted){showAlert('الصلاحية مطلوبة','سمح بالوصول للكاميرا أو الصور باش توثق الأشغال.');return;}
+   const options:ImagePicker.ImagePickerOptions={mediaTypes:['images'],quality:0.45,base64:true};
+   const result=source==='camera'?await ImagePicker.launchCameraAsync(options):await ImagePicker.launchImageLibraryAsync(options);
+   if(result.canceled)return;
+   const asset=result.assets[0];
+   if(!asset?.base64)throw new Error('تعذر تحميل الصورة');
+   if(asset.mimeType&&!['image/jpeg','image/png','image/webp'].includes(asset.mimeType))throw new Error('صيغة الصورة غير مدعومة');
+   const mime=asset.mimeType||'image/jpeg';
+   const file:WorkOrderEvidence={id:'work-photo-'+Date.now()+'-'+Math.random().toString(36).slice(2,9),dataUri:'data:'+mime+';base64,'+asset.base64,createdAt:new Date().toISOString()};
+   onChangeOrder(addWorkOrderEvidence(order,file));
+  }catch(error){showAlert('تعذر إضافة صورة العمل',error instanceof Error?error.message:'اختار صورة أصغر وحاول من جديد.');}
+  finally{setEvidenceBusy(null);}
+ };
+ const deleteEvidencePhoto=(order:WorkOrder,file:WorkOrderEvidence)=>{
+  showAlert('حذف صورة العمل؟',order.number,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>{try{onChangeOrder(removeWorkOrderEvidence(order,file.id));}catch(error){showAlert('خطأ',error instanceof Error?error.message:'تعذر حذف الصورة');}}}]);
  };
  const chooseOrderCategory=(category:WorkOrderCategory)=>{setOrderCategory(category);const selected=technicians.find(item=>item.id===orderTechnician);if(selected&&!technicianCanPerform(selected,category))setOrderTechnician('');};
  const changeStatus=(order:WorkOrder,next:WorkOrder['status'])=>{try{onChangeOrder(transitionWorkOrderStatus(order,next));}catch(error){showAlert(t('حالة أمر العمل'),error instanceof Error?(t(error.message)||error.message):t('انتقال الحالة غير مسموح.'));}};
@@ -110,6 +135,15 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
    <Text style={styles.label}>{order.number} • {order.title}</Text><Text style={styles.note}>{order.customerName} • {statusLabel(order.status)} • {order.scheduledAt||'غير مبرمج'}</Text><Text style={styles.note}>نوع العمل: {order.category==='installation'?'تركيب':order.category==='maintenance'?'صيانة':order.category==='repair'?'إصلاح':order.category==='inspection'?'فحص':'غير محدد'}</Text>
    <Text style={styles.note}>التقني: {technicians.find(x=>x.id===order.technicianId)?.name||'غير محدد'} • المعدات: {order.equipmentIds.length}</Text>
    <Text style={styles.note}>الوقت: {workOrderHours(timeEntries,order.id).toFixed(2)} ساعة • التكلفة: {(workOrderTimeCost(timeEntries,order.id)/100).toFixed(2)} DH</Text>
+   <Text style={styles.label}>صور الأشغال ({normalizeWorkOrderEvidence(order.evidence).length}/{MAX_WORK_ORDER_EVIDENCE})</Text>
+   <View style={[styles.row,{flexWrap:'wrap'}]}>{normalizeWorkOrderEvidence(order.evidence).map(file=><View key={file.id} style={{alignItems:'center',width:78}}>
+     <AccessiblePressable accessibilityRole="button" accessibilityLabel={'معاينة صورة العمل '+order.number} onPress={()=>setEvidencePreview(file.dataUri)}><Image source={{uri:file.dataUri}} style={{width:72,height:72,borderRadius:8}}/></AccessiblePressable>
+     <AccessiblePressable accessibilityRole="button" accessibilityLabel={'حذف صورة العمل '+order.number} onPress={()=>deleteEvidencePhoto(order,file)} style={{minHeight:44,justifyContent:'center'}}><Text style={styles.delete}>حذف</Text></AccessiblePressable>
+   </View>)}</View>
+   {normalizeWorkOrderEvidence(order.evidence).length<MAX_WORK_ORDER_EVIDENCE?<View style={[styles.row,{flexWrap:'wrap'}]}>
+     <AccessiblePressable accessibilityRole="button" accessibilityLabel={'التقاط صورة العمل '+order.number} disabled={evidenceBusy!==null} onPress={()=>chooseEvidencePhoto(order,'camera')} style={[styles.choice,{minHeight:48,minWidth:125}]}><Text style={styles.label}>{evidenceBusy===order.id?'…':'التقاط صورة'}</Text></AccessiblePressable>
+     <AccessiblePressable accessibilityRole="button" accessibilityLabel={'اختيار صورة العمل '+order.number} disabled={evidenceBusy!==null} onPress={()=>chooseEvidencePhoto(order,'gallery')} style={[styles.choice,{minHeight:48,minWidth:125}]}><Text style={styles.label}>اختيار صورة</Text></AccessiblePressable>
+   </View>:null}
    <View style={styles.row}>
     {order.status==='requested'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'scheduled')}><Text style={styles.actionText}>برمجة</Text></AccessiblePressable>}
     {order.status==='scheduled'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'in_progress')}><Text style={styles.actionText}>بدء العمل</Text></AccessiblePressable>}
@@ -117,6 +151,10 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
     {!['completed','cancelled'].includes(order.status)&&<AccessiblePressable style={styles.smallDanger} onPress={()=>changeStatus(order,'cancelled')}><Text style={styles.actionText}>إلغاء</Text></AccessiblePressable>}
    </View>
   </View>)}
+  <Modal visible={!!evidencePreview} transparent animationType="fade" onRequestClose={()=>setEvidencePreview(null)}><View style={{flex:1,backgroundColor:'rgba(0,0,0,0.95)',padding:18,justifyContent:'center',alignItems:'center'}}>
+   {evidencePreview?<Image source={{uri:evidencePreview}} resizeMode="contain" style={{width:'100%',height:'80%'}}/>:null}
+   <AccessiblePressable accessibilityRole="button" accessibilityLabel="إغلاق الصورة" onPress={()=>setEvidencePreview(null)} style={[styles.action,{minWidth:120,minHeight:48}]}><Text style={styles.actionText}>إغلاق</Text></AccessiblePressable>
+  </View></Modal>
  </View>;
 }
 const styles=StyleSheet.create({
