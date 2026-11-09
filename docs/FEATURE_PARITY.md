@@ -21,7 +21,7 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Products and inventory
 - [x] Product catalog with references and barcode fields/search; up to four product photos with edit/preview/remove and legacy single-photo compatibility; camera barcode scan integrated in product editor and search (current-head Android verification remains pending)
-- [x] Four-photo gallery per product: choose, preview, individually remove or clear, save with the product and export through JSON backup; original primary-photo field stays compatible with image search and older data
+- [x] Four-photo gallery per product: choose, preview, individually remove or clear, save with the product and export through JSON backup; original primary-photo field stays compatible with older data; image search checks every saved photo and deduplicates results by product
 - [x] Product name search and product edit flow
 - [x] Categories, brands, units, variants
 - [x] Basic product purchase cost, sale price, unit margin and estimated stock margin
