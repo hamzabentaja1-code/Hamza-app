@@ -39,3 +39,18 @@ test('saved task view recovery drops malformed, duplicate and over-limit data',(
  assert.equal(recovered.length,MAX_SAVED_WORK_TASK_VIEWS);
  assert.equal(recovered.at(-1).name,'Saved '+(MAX_SAVED_WORK_TASK_VIEWS-1));
 });
+
+
+test('task views are saved, restored and applied by the Projects screen in Arabic and French',()=>{
+ const fs=require('node:fs');
+ const app=fs.readFileSync('App.tsx','utf8');
+ const dictionary=fs.readFileSync('src/i18n.tsx','utf8');
+ assert.match(app,/normalizeSavedWorkTaskViews\(d\.workTaskViews\)/g);
+ assert.match(app,/workTaskViews:savedTaskViews/);
+ assert.match(app,/savedTaskViews,recurringExpenseRules/);
+ assert.match(app,/saveWorkTaskView\(current,view\)/);
+ assert.match(app,/removeSavedTaskView\(current,view\.id\)/);
+ assert.match(app,/applySavedTaskView=\(view:SavedWorkTaskView\)=>\{setTaskListQuery/);
+ assert.match(app,/savedTaskViews\.map\(view=>/);
+ for(const label of ['العروض المحفوظة للمهام','اسم العرض الجديد','حفظ العرض الحالي','حذف العرض؟'])assert.ok(dictionary.includes(JSON.stringify(label)+':'),label+' needs a French translation');
+});
