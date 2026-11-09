@@ -49,7 +49,7 @@ test('task views are saved, restored and applied by the Projects screen in Arabi
  assert.match(app,/workTaskViews:savedTaskViews/);
  assert.match(app,/savedTaskViews,recurringExpenseRules/);
  assert.match(app,/saveWorkTaskView\(savedTaskViews,view\)/);
- assert.match(app,/removeSavedTaskView\(current,view\.id\)/);
+ assert.match(app,/removeSavedWorkTaskView\(current,view\.id\)/);
  assert.match(app,/applySavedTaskView=\(view:SavedWorkTaskView\)=>\{setTaskListQuery/);
  assert.match(app,/savedTaskViews\.map\(view=>/);
  for(const label of ['العروض المحفوظة للمهام','اسم العرض الجديد','حفظ العرض الحالي','حذف العرض؟'])assert.ok(dictionary.includes(JSON.stringify(label)+':'),label+' needs a French translation');
