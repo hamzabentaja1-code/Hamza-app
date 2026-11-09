@@ -6,6 +6,9 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "قسم غير متوفر": "Section indisponible",
+  "هاد القسم غير موجود، رجع للرئيسية.": "Cette section est introuvable. Retournez à l’accueil.",
+  "رجوع للرئيسية": "Retour à l’accueil",
   "صور الأشغال": "Photos des travaux",
   "الحد الأقصى أربع صور لكل أمر عمل": "Quatre photos maximum par ordre de travail",
   "سمح بالوصول للكاميرا أو الصور باش توثق الأشغال.": "Autorisez la caméra ou les photos pour documenter les travaux.",
