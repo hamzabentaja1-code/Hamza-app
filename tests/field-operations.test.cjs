@@ -83,7 +83,7 @@ test('work-order photo evidence survives order changes and remains backed up wit
  assert.throws(()=>removeWorkOrderEvidence(removed,'not-found'),/غير موجودة/);
 });
 test('work-order creation, status and photo changes append bounded persistent history',()=>{
- const {createWorkOrder,transitionWorkOrderStatus,addWorkOrderEvidence,removeWorkOrderEvidence,normalizeWorkOrderHistory,MAX_WORK_ORDER_HISTORY}=require('../.test-build/field-operations.js');
+ const {createWorkOrder,transitionWorkOrderStatus,addWorkOrderEvidence,removeWorkOrderEvidence,normalizeWorkOrderHistory,recordWorkOrderHistory,MAX_WORK_ORDER_HISTORY}=require('../.test-build/field-operations.js');
  let current=createWorkOrder(order,[],[equip]);
  assert.deepEqual(current.history.map(event=>event.kind),['created']);
  current=transitionWorkOrderStatus(current,'scheduled','2026-11-07T09:00:00.000Z');
@@ -95,6 +95,14 @@ test('work-order creation, status and photo changes append bounded persistent hi
  assert.equal(current.history[2].evidenceId,'evidence-1');
  assert.equal(current.history[3].evidenceId,'evidence-1');
  assert.equal(normalizeWorkOrderHistory(JSON.parse(JSON.stringify(current)).history).length,4);
+ current=recordWorkOrderHistory(current,{kind:'payment_recorded',at:'2026-11-07T09:15:00.000Z',amountCentimes:12550,method:'cash'});
+ current=recordWorkOrderHistory(current,{kind:'time_recorded',at:'2026-11-07T09:20:00.000Z',hours:2.5});
+ assert.deepEqual(current.history.slice(-2).map(event=>event.kind),['payment_recorded','time_recorded']);
+ assert.equal(current.history.at(-2).amountCentimes,12550);
+ assert.equal(current.history.at(-1).hours,2.5);
+ assert.equal(normalizeWorkOrderHistory(JSON.parse(JSON.stringify(current)).history).length,6);
+ assert.throws(()=>recordWorkOrderHistory(current,{kind:'payment_recorded',at:'2026-11-07',amountCentimes:0,method:'cash'}),/سجل أمر العمل/);
+ assert.throws(()=>recordWorkOrderHistory(current,{kind:'time_recorded',at:'2026-11-07',hours:30}),/سجل أمر العمل/);
  assert.throws(()=>transitionWorkOrderStatus(current,'in_progress','invalid-date'),/تاريخ تغيير الحالة/);
  assert.throws(()=>removeWorkOrderEvidence(current,'evidence-1','invalid-date'),/تاريخ حذف الصورة/);
  const long=Array.from({length:MAX_WORK_ORDER_HISTORY+5},(_,i)=>({id:'event-'+i,kind:'created',at:'2026-11-07T09:00:00.000Z'}));
