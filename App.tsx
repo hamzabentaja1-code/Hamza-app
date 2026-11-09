@@ -67,7 +67,8 @@ import {requestLocalNotificationPermission,syncScheduledDueNotifications,cancelS
 import {normalizeEquipmentCategories,addEquipmentCategory} from './src/domain/equipment-categories';
 import {TaskRecurrenceFrequency,completeRecurringWorkTask} from './src/domain/recurring-tasks';
 import {filterWorkTasks, TaskListStatus, TaskListPriority} from './src/domain/task-filters';
-import {SavedWorkTaskView,normalizeSavedWorkTaskViews,saveWorkTaskView,removeSavedWorkTaskView} from './src/domain/task-views';
+import {normalizeSavedWorkTaskViews,saveWorkTaskView,removeSavedWorkTaskView} from './src/domain/task-views';
+import type {SavedWorkTaskView} from './src/domain/task-views';
 
 const GOLD = '#D6AE55';
 const isValidContactEmail=(value:string)=>!value.trim()||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
