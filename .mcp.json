@@ -6,6 +6,9 @@
         "-y",
         "@upstash/context7-mcp"
       ]
+    },
+    "phone-harness": {
+      "url": "https://mcp.phone-harness.com/mcp"
     }
   }
 }
