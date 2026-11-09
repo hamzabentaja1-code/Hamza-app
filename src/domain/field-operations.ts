@@ -4,10 +4,43 @@ export type Technician={id:string;name:string;phone?:string;specialty?:string;ho
 export type Equipment={id:string;name:string;category?:string;reference?:string;serialNumber?:string;status:'available'|'assigned'|'maintenance';notes?:string};
 export type WorkOrderStatus='requested'|'scheduled'|'in_progress'|'completed'|'cancelled';
 export type WorkOrderPriority='low'|'normal'|'high'|'urgent';
-export type WorkOrder={id:string;number:string;title:string;customerName:string;projectId?:number;description:string;category?:WorkOrderCategory;status:WorkOrderStatus;priority:WorkOrderPriority;scheduledAt?:string;technicianId?:string;equipmentIds:string[];createdAt:string;notes?:string;settlement?:WorkOrderSettlement;evidence?:WorkOrderEvidence[]};
+export type WorkOrderHistoryKind='created'|'status_changed'|'evidence_added'|'evidence_removed';
+export type WorkOrderHistoryEvent={id:string;kind:WorkOrderHistoryKind;at:string;fromStatus?:WorkOrderStatus;toStatus?:WorkOrderStatus;evidenceId?:string};
+export type WorkOrder={id:string;number:string;title:string;customerName:string;projectId?:number;description:string;category?:WorkOrderCategory;status:WorkOrderStatus;priority:WorkOrderPriority;scheduledAt?:string;technicianId?:string;equipmentIds:string[];createdAt:string;notes?:string;settlement?:WorkOrderSettlement;evidence?:WorkOrderEvidence[];history?:WorkOrderHistoryEvent[]};
 export type WorkTimeEntry={id:string;workOrderId:string;technicianId:string;date:string;hours:number;hourlyRate:number;costCentimes:number;notes?:string};
 
-const validDate=(value:string)=>!!value.trim()&&Number.isFinite(Date.parse(value));
+const validDate=(value:string)=>typeof value==='string'&&!!value.trim()&&Number.isFinite(Date.parse(value));
+const WORK_ORDER_STATUSES:WorkOrderStatus[]=['requested','scheduled','in_progress','completed','cancelled'];
+const WORK_ORDER_HISTORY_KINDS:WorkOrderHistoryKind[]=['created','status_changed','evidence_added','evidence_removed'];
+export const MAX_WORK_ORDER_HISTORY=200;
+export function normalizeWorkOrderHistory(value:unknown):WorkOrderHistoryEvent[]{
+ if(!Array.isArray(value))return [];
+ const events:WorkOrderHistoryEvent[]=[];const ids=new Set<string>();
+ for(const raw of value){
+  if(!raw||typeof raw!=='object'||Array.isArray(raw))continue;
+  const item=raw as Record<string,unknown>;
+  if(typeof item.id!=='string'||!item.id.trim()||item.id.length>160||ids.has(item.id)||
+   typeof item.kind!=='string'||!WORK_ORDER_HISTORY_KINDS.includes(item.kind as WorkOrderHistoryKind)||
+   typeof item.at!=='string'||!validDate(item.at))continue;
+  const event:WorkOrderHistoryEvent={id:item.id,kind:item.kind as WorkOrderHistoryKind,at:item.at};
+  if(event.kind==='status_changed'){
+   if(!WORK_ORDER_STATUSES.includes(item.fromStatus as WorkOrderStatus)||!WORK_ORDER_STATUSES.includes(item.toStatus as WorkOrderStatus))continue;
+   event.fromStatus=item.fromStatus as WorkOrderStatus;event.toStatus=item.toStatus as WorkOrderStatus;
+  }
+  if(event.kind==='evidence_added'||event.kind==='evidence_removed'){
+   if(typeof item.evidenceId!=='string'||!item.evidenceId.trim()||item.evidenceId.length>120)continue;
+   event.evidenceId=item.evidenceId;
+  }
+  ids.add(event.id);events.push(event);
+ }
+ return events.slice(-MAX_WORK_ORDER_HISTORY);
+}
+function appendWorkOrderHistory(order:WorkOrder,entry:Omit<WorkOrderHistoryEvent,'id'>):WorkOrderHistoryEvent[]{
+ const previous=normalizeWorkOrderHistory(order.history);
+ const base=entry.kind+'-'+Date.parse(entry.at);
+ let id=base;let suffix=1;while(previous.some(event=>event.id===id))id=base+'-'+suffix++;
+ return [...previous,{...entry,id}].slice(-MAX_WORK_ORDER_HISTORY);
+}
 export function technicianCanPerform(technician:Technician,category:WorkOrderCategory):boolean{
  return !technician.permissions||technician.permissions.includes(category);
 }
@@ -19,12 +52,15 @@ export function createWorkOrder(order:WorkOrder,technicians:Technician[],equipme
  if(order.technicianId&&order.category){const assigned=technicians.find(t=>t.id===order.technicianId);if(assigned&&!technicianCanPerform(assigned,order.category))throw new Error('التقني غير مخول لهذا النوع من الأعمال');}
  if(new Set(order.equipmentIds).size!==order.equipmentIds.length)throw new Error('المعدات مكررة في أمر العمل');
  for(const id of order.equipmentIds){const item=equipment.find(e=>e.id===id);if(!item||item.status!=='available')throw new Error('المعدة غير موجودة أو غير متاحة');}
- return {...order,equipmentIds:[...order.equipmentIds]};
+ const history=normalizeWorkOrderHistory(order.history);
+ if(history.length===0)history.push({id:'created-'+order.id,kind:'created',at:order.createdAt});
+ return {...order,equipmentIds:[...order.equipmentIds],history};
 }
 const allowed:Record<WorkOrderStatus,WorkOrderStatus[]>={requested:['scheduled','cancelled'],scheduled:['in_progress','cancelled'],in_progress:['completed','cancelled'],completed:[],cancelled:[]};
-export function transitionWorkOrderStatus(order:WorkOrder,next:WorkOrderStatus):WorkOrder{
+export function transitionWorkOrderStatus(order:WorkOrder,next:WorkOrderStatus,changedAt=new Date().toISOString()):WorkOrder{
  if(!allowed[order.status].includes(next))throw new Error('انتقال حالة أمر العمل غير مسموح');
- return {...order,status:next};
+ if(!validDate(changedAt))throw new Error('تاريخ تغيير الحالة غير صالح');
+ return {...order,status:next,history:appendWorkOrderHistory(order,{kind:'status_changed',at:changedAt,fromStatus:order.status,toStatus:next})};
 }
 export function createWorkTimeEntry(entry:Omit<WorkTimeEntry,'costCentimes'>,order:WorkOrder,technician:Technician):WorkTimeEntry{
  if(!entry.id.trim()||!validDate(entry.date)||!Number.isFinite(entry.hours)||entry.hours<=0||entry.hours>24)throw new Error('تاريخ وساعات العمل غير صالحة');
@@ -112,11 +148,12 @@ export function addWorkOrderEvidence(order:WorkOrder,file:WorkOrderEvidence):Wor
  const previous=normalizeWorkOrderEvidence(order.evidence);
  if(previous.length>=MAX_WORK_ORDER_EVIDENCE)throw new Error('الحد الأقصى أربع صور لكل أمر عمل');
  if(previous.some(item=>item.id===file.id))throw new Error('صورة العمل مسجلة من قبل');
- return {...order,evidence:[...previous,{...file}]};
+ return {...order,evidence:[...previous,{...file}],history:appendWorkOrderHistory(order,{kind:'evidence_added',at:file.createdAt,evidenceId:file.id})};
 }
 
-export function removeWorkOrderEvidence(order:WorkOrder,evidenceId:string):WorkOrder {
+export function removeWorkOrderEvidence(order:WorkOrder,evidenceId:string,removedAt=new Date().toISOString()):WorkOrder {
  const previous=normalizeWorkOrderEvidence(order.evidence);
  if(!previous.some(item=>item.id===evidenceId))throw new Error('صورة العمل غير موجودة');
- return {...order,evidence:previous.filter(item=>item.id!==evidenceId)};
+ if(!validDate(removedAt))throw new Error('تاريخ حذف الصورة غير صالح');
+ return {...order,evidence:previous.filter(item=>item.id!==evidenceId),history:appendWorkOrderHistory(order,{kind:'evidence_removed',at:removedAt,evidenceId})};
 }
