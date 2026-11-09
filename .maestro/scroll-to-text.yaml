@@ -1,0 +1,23 @@
+- evalScript: ${output._scrollTargetFound = 0}
+- runFlow:
+    when:
+      visible:
+        text: "${TARGET_TEXT}"
+    commands:
+      - evalScript: ${output._scrollTargetFound = 1}
+- repeat:
+    times: 16
+    while:
+      true: ${output._scrollTargetFound == 0}
+    commands:
+      - swipe:
+          start: 2%, 85%
+          end: 2%, 35%
+          duration: 400
+      - runFlow:
+          when:
+            visible:
+              text: "${TARGET_TEXT}"
+          commands:
+            - evalScript: ${output._scrollTargetFound = 1}
+- assertVisible: "${TARGET_TEXT}"
