@@ -70,6 +70,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Atomic inter-warehouse transfers recorded as paired transfer-out/transfer-in movements with duplicate and insufficient-source-stock protection; global stock remains unchanged
 - [x] Manual sales, POS sales, purchases, purchase-order receipts, delivery notes, returns and stock counts use the active/original warehouse ID
 - [x] Bulk paste import and CSV export, image/name/reference/barcode search, saved product catalog
+- [x] Android speech dictation for product-name entry and catalog/POS search, with Arabic and French locale intents plus transcript parsing tests
+- [ ] Manual speech-recognition runtime check on final Android build; requires device speech service
 
 ### Contacts
 - [x] Basic customer and supplier profiles with phone, address and ICE

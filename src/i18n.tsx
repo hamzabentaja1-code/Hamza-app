@@ -6,6 +6,11 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "الإدخال الصوتي": "Saisie vocale",
+  "البحث بالصوت": "Recherche vocale",
+  "تعذر تشغيل التعرف الصوتي": "Impossible de lancer la reconnaissance vocale",
+  "خدمة التعرف الصوتي غير متاحة على هذا الجهاز": "Le service de reconnaissance vocale n’est pas disponible sur cet appareil",
+
   "اختيار ملف JSON من الهاتف": "Choisir un fichier JSON sur le téléphone",
   "استرجاع من ملف JSON": "Restaurer depuis un fichier JSON",
   "مجلد الملفات غير متاح": "Dossier de fichiers indisponible",

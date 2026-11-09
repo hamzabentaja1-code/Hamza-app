@@ -4,6 +4,7 @@ import {addPosLine, emptyPosCart, findPosProduct, filterPosProducts, PosCart, Po
 import {ExistingSaleReturn,SaleReturnSource,remainingReturnQuantity} from './domain/sales-returns';
 import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput, translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
+import VoiceInputButton from './VoiceInputButton';
 const Pressable = AccessiblePressable;
 
 type Product = {id:number; name:string; price:number; qty:number; photoData?:string; kind?:'product'|'service';reference?:string;barcode?:string;category?:string};
@@ -82,7 +83,7 @@ export default function PosWorkspace({products,customers,variants,bankAccountNam
     </View>
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>البحث عن منتج</Text>
-      <View style={{flexDirection:'row',gap:8,alignItems:'center'}}><TextInput value={term} onChangeText={setTerm} placeholder="اسم المنتج أو الباركود..." placeholderTextColor="#888" style={{flex:1,backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'right'}}/><Pressable accessibilityLabel="مسح باركود المنتج" onPress={onScanBarcode} style={{backgroundColor:'#302819',borderWidth:1,borderColor:GOLD,borderRadius:9,padding:12}}><Text style={{color:GOLD,fontWeight:'900'}}>▦ مسح</Text></Pressable></View>
+      <View style={{flexDirection:'row',gap:8,alignItems:'center'}}><TextInput value={term} onChangeText={setTerm} placeholder="اسم المنتج أو الباركود..." placeholderTextColor="#888" style={{flex:1,backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'right'}}/><VoiceInputButton language={language} purpose="search" onTranscript={setTerm}/><Pressable accessibilityLabel="مسح باركود المنتج" onPress={onScanBarcode} style={{backgroundColor:'#302819',borderWidth:1,borderColor:GOLD,borderRadius:9,padding:12}}><Text style={{color:GOLD,fontWeight:'900'}}>▦ مسح</Text></Pressable></View>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginTop:10}}>
         {([{key:'all',label:'كل المنتجات'},{key:'available',label:'المتوفر'},{key:'low',label:'مخزون منخفض (1–5)'},{key:'out',label:'نفد المخزون'},{key:'services',label:'الخدمات'}] as {key:PosStockFilter;label:string}[]).map(item=><Pressable key={item.key} accessibilityRole="button" accessibilityState={{selected:stockFilter===item.key}} onPress={()=>setStockFilter(item.key)} style={{padding:8,borderRadius:8,borderWidth:1,borderColor:stockFilter===item.key?GOLD:'#444',backgroundColor:stockFilter===item.key?'#302819':'#111'}}><Text style={{color:stockFilter===item.key?GOLD:'#DDD',fontSize:12,fontWeight:'700'}}>{item.label}</Text></Pressable>)}
       </View>
