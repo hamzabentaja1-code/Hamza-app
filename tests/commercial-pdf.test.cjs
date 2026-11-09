@@ -23,3 +23,45 @@ test('commercial PDF titles use Arabic document names and preserve generated num
  assert.equal(localizeCommercialPdfTitle('Bon de commande BC-2026-0004','AR'),'أمر شراء BC-2026-0004');
  assert.equal(localizeCommercialPdfTitle('عنوان مخصص','AR'),'عنوان مخصص');
 });
+
+test('commercial PDFs select compact layout while preserving TTC-only AR/FR behavior',()=>{
+ const fields='Référence=DEV-42\nÀ payer=À réception';
+ const html=buildCommercialPdfHtml({language:'FR',title:'Devis',customerName:'Client',lines:['Main d’œuvre'],total:300,companyProfile:{...profile,pdfTemplate:'compact',pdfCustomFields:fields,pdfFooter:'Validité: 30 jours'},dateLabel:'09/11/2026'});
+ assert.match(html,/data-hamza-template="compact"/);
+ assert.match(html,/padding:14px/);
+ assert.match(html,/Référence/);
+ assert.match(html,/DEV-42/);
+ assert.match(html,/Validité: 30 jours/);
+ assert.match(html,/Merci pour votre confiance/);
+ assert.match(html,/TTC: 300\.00 DH/);
+ assert.doesNotMatch(html,/TVA \(/);
+ const ar=buildCommercialPdfHtml({language:'AR',title:'عرض سعر',customerName:'زبون',lines:['تركيب'],total:150,companyProfile:{...profile,pdfTemplate:'classic'},dateLabel:'09/11/2026'});
+ assert.match(ar,/dir="rtl"/);
+ assert.match(ar,/data-hamza-template="classic"/);
+ assert.match(ar,/padding:28px/);
+});
+test('custom PDF fields reject invalid, duplicate and over-limit entries',()=>{
+ const {parseCommercialPdfFields}=require('../.test-build/commercial-pdf.js');
+ assert.deepEqual(parseCommercialPdfFields(''),[]);
+ assert.equal(parseCommercialPdfFields('ICE=123\nRéférence=ABC').length,2);
+ assert.throws(()=>parseCommercialPdfFields('missing separator'),/الشكل/);
+ assert.throws(()=>parseCommercialPdfFields('ICE=123\nice=456'),/مكرر/);
+ assert.throws(()=>parseCommercialPdfFields(Array.from({length:7},(_,i)=>'a'+i+'=b').join('\n')),/ستة/);
+ assert.throws(()=>parseCommercialPdfFields('a='+'z'.repeat(161)),/غير صالح/);
+ assert.throws(()=>parseCommercialPdfFields('z'.repeat(701)),/طويل/);
+});
+test('custom PDF fields and footer cannot inject HTML, and invalid totals are rejected',()=>{
+ const html=buildCommercialPdfHtml({language:'FR',title:'Facture',customerName:'Test',lines:['Line'],total:15,companyProfile:{...profile,pdfCustomFields:'<img src=x onerror=alert(1)>=<script>alert(1)</script>',pdfFooter:'<svg/onload=alert(1)>'},dateLabel:'today'});
+ assert.doesNotMatch(html,/<script>|<svg\/onload/);
+ assert.match(html,/&lt;script&gt;/);
+ assert.match(html,/&lt;svg\/onload=alert\(1\)&gt;/);
+ assert.throws(()=>buildCommercialPdfHtml({language:'FR',title:'F',customerName:'',lines:[],total:NaN,companyProfile:profile,dateLabel:'today'}),/غير صالح/);
+});
+test('company settings expose template and document fields that feed the real PDF generator',()=>{
+ const source=require('node:fs').readFileSync('App.tsx','utf8');
+ assert.match(source,/pdfTemplate:field\('pdfTemplate'\)/);
+ assert.match(source,/pdfCustomFields:field\('pdfCustomFields'\)/);
+ assert.match(source,/value=\{companyProfile\.pdfCustomFields\}/);
+ assert.match(source,/accessibilityState=\{\{selected:companyProfile\.pdfTemplate===option\.value\}\}/);
+ assert.match(source,/buildCommercialPdfHtml\(\{language,title:pdfTitle,customerName,lines,total,showTotal,companyProfile/);
+});
