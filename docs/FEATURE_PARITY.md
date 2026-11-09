@@ -25,7 +25,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Document templates and custom fields
 - [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
 - [x] Customer order lifecycle from accepted quotes: create immutable order snapshots, confirm/cancel, track partial and full deliveries, deduct stock per delivery, link delivery documents and invoices, persist and include orders in backup/restore (tests/customer-orders.test.cjs)
-- [x] Serialized local-storage writes to prevent overlapping state saves from overwriting newer snapshots
+- [x] Serialized local-storage writes to prevent overlapping state saves from overwriting newer snapshots.
+- [x] Crash-safe two-slot chunked local snapshots with per-chunk Android-safe payloads, checksum verification, pointer-only commit, guarded failed backups, retained legacy compatibility and a maximum snapshot size to fail safely before oversized writes (tests/storage.test.cjs; Android storage limits require a later device test).
 - [x] Startup storage recovery guard blocks automatic empty-state writes after JSON corruption, failed reads, or future-schema data; valid backup restore re-enables writes only after it is saved successfully (tests/storage.test.cjs).
 - [x] The app displays a recovery-only screen if local storage cannot be read, disables ordinary modules and background reminders, and accepts an explicit valid JSON backup to restore normal operation without removing the installed app (tests/app-render.test.cjs).
 - [x] Restored the missing main JSX `return` in `App.tsx`, which previously discarded the entire loaded-screen tree; a TypeScript AST regression test now guards the root render (tests/app-render.test.cjs).
@@ -151,7 +152,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Technician work-type permissions (installation, maintenance, repair and inspection) are configurable per technician and enforced when assigning work orders and recording work time; legacy technicians without a permission list retain unrestricted compatibility (tests/field-operations.test.cjs)
 - [x] Work-time entries with date, technician, hours, hourly rate and centime-safe cost totals per work order and technician
 - [x] Work-order settlement amount, partial/full payments, centime-safe balances and overpayment rejection (tests/field-operations.test.cjs)
-- [ ] Work-order attachments, photo evidence and advanced work-order history
+- [x] Up to four validated photos per work order from Android camera/gallery with preview, removal confirmation and order-level JSON backup persistence (tests/field-operations.test.cjs; actual device picker not verified).
+- [ ] Arbitrary work-order file attachments and complete audit-timeline/evidence report.
 
 ### Agenda and reports
 - [x] Basic task list with assignments, priorities, due dates, estimated durations and status changes
@@ -195,3 +197,6 @@ A screen appearing is not proof that its controls work. A module is marked compl
 - [ ] Manual TalkBack verification in Arabic and French at normal and enlarged font sizes
 - [ ] Android emulator, APK inspection, MobSF and all-module smoke tests (intentionally deferred; APK build is manual-only until the feature scope is complete)
 - [ ] Android Accessibility Scanner audit for contrast, touch target and clickable bounds
+
+## Dashboard routing
+- [x] Every registered dashboard module has an explicit screen route, checked by tests/app-routes.test.cjs. The unreachable demo placeholder was replaced with a home-navigation recovery fallback for unknown screens.
