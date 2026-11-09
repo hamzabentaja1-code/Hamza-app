@@ -2,6 +2,9 @@ export type AppLanguage = 'AR' | 'FR';
 export type LayoutDirection = 'rtl' | 'ltr';
 
 const fr: Record<string, string> = {
+  "صور المنتج": "Photos du produit",
+  "حذف الصور": "Supprimer toutes les photos",
+  "الحد الأقصى أربع صور للمنتج.": "Quatre photos maximum par produit.",
   "عملية": "opération(s)",
   "الرئيسية": "Accueil",
   "المنتجات": "Produits",
