@@ -95,6 +95,19 @@ test('field operations and recurring expense selectors announce selected state',
 });
 
 
+
+test('work-order photo evidence controls use French-localized screen reader labels', () => {
+  const field = read('src/FieldOperationsWorkspace.tsx');
+  for (const label of ['معاينة صورة العمل','حذف صورة العمل','التقاط صورة العمل','اختيار صورة العمل','إغلاق الصورة']) {
+    assert.ok(field.includes("accessibilityLabel={t('" + label + "')}"),
+      'work-order photo control must translate accessibility label: ' + label);
+  }
+  const translations = read('src/i18n.tsx');
+  for (const label of ['معاينة صورة العمل','حذف صورة العمل','التقاط صورة العمل','اختيار صورة العمل','إغلاق الصورة']) {
+    assert.ok(translations.includes('"' + label + '"'), 'missing French translation for ' + label);
+  }
+});
+
 test('agenda month navigation and day cells are accessible and translated', () => {
   const agenda = read('src/AgendaWorkspace.tsx');
   assert.match(agenda, /accessibilityLabel=\{t\('الشهر السابق'\)\}/);
