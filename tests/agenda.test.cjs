@@ -47,3 +47,25 @@ test('month grid handles 28-day and 31-day months and rejects invalid settings',
  assert.throws(()=>buildAgendaMonthGrid(2026,13,[]),/التقويم غير صالحة/);
  assert.throws(()=>buildAgendaMonthGrid(2026,1,[],7),/التقويم غير صالحة/);
 });
+
+const {filterAgendaEvents}=require('../.test-build/agenda.js');
+test('agenda filters type, overdue state and customer/title text without changing date order',()=>{
+ const events=[
+ {id:'a',type:'task',title:'Caméra Casablanca',date:'2026-11-05',subtitle:'Hamza',status:'todo',overdue:true},
+ {id:'b',type:'work_order',title:'Installation',date:'2026-11-06',subtitle:'Médiouna',status:'scheduled',overdue:false},
+ {id:'c',type:'invoice_due',title:'FAC-7',date:'2026-11-07',subtitle:'Client Casa',status:'partial',overdue:true},
+ ];
+ assert.deepEqual(filterAgendaEvents(events,{type:'all',overdueOnly:true,query:''}).map(x=>x.id),['a','c']);
+ assert.deepEqual(filterAgendaEvents(events,{type:'task',overdueOnly:false,query:'CAMÉRA'}).map(x=>x.id),['a']);
+ assert.deepEqual(filterAgendaEvents(events,{type:'all',overdueOnly:false,query:'casa'}).map(x=>x.id),['a','c']);
+ assert.deepEqual(filterAgendaEvents(events,{type:'work_order',overdueOnly:true,query:''}),[]);
+ assert.deepEqual(filterAgendaEvents(events,{type:'all',overdueOnly:false,query:''}),events);
+});
+test('agenda UI exposes accessible filters and renders filtered events',()=>{
+ const fs=require('node:fs');
+ const app=fs.readFileSync('src/AgendaWorkspace.tsx','utf8');
+ assert.match(app,/filterAgendaEvents\(result\.events/);
+ assert.match(app,/\{filteredEvents\.map\(event/);
+ assert.match(app,/accessibilityState=\{\{selected:eventType===option\.value\}\}/);
+ assert.match(app,/accessibilityState=\{\{selected:overdueOnly\}\}/);
+});
