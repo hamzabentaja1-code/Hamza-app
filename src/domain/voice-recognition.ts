@@ -13,6 +13,6 @@ export function firstSpeechTranscript(extra: unknown): string | null {
   if (!extra || typeof extra !== 'object') return null;
   const values = (extra as Record<string, unknown>)[SPEECH_RESULTS_EXTRA];
   if (!Array.isArray(values)) return null;
-  for (const value of values) if (typeof value === 'string' && value.trim()) return value.trim().replace(/\\s+/g, ' ');
+  for (const value of values) if (typeof value === 'string' && value.trim()) return value.trim().replace(/\s+/g, ' ');
   return null;
 }
