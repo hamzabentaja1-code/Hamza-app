@@ -6,6 +6,14 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "اختيار ملف JSON من الهاتف": "Choisir un fichier JSON sur le téléphone",
+  "استرجاع من ملف JSON": "Restaurer depuis un fichier JSON",
+  "مجلد الملفات غير متاح": "Dossier de fichiers indisponible",
+  "ما تختار حتى ملف": "Aucun fichier sélectionné",
+  "اختار ملف HamZa بصيغة JSON": "Choisissez un fichier HamZa au format JSON",
+  "ملف النسخة الاحتياطية كبير بزاف": "Fichier de sauvegarde trop volumineux",
+  "تعذر اختيار النسخة": "Impossible de choisir la sauvegarde",
+  "اختار ملف JSON صالح.": "Choisissez un fichier JSON valide.",
   "نموذج الوثائق PDF": "Modèle des documents PDF",
   "النموذج الكلاسيكي": "Modèle classique",
   "النموذج المختصر": "Modèle compact",
