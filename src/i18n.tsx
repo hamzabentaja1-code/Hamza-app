@@ -1643,7 +1643,7 @@ const fr: Record<string, string> = {
   "حذف العرض؟": "Supprimer cette vue ?",
   "معلومات العرض المحفوظ غير صالحة": "Les informations de la vue enregistrée sont invalides",
   "يوجد عرض محفوظ بهذا الاسم": "Une vue enregistrée porte déjà ce nom",
-  "وصلت للحد الأقصى ديال العروض المحفوظة": "La limite de vues enregistrées est atteinte",
+  "الحد الأقصى للعروض المحفوظة تم بلوغه": "La limite maximale de vues enregistrées est atteinte",
   "فتح": "Ouvrir",
 };
 
