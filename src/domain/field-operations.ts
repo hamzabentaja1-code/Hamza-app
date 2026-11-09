@@ -4,14 +4,14 @@ export type Technician={id:string;name:string;phone?:string;specialty?:string;ho
 export type Equipment={id:string;name:string;category?:string;reference?:string;serialNumber?:string;status:'available'|'assigned'|'maintenance';notes?:string};
 export type WorkOrderStatus='requested'|'scheduled'|'in_progress'|'completed'|'cancelled';
 export type WorkOrderPriority='low'|'normal'|'high'|'urgent';
-export type WorkOrderHistoryKind='created'|'status_changed'|'evidence_added'|'evidence_removed';
-export type WorkOrderHistoryEvent={id:string;kind:WorkOrderHistoryKind;at:string;fromStatus?:WorkOrderStatus;toStatus?:WorkOrderStatus;evidenceId?:string};
+export type WorkOrderHistoryKind='created'|'status_changed'|'evidence_added'|'evidence_removed'|'payment_recorded'|'time_recorded';
+export type WorkOrderHistoryEvent={id:string;kind:WorkOrderHistoryKind;at:string;fromStatus?:WorkOrderStatus;toStatus?:WorkOrderStatus;evidenceId?:string;amountCentimes?:number;method?:WorkOrderSettlementPayment['method'];hours?:number};
 export type WorkOrder={id:string;number:string;title:string;customerName:string;projectId?:number;description:string;category?:WorkOrderCategory;status:WorkOrderStatus;priority:WorkOrderPriority;scheduledAt?:string;technicianId?:string;equipmentIds:string[];createdAt:string;notes?:string;settlement?:WorkOrderSettlement;evidence?:WorkOrderEvidence[];history?:WorkOrderHistoryEvent[]};
 export type WorkTimeEntry={id:string;workOrderId:string;technicianId:string;date:string;hours:number;hourlyRate:number;costCentimes:number;notes?:string};
 
 const validDate=(value:string)=>typeof value==='string'&&!!value.trim()&&Number.isFinite(Date.parse(value));
 const WORK_ORDER_STATUSES:WorkOrderStatus[]=['requested','scheduled','in_progress','completed','cancelled'];
-const WORK_ORDER_HISTORY_KINDS:WorkOrderHistoryKind[]=['created','status_changed','evidence_added','evidence_removed'];
+const WORK_ORDER_HISTORY_KINDS:WorkOrderHistoryKind[]=['created','status_changed','evidence_added','evidence_removed','payment_recorded','time_recorded'];
 export const MAX_WORK_ORDER_HISTORY=200;
 export function normalizeWorkOrderHistory(value:unknown):WorkOrderHistoryEvent[]{
  if(!Array.isArray(value))return [];
@@ -31,6 +31,14 @@ export function normalizeWorkOrderHistory(value:unknown):WorkOrderHistoryEvent[]
    if(typeof item.evidenceId!=='string'||!item.evidenceId.trim()||item.evidenceId.length>120)continue;
    event.evidenceId=item.evidenceId;
   }
+  if(event.kind==='payment_recorded'){
+   if(!Number.isSafeInteger(item.amountCentimes)||(item.amountCentimes as number)<=0||!['cash','transfer','card','cheque'].includes(item.method as string))continue;
+   event.amountCentimes=item.amountCentimes as number;event.method=item.method as WorkOrderHistoryEvent['method'];
+  }
+  if(event.kind==='time_recorded'){
+   if(typeof item.hours!=='number'||!Number.isFinite(item.hours)||item.hours<=0||item.hours>24)continue;
+   event.hours=item.hours;
+  }
   ids.add(event.id);events.push(event);
  }
  return events.slice(-MAX_WORK_ORDER_HISTORY);
@@ -40,6 +48,11 @@ function appendWorkOrderHistory(order:WorkOrder,entry:Omit<WorkOrderHistoryEvent
  const base=entry.kind+'-'+Date.parse(entry.at);
  let id=base;let suffix=1;while(previous.some(event=>event.id===id))id=base+'-'+suffix++;
  return [...previous,{...entry,id}].slice(-MAX_WORK_ORDER_HISTORY);
+}
+export function recordWorkOrderHistory(order:WorkOrder,entry:Omit<WorkOrderHistoryEvent,'id'>):WorkOrder{
+ const history=appendWorkOrderHistory(order,entry);
+ if(history[history.length-1]?.at!==entry.at||history[history.length-1]?.kind!==entry.kind)throw new Error('بيانات سجل أمر العمل غير صالحة');
+ return {...order,history};
 }
 export function technicianCanPerform(technician:Technician,category:WorkOrderCategory):boolean{
  return !technician.permissions||technician.permissions.includes(category);
