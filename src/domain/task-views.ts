@@ -53,7 +53,7 @@ export function saveWorkTaskView(current:unknown,view:SavedWorkTaskView):SavedWo
  if(views.some(item=>item.id!==candidate.id&&item.name.toLocaleLowerCase()===candidate.name.toLocaleLowerCase()))
   throw new Error('يوجد عرض محفوظ بهذا الاسم');
  if(!sameId&&views.length>=MAX_SAVED_WORK_TASK_VIEWS)
-  throw new Error('وصلت للحد الأقصى ديال العروض المحفوظة');
+  throw new Error('الحد الأقصى للعروض المحفوظة تم بلوغه');
  return [...views.filter(item=>item.id!==candidate.id),candidate].slice(0,MAX_SAVED_WORK_TASK_VIEWS);
 }
 
