@@ -14,7 +14,7 @@ test('App renders a real root JSX tree after loading, not a discarded JSX expres
   });
   assert.ok(root,'App must RETURN LanguageContext.Provider from its main render branch');
   assert.ok(app.body.statements.some(statement=>ts.isIfStatement(statement)&&statement.getText(source).includes('!loaded')),'startup loading state must stay visible');
-  assert.equal(source.parseDiagnostics.length,0,'App TSX must parse cleanly');
+  assert.equal(source.parseDiagnostics.length,0,'App TSX must parse cleanly: '+source.parseDiagnostics.map(d=>{const p=source.getLineAndCharacterOfPosition(d.start||0);return `${p.line+1}:${p.character+1} ${ts.flattenDiagnosticMessageText(d.messageText,' ')}`}).join(' | '));
 });
 
 test('unreadable local data gates the UI and protects saved data from startup effects',()=>{
