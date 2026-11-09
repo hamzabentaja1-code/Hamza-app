@@ -47,3 +47,23 @@ export function rankImageMatches<T>(query:string,candidates:FingerprintCandidate
     .sort((a,b)=>a.distance-b.distance)
     .slice(0,limit);
 }
+
+/** Return one result per product, using its best-matching saved photo. */
+export function rankUniqueProductImageMatches<T extends {id: string | number}>(
+  query: string,
+  candidates: FingerprintCandidate<T>[],
+  maxDistance = 18,
+  limit = 20,
+): FingerprintMatch<T>[] {
+  if (!Number.isInteger(limit) || limit < 1) throw new Error('Image result limit must be positive.');
+  const ranked = rankImageMatches(query, candidates, maxDistance, Math.max(1, candidates.length));
+  const seen = new Set<string | number>();
+  const unique: FingerprintMatch<T>[] = [];
+  for (const match of ranked) {
+    if (seen.has(match.item.id)) continue;
+    seen.add(match.item.id);
+    unique.push(match);
+    if (unique.length >= limit) break;
+  }
+  return unique;
+}
