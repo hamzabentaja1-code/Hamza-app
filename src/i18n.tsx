@@ -6,6 +6,10 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "سجل تغييرات أمر العمل": "Historique des modifications de l’ordre de travail",
+  "تغيير حالة أمر العمل": "Changement de statut de l’ordre de travail",
+  "إضافة صورة العمل": "Ajout d’une photo du chantier",
+  "لا يوجد سجل بعد": "Aucun historique pour le moment",
   "قسم غير متوفر": "Section indisponible",
   "هاد القسم غير موجود، رجع للرئيسية.": "Cette section est introuvable. Retournez à l’accueil.",
   "رجوع للرئيسية": "Retour à l’accueil",
