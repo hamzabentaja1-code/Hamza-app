@@ -65,3 +65,14 @@ test('company settings expose template and document fields that feed the real PD
  assert.match(source,/accessibilityState=\{\{selected:companyProfile\.pdfTemplate===option\.value\}\}/);
  assert.match(source,/buildCommercialPdfHtml\(\{language,title:pdfTitle,customerName,lines,total,showTotal,companyProfile/);
 });
+
+test('commercial PDF uses print-safe A4 spacing, wrapped rows and Arabic-capable font fallbacks',()=>{
+ const html=buildCommercialPdfHtml({language:'AR',title:'فاتورة رقم 2026-001',customerName:'شركة الدار البيضاء',lines:['كابل كهربائي طويل جداً '.repeat(12)],total:1234.5,companyProfile:{...profile,name:'شركة حمزة',address:'الدار البيضاء',logoData:'data:image/png;base64,aGVsbG8='},dateLabel:'09/11/2026'});
+ assert.ok(html.includes('@page{size:A4;margin:14mm}'));
+ assert.ok(html.includes("font-family:'Noto Naskh Arabic','Noto Sans Arabic',Tahoma,Arial,sans-serif"));
+ assert.ok(html.includes('class="line-item"'));
+ assert.ok(html.includes('overflow-wrap:anywhere'));
+ assert.ok(html.includes('break-inside:avoid;page-break-inside:avoid'));
+ assert.ok(html.includes('alt="شركة حمزة"'));
+ assert.ok(html.includes('TTC: 1234.50 DH'));
+});
