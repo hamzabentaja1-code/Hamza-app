@@ -20,7 +20,7 @@ test('saved task views reject duplicates, invalid values and excess records',()=
  assert.throws(()=>saveWorkTaskView([],view('v','bad',{projectId:0})),/غير صالحة/);
  assert.throws(()=>saveWorkTaskView([view('a','التأخير')],view('b','التأخير')),/بهذا الاسم/);
  const many=Array.from({length:MAX_SAVED_WORK_TASK_VIEWS},(_,i)=>view('v'+i,'View '+i));
- assert.throws(()=>saveWorkTaskView(many,view('extra','Extra')),/الحد الأقصى/);
+ assert.throws(()=>saveWorkTaskView(many,view('extra','Extra')),/الأقصى/);
 });
 
 test('saved task view updates keep a single entry and removal is safe',()=>{
