@@ -87,3 +87,22 @@ test('warehouse validation rejects missing fields and duplicate identifiers or n
   assert.match(validateWarehouse({id:'main',name:'Other'}, existing).join(' '), /معرف المخزن/);
   assert.match(validateWarehouse({id:'new',name:'main'}, existing).join(' '), /اسم المخزن/);
 });
+
+test('warehouse deactivation keeps history, requires zero stock, and allows reactivation', () => {
+  const {changeWarehouseStatus, normalizeWarehouses} = require('../.test-build/inventory.js');
+  const warehouses=[{id:'main',name:'Main',active:true},{id:'annex',name:'Annex',active:true}];
+  const movements=[
+    {id:'a',warehouseId:'annex',productId:'p1',kind:'opening',quantity:3,createdAt:'2026-01-01'},
+    {id:'b',warehouseId:'annex',productId:'p1',kind:'sale',quantity:3,createdAt:'2026-01-02'},
+  ];
+  assert.throws(()=>changeWarehouseStatus(warehouses,movements,'main',false),/الرئيسي/);
+  assert.throws(()=>changeWarehouseStatus(warehouses,[movements[0]],'annex',false),/رصيد/);
+  assert.throws(()=>changeWarehouseStatus(warehouses,movements,'missing',false),/غير موجود/);
+  const inactive=changeWarehouseStatus(warehouses,movements,'annex',false);
+  assert.equal(inactive[1].active,false);
+  assert.equal(warehouses[1].active,true);
+  assert.equal(warehouseStock(movements,'p1','annex'),0);
+  assert.equal(changeWarehouseStatus(inactive,movements,'annex',true)[1].active,true);
+  assert.equal(changeWarehouseStatus(inactive,movements,'annex',false),inactive);
+  assert.equal(normalizeWarehouses([{id:'main',name:'Main',active:false}])[0].active,true);
+});
