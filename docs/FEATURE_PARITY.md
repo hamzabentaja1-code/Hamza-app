@@ -27,6 +27,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Customer order lifecycle from accepted quotes: create immutable order snapshots, confirm/cancel, track partial and full deliveries, deduct stock per delivery, link delivery documents and invoices, persist and include orders in backup/restore (tests/customer-orders.test.cjs)
 - [x] Serialized local-storage writes to prevent overlapping state saves from overwriting newer snapshots
 - [x] Startup storage recovery guard blocks automatic empty-state writes after JSON corruption, failed reads, or future-schema data; valid backup restore re-enables writes only after it is saved successfully (tests/storage.test.cjs).
+- [x] The app displays a recovery-only screen if local storage cannot be read, disables ordinary modules and background reminders, and accepts an explicit valid JSON backup to restore normal operation without removing the installed app (tests/app-render.test.cjs).
 - [x] Restored the missing main JSX `return` in `App.tsx`, which previously discarded the entire loaded-screen tree; a TypeScript AST regression test now guards the root render (tests/app-render.test.cjs).
 - [ ] Automated scheduled backups and encrypted backup files
 
