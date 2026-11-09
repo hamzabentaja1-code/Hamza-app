@@ -26,6 +26,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
 - [x] Customer order lifecycle from accepted quotes: create immutable order snapshots, confirm/cancel, track partial and full deliveries, deduct stock per delivery, link delivery documents and invoices, persist and include orders in backup/restore (tests/customer-orders.test.cjs)
 - [x] Serialized local-storage writes to prevent overlapping state saves from overwriting newer snapshots
+- [x] Startup storage recovery guard blocks automatic empty-state writes after JSON corruption, failed reads, or future-schema data; valid backup restore re-enables writes only after it is saved successfully (tests/storage.test.cjs).
 - [ ] Automated scheduled backups and encrypted backup files
 
 ### Products and inventory
