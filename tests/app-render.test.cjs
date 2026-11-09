@@ -16,3 +16,13 @@ test('App renders a real root JSX tree after loading, not a discarded JSX expres
   assert.ok(app.body.statements.some(statement=>ts.isIfStatement(statement)&&statement.getText(source).includes('!loaded')),'startup loading state must stay visible');
   assert.equal(source.parseDiagnostics.length,0,'App TSX must parse cleanly');
 });
+
+test('unreadable local data gates the UI and protects saved data from startup effects',()=>{
+ const app=fs.readFileSync('App.tsx','utf8');
+ assert.match(app,/setStartupError\(message\)/);
+ assert.match(app,/if\(loaded&&!startupError\)\{writeAppData/);
+ assert.match(app,/if\(startupError\)return <LanguageContext\.Provider/);
+ assert.match(app,/disabled=\{backupBusy\|\|!backupText\.trim\(\)\}/);
+ assert.match(app,/setStartupError\(''\);showAlert\('تم الاسترجاع'/);
+ assert.match(app,/if\(!loaded\|\|startupError\)return;if\(!notificationsEnabled\)/);
+});
