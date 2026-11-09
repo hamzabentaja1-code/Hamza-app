@@ -82,6 +82,25 @@ test('work-order photo evidence survives order changes and remains backed up wit
  assert.equal(current.evidence.length,4);
  assert.throws(()=>removeWorkOrderEvidence(removed,'not-found'),/غير موجودة/);
 });
+test('work-order creation, status and photo changes append bounded persistent history',()=>{
+ const {createWorkOrder,transitionWorkOrderStatus,addWorkOrderEvidence,removeWorkOrderEvidence,normalizeWorkOrderHistory,MAX_WORK_ORDER_HISTORY}=require('../.test-build/field-operations.js');
+ let current=createWorkOrder(order,[],[equip]);
+ assert.deepEqual(current.history.map(event=>event.kind),['created']);
+ current=transitionWorkOrderStatus(current,'scheduled','2026-11-07T09:00:00.000Z');
+ current=addWorkOrderEvidence(current,{id:'evidence-1',dataUri:'data:image/png;base64,AAAA',createdAt:'2026-11-07T09:05:00.000Z'});
+ current=removeWorkOrderEvidence(current,'evidence-1','2026-11-07T09:10:00.000Z');
+ assert.deepEqual(current.history.map(event=>event.kind),['created','status_changed','evidence_added','evidence_removed']);
+ assert.equal(current.history[1].fromStatus,'requested');
+ assert.equal(current.history[1].toStatus,'scheduled');
+ assert.equal(current.history[2].evidenceId,'evidence-1');
+ assert.equal(current.history[3].evidenceId,'evidence-1');
+ assert.equal(normalizeWorkOrderHistory(JSON.parse(JSON.stringify(current)).history).length,4);
+ assert.throws(()=>transitionWorkOrderStatus(current,'in_progress','invalid-date'),/تاريخ تغيير الحالة/);
+ assert.throws(()=>removeWorkOrderEvidence(current,'evidence-1','invalid-date'),/تاريخ حذف الصورة/);
+ const long=Array.from({length:MAX_WORK_ORDER_HISTORY+5},(_,i)=>({id:'event-'+i,kind:'created',at:'2026-11-07T09:00:00.000Z'}));
+ assert.equal(normalizeWorkOrderHistory(long).length,MAX_WORK_ORDER_HISTORY);
+ assert.equal(normalizeWorkOrderHistory([long[0],{...long[1],id:'event-0'}]).length,1);
+});
 test('work-order evidence blocks invalid formats, oversize data and duplicate image identifiers',()=>{
  const {addWorkOrderEvidence,normalizeWorkOrderEvidence}=require('../.test-build/field-operations.js');
  const original={id:'valid',dataUri:'data:image/png;base64,AAAA',createdAt:'2026-11-09'};
