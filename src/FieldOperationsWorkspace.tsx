@@ -137,12 +137,12 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
    <Text style={styles.note}>الوقت: {workOrderHours(timeEntries,order.id).toFixed(2)} ساعة • التكلفة: {(workOrderTimeCost(timeEntries,order.id)/100).toFixed(2)} DH</Text>
    <Text style={styles.label}>صور الأشغال ({normalizeWorkOrderEvidence(order.evidence).length}/{MAX_WORK_ORDER_EVIDENCE})</Text>
    <View style={[styles.row,{flexWrap:'wrap'}]}>{normalizeWorkOrderEvidence(order.evidence).map(file=><View key={file.id} style={{alignItems:'center',width:78}}>
-     <AccessiblePressable accessibilityRole="button" accessibilityLabel={'معاينة صورة العمل '+order.number} onPress={()=>setEvidencePreview(file.dataUri)}><Image source={{uri:file.dataUri}} style={{width:72,height:72,borderRadius:8}}/></AccessiblePressable>
-     <AccessiblePressable accessibilityRole="button" accessibilityLabel={'حذف صورة العمل '+order.number} onPress={()=>deleteEvidencePhoto(order,file)} style={{minHeight:44,justifyContent:'center'}}><Text style={styles.delete}>حذف</Text></AccessiblePressable>
+     <AccessiblePressable accessibilityRole="button" accessibilityLabel={t('معاينة صورة العمل')+' '+order.number} onPress={()=>setEvidencePreview(file.dataUri)}><Image source={{uri:file.dataUri}} style={{width:72,height:72,borderRadius:8}}/></AccessiblePressable>
+     <AccessiblePressable accessibilityRole="button" accessibilityLabel={t('حذف صورة العمل')+' '+order.number} onPress={()=>deleteEvidencePhoto(order,file)} style={{minHeight:44,justifyContent:'center'}}><Text style={styles.delete}>حذف</Text></AccessiblePressable>
    </View>)}</View>
    {normalizeWorkOrderEvidence(order.evidence).length<MAX_WORK_ORDER_EVIDENCE?<View style={[styles.row,{flexWrap:'wrap'}]}>
-     <AccessiblePressable accessibilityRole="button" accessibilityLabel={'التقاط صورة العمل '+order.number} disabled={evidenceBusy!==null} onPress={()=>chooseEvidencePhoto(order,'camera')} style={[styles.choice,{minHeight:48,minWidth:125}]}><Text style={styles.label}>{evidenceBusy===order.id?'…':'التقاط صورة'}</Text></AccessiblePressable>
-     <AccessiblePressable accessibilityRole="button" accessibilityLabel={'اختيار صورة العمل '+order.number} disabled={evidenceBusy!==null} onPress={()=>chooseEvidencePhoto(order,'gallery')} style={[styles.choice,{minHeight:48,minWidth:125}]}><Text style={styles.label}>اختيار صورة</Text></AccessiblePressable>
+     <AccessiblePressable accessibilityRole="button" accessibilityLabel={t('التقاط صورة العمل')+' '+order.number} disabled={evidenceBusy!==null} onPress={()=>chooseEvidencePhoto(order,'camera')} style={[styles.choice,{minHeight:48,minWidth:125}]}><Text style={styles.label}>{evidenceBusy===order.id?'…':'التقاط صورة'}</Text></AccessiblePressable>
+     <AccessiblePressable accessibilityRole="button" accessibilityLabel={t('اختيار صورة العمل')+' '+order.number} disabled={evidenceBusy!==null} onPress={()=>chooseEvidencePhoto(order,'gallery')} style={[styles.choice,{minHeight:48,minWidth:125}]}><Text style={styles.label}>اختيار صورة</Text></AccessiblePressable>
    </View>:null}
    <View style={styles.row}>
     {order.status==='requested'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'scheduled')}><Text style={styles.actionText}>برمجة</Text></AccessiblePressable>}
