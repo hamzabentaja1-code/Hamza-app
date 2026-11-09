@@ -36,6 +36,8 @@ export function completeRecurringWorkTask<T extends {id:number;dueDate:string;st
  }
  if(tasks.some(item=>item.id!==task.id&&item.title===task.title&&item.dueDate===dueDate&&item.recurrence===task.recurrence))
   return {tasks:tasks.map(item=>item.id===taskId?completed:item),generated:null};
- const generated={...task,id:nextId,dueDate,status:'todo'} as T;
+ const generatedRecord={...task,id:nextId,dueDate,status:'todo'} as T & {attachments?:unknown[]};
+ if(Array.isArray(generatedRecord.attachments))generatedRecord.attachments=[];
+ const generated=generatedRecord as T;
  return {tasks:[generated,...tasks.map(item=>item.id===taskId?completed:item)],generated};
 }

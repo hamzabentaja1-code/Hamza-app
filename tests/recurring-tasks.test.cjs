@@ -35,3 +35,10 @@ test('task workspace exposes recurring schedules and creates the next task only 
  assert.match(app,/completeRecurringWorkTask\(workTasks,task\.id,Date\.now\(\)\)/);
  assert.match(app,/taskRecurrence!==''/);
 });
+
+test('recurring work tasks do not duplicate attachments',()=>{
+ const source=[{id:1,title:'Réparer',dueDate:'2026-01-05',status:'doing',recurrence:'weekly',attachments:[{id:'f1',name:'devis.pdf'}]}];
+ const result=completeRecurringWorkTask(source,1,2);
+ assert.deepEqual(result.generated.attachments,[]);
+ assert.equal(result.tasks.find(task=>task.id===1).attachments.length,1);
+});

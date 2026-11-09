@@ -6,6 +6,19 @@ export type AppLanguage = 'AR' | 'FR';
 export const LanguageContext = React.createContext<AppLanguage>('AR');
 
 const fr: Record<string, string> = {
+  "ملفات المهمة": "Fichiers de la tâche",
+  "مشاركة الملف": "Partager le fichier",
+  "حذف الملف": "Supprimer le fichier",
+  "إرفاق ملف (4 MB كحد أقصى)": "Joindre un fichier (4 Mo maximum)",
+  "مشاركة": "Partager",
+  "مرفق المهمة غير صالح أو يتجاوز 4 MB": "La pièce jointe est invalide ou dépasse 4 Mo",
+  "الحد الأقصى هو 8 ملفات لكل مهمة": "La limite est de 8 fichiers par tâche",
+  "هذا الملف مضاف من قبل": "Ce fichier est déjà ajouté",
+  "الحد الأقصى لحجم الملف هو 4 MB.": "La taille maximale du fichier est de 4 Mo.",
+  "تعذر إرفاق الملف": "Impossible de joindre le fichier",
+  "تعذر مشاركة الملف": "Impossible de partager le fichier",
+  "مجلد الملفات المؤقتة غير متاح": "Le dossier temporaire est indisponible",
+
   "الإدخال الصوتي": "Saisie vocale",
   "البحث بالصوت": "Recherche vocale",
   "تعذر تشغيل التعرف الصوتي": "Impossible de lancer la reconnaissance vocale",
