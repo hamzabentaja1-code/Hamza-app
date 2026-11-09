@@ -42,7 +42,7 @@ fi
 "$HOME/.maestro/bin/maestro" test "${MAESTRO_FLOW:-.maestro}"
 smoke_status=$?
 collect_diagnostics
-if [[ "$smoke_status" -eq 0 && "${MAESTRO_FLOW:-}" == ".maestro/pos-sale.yaml" ]]; then
+if [[ "$smoke_status" -eq 0 && ( "${MAESTRO_FLOW:-}" == ".maestro/pos-sale.yaml" || "${MAESTRO_FLOW:-}" == ".maestro/purchase-return.yaml" ) ]]; then
   pdf_path="$(find artifacts/generated-pdfs/Print -maxdepth 1 -type f -name '*.pdf' -print -quit 2>/dev/null || true)"
   if [[ -z "$pdf_path" ]]; then
     echo "POS checkout did not generate a PDF receipt."
