@@ -319,7 +319,7 @@ export default function App() {
   const saveCurrentTaskView=()=>{
     if(!taskViewName.trim()){showAlert('تعذر حفظ العرض','دخل اسماً للعرض المحفوظ.');return;}
     const view:SavedWorkTaskView={id:'task-view-'+Date.now(),name:taskViewName.trim(),filters:{query:taskListQuery,status:taskListStatus,priority:taskListPriority,projectId:taskListProject}};
-    try{setSavedTaskViews(current=>saveWorkTaskView(current,view));setTaskViewName('');}catch(error){showAlert('تعذر حفظ العرض',error instanceof Error?error.message:'راجع اسم العرض والفلاتر.');}
+    try{const next=saveWorkTaskView(savedTaskViews,view);setSavedTaskViews(next);setTaskViewName('');}catch(error){showAlert('تعذر حفظ العرض',error instanceof Error?error.message:'راجع اسم العرض والفلاتر.');}
   };
   const applySavedTaskView=(view:SavedWorkTaskView)=>{setTaskListQuery(view.filters.query);setTaskListStatus(view.filters.status);setTaskListPriority(view.filters.priority);setTaskListProject(view.filters.projectId);};
   const confirmRemoveTaskView=(view:SavedWorkTaskView)=>showAlert('حذف العرض؟',view.name,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>setSavedTaskViews(current=>removeSavedTaskView(current,view.id))}]);
