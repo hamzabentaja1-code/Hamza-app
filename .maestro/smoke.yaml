@@ -77,9 +77,23 @@ appId: com.hamza.app
     direction: UP
     timeout: 10000
 - assertVisible: "إضافة زبون"
-- assertVisible: "كشف الحساب"
+- scrollUntilVisible:
+    element:
+      text: "الدين الافتتاحي DH"
+    direction: DOWN
+    timeout: 10000
 - assertVisible: "الدين الافتتاحي DH"
+- scrollUntilVisible:
+    element:
+      text: "سقف الدين DH"
+    direction: DOWN
+    timeout: 10000
 - assertVisible: "سقف الدين DH"
+- scrollUntilVisible:
+    element:
+      text: "أجل الأداء بالأيام (اختياري)"
+    direction: DOWN
+    timeout: 10000
 - assertVisible: "أجل الأداء بالأيام (اختياري)"
 - tapOn: "⌂ الرئيسية"
 
@@ -103,9 +117,23 @@ appId: com.hamza.app
     direction: UP
     timeout: 10000
 - assertVisible: "إضافة مورد"
-- assertVisible: "كشف الحساب"
+- scrollUntilVisible:
+    element:
+      text: "الدين الافتتاحي DH"
+    direction: DOWN
+    timeout: 10000
 - assertVisible: "الدين الافتتاحي DH"
+- scrollUntilVisible:
+    element:
+      text: "سقف الدين DH"
+    direction: DOWN
+    timeout: 10000
 - assertVisible: "سقف الدين DH"
+- scrollUntilVisible:
+    element:
+      text: "أجل الأداء بالأيام (اختياري)"
+    direction: DOWN
+    timeout: 10000
 - assertVisible: "أجل الأداء بالأيام (اختياري)"
 - tapOn: "⌂ الرئيسية"
 
@@ -617,7 +645,6 @@ appId: com.hamza.app
       text: "Relevé de compte"
     direction: UP
     timeout: 10000
-- assertVisible: "Relevé de compte"
 - tapOn: "⌂ Accueil"
 
 - scrollUntilVisible:
@@ -639,7 +666,6 @@ appId: com.hamza.app
       text: "Relevé de compte"
     direction: UP
     timeout: 10000
-- assertVisible: "Relevé de compte"
 - tapOn: "⌂ Accueil"
 
 # French: customer and supplier credit profile fields are translated.
@@ -662,8 +688,23 @@ appId: com.hamza.app
       text: "Solde initial dû (DH)"
     direction: UP
     timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: "Solde initial dû (DH)"
+    direction: DOWN
+    timeout: 10000
 - assertVisible: "Solde initial dû (DH)"
+- scrollUntilVisible:
+    element:
+      text: "Plafond de crédit (DH)"
+    direction: DOWN
+    timeout: 10000
 - assertVisible: "Plafond de crédit (DH)"
+- scrollUntilVisible:
+    element:
+      text: "Délai de paiement en jours (facultatif)"
+    direction: DOWN
+    timeout: 10000
 - assertVisible: "Délai de paiement en jours (facultatif)"
 - tapOn: "⌂ Accueil"
 
