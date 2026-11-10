@@ -187,6 +187,7 @@ const fr: Record<string, string> = {
   "تحدّث المبلغ المتبقي على فاتورة المورد.": "Le solde restant de la facture fournisseur a été mis à jour.",
   "اختار فاتورة ودخل مبلغ أداء صحيح.": "Choisissez une facture et saisissez un montant de paiement valide.",
   "أداءات فواتير الموردين": "Paiements des factures fournisseurs",
+  "أمر الشراء المرتبط:": "Bon de commande associé :",
   "مخلصة": "Payée",
   "غير مخلصة": "Non payée",
   "تحويل بنكي": "Virement bancaire",
