@@ -69,6 +69,7 @@ export function localizeCommercialPdfTitle(title:string,language:PdfLanguage):st
  const translations:[string,string][]=[
   ['Reçu de paiement fournisseur','وصل أداء المورد'],
   ['Facture pro forma ','فاتورة أولية '],
+  ['Facture fournisseur ','فاتورة المورد '],
   ['Bon de commande ','أمر شراء '],
   ['Bon de sortie ','سند خروج '],
   ['Reçu de paiement','وصل الأداء'],
