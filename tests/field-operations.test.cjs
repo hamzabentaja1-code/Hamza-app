@@ -145,7 +145,7 @@ test('work-order attachments validate, persist locally, enforce limits and audit
  let many=order;
  for(let i=0;i<MAX_WORK_ORDER_ATTACHMENTS;i++)many=addWorkOrderAttachment(many,file('file-'+i));
  assert.throws(()=>addWorkOrderAttachment(many,file('overflow')),/8 ملفات/);
- assert.throws(()=>addWorkOrderAttachment(order,file('file-1'));
+ assert.throws(()=>addWorkOrderAttachment(current,file('file-1')),/مسجل/);
 });
 
 test('work-order attachments reject unsafe MIME, malformed data, oversize files and invalid timestamps',()=>{
