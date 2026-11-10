@@ -211,7 +211,7 @@ jobs:
     name: Maestro Android emulator smoke test
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 50
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -225,10 +225,11 @@ jobs:
       - name: Run Maestro UI smoke test on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 30
           target: google_apis
           arch: x86_64
-          profile: pixel_6
+          profile: pixel_2
+          emulator-boot-timeout: 900
           script: |
             APK="$(find "$GITHUB_WORKSPACE/dist/apk" -type f -name '*.apk' -print -quit)"; test -n "$APK"; adb install "$APK"; curl -Ls "https://get.maestro.mobile.dev" | bash; export PATH="$HOME/.maestro/bin:$PATH"; maestro --version; maestro test .maestro/smoke.yaml
 
