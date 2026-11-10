@@ -1,4 +1,4 @@
-# UI smoke checks scroll back to the app header before returning.
+# UI smoke checks use valid scroll commands before returning to the app header.
 # Final APK requested; workflow validates source, builds, inspects, installs and scans the artifact.
 name: Build HamZa Android APK
 
