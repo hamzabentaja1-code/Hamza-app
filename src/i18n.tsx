@@ -69,6 +69,7 @@ const fr: Record<string, string> = {
   "رقم أمر العمل:": "Numéro de l’ordre de travail :",
   "حالة أمر العمل:": "Statut de l’ordre de travail :",
   "موعد التنفيذ:": "Date prévue :",
+  "التقني:": "Technicien :",
   "صور الأشغال:": "Photos des travaux :",
   "المرفق:": "Pièce jointe :",
   "ساعات العمل:": "Heures de travail :",
