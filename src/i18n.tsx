@@ -868,6 +868,7 @@ const fr: Record<string, string> = {
   "تم إنشاء أمر الشراء": "Bon de commande créé",
   "الأمر محفوظ ولم تتم إضافة الكمية للمخزون حتى استلامها.": "La commande est enregistrée ; le stock sera mis à jour à la réception.",
   "تعذر إنشاء أمر الشراء": "Impossible de créer le bon de commande",
+  "راجع العرض المقبول.": "Vérifiez l’offre acceptée.",
   "راجع البيانات.": "Vérifiez les informations.",
   "أمر الشراء غير موجود": "Bon de commande introuvable",
   "المنتج غير موجود في أمر الشراء.": "Le produit ne figure pas dans le bon de commande.",
