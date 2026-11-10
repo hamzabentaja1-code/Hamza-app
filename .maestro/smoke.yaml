@@ -30,11 +30,6 @@ appId: com.hamza.app
       text: "إضافة منتج جديد"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "إضافة منتج جديد"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "إضافة منتج جديد"
 - scrollUntilVisible:
     element:
@@ -69,11 +64,6 @@ appId: com.hamza.app
       text: "نقطة البيع POS"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "نقطة البيع POS"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "نقطة البيع POS"
 - tapOn: "⌂ الرئيسية"
 
@@ -95,11 +85,6 @@ appId: com.hamza.app
     element:
       text: "إضافة زبون"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "إضافة زبون"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "إضافة زبون"
 - scrollUntilVisible:
@@ -156,11 +141,6 @@ appId: com.hamza.app
       text: "إضافة مورد"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "إضافة مورد"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "إضافة مورد"
 - scrollUntilVisible:
     element:
@@ -216,11 +196,6 @@ appId: com.hamza.app
       text: "تسجيل عملية بيع"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "تسجيل عملية بيع"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "تسجيل عملية بيع"
 - tapOn: "⌂ الرئيسية"
 
@@ -243,11 +218,6 @@ appId: com.hamza.app
       text: "تسجيل مرتجع زبون"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "تسجيل مرتجع زبون"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "تسجيل مرتجع زبون"
 - tapOn: "⌂ الرئيسية"
 
@@ -269,11 +239,6 @@ appId: com.hamza.app
     element:
       text: "جرد المخزون"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "جرد المخزون"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "جرد المخزون"
 - scrollUntilVisible:
@@ -302,11 +267,6 @@ appId: com.hamza.app
     element:
       text: "إدارة المخازن"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "إدارة المخازن"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "إدارة المخازن"
 - scrollUntilVisible:
@@ -347,11 +307,6 @@ appId: com.hamza.app
       text: "تسجيل شراء وإضافة للمخزون"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "تسجيل شراء وإضافة للمخزون"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "تسجيل شراء وإضافة للمخزون"
 - scrollUntilVisible:
     element:
@@ -379,11 +334,6 @@ appId: com.hamza.app
     element:
       text: "إنشاء أمر شراء"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "إنشاء أمر شراء"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "إنشاء أمر شراء"
 - scrollUntilVisible:
@@ -419,11 +369,6 @@ appId: com.hamza.app
       text: "إضافة منتج جديد"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "إضافة منتج جديد"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "إضافة منتج جديد"
 - tapOn: "⌂ الرئيسية"
 
@@ -445,11 +390,6 @@ appId: com.hamza.app
     element:
       text: "إنشاء عرض سعر متعدد المنتجات"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "إنشاء عرض سعر متعدد المنتجات"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "إنشاء عرض سعر متعدد المنتجات"
 - tapOn: "⌂ الرئيسية"
@@ -473,11 +413,6 @@ appId: com.hamza.app
       text: "الفواتير"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "الفواتير"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "الفواتير"
 - tapOn: "⌂ الرئيسية"
 
@@ -500,11 +435,6 @@ appId: com.hamza.app
       text: "سندات الخروج"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "سندات الخروج"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "سندات الخروج"
 - tapOn: "⌂ الرئيسية"
 
@@ -526,11 +456,6 @@ appId: com.hamza.app
     element:
       text: "إضافة مصروف"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "إضافة مصروف"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "إضافة مصروف"
 - scrollUntilVisible:
@@ -560,11 +485,6 @@ appId: com.hamza.app
       text: "الرصيد الحالي للصندوق"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "الرصيد الحالي للصندوق"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "الرصيد الحالي للصندوق"
 - scrollUntilVisible:
     element:
@@ -593,11 +513,6 @@ appId: com.hamza.app
       text: "حماية بياناتك"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "حماية بياناتك"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "حماية بياناتك"
 - tapOn: "⌂ الرئيسية"
 
@@ -619,11 +534,6 @@ appId: com.hamza.app
     element:
       text: "إضافة مشروع / ورش"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "إضافة مشروع / ورش"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "إضافة مشروع / ورش"
 - scrollUntilVisible:
@@ -659,11 +569,6 @@ appId: com.hamza.app
       text: "تسجيل أداء زبون"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "تسجيل أداء زبون"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "تسجيل أداء زبون"
 - tapOn: "⌂ الرئيسية"
 
@@ -685,11 +590,6 @@ appId: com.hamza.app
     element:
       text: "تقرير النشاط التجاري"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "تقرير النشاط التجاري"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "تقرير النشاط التجاري"
 - scrollUntilVisible:
@@ -731,11 +631,6 @@ appId: com.hamza.app
       text: "إضافة منتج جديد"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Ajouter un produit"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "Ajouter un produit"
 - scrollUntilVisible:
     element:
@@ -771,11 +666,6 @@ appId: com.hamza.app
       text: "Ajouter un projet / chantier"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Ajouter un projet / chantier"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "Ajouter un projet / chantier"
 - scrollUntilVisible:
     element:
@@ -805,11 +695,6 @@ appId: com.hamza.app
       text: "Enregistrer un retour client"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Enregistrer un retour client"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "Enregistrer un retour client"
 - tapOn: "⌂ Accueil"
 
@@ -833,11 +718,6 @@ appId: com.hamza.app
       text: "Historique des paiements fournisseurs"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Historique des paiements fournisseurs"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "Historique des paiements fournisseurs"
 - tapOn: "⌂ Accueil"
 
@@ -860,11 +740,6 @@ appId: com.hamza.app
     element:
       text: "Solde actuel de la caisse"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Solde actuel de la caisse"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "Solde actuel de la caisse"
 - scrollUntilVisible:
@@ -943,11 +818,6 @@ appId: com.hamza.app
       text: "Solde initial dû (DH)"
     direction: DOWN
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Solde initial dû (DH)"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "Solde initial dû (DH)"
 - scrollUntilVisible:
     element:
@@ -993,11 +863,6 @@ appId: com.hamza.app
       text: "Catégorie de dépense (facultatif)"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Catégorie de dépense (facultatif)"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "Catégorie de dépense (facultatif)"
 - tapOn: "⌂ Accueil"
 
@@ -1020,11 +885,6 @@ appId: com.hamza.app
     element:
       text: "Créer un bon de commande"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Créer un bon de commande"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "Créer un bon de commande"
 - scrollUntilVisible:
@@ -1054,11 +914,6 @@ appId: com.hamza.app
     element:
       text: "بيانات الشركة والفوترة"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "بيانات الشركة والفوترة"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "بيانات الشركة والفوترة"
 - scrollUntilVisible:
@@ -1101,11 +956,6 @@ appId: com.hamza.app
       text: "Informations de l’entreprise et facturation"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Informations de l’entreprise et facturation"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "Informations de l’entreprise et facturation"
 - scrollUntilVisible:
     element:
@@ -1141,11 +991,6 @@ appId: com.hamza.app
       text: "Rapport des dettes fournisseurs"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Rapport des dettes fournisseurs"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "Rapport des dettes fournisseurs"
 - scrollUntilVisible:
     element:
@@ -1174,11 +1019,6 @@ appId: com.hamza.app
     element:
       text: "Gestion des entrepôts"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Gestion des entrepôts"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "Gestion des entrepôts"
 - scrollUntilVisible:
@@ -1221,11 +1061,6 @@ appId: com.hamza.app
     element:
       text: "الحسابات البنكية"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "الحسابات البنكية"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "الحسابات البنكية"
 - scrollUntilVisible:
@@ -1280,11 +1115,6 @@ appId: com.hamza.app
       text: "Comptes bancaires"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Comptes bancaires"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "Comptes bancaires"
 - scrollUntilVisible:
     element:
@@ -1338,11 +1168,6 @@ appId: com.hamza.app
       text: "التقنيون"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "التقنيون"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "التقنيون"
 - scrollUntilVisible:
     element:
@@ -1383,11 +1208,6 @@ appId: com.hamza.app
     element:
       text: "Techniciens"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Techniciens"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "Techniciens"
 - scrollUntilVisible:
@@ -1430,11 +1250,6 @@ appId: com.hamza.app
       text: "إضافة مصروف متكرر"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "إضافة مصروف متكرر"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "إضافة مصروف متكرر"
 - scrollUntilVisible:
     element:
@@ -1469,11 +1284,6 @@ appId: com.hamza.app
     element:
       text: "Ajouter une dépense récurrente"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Ajouter une dépense récurrente"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "Ajouter une dépense récurrente"
 - scrollUntilVisible:
@@ -1510,11 +1320,6 @@ appId: com.hamza.app
       text: "الأجندة والمواعيد"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "الأجندة والمواعيد"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "الأجندة والمواعيد"
 - scrollUntilVisible:
     element:
@@ -1544,11 +1349,6 @@ appId: com.hamza.app
       text: "Agenda et échéances"
     direction: UP
     timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Agenda et échéances"
-    direction: DOWN
-    timeout: 10000
 - assertVisible: "Agenda et échéances"
 - scrollUntilVisible:
     element:
@@ -1577,11 +1377,6 @@ appId: com.hamza.app
     element:
       text: "تحليل مالي حسب الفترة"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "تحليل مالي حسب الفترة"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "تحليل مالي حسب الفترة"
 - scrollUntilVisible:
@@ -1617,11 +1412,6 @@ appId: com.hamza.app
     element:
       text: "Analyse financière par période"
     direction: UP
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: "Analyse financière par période"
-    direction: DOWN
     timeout: 10000
 - assertVisible: "Analyse financière par période"
 - scrollUntilVisible:
