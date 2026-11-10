@@ -1,4 +1,5 @@
 export type PdfLanguage = 'AR' | 'FR';
+export type PdfTemplate = 'classic'|'compact';
 export type PdfDocumentSummaryInput={number:string;type:'invoice'|'delivery'|'proforma';lines:{productName:string;qty:number;total:number;variantLabel?:string;lineType?:'section'}[];validUntil?:string;dueDate?:string};
 export type PdfDocumentSummary={title:string;lines:string[]};
 /** Build localized title and rows for a converted commercial document. */
@@ -17,7 +18,7 @@ export function describeConvertedDocumentForPdf(document:PdfDocumentSummaryInput
 export type PdfCompanyProfile = {
  name?:string;logoData?:string;address?:string;phone?:string;email?:string;ice?:string;rc?:string;taxId?:string;
  bankName?:string;bankAccount?:string;bankRib?:string;bankIban?:string;showTaxFields?:boolean;taxRate?:number;
- pdfTemplate?:'classic'|'compact';pdfFooter?:string;pdfCustomFields?:string;
+ pdfTemplate?:PdfTemplate;pdfFooter?:string;pdfCustomFields?:string;
 };
 export type CommercialPdfInput = {
  language:PdfLanguage;title:string;customerName:string;lines:string[];total:number;showTotal?:boolean;
@@ -25,6 +26,8 @@ export type CommercialPdfInput = {
 };
 const escapeHtml=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 export type CommercialPdfField={label:string;value:string};
+/** Apply a document-specific template without mutating the company default. */
+export function resolveCommercialPdfProfile(profile:PdfCompanyProfile,override?:PdfTemplate):PdfCompanyProfile{return override?{...profile,pdfTemplate:override}:profile;}
 
 /** Parse up to six safe, document-wide field pairs in "label=value" format. */
 export function parseCommercialPdfFields(value:string):CommercialPdfField[]{
