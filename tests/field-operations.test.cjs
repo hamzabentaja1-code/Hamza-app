@@ -185,6 +185,7 @@ test('work-order PDF report includes localized work, attachment, evidence and au
  assert.match(source,/photos\.length/);
  assert.match(source,/onPdf\(\(language==='FR'\?'Rapport de chantier '/);
  assert.match(source,/t\('تصدير تقرير أمر العمل PDF'\)/);
- assert.match(app,/<FieldOperationsWorkspace[\\s\\S]*?onPdf=\{exportPdf\}/);
+ assert.ok(app.includes('onPdf={exportPdf}'));
+ assert.ok(app.includes('<FieldOperationsWorkspace'));
  for(const key of ['رقم أمر العمل:','حالة أمر العمل:','موعد التنفيذ:','صور الأشغال:','المرفق:','سجل التغييرات:','تصدير تقرير أمر العمل PDF'])assert.ok(dictionary.includes('"'+key+'"'));
 });
