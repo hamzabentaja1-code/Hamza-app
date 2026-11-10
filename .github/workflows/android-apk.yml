@@ -1,4 +1,4 @@
-# UI smoke checks reveal the home link before returning from a module.
+# UI smoke checks scroll back to the app header before returning.
 # Final APK requested; workflow validates source, builds, inspects, installs and scans the artifact.
 name: Build HamZa Android APK
 
