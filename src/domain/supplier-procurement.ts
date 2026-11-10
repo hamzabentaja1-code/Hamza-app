@@ -1,3 +1,4 @@
+import {PurchaseOrder,createPurchaseOrder} from './purchase-orders';
 export type SupplierRequestStatus = 'draft'|'sent'|'quoted'|'accepted'|'rejected'|'cancelled';
 export type SupplierRequestLine = {
   productId: number;
@@ -163,4 +164,22 @@ export function createSupplierInvoice(input:{
   }
   return {id:input.id,number:input.number.trim(),supplierId:input.supplierId,purchaseOrderId:purchaseOrder.id,
     issuedAt:input.issuedAt,dueDate:input.dueDate,lines:input.lines.map(line=>({...line})),totalCentimes};
+}
+
+
+/** Convert an accepted supplier offer into a purchase order without posting stock. */
+export function createPurchaseOrderFromAcceptedSupplierRequest(input:{request:SupplierPriceRequest;id:number;number:string;createdAt:string;expectedDate?:string;previousOrders?:PurchaseOrder[]}):PurchaseOrder{
+ const {request}=input;
+ validateRequest(request);
+ if(request.status!=='accepted')throw new Error('خاص قبول عرض المورد قبل إنشاء أمر الشراء');
+ if((input.previousOrders||[]).some(order=>order.sourcePriceRequestId===request.id))throw new Error('تم إنشاء أمر شراء من هذا الطلب من قبل');
+ const offer=request.offers[request.offers.length-1];
+ if(!offer)throw new Error('طلب المورد المقبول ما فيهش عرض أثمان');
+ const lines=request.lines.map(line=>{
+  const price=offer.lines.find(item=>item.productId===line.productId&&(item.variantId||'')===(line.variantId||''));
+  if(!price)throw new Error('ثمن المنتج ناقص في عرض المورد المقبول');
+  return {productId:line.productId,productName:line.productName,quantity:line.quantity,unitCost:price.unitCostCentimes/100,variantId:line.variantId};
+ });
+ const order=createPurchaseOrder({id:input.id,number:input.number,supplierName:request.supplierName,supplierId:request.supplierId,sourcePriceRequestId:request.id,createdAt:input.createdAt,expectedDate:input.expectedDate,lines});
+ return {...order,sourcePriceRequestId:request.id};
 }
