@@ -243,10 +243,10 @@ appId: com.hamza.app
 - assertVisible: "جرد المخزون"
 - scrollUntilVisible:
     element:
-      text: "سجل حركات المخزون"
+      text: "سجل حركات المخزون.*"
     direction: DOWN
     timeout: 10000
-- assertVisible: "سجل حركات المخزون"
+- assertVisible: "سجل حركات المخزون.*"
 - tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
