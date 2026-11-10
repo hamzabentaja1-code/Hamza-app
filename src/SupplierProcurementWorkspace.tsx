@@ -7,7 +7,7 @@ import {SupplierInvoicePayment,summarizeSupplierInvoicePayments} from './domain/
 type Supplier={id:number;name:string};
 type Product={id:number;name:string;reference?:string;barcode?:string;kind?:string};
 type Variant={id:string;productId:number;attributes:Record<string,string>;active:boolean};
-type PurchaseOrder={id:number;supplierName:string;supplierId?:string;status:'ordered'|'partially_received'|'received'|'cancelled';lines:Array<{productId:number;productName:string;quantity:number;receivedQuantity:number;unitCost:number;variantId?:string;variantLabel?:string}>};
+type PurchaseOrder={id:number;number?:string;supplierName:string;supplierId?:string;status:'ordered'|'partially_received'|'received'|'cancelled';lines:Array<{productId:number;productName:string;quantity:number;receivedQuantity:number;unitCost:number;variantId?:string;variantLabel?:string}>};
 type Props={suppliers:Supplier[];products:Product[];variants:Variant[];requests:SupplierPriceRequest[];purchaseOrders:PurchaseOrder[];invoices:SupplierInvoice[];invoicePayments:SupplierInvoicePayment[];activeBankAccountName?:string;onAddInvoicePayment:(invoice:SupplierInvoice,payment:Omit<SupplierInvoicePayment,'invoiceId'|'supplierId'>)=>boolean;onReverseInvoicePayment:(paymentId:string)=>void;onSave:(item:SupplierPriceRequest)=>void;onUpdate:(item:SupplierPriceRequest)=>void;onSaveInvoice:(item:SupplierInvoice)=>void;onPdf:(title:string,customer:string,lines:string[],total:number)=>void};
 const gold='#D4AF62',panel={backgroundColor:'#1B1B1B',borderRadius:12,borderWidth:1,borderColor:'#383838',padding:13,marginBottom:12} as const;
 const input={backgroundColor:'#111',borderWidth:1,borderColor:'#3A3A3A',borderRadius:8,padding:10,color:'#FFF',marginBottom:8} as const;
