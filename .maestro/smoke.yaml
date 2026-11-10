@@ -285,6 +285,7 @@ appId: com.hamza.app
     element:
       text: "المخزون حسب المخزن"
     direction: DOWN
+    visibilityPercentage: 50
     timeout: 10000
 - assertVisible: "المخزون حسب المخزن"
 - tapOn: "⌂ الرئيسية"
