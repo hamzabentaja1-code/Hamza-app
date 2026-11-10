@@ -28,7 +28,7 @@ appId: com.hamza.app
 - assertVisible: "إضافة منتج جديد"
 - assertVisible: "الماركة (اختياري)"
 - assertVisible: "الوحدة (قطعة، متر...)"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -40,7 +40,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Point of Sale"
 - assertVisible: "نقطة البيع POS"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -56,7 +56,7 @@ appId: com.hamza.app
 - assertVisible: "الدين الافتتاحي DH"
 - assertVisible: "سقف الدين DH"
 - assertVisible: "أجل الأداء بالأيام (اختياري)"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -72,7 +72,7 @@ appId: com.hamza.app
 - assertVisible: "الدين الافتتاحي DH"
 - assertVisible: "سقف الدين DH"
 - assertVisible: "أجل الأداء بالأيام (اختياري)"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -84,7 +84,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Sales"
 - assertVisible: "تسجيل عملية بيع"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -96,7 +96,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Sales returns"
 - assertVisible: "تسجيل مرتجع زبون"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -109,7 +109,7 @@ appId: com.hamza.app
 - tapOn: "Stock count & movements"
 - assertVisible: "جرد المخزون"
 - assertVisible: "سجل حركات المخزون"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -124,7 +124,7 @@ appId: com.hamza.app
 - assertVisible: "تحويل بين المخازن"
 - assertVisible: "إضافة مخزن"
 - assertVisible: "المخزون حسب المخزن"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 - scrollUntilVisible:
     element:
       text: "قلب على قسم..."
@@ -136,7 +136,7 @@ appId: com.hamza.app
 - tapOn: "Purchases"
 - assertVisible: "تسجيل شراء وإضافة للمخزون"
 - assertVisible: "سجل أداءات الموردين"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -150,7 +150,7 @@ appId: com.hamza.app
 - assertVisible: "إنشاء أمر شراء"
 - assertVisible: "حفظ أمر الشراء"
 - assertVisible: "أوامر الشراء"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -162,7 +162,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Stock"
 - assertVisible: "إضافة منتج جديد"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -174,7 +174,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Quotes / Devis"
 - assertVisible: "إنشاء عرض سعر متعدد المنتجات"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -186,7 +186,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Invoices"
 - assertVisible: "الفواتير"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -198,7 +198,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Delivery notes"
 - assertVisible: "سندات الخروج"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -211,7 +211,7 @@ appId: com.hamza.app
 - tapOn: "Expenses"
 - assertVisible: "إضافة مصروف"
 - assertVisible: "تصنيف المصروف (اختياري)"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -224,7 +224,7 @@ appId: com.hamza.app
 - tapOn: "Cash register"
 - assertVisible: "الرصيد الحالي للصندوق"
 - assertVisible: "سجل الصندوق"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -236,7 +236,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Backup & Restore"
 - assertVisible: "حماية بياناتك"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -250,7 +250,7 @@ appId: com.hamza.app
 - assertVisible: "إضافة مشروع / ورش"
 - assertVisible: "إضافة مهمة"
 - assertVisible: "المشاريع"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -262,7 +262,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Payments"
 - assertVisible: "تسجيل أداء زبون"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
     element:
@@ -276,14 +276,14 @@ appId: com.hamza.app
 - assertVisible: "تقرير النشاط التجاري"
 - assertVisible: "تقرير ديون الموردين"
 - assertVisible: "تقرير الصندوق"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 # French: verify the language switch and translated navigation/content.
 - tapOn: "AR"
 - assertVisible: "Accueil"
 - assertVisible: "Produits"
 - assertVisible: "Point de vente"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 - scrollUntilVisible:
     element:
       text: "Rechercher un module..."
@@ -301,7 +301,7 @@ appId: com.hamza.app
 - assertVisible: "Ajouter un produit"
 - assertVisible: "Marque (facultatif)"
 - assertVisible: "Unité (pièce, mètre...)"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # French: projects and tasks are translated.
 - scrollUntilVisible:
@@ -315,7 +315,7 @@ appId: com.hamza.app
 - tapOn: "Projects & tasks"
 - assertVisible: "Ajouter un projet / chantier"
 - assertVisible: "Ajouter une tâche"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # French: customer returns are translated.
 - scrollUntilVisible:
@@ -328,7 +328,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Sales returns"
 - assertVisible: "Enregistrer un retour client"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # French: supplier payment history is translated.
 - scrollUntilVisible:
@@ -341,7 +341,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Purchases"
 - assertVisible: "Historique des paiements fournisseurs"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # French: cash register labels are translated.
 - scrollUntilVisible:
@@ -355,7 +355,7 @@ appId: com.hamza.app
 - tapOn: "Cash register"
 - assertVisible: "Solde actuel de la caisse"
 - assertVisible: "Journal de caisse"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # French: account statements are available for customers and suppliers.
 - scrollUntilVisible:
@@ -368,7 +368,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Customers"
 - assertVisible: "Relevé de compte"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 - scrollUntilVisible:
     element:
@@ -380,7 +380,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Suppliers"
 - assertVisible: "Relevé de compte"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # French: customer and supplier credit profile fields are translated.
 - scrollUntilVisible:
@@ -395,7 +395,7 @@ appId: com.hamza.app
 - assertVisible: "Solde initial dû (DH)"
 - assertVisible: "Plafond de crédit (DH)"
 - assertVisible: "Délai de paiement en jours (facultatif)"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # French: expense categories are translated.
 - scrollUntilVisible:
@@ -408,7 +408,7 @@ appId: com.hamza.app
 - hideKeyboard
 - tapOn: "Expenses"
 - assertVisible: "Catégorie de dépense (facultatif)"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # French: purchase order and goods receipt workflow is translated.
 - scrollUntilVisible:
@@ -422,7 +422,7 @@ appId: com.hamza.app
 - tapOn: "Purchase orders"
 - assertVisible: "Créer un bon de commande"
 - assertVisible: "Enregistrer le bon de commande"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # Arabic: company profile and PDF branding settings.
 - scrollUntilVisible:
@@ -438,7 +438,7 @@ appId: com.hamza.app
 - assertVisible: "اسم الشركة"
 - assertVisible: "ICE"
 - assertVisible: "حفظ بيانات الشركة"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 # French: company profile and PDF branding settings.
 - scrollUntilVisible:
@@ -453,7 +453,7 @@ appId: com.hamza.app
 - assertVisible: "Informations de l’entreprise et facturation"
 - assertVisible: "Nom de l’entreprise"
 - assertVisible: "Enregistrer les informations de l’entreprise"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # French: supplier debt and cash reports are translated.
 - scrollUntilVisible:
@@ -467,7 +467,7 @@ appId: com.hamza.app
 - tapOn: "Reports"
 - assertVisible: "Rapport des dettes fournisseurs"
 - assertVisible: "Rapport de caisse"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # French: multi-warehouse stock management and transfers are translated.
 - scrollUntilVisible:
@@ -483,7 +483,7 @@ appId: com.hamza.app
 - assertVisible: "Transfert entre entrepôts"
 - assertVisible: "Ajouter un entrepôt"
 - assertVisible: "Stock par entrepôt"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 
 # Arabic: bank accounts, transfers and reconciliation.
@@ -502,7 +502,7 @@ appId: com.hamza.app
 - assertVisible: "التسوية مع كشف البنك"
 - assertVisible: "تحويل بين الصندوق والبنك"
 - assertVisible: "تأكيد تحويل الصندوق والبنك"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 # French: bank accounts and reconciliation are translated.
 - scrollUntilVisible:
@@ -520,7 +520,7 @@ appId: com.hamza.app
 - assertVisible: "Rapprochement bancaire"
 - assertVisible: "Transfert entre la caisse et la banque"
 - assertVisible: "Confirmer le transfert caisse-banque"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # Arabic: installation work orders, technicians, equipment and time entries.
 - scrollUntilVisible:
@@ -536,7 +536,7 @@ appId: com.hamza.app
 - assertVisible: "المعدات"
 - assertVisible: "طلبات وأوامر التركيب"
 - assertVisible: "ساعات العمل والتكلفة"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 # French: installation work orders and field operations are translated.
 - scrollUntilVisible:
@@ -552,7 +552,7 @@ appId: com.hamza.app
 - assertVisible: "Équipements"
 - assertVisible: "Demandes et ordres d'installation"
 - assertVisible: "Heures de travail et coût"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # Arabic: recurring expense rules and due expense generation.
 - scrollUntilVisible:
@@ -567,7 +567,7 @@ appId: com.hamza.app
 - assertVisible: "إضافة مصروف متكرر"
 - assertVisible: "الدورية"
 - assertVisible: "تسجيل المصاريف المستحقة حتى اليوم"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 # French: recurring expense scheduling is translated.
 - scrollUntilVisible:
@@ -582,7 +582,7 @@ appId: com.hamza.app
 - assertVisible: "Ajouter une dépense récurrente"
 - assertVisible: "Fréquence"
 - assertVisible: "Générer les dépenses échues jusqu'à aujourd'hui"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # Arabic: agenda combines tasks, work orders and due financial items.
 - scrollUntilVisible:
@@ -596,7 +596,7 @@ appId: com.hamza.app
 - tapOn: "Agenda & reminders"
 - assertVisible: "الأجندة والمواعيد"
 - assertVisible: "المواعيد حسب التاريخ"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 # French: agenda date filters and combined due events.
 - scrollUntilVisible:
@@ -610,7 +610,7 @@ appId: com.hamza.app
 - tapOn: "Agenda & reminders"
 - assertVisible: "Agenda et échéances"
 - assertVisible: "Échéances par date"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
 
 # Arabic: date range report with previous-period comparison.
 - scrollUntilVisible:
@@ -625,7 +625,7 @@ appId: com.hamza.app
 - assertVisible: "تحليل مالي حسب الفترة"
 - assertVisible: "الفترة الحالية مقابل الفترة السابقة"
 - assertVisible: "صافي المبيعات"
-- tapOn: "الرئيسية"
+- tapOn: "⌂ الرئيسية"
 
 # French: period comparison report labels.
 - scrollUntilVisible:
@@ -640,4 +640,4 @@ appId: com.hamza.app
 - assertVisible: "Analyse financière par période"
 - assertVisible: "Période actuelle comparée à la précédente"
 - assertVisible: "Ventes nettes"
-- tapOn: "Accueil"
+- tapOn: "⌂ Accueil"
