@@ -1,4 +1,4 @@
-# UI smoke checks use complete localized home navigation labels.
+# UI smoke checks scroll each module workspace into view after navigation.
 # Final APK requested; workflow validates source, builds, inspects, installs and scans the artifact.
 name: Build HamZa Android APK
 
