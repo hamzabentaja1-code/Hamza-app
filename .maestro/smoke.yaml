@@ -20,6 +20,11 @@ appId: com.hamza.app
 - inputText: "المنتجات"
 - hideKeyboard
 - tapOn: "Products"
+- scrollUntilVisible:
+    element:
+      text: "إضافة منتج جديد"
+    direction: UP
+    timeout: 10000
 - assertVisible: "إضافة منتج جديد"
 - assertVisible: "الماركة (اختياري)"
 - assertVisible: "الوحدة (قطعة، متر...)"
@@ -288,6 +293,11 @@ appId: com.hamza.app
 - inputText: "المنتجات"
 - hideKeyboard
 - tapOn: "Products"
+- scrollUntilVisible:
+    element:
+      text: "إضافة منتج جديد"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Ajouter un produit"
 - assertVisible: "Marque (facultatif)"
 - assertVisible: "Unité (pièce, mètre...)"
