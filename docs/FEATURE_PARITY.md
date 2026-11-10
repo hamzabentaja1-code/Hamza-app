@@ -103,7 +103,7 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Purchases
 - [x] Supplier purchase orders with expected delivery dates, partial/full goods receipts, stock updates and order PDF
-- [x] Supplier price requests with supplier-specific request lifecycle, offer capture, per-product/per-variant price comparison and local persistence (tests/supplier-procurement.test.cjs)
+- [x] Supplier price requests with lifecycle, offer capture, product/variant comparisons, local persistence and conversion of accepted offers into linked, numbered purchase orders without posting stock until receipt (tests/supplier-procurement.test.cjs, tests/purchase-orders.test.cjs)
 - [x] Supplier invoice entry linked to received purchase orders; validates received/unbilled quantities, supplier identity, duplicate invoice numbers and editable invoice unit costs without double-counting stock (tests/supplier-procurement.test.cjs)
 - [x] Supplier invoice-level partial/full payment allocation, centime-safe outstanding balances, duplicate/overpayment validation, reversible entries, cash/bank ledger posting, local persistence and backup/restore (tests/supplier-invoice-payments.test.cjs)
 - [x] Supplier partial payment history with centime-safe allocation, receipts, and reversible payment entries
@@ -156,7 +156,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Work-time entries with date, technician, hours, hourly rate and centime-safe cost totals per work order and technician
 - [x] Work-order settlement amount, partial/full payments, centime-safe balances and overpayment rejection (tests/field-operations.test.cjs)
 - [x] Up to four validated photos per work order from Android camera/gallery with preview, removal confirmation and order-level JSON backup persistence (tests/field-operations.test.cjs; actual device picker not verified).
-- [ ] Arbitrary work-order file attachments and complete audit-timeline/evidence report.
+- [x] Work-order file attachments (up to 8 files, 4 MB each) with local persistence, share/remove actions, audit events and an Arabic/French PDF report listing the work-order timeline, photo count and attached filenames (tests/field-operations.test.cjs; native picker/sharing still requires device verification).
 
 ### Agenda and reports
 - [x] Basic task list with assignments, priorities, due dates, estimated durations and status changes
