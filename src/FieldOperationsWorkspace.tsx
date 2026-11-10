@@ -44,7 +44,7 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
    return at+' • '+detail;
   });
   const lines=[t('رقم أمر العمل:')+' '+order.number,t('حالة أمر العمل:')+' '+t(statusLabel(order.status)),t('نوع العمل:')+' '+t(order.category==='installation'?'تركيب':order.category==='maintenance'?'صيانة':order.category==='repair'?'إصلاح':order.category==='inspection'?'فحص':'غير محدد'),t('التقني:')+' '+(technicians.find(item=>item.id===order.technicianId)?.name||t('غير محدد')),order.scheduledAt?t('موعد التنفيذ:')+' '+order.scheduledAt:'',t('صور الأشغال:')+' '+photos.length,...files.map(file=>t('المرفق:')+' '+file.name),t('ساعات العمل:')+' '+workOrderHours(timeEntries,order.id).toFixed(2),t('تكلفة العمل:')+' '+(workOrderTimeCost(timeEntries,order.id)/100).toFixed(2)+' DH',order.settlement?t('المبلغ المتفق عليه:')+' '+(order.settlement.quotedAmountCentimes/100).toFixed(2)+' DH':'',t('سجل التغييرات:')+' '+history.length,...historyLines].filter(Boolean);
-  onPdf((language==='FR'?'Rapport de chantier ':'تقرير الأشغال ')+order.number,order.customerName,lines,(order.settlement?.quotedAmountCentimes||0)/100);
+  onPdf('Rapport de chantier '+order.number,order.customerName,lines,(order.settlement?.quotedAmountCentimes||0)/100);
  };
  const addTech=()=>{const rate=Number(techRate.replace(',','.'));if(!techName.trim()||!Number.isFinite(rate)||rate<0){showAlert(t('معلومات ناقصة'),t('دخل اسم التقني وسعر ساعة صحيح.'));return;}
   onAddTechnician({id:'tech-'+Date.now(),name:techName.trim(),phone:techPhone.trim()||undefined,specialty:techSpecialty.trim()||undefined,hourlyRate:rate,active:true,permissions:[...techPermissions]});setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('0');setTechPermissions([...WORK_ORDER_CATEGORIES]);
