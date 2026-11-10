@@ -185,8 +185,8 @@ function validWorkOrderAttachment(value:unknown):value is WorkOrderAttachment{
  if(!value||typeof value!=='object'||Array.isArray(value))return false;
  const item=value as Record<string,unknown>;
  if(typeof item.id!=='string'||!item.id.trim()||item.id.length>120||typeof item.name!=='string'||!item.name.trim()||item.name.length>160||
-   typeof item.mimeType!=='string'||!/^[A-Za-z0-9.+-]+\\/[A-Za-z0-9.+-]+$/.test(item.mimeType)||typeof item.dataUri!=='string'||
-   !/^data:[A-Za-z0-9.+-]+\\/[A-Za-z0-9.+-]+;base64,[A-Za-z0-9+/]+=*$/.test(item.dataUri)||typeof item.createdAt!=='string'||!validDate(item.createdAt))return false;
+   typeof item.mimeType!=='string'||!/^[A-Za-z0-9.+-]+\/[A-Za-z0-9.+-]+$/.test(item.mimeType)||typeof item.dataUri!=='string'||
+   !/^data:[A-Za-z0-9.+-]+\/[A-Za-z0-9.+-]+;base64,[A-Za-z0-9+/]+=*$/.test(item.dataUri)||typeof item.createdAt!=='string'||!validDate(item.createdAt))return false;
  return attachmentBytes(item.dataUri.slice(item.dataUri.indexOf(',')+1))<=MAX_WORK_ORDER_ATTACHMENT_BYTES;
 }
 export function normalizeWorkOrderAttachments(value:unknown):WorkOrderAttachment[]{
