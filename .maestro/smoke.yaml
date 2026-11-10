@@ -283,11 +283,10 @@ appId: com.hamza.app
 - assertVisible: "إضافة مخزن"
 - scrollUntilVisible:
     element:
-      text: "المخزون حسب المخزن"
+      text: "تأكيد التحويل"
     direction: DOWN
-    visibilityPercentage: 50
     timeout: 10000
-- assertVisible: "المخزون حسب المخزن"
+- assertVisible: "تأكيد التحويل"
 - tapOn: "⌂ الرئيسية"
 - scrollUntilVisible:
     element:
