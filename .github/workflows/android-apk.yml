@@ -237,22 +237,7 @@ jobs:
           profile: pixel_2
           emulator-boot-timeout: 900
           script: |
-            APK="$(find "$GITHUB_WORKSPACE/dist/apk" -type f -name '*.apk' -print -quit)"
-            test -n "$APK"
-            adb wait-for-device
-            # Wait for Android's package service; emulator boot-complete can be early on software-only runners.
-            for i in $(seq 1 60); do
-              if adb shell cmd package list packages >/dev/null 2>&1; then
-                break
-              fi
-              sleep 5
-            done
-            adb shell cmd package list packages >/dev/null
-            adb install "$APK"
-            curl -Ls "https://get.maestro.mobile.dev" | bash
-            export PATH="$HOME/.maestro/bin:$PATH"
-            maestro --version
-            maestro test .maestro/smoke.yaml
+            APK="$(find "$GITHUB_WORKSPACE/dist/apk" -type f -name '*.apk' -print -quit)"; test -n "$APK"; adb wait-for-device; for i in $(seq 1 60); do if adb shell cmd package list packages >/dev/null 2>&1; then break; fi; sleep 5; done; adb shell cmd package list packages >/dev/null; adb install "$APK"; curl -Ls "https://get.maestro.mobile.dev" | bash; export PATH="$HOME/.maestro/bin:$PATH"; maestro --version; maestro test .maestro/smoke.yaml
 
   mobsf:
     name: MobSF Android security scan
