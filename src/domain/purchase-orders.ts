@@ -13,6 +13,7 @@ export type PurchaseOrder = {
   number?: string;
   supplierName: string;
   supplierId?: string;
+  sourcePriceRequestId?:string;
   createdAt: string;
   expectedDate?: string;
   status: PurchaseOrderStatus;
@@ -29,7 +30,7 @@ function validDate(value: string): boolean {
 }
 function validateOrder(order: PurchaseOrder): void {
   if (!Number.isSafeInteger(order.id) || order.id <= 0 || !order.supplierName.trim() ||
-      !validDate(order.createdAt) || (order.expectedDate!==undefined && !validDate(order.expectedDate)) || !Array.isArray(order.lines) || order.lines.length === 0 ||
+      !validDate(order.createdAt) || (order.sourcePriceRequestId!==undefined&&!order.sourcePriceRequestId.trim()) || (order.expectedDate!==undefined && !validDate(order.expectedDate)) || !Array.isArray(order.lines) || order.lines.length === 0 ||
       !['draft','ordered','partially_received','received','cancelled'].includes(order.status)) {
     throw new Error('أمر الشراء المحفوظ غير صالح');
   }
@@ -54,7 +55,7 @@ function validateOrder(order: PurchaseOrder): void {
   }
 }
 export function createPurchaseOrder(input: {
-  id:number; number?:string; supplierName:string; supplierId?:string; createdAt:string; expectedDate?:string;
+  id:number; number?:string; supplierName:string; supplierId?:string; sourcePriceRequestId?:string; createdAt:string; expectedDate?:string;
   lines:Array<{productId:number;productName:string;quantity:number;unitCost:number;variantId?:string;variantLabel?:string}>;
 }): PurchaseOrder {
   if (!Number.isSafeInteger(input.id) || input.id<=0 || !input.supplierName.trim() ||
@@ -72,7 +73,7 @@ export function createPurchaseOrder(input: {
     seen.add(line.productId+'::'+(line.variantId||''));
     return {...line,receivedQuantity:0};
   });
-  return {id:input.id,number:input.number?.trim()||undefined,supplierName:input.supplierName.trim(),supplierId:input.supplierId?.trim()||undefined,createdAt:input.createdAt,
+  return {id:input.id,number:input.number?.trim()||undefined,supplierName:input.supplierName.trim(),supplierId:input.supplierId?.trim()||undefined,sourcePriceRequestId:input.sourcePriceRequestId?.trim()||undefined,createdAt:input.createdAt,
     expectedDate:input.expectedDate,status:'ordered',lines};
 }
 export function receivePurchaseOrder(
