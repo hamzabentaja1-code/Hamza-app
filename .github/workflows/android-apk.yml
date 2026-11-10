@@ -1,4 +1,4 @@
-# The app header stays pinned so module navigation remains reachable while scrolling.
+# UI smoke flow scrolls each selected module to its first visible content check.
 # Final APK requested; workflow validates source, builds, inspects, installs and scans the artifact.
 name: Build HamZa Android APK
 
