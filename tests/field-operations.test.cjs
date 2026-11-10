@@ -183,7 +183,7 @@ test('work-order PDF report includes localized work, attachment, evidence and au
  assert.match(source,/\.\.\.files\.map\(file=>t\('المرفق:'\)\+' '\+file\.name\)/);
  assert.match(source,/\.\.\.historyLines/);
  assert.match(source,/photos\.length/);
- assert.match(source,/onPdf\(\(language==='FR'\?'Rapport de chantier '/);
+ assert.match(source,/onPdf\('Rapport de chantier '\+order\.number/);
  assert.match(source,/t\('تصدير تقرير أمر العمل PDF'\)/);
  assert.ok(app.includes('onPdf={exportPdf}'));
  assert.ok(app.includes('<FieldOperationsWorkspace'));
