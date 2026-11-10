@@ -1,5 +1,5 @@
 const test=require('node:test');const assert=require('node:assert/strict');
-const {buildCommercialPdfHtml,localizeCommercialPdfTitle,describeConvertedDocumentForPdf}=require('../.test-build/commercial-pdf.js');
+const {buildCommercialPdfHtml,localizeCommercialPdfTitle,describeConvertedDocumentForPdf,resolveCommercialPdfProfile}=require('../.test-build/commercial-pdf.js');
 const profile={name:'HamZa',address:'Casablanca',showTaxFields:false,taxRate:20};
 test('converted commercial PDFs include localized proforma validity and invoice due dates',()=>{
  const document={number:'PRO-7',type:'proforma',validUntil:'30/11/2026',lines:[{productName:'Cable',qty:2,total:40,variantLabel:'Rouge'}]};
@@ -85,4 +85,24 @@ test('commercial PDF uses print-safe A4 spacing, wrapped rows and Arabic-capable
  assert.ok(html.includes('break-inside:avoid;page-break-inside:avoid'));
  assert.ok(html.includes('alt="شركة حمزة"'));
  assert.ok(html.includes('TTC: 1234.50 DH'));
+});
+
+
+test('per-document PDF template override is isolated and falls back to the company default',()=>{
+ const original={name:'Company',pdfTemplate:'classic'};
+ const compact=resolveCommercialPdfProfile(original,'compact');
+ assert.equal(compact.pdfTemplate,'compact');
+ assert.equal(original.pdfTemplate,'classic');
+ assert.equal(resolveCommercialPdfProfile(original).pdfTemplate,'classic');
+ assert.equal(resolveCommercialPdfProfile(original,'classic').pdfTemplate,'classic');
+});
+
+test('document list persists template choice and passes it to the commercial PDF renderer',()=>{
+ const source=require('node:fs').readFileSync('App.tsx','utf8');
+ assert.match(source,/pdfTemplateOverride\?:'classic'\|'compact'/);
+ assert.match(source,/pdfTemplateOverride:'compact'/);
+ assert.match(source,/resolveCommercialPdfProfile\(companyProfile,templateOverride\)/);
+ assert.match(source,/exportPdf\(pdf\.title,d\.customerName,pdf\.lines,d\.total,true,d\.pdfTemplateOverride\)/);
+ assert.match(source,/accessibilityState=\{\{selected:d\.pdfTemplateOverride==='classic'\}\}/);
+ assert.match(source,/accessibilityState=\{\{selected:d\.pdfTemplateOverride==='compact'\}\}/);
 });
