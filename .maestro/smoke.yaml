@@ -235,11 +235,6 @@ appId: com.hamza.app
     direction: DOWN
     timeout: 10000
 - tapOn: "Stock count & movements"
-- scrollUntilVisible:
-    element:
-      text: "جرد المخزون"
-    direction: UP
-    timeout: 10000
 - assertVisible: "جرد المخزون"
 - scrollUntilVisible:
     element:
