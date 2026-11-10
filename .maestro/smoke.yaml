@@ -18,7 +18,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المنتجات"
-- tapOn: "المنتجات"
+- hideKeyboard
+- tapOn: "Products"
 - assertVisible: "إضافة منتج جديد"
 - assertVisible: "الماركة (اختياري)"
 - assertVisible: "الوحدة (قطعة، متر...)"
@@ -31,7 +32,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "نقطة البيع"
-- tapOn: "نقطة البيع"
+- hideKeyboard
+- tapOn: "Point of Sale"
 - assertVisible: "نقطة البيع POS"
 - tapOn: "الرئيسية"
 
@@ -42,7 +44,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "الزبناء"
-- tapOn: "الزبناء"
+- hideKeyboard
+- tapOn: "Customers"
 - assertVisible: "إضافة زبون"
 - assertVisible: "كشف الحساب"
 - assertVisible: "الدين الافتتاحي DH"
@@ -57,7 +60,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "الموردون"
-- tapOn: "الموردون"
+- hideKeyboard
+- tapOn: "Suppliers"
 - assertVisible: "إضافة مورد"
 - assertVisible: "كشف الحساب"
 - assertVisible: "الدين الافتتاحي DH"
@@ -72,7 +76,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المبيعات"
-- tapOn: "المبيعات"
+- hideKeyboard
+- tapOn: "Sales"
 - assertVisible: "تسجيل عملية بيع"
 - tapOn: "الرئيسية"
 
@@ -83,7 +88,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المرتجعات"
-- tapOn: "المرتجعات"
+- hideKeyboard
+- tapOn: "Sales returns"
 - assertVisible: "تسجيل مرتجع زبون"
 - tapOn: "الرئيسية"
 
@@ -94,7 +100,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "جرد وحركات المخزون"
-- tapOn: "جرد وحركات المخزون"
+- hideKeyboard
+- tapOn: "Stock count & movements"
 - assertVisible: "جرد المخزون"
 - assertVisible: "سجل حركات المخزون"
 - tapOn: "الرئيسية"
@@ -106,7 +113,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المخازن"
-- tapOn: "المخازن"
+- hideKeyboard
+- tapOn: "Warehouses & transfers"
 - assertVisible: "إدارة المخازن"
 - assertVisible: "تحويل بين المخازن"
 - assertVisible: "إضافة مخزن"
@@ -119,7 +127,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المشتريات"
-- tapOn: "المشتريات"
+- hideKeyboard
+- tapOn: "Purchases"
 - assertVisible: "تسجيل شراء وإضافة للمخزون"
 - assertVisible: "سجل أداءات الموردين"
 - tapOn: "الرئيسية"
@@ -131,7 +140,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "أوامر الشراء"
-- tapOn: "أوامر الشراء"
+- hideKeyboard
+- tapOn: "Purchase orders"
 - assertVisible: "إنشاء أمر شراء"
 - assertVisible: "حفظ أمر الشراء"
 - assertVisible: "أوامر الشراء"
@@ -144,7 +154,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "Stock"
-- tapOn: "المخزون"
+- hideKeyboard
+- tapOn: "Stock"
 - assertVisible: "إضافة منتج جديد"
 - tapOn: "الرئيسية"
 
@@ -155,7 +166,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "عروض الأسعار"
-- tapOn: "عروض الأسعار"
+- hideKeyboard
+- tapOn: "Quotes / Devis"
 - assertVisible: "إنشاء عرض سعر متعدد المنتجات"
 - tapOn: "الرئيسية"
 
@@ -166,7 +178,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "الفواتير"
-- tapOn: "الفواتير"
+- hideKeyboard
+- tapOn: "Invoices"
 - assertVisible: "الفواتير"
 - tapOn: "الرئيسية"
 
@@ -177,7 +190,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "Bon de sortie"
-- tapOn: "Bon de sortie"
+- hideKeyboard
+- tapOn: "Delivery notes"
 - assertVisible: "سندات الخروج"
 - tapOn: "الرئيسية"
 
@@ -188,7 +202,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المصاريف"
-- tapOn: "المصاريف"
+- hideKeyboard
+- tapOn: "Expenses"
 - assertVisible: "إضافة مصروف"
 - assertVisible: "تصنيف المصروف (اختياري)"
 - tapOn: "الرئيسية"
@@ -200,7 +215,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "الصندوق"
-- tapOn: "الصندوق"
+- hideKeyboard
+- tapOn: "Cash register"
 - assertVisible: "الرصيد الحالي للصندوق"
 - assertVisible: "سجل الصندوق"
 - tapOn: "الرئيسية"
@@ -212,7 +228,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "النسخ الاحتياطي"
-- tapOn: "النسخ الاحتياطي"
+- hideKeyboard
+- tapOn: "Backup & Restore"
 - assertVisible: "حماية بياناتك"
 - tapOn: "الرئيسية"
 
@@ -223,7 +240,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المشاريع والمهام"
-- tapOn: "المشاريع والمهام"
+- hideKeyboard
+- tapOn: "Projects & tasks"
 - assertVisible: "إضافة مشروع / ورش"
 - assertVisible: "إضافة مهمة"
 - assertVisible: "المشاريع"
@@ -236,7 +254,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "الأداءات"
-- tapOn: "الأداءات"
+- hideKeyboard
+- tapOn: "Payments"
 - assertVisible: "تسجيل أداء زبون"
 - tapOn: "الرئيسية"
 
@@ -247,7 +266,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "التقارير"
-- tapOn: "التقارير"
+- hideKeyboard
+- tapOn: "Reports"
 - assertVisible: "تقرير النشاط التجاري"
 - assertVisible: "تقرير ديون الموردين"
 - assertVisible: "تقرير الصندوق"
@@ -266,7 +286,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "المنتجات"
-- tapOn: "Produits"
+- hideKeyboard
+- tapOn: "Products"
 - assertVisible: "Ajouter un produit"
 - assertVisible: "Marque (facultatif)"
 - assertVisible: "Unité (pièce, mètre...)"
@@ -280,7 +301,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "المشاريع والمهام"
-- tapOn: "Projets et tâches"
+- hideKeyboard
+- tapOn: "Projects & tasks"
 - assertVisible: "Ajouter un projet / chantier"
 - assertVisible: "Ajouter une tâche"
 - tapOn: "Accueil"
@@ -293,7 +315,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "المرتجعات"
-- tapOn: "Retours clients"
+- hideKeyboard
+- tapOn: "Sales returns"
 - assertVisible: "Enregistrer un retour client"
 - tapOn: "Accueil"
 
@@ -305,7 +328,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "المشتريات"
-- tapOn: "Achats"
+- hideKeyboard
+- tapOn: "Purchases"
 - assertVisible: "Historique des paiements fournisseurs"
 - tapOn: "Accueil"
 
@@ -317,7 +341,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "الصندوق"
-- tapOn: "Caisse"
+- hideKeyboard
+- tapOn: "Cash register"
 - assertVisible: "Solde actuel de la caisse"
 - assertVisible: "Journal de caisse"
 - tapOn: "Accueil"
@@ -330,7 +355,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "الزبناء"
-- tapOn: "Clients"
+- hideKeyboard
+- tapOn: "Customers"
 - assertVisible: "Relevé de compte"
 - tapOn: "Accueil"
 
@@ -341,7 +367,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "الموردون"
-- tapOn: "Fournisseurs"
+- hideKeyboard
+- tapOn: "Suppliers"
 - assertVisible: "Relevé de compte"
 - tapOn: "Accueil"
 
@@ -353,7 +380,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "الزبناء"
-- tapOn: "Clients"
+- hideKeyboard
+- tapOn: "Customers"
 - assertVisible: "Solde initial dû (DH)"
 - assertVisible: "Plafond de crédit (DH)"
 - assertVisible: "Délai de paiement en jours (facultatif)"
@@ -367,7 +395,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "المصاريف"
-- tapOn: "Dépenses"
+- hideKeyboard
+- tapOn: "Expenses"
 - assertVisible: "Catégorie de dépense (facultatif)"
 - tapOn: "Accueil"
 
@@ -379,7 +408,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "أوامر الشراء"
-- tapOn: "Bons de commande"
+- hideKeyboard
+- tapOn: "Purchase orders"
 - assertVisible: "Créer un bon de commande"
 - assertVisible: "Enregistrer le bon de commande"
 - tapOn: "Accueil"
@@ -392,7 +422,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "إعدادات الشركة"
-- tapOn: "إعدادات الشركة"
+- hideKeyboard
+- tapOn: "Company settings"
 - assertVisible: "بيانات الشركة والفوترة"
 - assertVisible: "اسم الشركة"
 - assertVisible: "ICE"
@@ -407,7 +438,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "إعدادات الشركة"
-- tapOn: "Paramètres de l’entreprise"
+- hideKeyboard
+- tapOn: "Company settings"
 - assertVisible: "Informations de l’entreprise et facturation"
 - assertVisible: "Nom de l’entreprise"
 - assertVisible: "Enregistrer les informations de l’entreprise"
@@ -421,7 +453,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "التقارير"
-- tapOn: "Rapports"
+- hideKeyboard
+- tapOn: "Reports"
 - assertVisible: "Rapport des dettes fournisseurs"
 - assertVisible: "Rapport de caisse"
 - tapOn: "Accueil"
@@ -434,7 +467,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "المخازن"
-- tapOn: "Entrepôts"
+- hideKeyboard
+- tapOn: "Warehouses & transfers"
 - assertVisible: "Gestion des entrepôts"
 - assertVisible: "Transfert entre entrepôts"
 - assertVisible: "Ajouter un entrepôt"
@@ -450,7 +484,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "الحسابات البنكية"
-- tapOn: "الحسابات البنكية"
+- hideKeyboard
+- tapOn: "Bank accounts"
 - assertVisible: "الحسابات البنكية"
 - assertVisible: "إضافة حساب بنكي"
 - assertVisible: "تحويل بين الحسابات"
@@ -467,7 +502,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "الحسابات البنكية"
-- tapOn: "Comptes bancaires"
+- hideKeyboard
+- tapOn: "Bank accounts"
 - assertVisible: "Comptes bancaires"
 - assertVisible: "Ajouter un compte bancaire"
 - assertVisible: "Virement entre comptes"
@@ -484,7 +520,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "طلبات التركيب"
-- tapOn: "طلبات التركيب"
+- hideKeyboard
+- tapOn: "Installation work orders"
 - assertVisible: "التقنيون"
 - assertVisible: "المعدات"
 - assertVisible: "طلبات وأوامر التركيب"
@@ -499,7 +536,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "طلبات التركيب"
-- tapOn: "Ordres d'installation"
+- hideKeyboard
+- tapOn: "Installation work orders"
 - assertVisible: "Techniciens"
 - assertVisible: "Équipements"
 - assertVisible: "Demandes et ordres d'installation"
@@ -514,7 +552,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "المصاريف المتكررة"
-- tapOn: "المصاريف المتكررة"
+- hideKeyboard
+- tapOn: "Recurring expenses"
 - assertVisible: "إضافة مصروف متكرر"
 - assertVisible: "الدورية"
 - assertVisible: "تسجيل المصاريف المستحقة حتى اليوم"
@@ -528,7 +567,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "المصاريف المتكررة"
-- tapOn: "Dépenses récurrentes"
+- hideKeyboard
+- tapOn: "Recurring expenses"
 - assertVisible: "Ajouter une dépense récurrente"
 - assertVisible: "Fréquence"
 - assertVisible: "Générer les dépenses échues jusqu'à aujourd'hui"
@@ -542,7 +582,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "الأجندة"
-- tapOn: "الأجندة"
+- hideKeyboard
+- tapOn: "Agenda & reminders"
 - assertVisible: "الأجندة والمواعيد"
 - assertVisible: "المواعيد حسب التاريخ"
 - tapOn: "الرئيسية"
@@ -555,7 +596,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "الأجندة"
-- tapOn: "Agenda"
+- hideKeyboard
+- tapOn: "Agenda & reminders"
 - assertVisible: "Agenda et échéances"
 - assertVisible: "Échéances par date"
 - tapOn: "Accueil"
@@ -568,7 +610,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "قلب على قسم..."
 - inputText: "تحليل الفترة"
-- tapOn: "تحليل الفترة"
+- hideKeyboard
+- tapOn: "Period analysis"
 - assertVisible: "تحليل مالي حسب الفترة"
 - assertVisible: "الفترة الحالية مقابل الفترة السابقة"
 - assertVisible: "صافي المبيعات"
@@ -582,7 +625,8 @@ appId: com.hamza.app
     timeout: 10000
 - tapOn: "Rechercher un module..."
 - inputText: "تحليل الفترة"
-- tapOn: "Analyse par période"
+- hideKeyboard
+- tapOn: "Period analysis"
 - assertVisible: "Analyse financière par période"
 - assertVisible: "Période actuelle comparée à la précédente"
 - assertVisible: "Ventes nettes"
