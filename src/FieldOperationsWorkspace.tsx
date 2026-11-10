@@ -190,7 +190,7 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
    </View>
    <View style={{marginTop:10,borderTopWidth:1,borderTopColor:'#333',paddingTop:8}}>
     <Text style={styles.label}>{t('سجل تغييرات أمر العمل')}</Text>
-    {normalizeWorkOrderHistory(order.history).slice().reverse().map((event,index)=><Text key={event.id+'-'+index} style={styles.note}>{event.at.replace('T',' ').slice(0,16)} • {event.kind==='created'?t('إنشاء أمر العمل'):event.kind==='status_changed'?t('تغيير حالة أمر العمل')+': '+t(statusLabel(event.toStatus!)):event.kind==='evidence_added'?t('إضافة صورة العمل'):event.kind==='evidence_removed'?t('حذف صورة العمل'):event.kind==='payment_recorded'?t('أداء أمر العمل')+': '+((event.amountCentimes||0)/100).toFixed(2)+' DH':t('ساعات العمل')+': '+(event.hours||0).toFixed(2)}</Text>)}
+    {normalizeWorkOrderHistory(order.history).slice().reverse().map((event,index)=><Text key={event.id+'-'+index} style={styles.note}>{event.at.replace('T',' ').slice(0,16)} • {event.kind==='created'?t('إنشاء أمر العمل'):event.kind==='status_changed'?t('تغيير حالة أمر العمل')+': '+t(statusLabel(event.toStatus!)):event.kind==='evidence_added'?t('إضافة صورة العمل'):event.kind==='evidence_removed'?t('حذف صورة العمل'):event.kind==='attachment_added'?t('إضافة مرفق أمر العمل'):event.kind==='attachment_removed'?t('حذف مرفق أمر العمل'):event.kind==='payment_recorded'?t('أداء أمر العمل')+': '+((event.amountCentimes||0)/100).toFixed(2)+' DH':t('ساعات العمل')+': '+(event.hours||0).toFixed(2)}</Text>)}
     {normalizeWorkOrderHistory(order.history).length===0?<Text style={styles.note}>{t('لا يوجد سجل بعد')}</Text>:null}
    </View>
   </View>)}
