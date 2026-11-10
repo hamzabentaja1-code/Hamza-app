@@ -82,3 +82,15 @@ test('supplier invoice editor displays and saves the editable invoice unit cost'
  assert.ok(source.includes('value={invoiceUnitCosts[key]??String(line.unitCost)}'));
  assert.ok(source.includes('unitCostCentimes:(()=>{const raw=(invoiceUnitCosts[key]??String(line.unitCost))'));
 });
+
+
+test('supplier invoices show their linked purchase order and export localized invoice PDF details',()=>{
+ const fs=require('node:fs');const path=require('node:path');
+ const workspace=fs.readFileSync(path.join(__dirname,'../src/SupplierProcurementWorkspace.tsx'),'utf8');
+ const dictionary=fs.readFileSync(path.join(__dirname,'../src/i18n.tsx'),'utf8');
+ assert.ok(workspace.includes('purchaseOrders.find(order=>order.id===invoice.purchaseOrderId)'));
+ assert.ok(workspace.includes("t('أمر الشراء المرتبط:')"));
+ assert.ok(workspace.includes("invoice.lines.map(line=>line.description+' × '+line.quantity"));
+ assert.ok(workspace.includes("onPdf((language==='FR'?'Facture fournisseur ':'فاتورة المورد ')+invoice.number"));
+ assert.ok(dictionary.includes('"أمر الشراء المرتبط:": "Bon de commande associé :"'));
+});
