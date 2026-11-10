@@ -1,4 +1,4 @@
-# UI smoke checks use Maestro's argument-free vertical scroll before returning.
+# The app header stays pinned so module navigation remains reachable while scrolling.
 # Final APK requested; workflow validates source, builds, inspects, installs and scans the artifact.
 name: Build HamZa Android APK
 
