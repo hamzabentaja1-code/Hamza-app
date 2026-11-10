@@ -19,6 +19,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "المنتجات"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Products"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Products"
 - scrollUntilVisible:
     element:
@@ -38,6 +43,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "نقطة البيع"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Point of Sale"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Point of Sale"
 - scrollUntilVisible:
     element:
@@ -55,6 +65,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "الزبناء"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Customers"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Customers"
 - scrollUntilVisible:
     element:
@@ -76,6 +91,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "الموردون"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Suppliers"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Suppliers"
 - scrollUntilVisible:
     element:
@@ -97,6 +117,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "المبيعات"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Sales"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Sales"
 - scrollUntilVisible:
     element:
@@ -114,6 +139,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "المرتجعات"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Sales returns"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Sales returns"
 - scrollUntilVisible:
     element:
@@ -131,6 +161,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "جرد وحركات المخزون"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Stock count & movements"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Stock count & movements"
 - scrollUntilVisible:
     element:
@@ -149,6 +184,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "المخازن"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Warehouses & transfers"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Warehouses & transfers"
 - scrollUntilVisible:
     element:
@@ -168,6 +208,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "المشتريات"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Purchases"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Purchases"
 - scrollUntilVisible:
     element:
@@ -186,6 +231,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "أوامر الشراء"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Purchase orders"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Purchase orders"
 - scrollUntilVisible:
     element:
@@ -205,6 +255,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "Stock"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Stock"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Stock"
 - scrollUntilVisible:
     element:
@@ -222,6 +277,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "عروض الأسعار"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Quotes / Devis"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Quotes / Devis"
 - scrollUntilVisible:
     element:
@@ -239,6 +299,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "الفواتير"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Invoices"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Invoices"
 - scrollUntilVisible:
     element:
@@ -256,6 +321,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "Bon de sortie"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Delivery notes"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Delivery notes"
 - scrollUntilVisible:
     element:
@@ -273,6 +343,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "المصاريف"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Expenses"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Expenses"
 - scrollUntilVisible:
     element:
@@ -291,6 +366,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "الصندوق"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Cash register"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Cash register"
 - scrollUntilVisible:
     element:
@@ -309,6 +389,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "النسخ الاحتياطي"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Backup & Restore"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Backup & Restore"
 - scrollUntilVisible:
     element:
@@ -326,6 +411,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "المشاريع والمهام"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Projects & tasks"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Projects & tasks"
 - scrollUntilVisible:
     element:
@@ -345,6 +435,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "الأداءات"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Payments"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Payments"
 - scrollUntilVisible:
     element:
@@ -362,6 +457,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "التقارير"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Reports"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Reports"
 - scrollUntilVisible:
     element:
@@ -387,6 +487,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "المنتجات"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Products"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Products"
 - scrollUntilVisible:
     element:
@@ -407,6 +512,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "المشاريع والمهام"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Projects & tasks"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Projects & tasks"
 - scrollUntilVisible:
     element:
@@ -426,6 +536,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "المرتجعات"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Sales returns"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Sales returns"
 - scrollUntilVisible:
     element:
@@ -444,6 +559,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "المشتريات"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Purchases"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Purchases"
 - scrollUntilVisible:
     element:
@@ -462,6 +582,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "الصندوق"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Cash register"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Cash register"
 - scrollUntilVisible:
     element:
@@ -481,6 +606,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "الزبناء"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Customers"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Customers"
 - scrollUntilVisible:
     element:
@@ -498,6 +628,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "الموردون"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Suppliers"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Suppliers"
 - scrollUntilVisible:
     element:
@@ -516,6 +651,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "الزبناء"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Customers"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Customers"
 - scrollUntilVisible:
     element:
@@ -536,6 +676,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "المصاريف"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Expenses"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Expenses"
 - scrollUntilVisible:
     element:
@@ -554,6 +699,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "أوامر الشراء"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Purchase orders"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Purchase orders"
 - scrollUntilVisible:
     element:
@@ -573,6 +723,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "إعدادات الشركة"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Company settings"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Company settings"
 - scrollUntilVisible:
     element:
@@ -594,6 +749,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "إعدادات الشركة"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Company settings"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Company settings"
 - scrollUntilVisible:
     element:
@@ -614,6 +774,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "التقارير"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Reports"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Reports"
 - scrollUntilVisible:
     element:
@@ -633,6 +798,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "المخازن"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Warehouses & transfers"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Warehouses & transfers"
 - scrollUntilVisible:
     element:
@@ -655,6 +825,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "الحسابات البنكية"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Bank accounts"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Bank accounts"
 - scrollUntilVisible:
     element:
@@ -678,6 +853,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "الحسابات البنكية"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Bank accounts"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Bank accounts"
 - scrollUntilVisible:
     element:
@@ -701,6 +881,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "طلبات التركيب"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Installation work orders"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Installation work orders"
 - scrollUntilVisible:
     element:
@@ -722,6 +907,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "طلبات التركيب"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Installation work orders"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Installation work orders"
 - scrollUntilVisible:
     element:
@@ -743,6 +933,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "المصاريف المتكررة"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Recurring expenses"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Recurring expenses"
 - scrollUntilVisible:
     element:
@@ -763,6 +958,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "المصاريف المتكررة"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Recurring expenses"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Recurring expenses"
 - scrollUntilVisible:
     element:
@@ -783,6 +983,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "الأجندة"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Agenda & reminders"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Agenda & reminders"
 - scrollUntilVisible:
     element:
@@ -802,6 +1007,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "الأجندة"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Agenda & reminders"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Agenda & reminders"
 - scrollUntilVisible:
     element:
@@ -821,6 +1031,11 @@ appId: com.hamza.app
 - tapOn: "قلب على قسم..."
 - inputText: "تحليل الفترة"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Period analysis"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Period analysis"
 - scrollUntilVisible:
     element:
@@ -841,6 +1056,11 @@ appId: com.hamza.app
 - tapOn: "Rechercher un module..."
 - inputText: "تحليل الفترة"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Period analysis"
+    direction: DOWN
+    timeout: 10000
 - tapOn: "Period analysis"
 - scrollUntilVisible:
     element:
