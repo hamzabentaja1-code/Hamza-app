@@ -310,10 +310,10 @@ appId: com.hamza.app
 - assertVisible: "تسجيل شراء وإضافة للمخزون"
 - scrollUntilVisible:
     element:
-      text: "سجل أداءات الموردين"
+      text: "تأكيد الشراء"
     direction: DOWN
     timeout: 10000
-- assertVisible: "سجل أداءات الموردين"
+- assertVisible: "تأكيد الشراء"
 - tapOn: "⌂ الرئيسية"
 
 - scrollUntilVisible:
