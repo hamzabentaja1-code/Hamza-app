@@ -4,14 +4,14 @@ export type Technician={id:string;name:string;phone?:string;specialty?:string;ho
 export type Equipment={id:string;name:string;category?:string;reference?:string;serialNumber?:string;status:'available'|'assigned'|'maintenance';notes?:string};
 export type WorkOrderStatus='requested'|'scheduled'|'in_progress'|'completed'|'cancelled';
 export type WorkOrderPriority='low'|'normal'|'high'|'urgent';
-export type WorkOrderHistoryKind='created'|'status_changed'|'evidence_added'|'evidence_removed'|'payment_recorded'|'time_recorded';
-export type WorkOrderHistoryEvent={id:string;kind:WorkOrderHistoryKind;at:string;fromStatus?:WorkOrderStatus;toStatus?:WorkOrderStatus;evidenceId?:string;amountCentimes?:number;method?:WorkOrderSettlementPayment['method'];hours?:number};
-export type WorkOrder={id:string;number:string;title:string;customerName:string;projectId?:number;description:string;category?:WorkOrderCategory;status:WorkOrderStatus;priority:WorkOrderPriority;scheduledAt?:string;technicianId?:string;equipmentIds:string[];createdAt:string;notes?:string;settlement?:WorkOrderSettlement;evidence?:WorkOrderEvidence[];history?:WorkOrderHistoryEvent[]};
+export type WorkOrderHistoryKind='created'|'status_changed'|'evidence_added'|'evidence_removed'|'attachment_added'|'attachment_removed'|'payment_recorded'|'time_recorded';
+export type WorkOrderHistoryEvent={id:string;kind:WorkOrderHistoryKind;at:string;fromStatus?:WorkOrderStatus;toStatus?:WorkOrderStatus;evidenceId?:string;attachmentId?:string;amountCentimes?:number;method?:WorkOrderSettlementPayment['method'];hours?:number};
+export type WorkOrder={id:string;number:string;title:string;customerName:string;projectId?:number;description:string;category?:WorkOrderCategory;status:WorkOrderStatus;priority:WorkOrderPriority;scheduledAt?:string;technicianId?:string;equipmentIds:string[];createdAt:string;notes?:string;settlement?:WorkOrderSettlement;evidence?:WorkOrderEvidence[];attachments?:WorkOrderAttachment[];history?:WorkOrderHistoryEvent[]};
 export type WorkTimeEntry={id:string;workOrderId:string;technicianId:string;date:string;hours:number;hourlyRate:number;costCentimes:number;notes?:string};
 
 const validDate=(value:string)=>typeof value==='string'&&!!value.trim()&&Number.isFinite(Date.parse(value));
 const WORK_ORDER_STATUSES:WorkOrderStatus[]=['requested','scheduled','in_progress','completed','cancelled'];
-const WORK_ORDER_HISTORY_KINDS:WorkOrderHistoryKind[]=['created','status_changed','evidence_added','evidence_removed','payment_recorded','time_recorded'];
+const WORK_ORDER_HISTORY_KINDS:WorkOrderHistoryKind[]=['created','status_changed','evidence_added','evidence_removed','attachment_added','attachment_removed','payment_recorded','time_recorded'];
 export const MAX_WORK_ORDER_HISTORY=200;
 export function normalizeWorkOrderHistory(value:unknown):WorkOrderHistoryEvent[]{
  if(!Array.isArray(value))return [];
@@ -30,6 +30,10 @@ export function normalizeWorkOrderHistory(value:unknown):WorkOrderHistoryEvent[]
   if(event.kind==='evidence_added'||event.kind==='evidence_removed'){
    if(typeof item.evidenceId!=='string'||!item.evidenceId.trim()||item.evidenceId.length>120)continue;
    event.evidenceId=item.evidenceId;
+  }
+  if(event.kind==='attachment_added'||event.kind==='attachment_removed'){
+   if(typeof item.attachmentId!=='string'||!item.attachmentId.trim()||item.attachmentId.length>120)continue;
+   event.attachmentId=item.attachmentId;
   }
   if(event.kind==='payment_recorded'){
    if(!Number.isSafeInteger(item.amountCentimes)||(item.amountCentimes as number)<=0||!['cash','transfer','card','cheque'].includes(item.method as string))continue;
@@ -170,4 +174,37 @@ export function removeWorkOrderEvidence(order:WorkOrder,evidenceId:string,remove
  if(!validDate(removedAt))throw new Error('تاريخ حذف الصورة غير صالح');
  if(!previous.some(item=>item.id===evidenceId))throw new Error('صورة العمل غير موجودة');
  return {...order,evidence:previous.filter(item=>item.id!==evidenceId),history:appendWorkOrderHistory(order,{kind:'evidence_removed',at:removedAt,evidenceId})};
+}
+
+
+export type WorkOrderAttachment={id:string;name:string;mimeType:string;dataUri:string;createdAt:string};
+export const MAX_WORK_ORDER_ATTACHMENTS=8;
+export const MAX_WORK_ORDER_ATTACHMENT_BYTES=4_000_000;
+function attachmentBytes(base64:string):number{return Math.max(0,Math.floor(base64.length*3/4)-(base64.endsWith('==')?2:base64.endsWith('=')?1:0));}
+function validWorkOrderAttachment(value:unknown):value is WorkOrderAttachment{
+ if(!value||typeof value!=='object'||Array.isArray(value))return false;
+ const item=value as Record<string,unknown>;
+ if(typeof item.id!=='string'||!item.id.trim()||item.id.length>120||typeof item.name!=='string'||!item.name.trim()||item.name.length>160||
+   typeof item.mimeType!=='string'||!/^[A-Za-z0-9.+-]+\\/[A-Za-z0-9.+-]+$/.test(item.mimeType)||typeof item.dataUri!=='string'||
+   !/^data:[A-Za-z0-9.+-]+\\/[A-Za-z0-9.+-]+;base64,[A-Za-z0-9+/]+=*$/.test(item.dataUri)||typeof item.createdAt!=='string'||!validDate(item.createdAt))return false;
+ return attachmentBytes(item.dataUri.slice(item.dataUri.indexOf(',')+1))<=MAX_WORK_ORDER_ATTACHMENT_BYTES;
+}
+export function normalizeWorkOrderAttachments(value:unknown):WorkOrderAttachment[]{
+ if(!Array.isArray(value))return [];
+ const result:WorkOrderAttachment[]=[];const ids=new Set<string>();
+ for(const item of value){if(!validWorkOrderAttachment(item)||ids.has(item.id))continue;ids.add(item.id);result.push({...item});if(result.length===MAX_WORK_ORDER_ATTACHMENTS)break;}
+ return result;
+}
+export function addWorkOrderAttachment(order:WorkOrder,attachment:WorkOrderAttachment):WorkOrder{
+ if(!validWorkOrderAttachment(attachment))throw new Error('مرفق أمر العمل غير صالح أو يتجاوز 4 MB');
+ const previous=normalizeWorkOrderAttachments(order.attachments);
+ if(previous.length>=MAX_WORK_ORDER_ATTACHMENTS)throw new Error('الحد الأقصى هو 8 ملفات لكل أمر عمل');
+ if(previous.some(item=>item.id===attachment.id))throw new Error('هذا المرفق مسجل من قبل');
+ return {...order,attachments:[...previous,{...attachment}],history:appendWorkOrderHistory(order,{kind:'attachment_added',at:attachment.createdAt,attachmentId:attachment.id})};
+}
+export function removeWorkOrderAttachment(order:WorkOrder,attachmentId:string,removedAt=new Date().toISOString()):WorkOrder{
+ const previous=normalizeWorkOrderAttachments(order.attachments);
+ if(!validDate(removedAt))throw new Error('تاريخ حذف المرفق غير صالح');
+ if(!previous.some(item=>item.id===attachmentId))throw new Error('مرفق أمر العمل غير موجود');
+ return {...order,attachments:previous.filter(item=>item.id!==attachmentId),history:appendWorkOrderHistory(order,{kind:'attachment_removed',at:removedAt,attachmentId})};
 }
