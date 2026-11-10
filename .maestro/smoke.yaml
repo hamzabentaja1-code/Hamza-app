@@ -56,6 +56,11 @@ appId: com.hamza.app
 - inputText: "الزبناء"
 - hideKeyboard
 - tapOn: "Customers"
+- scrollUntilVisible:
+    element:
+      text: "إضافة زبون"
+    direction: UP
+    timeout: 10000
 - assertVisible: "إضافة زبون"
 - assertVisible: "كشف الحساب"
 - assertVisible: "الدين الافتتاحي DH"
@@ -72,6 +77,11 @@ appId: com.hamza.app
 - inputText: "الموردون"
 - hideKeyboard
 - tapOn: "Suppliers"
+- scrollUntilVisible:
+    element:
+      text: "إضافة مورد"
+    direction: UP
+    timeout: 10000
 - assertVisible: "إضافة مورد"
 - assertVisible: "كشف الحساب"
 - assertVisible: "الدين الافتتاحي DH"
@@ -88,6 +98,11 @@ appId: com.hamza.app
 - inputText: "المبيعات"
 - hideKeyboard
 - tapOn: "Sales"
+- scrollUntilVisible:
+    element:
+      text: "تسجيل عملية بيع"
+    direction: UP
+    timeout: 10000
 - assertVisible: "تسجيل عملية بيع"
 - tapOn: "⌂ الرئيسية"
 
@@ -100,6 +115,11 @@ appId: com.hamza.app
 - inputText: "المرتجعات"
 - hideKeyboard
 - tapOn: "Sales returns"
+- scrollUntilVisible:
+    element:
+      text: "تسجيل مرتجع زبون"
+    direction: UP
+    timeout: 10000
 - assertVisible: "تسجيل مرتجع زبون"
 - tapOn: "⌂ الرئيسية"
 
@@ -112,6 +132,11 @@ appId: com.hamza.app
 - inputText: "جرد وحركات المخزون"
 - hideKeyboard
 - tapOn: "Stock count & movements"
+- scrollUntilVisible:
+    element:
+      text: "جرد المخزون"
+    direction: UP
+    timeout: 10000
 - assertVisible: "جرد المخزون"
 - assertVisible: "سجل حركات المخزون"
 - tapOn: "⌂ الرئيسية"
@@ -125,6 +150,11 @@ appId: com.hamza.app
 - inputText: "المخازن"
 - hideKeyboard
 - tapOn: "Warehouses & transfers"
+- scrollUntilVisible:
+    element:
+      text: "إدارة المخازن"
+    direction: UP
+    timeout: 10000
 - assertVisible: "إدارة المخازن"
 - assertVisible: "تحويل بين المخازن"
 - assertVisible: "إضافة مخزن"
@@ -139,6 +169,11 @@ appId: com.hamza.app
 - inputText: "المشتريات"
 - hideKeyboard
 - tapOn: "Purchases"
+- scrollUntilVisible:
+    element:
+      text: "تسجيل شراء وإضافة للمخزون"
+    direction: UP
+    timeout: 10000
 - assertVisible: "تسجيل شراء وإضافة للمخزون"
 - assertVisible: "سجل أداءات الموردين"
 - tapOn: "⌂ الرئيسية"
@@ -152,6 +187,11 @@ appId: com.hamza.app
 - inputText: "أوامر الشراء"
 - hideKeyboard
 - tapOn: "Purchase orders"
+- scrollUntilVisible:
+    element:
+      text: "إنشاء أمر شراء"
+    direction: UP
+    timeout: 10000
 - assertVisible: "إنشاء أمر شراء"
 - assertVisible: "حفظ أمر الشراء"
 - assertVisible: "أوامر الشراء"
@@ -166,6 +206,11 @@ appId: com.hamza.app
 - inputText: "Stock"
 - hideKeyboard
 - tapOn: "Stock"
+- scrollUntilVisible:
+    element:
+      text: "إضافة منتج جديد"
+    direction: UP
+    timeout: 10000
 - assertVisible: "إضافة منتج جديد"
 - tapOn: "⌂ الرئيسية"
 
@@ -178,6 +223,11 @@ appId: com.hamza.app
 - inputText: "عروض الأسعار"
 - hideKeyboard
 - tapOn: "Quotes / Devis"
+- scrollUntilVisible:
+    element:
+      text: "إنشاء عرض سعر متعدد المنتجات"
+    direction: UP
+    timeout: 10000
 - assertVisible: "إنشاء عرض سعر متعدد المنتجات"
 - tapOn: "⌂ الرئيسية"
 
@@ -190,6 +240,11 @@ appId: com.hamza.app
 - inputText: "الفواتير"
 - hideKeyboard
 - tapOn: "Invoices"
+- scrollUntilVisible:
+    element:
+      text: "الفواتير"
+    direction: UP
+    timeout: 10000
 - assertVisible: "الفواتير"
 - tapOn: "⌂ الرئيسية"
 
@@ -202,6 +257,11 @@ appId: com.hamza.app
 - inputText: "Bon de sortie"
 - hideKeyboard
 - tapOn: "Delivery notes"
+- scrollUntilVisible:
+    element:
+      text: "سندات الخروج"
+    direction: UP
+    timeout: 10000
 - assertVisible: "سندات الخروج"
 - tapOn: "⌂ الرئيسية"
 
@@ -214,6 +274,11 @@ appId: com.hamza.app
 - inputText: "المصاريف"
 - hideKeyboard
 - tapOn: "Expenses"
+- scrollUntilVisible:
+    element:
+      text: "إضافة مصروف"
+    direction: UP
+    timeout: 10000
 - assertVisible: "إضافة مصروف"
 - assertVisible: "تصنيف المصروف (اختياري)"
 - tapOn: "⌂ الرئيسية"
@@ -227,6 +292,11 @@ appId: com.hamza.app
 - inputText: "الصندوق"
 - hideKeyboard
 - tapOn: "Cash register"
+- scrollUntilVisible:
+    element:
+      text: "الرصيد الحالي للصندوق"
+    direction: UP
+    timeout: 10000
 - assertVisible: "الرصيد الحالي للصندوق"
 - assertVisible: "سجل الصندوق"
 - tapOn: "⌂ الرئيسية"
@@ -240,6 +310,11 @@ appId: com.hamza.app
 - inputText: "النسخ الاحتياطي"
 - hideKeyboard
 - tapOn: "Backup & Restore"
+- scrollUntilVisible:
+    element:
+      text: "حماية بياناتك"
+    direction: UP
+    timeout: 10000
 - assertVisible: "حماية بياناتك"
 - tapOn: "⌂ الرئيسية"
 
@@ -252,6 +327,11 @@ appId: com.hamza.app
 - inputText: "المشاريع والمهام"
 - hideKeyboard
 - tapOn: "Projects & tasks"
+- scrollUntilVisible:
+    element:
+      text: "إضافة مشروع / ورش"
+    direction: UP
+    timeout: 10000
 - assertVisible: "إضافة مشروع / ورش"
 - assertVisible: "إضافة مهمة"
 - assertVisible: "المشاريع"
@@ -266,6 +346,11 @@ appId: com.hamza.app
 - inputText: "الأداءات"
 - hideKeyboard
 - tapOn: "Payments"
+- scrollUntilVisible:
+    element:
+      text: "تسجيل أداء زبون"
+    direction: UP
+    timeout: 10000
 - assertVisible: "تسجيل أداء زبون"
 - tapOn: "⌂ الرئيسية"
 
@@ -278,6 +363,11 @@ appId: com.hamza.app
 - inputText: "التقارير"
 - hideKeyboard
 - tapOn: "Reports"
+- scrollUntilVisible:
+    element:
+      text: "تقرير النشاط التجاري"
+    direction: UP
+    timeout: 10000
 - assertVisible: "تقرير النشاط التجاري"
 - assertVisible: "تقرير ديون الموردين"
 - assertVisible: "تقرير الصندوق"
@@ -318,6 +408,11 @@ appId: com.hamza.app
 - inputText: "المشاريع والمهام"
 - hideKeyboard
 - tapOn: "Projects & tasks"
+- scrollUntilVisible:
+    element:
+      text: "Ajouter un projet / chantier"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Ajouter un projet / chantier"
 - assertVisible: "Ajouter une tâche"
 - tapOn: "⌂ Accueil"
@@ -332,6 +427,11 @@ appId: com.hamza.app
 - inputText: "المرتجعات"
 - hideKeyboard
 - tapOn: "Sales returns"
+- scrollUntilVisible:
+    element:
+      text: "Enregistrer un retour client"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Enregistrer un retour client"
 - tapOn: "⌂ Accueil"
 
@@ -345,6 +445,11 @@ appId: com.hamza.app
 - inputText: "المشتريات"
 - hideKeyboard
 - tapOn: "Purchases"
+- scrollUntilVisible:
+    element:
+      text: "Historique des paiements fournisseurs"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Historique des paiements fournisseurs"
 - tapOn: "⌂ Accueil"
 
@@ -358,6 +463,11 @@ appId: com.hamza.app
 - inputText: "الصندوق"
 - hideKeyboard
 - tapOn: "Cash register"
+- scrollUntilVisible:
+    element:
+      text: "Solde actuel de la caisse"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Solde actuel de la caisse"
 - assertVisible: "Journal de caisse"
 - tapOn: "⌂ Accueil"
@@ -372,6 +482,11 @@ appId: com.hamza.app
 - inputText: "الزبناء"
 - hideKeyboard
 - tapOn: "Customers"
+- scrollUntilVisible:
+    element:
+      text: "Relevé de compte"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Relevé de compte"
 - tapOn: "⌂ Accueil"
 
@@ -384,6 +499,11 @@ appId: com.hamza.app
 - inputText: "الموردون"
 - hideKeyboard
 - tapOn: "Suppliers"
+- scrollUntilVisible:
+    element:
+      text: "Relevé de compte"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Relevé de compte"
 - tapOn: "⌂ Accueil"
 
@@ -397,6 +517,11 @@ appId: com.hamza.app
 - inputText: "الزبناء"
 - hideKeyboard
 - tapOn: "Customers"
+- scrollUntilVisible:
+    element:
+      text: "Solde initial dû (DH)"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Solde initial dû (DH)"
 - assertVisible: "Plafond de crédit (DH)"
 - assertVisible: "Délai de paiement en jours (facultatif)"
@@ -412,6 +537,11 @@ appId: com.hamza.app
 - inputText: "المصاريف"
 - hideKeyboard
 - tapOn: "Expenses"
+- scrollUntilVisible:
+    element:
+      text: "Catégorie de dépense (facultatif)"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Catégorie de dépense (facultatif)"
 - tapOn: "⌂ Accueil"
 
@@ -425,6 +555,11 @@ appId: com.hamza.app
 - inputText: "أوامر الشراء"
 - hideKeyboard
 - tapOn: "Purchase orders"
+- scrollUntilVisible:
+    element:
+      text: "Créer un bon de commande"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Créer un bon de commande"
 - assertVisible: "Enregistrer le bon de commande"
 - tapOn: "⌂ Accueil"
@@ -439,6 +574,11 @@ appId: com.hamza.app
 - inputText: "إعدادات الشركة"
 - hideKeyboard
 - tapOn: "Company settings"
+- scrollUntilVisible:
+    element:
+      text: "بيانات الشركة والفوترة"
+    direction: UP
+    timeout: 10000
 - assertVisible: "بيانات الشركة والفوترة"
 - assertVisible: "اسم الشركة"
 - assertVisible: "ICE"
@@ -455,6 +595,11 @@ appId: com.hamza.app
 - inputText: "إعدادات الشركة"
 - hideKeyboard
 - tapOn: "Company settings"
+- scrollUntilVisible:
+    element:
+      text: "Informations de l’entreprise et facturation"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Informations de l’entreprise et facturation"
 - assertVisible: "Nom de l’entreprise"
 - assertVisible: "Enregistrer les informations de l’entreprise"
@@ -470,6 +615,11 @@ appId: com.hamza.app
 - inputText: "التقارير"
 - hideKeyboard
 - tapOn: "Reports"
+- scrollUntilVisible:
+    element:
+      text: "Rapport des dettes fournisseurs"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Rapport des dettes fournisseurs"
 - assertVisible: "Rapport de caisse"
 - tapOn: "⌂ Accueil"
@@ -484,6 +634,11 @@ appId: com.hamza.app
 - inputText: "المخازن"
 - hideKeyboard
 - tapOn: "Warehouses & transfers"
+- scrollUntilVisible:
+    element:
+      text: "Gestion des entrepôts"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Gestion des entrepôts"
 - assertVisible: "Transfert entre entrepôts"
 - assertVisible: "Ajouter un entrepôt"
@@ -501,6 +656,11 @@ appId: com.hamza.app
 - inputText: "الحسابات البنكية"
 - hideKeyboard
 - tapOn: "Bank accounts"
+- scrollUntilVisible:
+    element:
+      text: "الحسابات البنكية"
+    direction: UP
+    timeout: 10000
 - assertVisible: "الحسابات البنكية"
 - assertVisible: "إضافة حساب بنكي"
 - assertVisible: "تحويل بين الحسابات"
@@ -519,6 +679,11 @@ appId: com.hamza.app
 - inputText: "الحسابات البنكية"
 - hideKeyboard
 - tapOn: "Bank accounts"
+- scrollUntilVisible:
+    element:
+      text: "Comptes bancaires"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Comptes bancaires"
 - assertVisible: "Ajouter un compte bancaire"
 - assertVisible: "Virement entre comptes"
@@ -537,6 +702,11 @@ appId: com.hamza.app
 - inputText: "طلبات التركيب"
 - hideKeyboard
 - tapOn: "Installation work orders"
+- scrollUntilVisible:
+    element:
+      text: "التقنيون"
+    direction: UP
+    timeout: 10000
 - assertVisible: "التقنيون"
 - assertVisible: "المعدات"
 - assertVisible: "طلبات وأوامر التركيب"
@@ -553,6 +723,11 @@ appId: com.hamza.app
 - inputText: "طلبات التركيب"
 - hideKeyboard
 - tapOn: "Installation work orders"
+- scrollUntilVisible:
+    element:
+      text: "Techniciens"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Techniciens"
 - assertVisible: "Équipements"
 - assertVisible: "Demandes et ordres d'installation"
@@ -569,6 +744,11 @@ appId: com.hamza.app
 - inputText: "المصاريف المتكررة"
 - hideKeyboard
 - tapOn: "Recurring expenses"
+- scrollUntilVisible:
+    element:
+      text: "إضافة مصروف متكرر"
+    direction: UP
+    timeout: 10000
 - assertVisible: "إضافة مصروف متكرر"
 - assertVisible: "الدورية"
 - assertVisible: "تسجيل المصاريف المستحقة حتى اليوم"
@@ -584,6 +764,11 @@ appId: com.hamza.app
 - inputText: "المصاريف المتكررة"
 - hideKeyboard
 - tapOn: "Recurring expenses"
+- scrollUntilVisible:
+    element:
+      text: "Ajouter une dépense récurrente"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Ajouter une dépense récurrente"
 - assertVisible: "Fréquence"
 - assertVisible: "Générer les dépenses échues jusqu'à aujourd'hui"
@@ -599,6 +784,11 @@ appId: com.hamza.app
 - inputText: "الأجندة"
 - hideKeyboard
 - tapOn: "Agenda & reminders"
+- scrollUntilVisible:
+    element:
+      text: "الأجندة والمواعيد"
+    direction: UP
+    timeout: 10000
 - assertVisible: "الأجندة والمواعيد"
 - assertVisible: "المواعيد حسب التاريخ"
 - tapOn: "⌂ الرئيسية"
@@ -613,6 +803,11 @@ appId: com.hamza.app
 - inputText: "الأجندة"
 - hideKeyboard
 - tapOn: "Agenda & reminders"
+- scrollUntilVisible:
+    element:
+      text: "Agenda et échéances"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Agenda et échéances"
 - assertVisible: "Échéances par date"
 - tapOn: "⌂ Accueil"
@@ -627,6 +822,11 @@ appId: com.hamza.app
 - inputText: "تحليل الفترة"
 - hideKeyboard
 - tapOn: "Period analysis"
+- scrollUntilVisible:
+    element:
+      text: "تحليل مالي حسب الفترة"
+    direction: UP
+    timeout: 10000
 - assertVisible: "تحليل مالي حسب الفترة"
 - assertVisible: "الفترة الحالية مقابل الفترة السابقة"
 - assertVisible: "صافي المبيعات"
@@ -642,6 +842,11 @@ appId: com.hamza.app
 - inputText: "تحليل الفترة"
 - hideKeyboard
 - tapOn: "Period analysis"
+- scrollUntilVisible:
+    element:
+      text: "Analyse financière par période"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Analyse financière par période"
 - assertVisible: "Période actuelle comparée à la précédente"
 - assertVisible: "Ventes nettes"
