@@ -29,6 +29,7 @@ test('summary PDF can omit total block',()=>{
 test('commercial PDF titles use Arabic document names and preserve generated numbering',()=>{
  assert.equal(localizeCommercialPdfTitle('Facture FAC-2026-0003','AR'),'فاتورة FAC-2026-0003');
  assert.equal(localizeCommercialPdfTitle('Facture fournisseur FA-9','AR'),'فاتورة المورد FA-9');
+ assert.equal(localizeCommercialPdfTitle('Rapport de chantier WO-9','AR'),'تقرير الأشغال WO-9');
  assert.equal(localizeCommercialPdfTitle('Bon de commande BC-2026-0004','AR'),'أمر شراء BC-2026-0004');
  assert.equal(localizeCommercialPdfTitle('عنوان مخصص','AR'),'عنوان مخصص');
 });
