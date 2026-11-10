@@ -112,3 +112,18 @@ test('accepted supplier request converts once into a purchase order using accept
  assert.throws(()=>createPurchaseOrderFromAcceptedSupplierRequest({request:quoted,id:89,number:'BC-43',createdAt:'2026-11-10',previousOrders:[order]}),/قبول/);
  assert.throws(()=>createPurchaseOrderFromAcceptedSupplierRequest({request:accepted,id:90,number:'BC-44',createdAt:'2026-11-10',previousOrders:[order]}),/من هذا الطلب/);
 });
+
+
+test('accepted supplier request conversion is exposed in the workspace and persists through app purchase orders',()=>{
+ const fs=require('node:fs');
+ const workspace=fs.readFileSync('src/SupplierProcurementWorkspace.tsx','utf8');
+ const app=fs.readFileSync('App.tsx','utf8');
+ const dictionary=fs.readFileSync('src/i18n.tsx','utf8');
+ assert.ok(workspace.includes("item.status==='accepted'"));
+ assert.ok(workspace.includes('onCreatePurchaseOrder(item)'));
+ assert.ok(workspace.includes('sourcePriceRequestId===item.id'));
+ assert.ok(app.includes('createPurchaseOrderFromAcceptedSupplierRequest'));
+ assert.ok(app.includes('onCreatePurchaseOrder={request=>'));
+ assert.ok(app.includes('sourcePriceRequestId:order.sourcePriceRequestId'));
+ for(const key of ['إنشاء أمر شراء من العرض المقبول','تم إنشاء أمر الشراء من عرض المورد','الأمر محفوظ ولن يتغير المخزون حتى الاستلام.'])assert.ok(dictionary.includes('"'+key+'"'));
+});
