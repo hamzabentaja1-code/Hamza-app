@@ -1,9 +1,12 @@
 import React,{useContext,useState} from 'react';
 import {Alert,View,StyleSheet,Image,Modal} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import {TText as Text,TTextInput as TextInput,LanguageContext,translateText} from './i18n';
 import AccessiblePressable from './AccessiblePressable';
-import {Technician,Equipment,WorkOrder,WorkTimeEntry,WorkOrderCategory,WORK_ORDER_CATEGORIES,technicianCanPerform,createWorkOrder,createWorkTimeEntry,transitionWorkOrderStatus,workOrderHours,workOrderTimeCost,summarizeWorkOrderSettlement,addWorkOrderSettlementPayment,WorkOrderSettlement,WorkOrderSettlementPayment,WorkOrderEvidence,normalizeWorkOrderEvidence,normalizeWorkOrderHistory,recordWorkOrderHistory,addWorkOrderEvidence,removeWorkOrderEvidence,MAX_WORK_ORDER_EVIDENCE} from './domain/field-operations';
+import {Technician,Equipment,WorkOrder,WorkTimeEntry,WorkOrderCategory,WORK_ORDER_CATEGORIES,technicianCanPerform,createWorkOrder,createWorkTimeEntry,transitionWorkOrderStatus,workOrderHours,workOrderTimeCost,summarizeWorkOrderSettlement,addWorkOrderSettlementPayment,WorkOrderSettlement,WorkOrderSettlementPayment,WorkOrderEvidence,normalizeWorkOrderEvidence,normalizeWorkOrderHistory,recordWorkOrderHistory,addWorkOrderEvidence,removeWorkOrderEvidence,MAX_WORK_ORDER_EVIDENCE,WorkOrderAttachment,normalizeWorkOrderAttachments,addWorkOrderAttachment,removeWorkOrderAttachment,MAX_WORK_ORDER_ATTACHMENTS,MAX_WORK_ORDER_ATTACHMENT_BYTES} from './domain/field-operations';
 
 type Props={
  technicians:Technician[];equipment:Equipment[];equipmentCategories:string[];orders:WorkOrder[];timeEntries:WorkTimeEntry[];
@@ -31,6 +34,7 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
  const [settlementOrder,setSettlementOrder]=useState('');const [settlementQuote,setSettlementQuote]=useState('');const [settlementPayment,setSettlementPayment]=useState('');const [settlementMethod,setSettlementMethod]=useState<WorkOrderSettlementPayment['method']>('cash');
  const [evidencePreview,setEvidencePreview]=useState<string|null>(null);
  const [evidenceBusy,setEvidenceBusy]=useState<string|null>(null);
+ const [attachmentBusy,setAttachmentBusy]=useState<string|null>(null);
  const [timeOrder,setTimeOrder]=useState('');const [timeTechnician,setTimeTechnician]=useState('');const [timeHours,setTimeHours]=useState('');const [timeDate,setTimeDate]=useState(new Date().toISOString().slice(0,10));const [timeNote,setTimeNote]=useState('');
  const addTech=()=>{const rate=Number(techRate.replace(',','.'));if(!techName.trim()||!Number.isFinite(rate)||rate<0){showAlert(t('معلومات ناقصة'),t('دخل اسم التقني وسعر ساعة صحيح.'));return;}
   onAddTechnician({id:'tech-'+Date.now(),name:techName.trim(),phone:techPhone.trim()||undefined,specialty:techSpecialty.trim()||undefined,hourlyRate:rate,active:true,permissions:[...techPermissions]});setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('0');setTechPermissions([...WORK_ORDER_CATEGORIES]);
@@ -62,6 +66,37 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
    onChangeOrder(addWorkOrderEvidence(order,file));
   }catch(error){showAlert('تعذر إضافة صورة العمل',error instanceof Error?error.message:'اختار صورة أصغر وحاول من جديد.');}
   finally{setEvidenceBusy(null);}
+ };
+ const chooseOrderAttachment=async(order:WorkOrder)=>{
+  if(attachmentBusy)return;
+  if(normalizeWorkOrderAttachments(order.attachments).length>=MAX_WORK_ORDER_ATTACHMENTS){showAlert('مرفقات أمر العمل','الحد الأقصى هو 8 ملفات لكل أمر عمل');return;}
+  setAttachmentBusy(order.id);
+  try{
+   const result=await DocumentPicker.getDocumentAsync({type:'*/*',copyToCacheDirectory:true,multiple:false});
+   if(result.canceled||!result.assets?.[0])return;
+   const asset=result.assets[0];
+   if(typeof asset.size==='number'&&asset.size>MAX_WORK_ORDER_ATTACHMENT_BYTES)throw new Error('الملف أكبر من 4 MB');
+   const base64=await FileSystem.readAsStringAsync(asset.uri,{encoding:FileSystem.EncodingType.Base64});
+   const bytes=Math.max(0,Math.floor(base64.length*3/4)-(base64.endsWith('==')?2:base64.endsWith('=')?1:0));
+   if(bytes>MAX_WORK_ORDER_ATTACHMENT_BYTES)throw new Error('الملف أكبر من 4 MB');
+   const mimeType=asset.mimeType||'application/octet-stream';
+   const attachment:WorkOrderAttachment={id:'work-file-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),name:asset.name.trim().slice(0,160)||'work-order-file',mimeType,dataUri:'data:'+mimeType+';base64,'+base64,createdAt:new Date().toISOString()};
+   onChangeOrder(addWorkOrderAttachment(order,attachment));
+  }catch(error){showAlert('تعذر إرفاق الملف',error instanceof Error?(t(error.message)||error.message):'تعذر قراءة الملف.');}
+  finally{setAttachmentBusy(null);}
+ };
+ const shareOrderAttachment=async(file:WorkOrderAttachment)=>{
+  try{
+   if(!FileSystem.cacheDirectory)throw new Error('مجلد الملفات المؤقتة غير متاح');
+   const safeName=file.name.replace(/[^a-zA-Z0-9\\u0600-\\u06FF._-]/g,'_').slice(0,100)||'work-order-file';
+   const uri=FileSystem.cacheDirectory+Date.now()+'-'+safeName;
+   await FileSystem.writeAsStringAsync(uri,file.dataUri.slice(file.dataUri.indexOf(',')+1),{encoding:FileSystem.EncodingType.Base64});
+   if(!(await Sharing.isAvailableAsync()))throw new Error('مشاركة الملفات غير متاحة');
+   await Sharing.shareAsync(uri,{mimeType:file.mimeType,dialogTitle:file.name});
+  }catch(error){showAlert('تعذر مشاركة الملف',error instanceof Error?(t(error.message)||error.message):'تعذر فتح الملف.');}
+ };
+ const deleteOrderAttachment=(order:WorkOrder,file:WorkOrderAttachment)=>{
+  showAlert('حذف المرفق؟',file.name,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>{try{onChangeOrder(removeWorkOrderAttachment(order,file.id));}catch(error){showAlert('خطأ',error instanceof Error?(t(error.message)||error.message):'تعذر حذف المرفق');}}}]);
  };
  const deleteEvidencePhoto=(order:WorkOrder,file:WorkOrderEvidence)=>{
   showAlert('حذف صورة العمل؟',order.number,[{text:'إلغاء',style:'cancel'},{text:'حذف',style:'destructive',onPress:()=>{try{onChangeOrder(removeWorkOrderEvidence(order,file.id));}catch(error){showAlert('خطأ',error instanceof Error?error.message:'تعذر حذف الصورة');}}}]);
@@ -144,6 +179,9 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
      <AccessiblePressable accessibilityRole="button" accessibilityLabel={t('التقاط صورة العمل')+' '+order.number} disabled={evidenceBusy!==null} onPress={()=>chooseEvidencePhoto(order,'camera')} style={[styles.choice,{minHeight:48,minWidth:125}]}><Text style={styles.label}>{evidenceBusy===order.id?'…':'التقاط صورة'}</Text></AccessiblePressable>
      <AccessiblePressable accessibilityRole="button" accessibilityLabel={t('اختيار صورة العمل')+' '+order.number} disabled={evidenceBusy!==null} onPress={()=>chooseEvidencePhoto(order,'gallery')} style={[styles.choice,{minHeight:48,minWidth:125}]}><Text style={styles.label}>اختيار صورة</Text></AccessiblePressable>
    </View>:null}
+   <Text style={styles.label}>{t('ملفات أمر العمل')} ({normalizeWorkOrderAttachments(order.attachments).length}/{MAX_WORK_ORDER_ATTACHMENTS})</Text>
+   {normalizeWorkOrderAttachments(order.attachments).map(file=><View key={file.id} style={[styles.row,{alignItems:'center',justifyContent:'space-between'}]}><Text style={[styles.note,{flex:1}]} numberOfLines={1}>{file.name}</Text><AccessiblePressable accessibilityRole="button" accessibilityLabel={t('مشاركة المرفق')+' '+file.name} onPress={()=>shareOrderAttachment(file)} style={{minHeight:44,justifyContent:'center',paddingHorizontal:8}}><Text style={styles.actionText}>{t('مشاركة')}</Text></AccessiblePressable><AccessiblePressable accessibilityRole="button" accessibilityLabel={t('حذف المرفق')+' '+file.name} onPress={()=>deleteOrderAttachment(order,file)} style={{minHeight:44,justifyContent:'center',paddingHorizontal:8}}><Text style={styles.delete}>{t('حذف')}</Text></AccessiblePressable></View>)}
+   {normalizeWorkOrderAttachments(order.attachments).length<MAX_WORK_ORDER_ATTACHMENTS?<AccessiblePressable accessibilityRole="button" accessibilityLabel={t('إرفاق ملف')+' '+order.number} disabled={attachmentBusy!==null} onPress={()=>chooseOrderAttachment(order)} style={[styles.choice,{minHeight:48,alignSelf:'flex-start'}]}><Text style={styles.label}>{attachmentBusy===order.id?'…':t('إرفاق ملف')}</Text></AccessiblePressable>:null}
    <View style={styles.row}>
     {order.status==='requested'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'scheduled')}><Text style={styles.actionText}>برمجة</Text></AccessiblePressable>}
     {order.status==='scheduled'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'in_progress')}><Text style={styles.actionText}>بدء العمل</Text></AccessiblePressable>}
