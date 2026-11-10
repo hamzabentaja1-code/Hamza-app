@@ -1,4 +1,19 @@
 export type PdfLanguage = 'AR' | 'FR';
+export type PdfDocumentSummaryInput={number:string;type:'invoice'|'delivery'|'proforma';lines:{productName:string;qty:number;total:number;variantLabel?:string;lineType?:'section'}[];validUntil?:string;dueDate?:string};
+export type PdfDocumentSummary={title:string;lines:string[]};
+/** Build localized title and rows for a converted commercial document. */
+export function describeConvertedDocumentForPdf(document:PdfDocumentSummaryInput,language:PdfLanguage):PdfDocumentSummary {
+ const fr=language==='FR';
+ const title=(document.type==='invoice'?(fr?'Facture ':'فاتورة '):document.type==='delivery'?(fr?'Bon de sortie ':'سند خروج '):(fr?'Facture pro forma ':'فاتورة أولية '))+document.number;
+ const lines:string[]=[];
+ if(document.type==='invoice'&&document.dueDate)lines.push((fr?"Date d’échéance : ":'تاريخ الاستحقاق: ')+document.dueDate);
+ if(document.type==='proforma'&&document.validUntil)lines.push((fr?'Valable jusqu’au : ':'صالحة إلى غاية: ')+document.validUntil);
+ for(const line of document.lines){
+  if(line.lineType==='section'){lines.push('── '+line.productName+' ──');continue;}
+  lines.push(line.productName+(line.variantLabel?' • '+line.variantLabel:'')+' × '+line.qty+' — '+line.total.toFixed(2)+' DH');
+ }
+ return {title,lines};
+}
 export type PdfCompanyProfile = {
  name?:string;logoData?:string;address?:string;phone?:string;email?:string;ice?:string;rc?:string;taxId?:string;
  bankName?:string;bankAccount?:string;bankRib?:string;bankIban?:string;showTaxFields?:boolean;taxRate?:number;
