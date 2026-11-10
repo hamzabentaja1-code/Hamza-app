@@ -1,3 +1,4 @@
+# UI smoke checks dismiss the keyboard before selecting translated module cards.
 # Final APK requested; workflow validates source, builds, inspects, installs and scans the artifact.
 name: Build HamZa Android APK
 
