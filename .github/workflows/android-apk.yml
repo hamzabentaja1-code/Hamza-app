@@ -1,4 +1,4 @@
-# UI smoke flow scrolls each module to every checked content label.
+# UI smoke flow matches dynamic inventory headings containing a live count.
 # Final APK requested; workflow validates source, builds, inspects, installs and scans the artifact.
 name: Build HamZa Android APK
 
