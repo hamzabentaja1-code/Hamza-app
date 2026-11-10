@@ -356,28 +356,6 @@ appId: com.hamza.app
     direction: DOWN
     timeout: 10000
 - tapOn: "قلب على قسم..."
-- inputText: "Stock"
-- hideKeyboard
-- scrollUntilVisible:
-    element:
-      text: "Stock"
-    direction: DOWN
-    timeout: 10000
-- tapOn: "Stock"
-- scrollUntilVisible:
-    element:
-      text: "إضافة منتج جديد"
-    direction: UP
-    timeout: 10000
-- assertVisible: "إضافة منتج جديد"
-- tapOn: "⌂ الرئيسية"
-
-- scrollUntilVisible:
-    element:
-      text: "قلب على قسم..."
-    direction: DOWN
-    timeout: 10000
-- tapOn: "قلب على قسم..."
 - inputText: "عروض الأسعار"
 - hideKeyboard
 - scrollUntilVisible:
