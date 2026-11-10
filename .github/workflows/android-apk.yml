@@ -1,4 +1,4 @@
-# UI smoke flow covers warehouse and purchase actions without duplicate stock tab navigation.
+# UI smoke flow asserts stock count heading directly to avoid flaky scroll targeting.
 # Final APK requested; workflow validates source, builds, inspects, installs and scans the artifact.
 name: Build HamZa Android APK
 
