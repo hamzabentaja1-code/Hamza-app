@@ -237,7 +237,16 @@ jobs:
           profile: pixel_2
           emulator-boot-timeout: 900
           script: |
-            APK="$(find "$GITHUB_WORKSPACE/dist/apk" -type f -name '*.apk' -print -quit)"; test -n "$APK"; adb wait-for-device; for i in $(seq 1 60); do if adb shell cmd package list packages >/dev/null 2>&1; then break; fi; sleep 5; done; adb shell cmd package list packages >/dev/null; adb install "$APK"; curl -Ls "https://get.maestro.mobile.dev" | bash; export PATH="$HOME/.maestro/bin:$PATH"; maestro --version; maestro test .maestro/smoke.yaml
+            APK="$(find "$GITHUB_WORKSPACE/dist/apk" -type f -name '*.apk' -print -quit)"; test -n "$APK"; adb wait-for-device; for i in $(seq 1 60); do if adb shell cmd package list packages >/dev/null 2>&1; then break; fi; sleep 5; done; adb shell cmd package list packages >/dev/null; adb install "$APK"; curl -Ls "https://get.maestro.mobile.dev" | bash; export PATH="$HOME/.maestro/bin:$PATH"; maestro --version; maestro test .maestro/smoke.yaml || { mkdir -p test-artifacts; adb logcat -d > test-artifacts/logcat.txt; adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1 || true; adb pull /sdcard/window.xml test-artifacts/window.xml >/dev/null 2>&1 || true; adb exec-out screencap -p > test-artifacts/screenshot.png 2>/dev/null || true; exit 1; }
+      - name: Upload Android UI diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: HamZa-Android-UI-Diagnostics
+          path: test-artifacts
+          if-no-files-found: warn
+          retention-days: 7
+
 
   mobsf:
     name: MobSF Android security scan
