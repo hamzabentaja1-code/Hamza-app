@@ -1,4 +1,4 @@
-# UI smoke flow reveals each filtered module card before opening it.
+# UI smoke flow checks fields available before saving new contacts.
 # Final APK requested; workflow validates source, builds, inspects, installs and scans the artifact.
 name: Build HamZa Android APK
 
