@@ -172,3 +172,19 @@ test('work-order attachment controls use native file picking, sharing, deletion 
  assert.match(source,/accessibilityLabel=\{t\('حذف المرفق'\)/);
  for(const key of ['ملفات أمر العمل','إرفاق ملف','مشاركة المرفق','حذف المرفق','إضافة مرفق أمر العمل','حذف مرفق أمر العمل'])assert.ok(dictionary.includes('"'+key+'"'));
 });
+
+
+test('work-order PDF report includes localized work, attachment, evidence and audit details',()=>{
+ const fs=require('node:fs');
+ const source=fs.readFileSync('src/FieldOperationsWorkspace.tsx','utf8');
+ const app=fs.readFileSync('App.tsx','utf8');
+ const dictionary=fs.readFileSync('src/i18n.tsx','utf8');
+ assert.match(source,/const exportWorkOrderReport=\(order:WorkOrder\)=>/);
+ assert.match(source,/\.\.\.files\.map\(file=>t\('المرفق:'\)\+' '\+file\.name\)/);
+ assert.match(source,/\.\.\.historyLines/);
+ assert.match(source,/photos\.length/);
+ assert.match(source,/onPdf\(\(language==='FR'\?'Rapport de chantier '/);
+ assert.match(source,/t\('تصدير تقرير أمر العمل PDF'\)/);
+ assert.match(app,/<FieldOperationsWorkspace[\\s\\S]*?onPdf=\{exportPdf\}/);
+ for(const key of ['رقم أمر العمل:','حالة أمر العمل:','موعد التنفيذ:','صور الأشغال:','المرفق:','سجل التغييرات:','تصدير تقرير أمر العمل PDF'])assert.ok(dictionary.includes('"'+key+'"'));
+});
