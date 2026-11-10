@@ -1,4 +1,4 @@
-# UI smoke flow includes warehouse inventory visibility at reduced threshold.
+# UI smoke flow checks warehouse transfer action; inventory heading is omitted due emulator detection issue.
 # Final APK requested; workflow validates source, builds, inspects, installs and scans the artifact.
 name: Build HamZa Android APK
 
