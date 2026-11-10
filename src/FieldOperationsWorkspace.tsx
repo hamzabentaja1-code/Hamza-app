@@ -12,11 +12,11 @@ type Props={
  technicians:Technician[];equipment:Equipment[];equipmentCategories:string[];orders:WorkOrder[];timeEntries:WorkTimeEntry[];
  customers:{id:number;name:string}[];projects:{id:number;name:string}[];
  onAddTechnician:(item:Technician)=>void;onAddEquipment:(item:Equipment)=>void;onAddEquipmentCategory:(name:string)=>void;onDeleteEquipmentCategory:(name:string)=>void;
- onCreateOrder:(item:WorkOrder)=>void;onChangeOrder:(item:WorkOrder)=>void;onAddTimeEntry:(item:WorkTimeEntry)=>void;
+ onCreateOrder:(item:WorkOrder)=>void;onChangeOrder:(item:WorkOrder)=>void;onAddTimeEntry:(item:WorkTimeEntry)=>void;onPdf:(title:string,customerName:string,lines:string[],total:number)=>void;
 };
 const GOLD='#D6AE55';
 const statusLabel=(s:WorkOrder['status'])=>s==='requested'?'طلب جديد':s==='scheduled'?'مبرمج':s==='in_progress'?'قيد الإنجاز':s==='completed'?'مكتمل':'ملغى';
-export default function FieldOperationsWorkspace({technicians,equipment,equipmentCategories,orders,timeEntries,customers,projects,onAddTechnician,onAddEquipment,onAddEquipmentCategory,onDeleteEquipmentCategory,onCreateOrder,onChangeOrder,onAddTimeEntry}:Props){
+export default function FieldOperationsWorkspace({technicians,equipment,equipmentCategories,orders,timeEntries,customers,projects,onAddTechnician,onAddEquipment,onAddEquipmentCategory,onDeleteEquipmentCategory,onCreateOrder,onChangeOrder,onAddTimeEntry,onPdf}:Props){
  const language=useContext(LanguageContext);const t=(v:string)=>translateText(v,language)||v;
  const showAlert = (...args: Parameters<typeof Alert.alert>) => {
   const [title, message, buttons, options] = args;
@@ -36,6 +36,16 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
  const [evidenceBusy,setEvidenceBusy]=useState<string|null>(null);
  const [attachmentBusy,setAttachmentBusy]=useState<string|null>(null);
  const [timeOrder,setTimeOrder]=useState('');const [timeTechnician,setTimeTechnician]=useState('');const [timeHours,setTimeHours]=useState('');const [timeDate,setTimeDate]=useState(new Date().toISOString().slice(0,10));const [timeNote,setTimeNote]=useState('');
+ const exportWorkOrderReport=(order:WorkOrder)=>{
+  const photos=normalizeWorkOrderEvidence(order.evidence),files=normalizeWorkOrderAttachments(order.attachments),history=normalizeWorkOrderHistory(order.history);
+  const historyLines=history.map(event=>{
+   const at=event.at.replace('T',' ').slice(0,16);
+   const detail=event.kind==='created'?t('إنشاء أمر العمل'):event.kind==='status_changed'?t('تغيير حالة أمر العمل')+': '+t(statusLabel(event.toStatus!)):event.kind==='evidence_added'?t('إضافة صورة العمل'):event.kind==='evidence_removed'?t('حذف صورة العمل'):event.kind==='attachment_added'?t('إضافة مرفق أمر العمل'):event.kind==='attachment_removed'?t('حذف مرفق أمر العمل'):event.kind==='payment_recorded'?t('أداء أمر العمل')+': '+((event.amountCentimes||0)/100).toFixed(2)+' DH':t('ساعات العمل')+': '+(event.hours||0).toFixed(2);
+   return at+' • '+detail;
+  });
+  const lines=[t('رقم أمر العمل:')+' '+order.number,t('حالة أمر العمل:')+' '+t(statusLabel(order.status)),t('نوع العمل:')+' '+t(order.category||'غير محدد'),t('التقني:')+' '+(technicians.find(item=>item.id===order.technicianId)?.name||t('غير محدد')),order.scheduledAt?t('موعد التنفيذ:')+' '+order.scheduledAt:'',t('صور الأشغال:')+' '+photos.length,...files.map(file=>t('المرفق:')+' '+file.name),t('ساعات العمل:')+' '+workOrderHours(timeEntries,order.id).toFixed(2),t('تكلفة العمل:')+' '+(workOrderTimeCost(timeEntries,order.id)/100).toFixed(2)+' DH',order.settlement?t('المبلغ المتفق عليه:')+' '+(order.settlement.quotedAmountCentimes/100).toFixed(2)+' DH':'',t('سجل التغييرات:')+' '+history.length,...historyLines].filter(Boolean);
+  onPdf((language==='FR'?'Rapport de chantier ':'تقرير الأشغال ')+order.number,order.customerName,lines,(order.settlement?.quotedAmountCentimes||0)/100);
+ };
  const addTech=()=>{const rate=Number(techRate.replace(',','.'));if(!techName.trim()||!Number.isFinite(rate)||rate<0){showAlert(t('معلومات ناقصة'),t('دخل اسم التقني وسعر ساعة صحيح.'));return;}
   onAddTechnician({id:'tech-'+Date.now(),name:techName.trim(),phone:techPhone.trim()||undefined,specialty:techSpecialty.trim()||undefined,hourlyRate:rate,active:true,permissions:[...techPermissions]});setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('0');setTechPermissions([...WORK_ORDER_CATEGORIES]);
  };
@@ -182,6 +192,7 @@ export default function FieldOperationsWorkspace({technicians,equipment,equipmen
    <Text style={styles.label}>{t('ملفات أمر العمل')} ({normalizeWorkOrderAttachments(order.attachments).length}/{MAX_WORK_ORDER_ATTACHMENTS})</Text>
    {normalizeWorkOrderAttachments(order.attachments).map(file=><View key={file.id} style={[styles.row,{alignItems:'center',justifyContent:'space-between'}]}><Text style={[styles.note,{flex:1}]} numberOfLines={1}>{file.name}</Text><AccessiblePressable accessibilityRole="button" accessibilityLabel={t('مشاركة المرفق')+' '+file.name} onPress={()=>shareOrderAttachment(file)} style={{minHeight:44,justifyContent:'center',paddingHorizontal:8}}><Text style={styles.actionText}>{t('مشاركة')}</Text></AccessiblePressable><AccessiblePressable accessibilityRole="button" accessibilityLabel={t('حذف المرفق')+' '+file.name} onPress={()=>deleteOrderAttachment(order,file)} style={{minHeight:44,justifyContent:'center',paddingHorizontal:8}}><Text style={styles.delete}>{t('حذف')}</Text></AccessiblePressable></View>)}
    {normalizeWorkOrderAttachments(order.attachments).length<MAX_WORK_ORDER_ATTACHMENTS?<AccessiblePressable accessibilityRole="button" accessibilityLabel={t('إرفاق ملف')+' '+order.number} disabled={attachmentBusy!==null} onPress={()=>chooseOrderAttachment(order)} style={[styles.choice,{minHeight:48,alignSelf:'flex-start'}]}><Text style={styles.label}>{attachmentBusy===order.id?'…':t('إرفاق ملف')}</Text></AccessiblePressable>:null}
+   <AccessiblePressable accessibilityRole="button" accessibilityLabel={t('تصدير تقرير أمر العمل PDF')+' '+order.number} onPress={()=>exportWorkOrderReport(order)} style={[styles.choice,{minHeight:48,alignSelf:'flex-start'}]}><Text style={styles.label}>{t('تصدير تقرير أمر العمل PDF')}</Text></AccessiblePressable>
    <View style={styles.row}>
     {order.status==='requested'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'scheduled')}><Text style={styles.actionText}>برمجة</Text></AccessiblePressable>}
     {order.status==='scheduled'&&<AccessiblePressable style={styles.smallAction} onPress={()=>changeStatus(order,'in_progress')}><Text style={styles.actionText}>بدء العمل</Text></AccessiblePressable>}
