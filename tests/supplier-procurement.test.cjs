@@ -2,7 +2,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {
  createSupplierPriceRequest,transitionSupplierPriceRequest,recordSupplierPriceOffer,
- compareSupplierOffers,createSupplierInvoice
+ compareSupplierOffers,createSupplierInvoice,createPurchaseOrderFromAcceptedSupplierRequest
 }=require('../.test-build/supplier-procurement.js');
 const request=(id,supplierId,name)=>createSupplierPriceRequest({
  id,number:'DR-'+id,supplierId,supplierName:name,createdAt:'2026-11-07T09:00:00.000Z',
@@ -93,4 +93,22 @@ test('supplier invoices show their linked purchase order and export localized in
  assert.ok(workspace.includes("invoice.lines.map(line=>line.description+' × '+line.quantity"));
  assert.ok(workspace.includes("onPdf((language==='FR'?'Facture fournisseur ':'فاتورة المورد ')+invoice.number"));
  assert.ok(dictionary.includes('"أمر الشراء المرتبط:": "Bon de commande associé :"'));
+});
+
+
+test('accepted supplier request converts once into a purchase order using accepted variant prices',()=>{
+ const draft=request('r-order','s-order','Supplier Order');
+ const quoted=recordSupplierPriceOffer(transitionSupplierPriceRequest(draft,'sent'),quote('offer-order',1275,425));
+ const accepted=transitionSupplierPriceRequest(quoted,'accepted');
+ const order=createPurchaseOrderFromAcceptedSupplierRequest({request:accepted,id:88,number:'BC-2026-0042',createdAt:'2026-11-10T09:00:00.000Z'});
+ assert.equal(order.status,'ordered');
+ assert.equal(order.sourcePriceRequestId,accepted.id);
+ assert.equal(order.number,'BC-2026-0042');
+ assert.equal(order.supplierId,'s-order');
+ assert.equal(order.lines[0].unitCost,12.75);
+ assert.equal(order.lines[1].variantId,'white');
+ assert.equal(order.lines[1].unitCost,4.25);
+ assert.equal(order.lines[0].receivedQuantity,0);
+ assert.throws(()=>createPurchaseOrderFromAcceptedSupplierRequest({request:quoted,id:89,number:'BC-43',createdAt:'2026-11-10',previousOrders:[order]}),/قبول/);
+ assert.throws(()=>createPurchaseOrderFromAcceptedSupplierRequest({request:accepted,id:90,number:'BC-44',createdAt:'2026-11-10',previousOrders:[order]}),/من هذا الطلب/);
 });
