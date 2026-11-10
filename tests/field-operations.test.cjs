@@ -129,3 +129,46 @@ test('photo buttons are wired to persisted work-order updates and confirmation',
  assert.match(source,/launchImageLibraryAsync\(/);
  assert.match(source,/normalizeWorkOrderEvidence\(order\.evidence\)/);
 });
+
+
+test('work-order attachments validate, persist locally, enforce limits and audit add/remove events',()=>{
+ const {addWorkOrderAttachment,removeWorkOrderAttachment,normalizeWorkOrderAttachments,MAX_WORK_ORDER_ATTACHMENTS}=require('../.test-build/field-operations.js');
+ const order={id:'wo-file',number:'WO-1',title:'Install',customerName:'Client',description:'',status:'requested',priority:'normal',equipmentIds:[],createdAt:'2026-11-10T08:00:00.000Z'};
+ const file=(id)=>({id,name:id+'.pdf',mimeType:'application/pdf',dataUri:'data:application/pdf;base64,AAAA',createdAt:'2026-11-10T09:00:00.000Z'});
+ let current=addWorkOrderAttachment(order,file('file-1'));
+ assert.equal(current.attachments.length,1);
+ assert.equal(current.history.at(-1).kind,'attachment_added');
+ assert.equal(normalizeWorkOrderAttachments(JSON.parse(JSON.stringify(current)).attachments)[0].name,'file-1.pdf');
+ current=removeWorkOrderAttachment(current,'file-1','2026-11-10T09:30:00.000Z');
+ assert.equal(current.attachments.length,0);
+ assert.equal(current.history.at(-1).kind,'attachment_removed');
+ let many=order;
+ for(let i=0;i<MAX_WORK_ORDER_ATTACHMENTS;i++)many=addWorkOrderAttachment(many,file('file-'+i));
+ assert.throws(()=>addWorkOrderAttachment(many,file('overflow')),/8 ملفات/);
+ assert.throws(()=>addWorkOrderAttachment(order,file('file-1'));
+});
+
+test('work-order attachments reject unsafe MIME, malformed data, oversize files and invalid timestamps',()=>{
+ const {addWorkOrderAttachment,normalizeWorkOrderAttachments}=require('../.test-build/field-operations.js');
+ const order={id:'wo-file',number:'WO-1',title:'Install',customerName:'Client',description:'',status:'requested',priority:'normal',equipmentIds:[],createdAt:'2026-11-10T08:00:00.000Z'};
+ const valid={id:'file-1',name:'invoice.pdf',mimeType:'application/pdf',dataUri:'data:application/pdf;base64,AAAA',createdAt:'2026-11-10T09:00:00.000Z'};
+ assert.throws(()=>addWorkOrderAttachment(order,{...valid,mimeType:'application/pdf\\ntext/html'}),/غير صالح/);
+ assert.throws(()=>addWorkOrderAttachment(order,{...valid,dataUri:'data:text/html;base64,AAAA'}),/غير صالح/);
+ assert.throws(()=>addWorkOrderAttachment(order,{...valid,createdAt:'invalid'}),/غير صالح/);
+ const oversized={...valid,dataUri:'data:application/pdf;base64,'+'A'.repeat(5_400_000)};
+ assert.throws(()=>addWorkOrderAttachment(order,oversized),/غير صالح/);
+ assert.deepEqual(normalizeWorkOrderAttachments([{...valid,id:''},valid,{...valid,id:'file-1'}]).map(item=>item.id),['file-1']);
+});
+
+test('work-order attachment controls use native file picking, sharing, deletion confirmation and localized labels',()=>{
+ const fs=require('node:fs');
+ const source=fs.readFileSync('src/FieldOperationsWorkspace.tsx','utf8');
+ const dictionary=fs.readFileSync('src/i18n.tsx','utf8');
+ assert.match(source,/DocumentPicker\.getDocumentAsync\(\{type:'\*\/\*',copyToCacheDirectory:true,multiple:false\}\)/);
+ assert.match(source,/onChangeOrder\(addWorkOrderAttachment\(order,attachment\)\)/);
+ assert.match(source,/removeWorkOrderAttachment\(order,file\.id\)/);
+ assert.match(source,/Sharing\.shareAsync\(uri/);
+ assert.match(source,/accessibilityLabel=\{t\('مشاركة المرفق'\)/);
+ assert.match(source,/accessibilityLabel=\{t\('حذف المرفق'\)/);
+ for(const key of ['ملفات أمر العمل','إرفاق ملف','مشاركة المرفق','حذف المرفق','إضافة مرفق أمر العمل','حذف مرفق أمر العمل'])assert.ok(dictionary.includes('"'+key+'"'));
+});
