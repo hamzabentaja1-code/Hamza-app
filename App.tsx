@@ -34,7 +34,7 @@ import {calculateCustomerBalances} from './src/domain/customer-balances';
 import {calculateSalesProfit} from './src/domain/profit';
 import {calculateSupplierBalances} from './src/domain/supplier-balances';
 import {AppLanguage, LanguageContext, TText as Text, TTextInput as TextInput, translateText} from './src/i18n';
-import {buildCommercialPdfHtml,localizeCommercialPdfTitle,describeConvertedDocumentForPdf} from './src/domain/commercial-pdf';
+import {buildCommercialPdfHtml,localizeCommercialPdfTitle,describeConvertedDocumentForPdf,resolveCommercialPdfProfile} from './src/domain/commercial-pdf';
 
 import AccessiblePressable from './src/AccessiblePressable';
 const Pressable = AccessiblePressable;
@@ -108,7 +108,7 @@ type Expense = {id:number; title:string; amount:number; date:string; projectId?:
 type ActivityEntry = {id:string; action:string; details:string; date:string; userId?:string; userName?:string};
 type Supplier = {id:number; name:string; phone?:string; email?:string; address?:string; ice?:string; rc?:string; taxId?:string; openingBalanceCentimes?:number; creditLimitCentimes?:number; paymentTermsDays?:number; customFields?:ContactCustomField[]; attachments?:ContactAttachment[]};
 type Quote = QuoteRecord;
-type CommercialDocument = ConvertedDocument & {paidCentimes?:number; dueDate?:string};
+type CommercialDocument = ConvertedDocument & {paidCentimes?:number; dueDate?:string; pdfTemplateOverride?:'classic'|'compact'};
 type Payment = {id:number; customerName:string; amount:number; method:string; date:string; note:string; documentId?:number};
 type ProjectStatus = 'planned'|'active'|'completed'|'cancelled';
 type Project = {id:number; name:string; customerName:string; budget:number; spent:number; status:ProjectStatus; startDate:string; dueDate:string; notes:string};
@@ -793,9 +793,9 @@ export default function App() {
       if(!result.canceled&&result.assets[0]?.uri){const asset=result.assets[0];const logoData=asset.base64?`data:${asset.mimeType||'image/jpeg'};base64,${asset.base64}`:asset.uri;setCompanyProfile(current=>({...current,logoData}));}
     }catch(error){showAlert('تعذر اختيار الشعار',error instanceof Error?error.message:'وقع خطأ أثناء اختيار الصورة.');}
   };
-  const exportPdf=async(title:string,customerName:string,lines:string[],total:number,showTotal=true)=>{
+  const exportPdf=async(title:string,customerName:string,lines:string[],total:number,showTotal=true,templateOverride?:'classic'|'compact')=>{
     try{
-      const pdfTitle=language==='AR'?localizeCommercialPdfTitle(title,language):(translateText(title,language)||title);const html=buildCommercialPdfHtml({language,title:pdfTitle,customerName,lines,total,showTotal,companyProfile,dateLabel:new Date().toLocaleDateString(language==='AR'?'ar-MA':'fr-MA')});
+      const pdfTitle=language==='AR'?localizeCommercialPdfTitle(title,language):(translateText(title,language)||title);const html=buildCommercialPdfHtml({language,title:pdfTitle,customerName,lines,total,showTotal,companyProfile:resolveCommercialPdfProfile(companyProfile,templateOverride),dateLabel:new Date().toLocaleDateString(language==='AR'?'ar-MA':'fr-MA')});
       const file=await Print.printToFileAsync({html});
       if(await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri,{mimeType:'application/pdf',dialogTitle:title});
       else showAlert('PDF جاهز',file.uri);
@@ -985,9 +985,9 @@ export default function App() {
       :screen==='الفواتير'||screen==='الفواتير الأولية'||screen==='Bon de sortie'?<>
         <Text style={s.section}>{screen==='الفواتير'?'الفواتير':screen==='الفواتير الأولية'?'الفواتير الأولية':'سندات الخروج'}</Text>
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':screen==='الفواتير الأولية'?'proforma':'delivery')).map(d=><View key={d.id} style={s.listItem}>
-          <View style={{flex:1}}><Text style={s.itemTitle}>{d.number} • {d.customerName}</Text><Text style={s.itemSub}>{d.date} • {d.status} • {d.lines.length} سطر</Text>{d.dueDate?<Text style={s.itemSub}>تاريخ الاستحقاق: {d.dueDate}</Text>:null}</View>
+          <View style={{flex:1}}><Text style={s.itemTitle}>{d.number} • {d.customerName}</Text><Text style={s.itemSub}>{d.date} • {d.status} • {d.lines.length} سطر</Text>{d.dueDate?<Text style={s.itemSub}>تاريخ الاستحقاق: {d.dueDate}</Text>:null}<View style={[s.row,{flexWrap:'wrap',marginTop:6}]}><Text style={s.itemSub}>قالب PDF:</Text><Pressable accessibilityRole="button" accessibilityState={{selected:!d.pdfTemplateOverride}} onPress={()=>setDocuments(current=>current.map(item=>item.id===d.id?{...item,pdfTemplateOverride:undefined}:item))} style={[s.choice,{paddingVertical:6,borderColor:!d.pdfTemplateOverride?GOLD:'#444'}]}><Text style={s.itemSub}>قالب الشركة</Text></Pressable><Pressable accessibilityRole="button" accessibilityState={{selected:d.pdfTemplateOverride==='classic'}} onPress={()=>setDocuments(current=>current.map(item=>item.id===d.id?{...item,pdfTemplateOverride:'classic'}:item))} style={[s.choice,{paddingVertical:6,borderColor:d.pdfTemplateOverride==='classic'?GOLD:'#444'}]}><Text style={s.itemSub}>كلاسيكي</Text></Pressable><Pressable accessibilityRole="button" accessibilityState={{selected:d.pdfTemplateOverride==='compact'}} onPress={()=>setDocuments(current=>current.map(item=>item.id===d.id?{...item,pdfTemplateOverride:'compact'}:item))} style={[s.choice,{paddingVertical:6,borderColor:d.pdfTemplateOverride==='compact'?GOLD:'#444'}]}><Text style={s.itemSub}>مختصر</Text></Pressable></View></View>
           <Text style={s.itemPrice}>{d.total.toFixed(2)} DH</Text>
-          <Pressable onPress={()=>{const pdf=describeConvertedDocumentForPdf(d,language);exportPdf(pdf.title,d.customerName,pdf.lines,d.total);}}><Text style={s.gold}>PDF</Text></Pressable>
+          <Pressable onPress={()=>{const pdf=describeConvertedDocumentForPdf(d,language);exportPdf(pdf.title,d.customerName,pdf.lines,d.total,true,d.pdfTemplateOverride);}}><Text style={s.gold}>PDF</Text></Pressable>
         </View>)}
         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':'delivery')).length===0&&<Text style={s.empty}>مازال ما تسجلات حتى وثيقة من هاد النوع.</Text>}
         {sales.length>0&&<Text style={s.note}>سجل المبيعات القديم باقي محفوظ كما هو.</Text>}
