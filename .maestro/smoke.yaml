@@ -39,6 +39,11 @@ appId: com.hamza.app
 - inputText: "نقطة البيع"
 - hideKeyboard
 - tapOn: "Point of Sale"
+- scrollUntilVisible:
+    element:
+      text: "نقطة البيع POS"
+    direction: UP
+    timeout: 10000
 - assertVisible: "نقطة البيع POS"
 - tapOn: "⌂ الرئيسية"
 
