@@ -1,6 +1,14 @@
 const test=require('node:test');const assert=require('node:assert/strict');
-const {buildCommercialPdfHtml,localizeCommercialPdfTitle}=require('../.test-build/commercial-pdf.js');
+const {buildCommercialPdfHtml,localizeCommercialPdfTitle,describeConvertedDocumentForPdf}=require('../.test-build/commercial-pdf.js');
 const profile={name:'HamZa',address:'Casablanca',showTaxFields:false,taxRate:20};
+test('converted commercial PDFs include localized proforma validity and invoice due dates',()=>{
+ const document={number:'PRO-7',type:'proforma',validUntil:'30/11/2026',lines:[{productName:'Cable',qty:2,total:40,variantLabel:'Rouge'}]};
+ assert.deepEqual(describeConvertedDocumentForPdf(document,'FR'),{title:'Facture pro forma PRO-7',lines:['Valable jusqu’au : 30/11/2026','Cable • Rouge × 2 — 40.00 DH']});
+ assert.deepEqual(describeConvertedDocumentForPdf(document,'AR'),{title:'فاتورة أولية PRO-7',lines:['صالحة إلى غاية: 30/11/2026','Cable • Rouge × 2 — 40.00 DH']});
+ const invoice={number:'FAC-8',type:'invoice',dueDate:'15/12/2026',lines:[]};
+ assert.deepEqual(describeConvertedDocumentForPdf(invoice,'FR'),{title:'Facture FAC-8',lines:["Date d’échéance : 15/12/2026"]});
+});
+
 test('commercial PDF renders Arabic right-to-left labels and TTC total by default',()=>{
  const html=buildCommercialPdfHtml({language:'AR',title:'فاتورة',customerName:'زبون',lines:['منتج × 2'],total:240,companyProfile:profile,dateLabel:'07/11/2026'});
  assert.match(html,/<html lang="ar" dir="rtl"(?: data-hamza-template="[^"]+")?>/);assert.match(html,/الزبون: زبون/);assert.match(html,/TTC: 240\.00 DH/);assert.doesNotMatch(html,/TVA \(/);
