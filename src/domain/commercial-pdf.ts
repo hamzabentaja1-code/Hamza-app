@@ -76,6 +76,7 @@ export function localizeCommercialPdfTitle(title:string,language:PdfLanguage):st
   ['Reçu de dépense','وصل المصروف'],
   ['Reçu de vente','وصل البيع'],
   ['Bon d’achat','وصل الشراء'],
+  ['Rapport de chantier ','تقرير الأشغال '],
   ['Rapport de période','تقرير الفترة'],
   ['Rapport d’activité','تقرير النشاط'],
   ['Situation des clients','وضعية الزبناء'],
