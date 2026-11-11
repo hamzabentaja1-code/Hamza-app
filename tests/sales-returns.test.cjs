@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {createSalesReturn,normalizeSalesReturns}=require('../.test-build/domain/sales-returns.js');
+const {createSalesReturn,normalizeSalesReturns,recordCustomerRefund}=require('../.test-build/domain/sales-returns.js');
 const {allocateCreditNoteAcrossInvoices}=require('../.test-build/domain/payment-allocation.js');
 const {calculateCustomerBalances}=require('../.test-build/domain/customer-balances.js');
 
@@ -49,4 +49,25 @@ test('return linked to a POS sale reduces that invoice receivable',()=>{
   assert.equal(credit.allocations[0].allocatedCentimes,2500);
   const balances=calculateCustomerBalances([{type:'invoice',customerName:'Client',total:100,paidCentimes:5000,creditedCentimes:credit.allocations[0].creditedCentimes}]);
   assert.equal(balances[0].outstandingCentimes,2500);
+});
+
+test('cash refund reduces only the unapplied customer credit and is persisted',()=>{
+  const item={...createSalesReturn({sale,quantity:1,existingReturns:[],id:84,date:'11/11/2026',restock:false}),unappliedCentimes:2500};
+  const refunded=recordCustomerRefund(item,12.5,85,'12/11/2026');
+  assert.equal(refunded.unappliedCentimes,1250);
+  assert.deepEqual(refunded.refunds,[{id:85,amountCentimes:1250,date:'12/11/2026',method:'cash'}]);
+  assert.deepEqual(normalizeSalesReturns([refunded]),[refunded]);
+});
+
+test('cash refund rejects invalid amounts, duplicate ids, missing dates and credit overspend',()=>{
+  const item={...createSalesReturn({sale,quantity:1,existingReturns:[],id:86,date:'11/11/2026',restock:false}),unappliedCentimes:2500};
+  assert.throws(()=>recordCustomerRefund(item,0,87,'12/11/2026'));
+  assert.throws(()=>recordCustomerRefund(item,25.01,87,'12/11/2026'));
+  assert.throws(()=>recordCustomerRefund(item,1,87,''));
+  assert.throws(()=>recordCustomerRefund({...item,refunds:[{id:87,amountCentimes:100,date:'12/11/2026',method:'cash'}]},1,87,'13/11/2026'));
+});
+
+test('normalization drops malformed refund records without dropping valid returns',()=>{
+  const item={...createSalesReturn({sale,quantity:1,existingReturns:[],id:88,date:'11/11/2026',restock:false}),unappliedCentimes:2500,refunds:[{id:89,amountCentimes:100,date:'12/11/2026',method:'cash'}]};
+  assert.deepEqual(normalizeSalesReturns([item,{...item,id:90,refunds:[null]}]),[item]);
 });
