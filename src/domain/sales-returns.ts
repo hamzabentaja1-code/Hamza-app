@@ -1,10 +1,11 @@
 export type SaleForReturn={
-  id:number;productId?:number;warehouseId?:string;productName:string;customerName:string;
+  id:number;productId?:number;warehouseId?:string;documentId?:number;productName:string;customerName:string;
   qty:number;total:number;
 };
 export type SalesReturnRecord={
   id:number;number:string;saleId:number;productId?:number;warehouseId:string;
-  productName:string;customerName:string;qty:number;total:number;reason:string;restocked:boolean;date:string;
+  documentId?:number;invoiceAllocations?:{documentId:number;creditedCentimes:number;allocatedCentimes:number;status:'partially_paid'|'paid'}[];
+  unappliedCentimes?:number;productName:string;customerName:string;qty:number;total:number;reason:string;restocked:boolean;date:string;
 };
 
 export function createSalesReturn(input:{
@@ -28,6 +29,7 @@ export function createSalesReturn(input:{
   const total=Math.round((sale.total*input.quantity/sale.qty)*100)/100;
   return {
     id:input.id,number:'AV-'+input.id,saleId:sale.id,
+    ...(sale.documentId?{documentId:sale.documentId}:{}),
     productId:input.productId,warehouseId:sale.warehouseId||'main',
     productName:sale.productName,customerName:sale.customerName,
     qty:input.quantity,total,reason:input.reason?.trim()||'',restocked:input.restock,date:input.date,
@@ -40,7 +42,10 @@ export function normalizeSalesReturns(value:unknown):SalesReturnRecord[] {
     if(typeof item!=='object'||item===null)return false;
     const r=item as Partial<SalesReturnRecord>;
     return Number.isSafeInteger(r.id)&&typeof r.number==='string'&&Number.isSafeInteger(r.saleId)&&
-      typeof r.warehouseId==='string'&&typeof r.productName==='string'&&typeof r.customerName==='string'&&
+      typeof r.warehouseId==='string'&&(r.documentId===undefined||Number.isSafeInteger(r.documentId))&&
+      (r.unappliedCentimes===undefined||Number.isSafeInteger(r.unappliedCentimes)&&r.unappliedCentimes>=0)&&
+      (r.invoiceAllocations===undefined||Array.isArray(r.invoiceAllocations)&&r.invoiceAllocations.every(allocation=>Number.isSafeInteger(allocation.documentId)&&Number.isSafeInteger(allocation.creditedCentimes)&&Number.isSafeInteger(allocation.allocatedCentimes)&&['partially_paid','paid'].includes(allocation.status)))&&
+      typeof r.productName==='string'&&typeof r.customerName==='string'&&
       Number.isFinite(r.qty)&&Number(r.qty)>0&&Number.isFinite(r.total)&&Number(r.total)>=0&&
       typeof r.reason==='string'&&typeof r.restocked==='boolean'&&typeof r.date==='string';
   });
