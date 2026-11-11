@@ -292,6 +292,7 @@ const fr: Record<string, string> = {
   "تسجيل أداء زبون": "Enregistrer un paiement client",
   "اختار الفاتورة (اختياري)": "Choisir une facture (facultatif)",
   "حماية بياناتك": "Protégez vos données",
+  "مشاركة نسخة JSON": "Partager la sauvegarde JSON",
   "جاري التحضير...": "Préparation en cours...",
   "استرجاع نسخة": "Restaurer une sauvegarde",
   "لصق محتوى ملف JSON هنا...": "Collez le contenu du fichier JSON ici...",
