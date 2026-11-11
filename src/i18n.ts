@@ -8,6 +8,7 @@ const fr: Record<string, string> = {
   "الزبناء": "Clients",
   "تعديل الزبون": "Modifier le client",
   "كشف الحساب": "Relevé de compte",
+  "شراء": "Achat",
   "المبلغ": "Montant",
   "رصيد لصالح الزبون:": "Crédit en faveur du client :",
   "المخصوم من دين الفاتورة:": "Montant déduit de la facture :",
