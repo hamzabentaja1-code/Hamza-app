@@ -40,7 +40,7 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Sales documents
 - [ ] Quotes, customer orders, delivery notes, invoices, proforma invoices
-- [ ] Customer returns create PDF credit notes, reduce open invoice balances and track excess customer credit; applying existing customer credit to future invoices and processing cash refunds remain pending
+- [ ] Customer returns create PDF credit notes, reduce open invoice balances, and carry excess credit into a later POS credit sale; cash refunds and applying credit on invoice forms remain pending
 - [ ] Document lifecycle, conversion/linking, reminders and follow-up
 - [ ] Discounts, fees, notes/sections, barcode entry, multi-line editing
 - [ ] PDF layouts, print, share, document numbering and status tracking

@@ -10,6 +10,7 @@ const fr: Record<string, string> = {
   "رصيد لصالح الزبون:": "Crédit en faveur du client :",
   "المخصوم من دين الفاتورة:": "Montant déduit de la facture :",
   "أرصدة لصالح الزبناء:": "Crédits en faveur des clients :",
+  "رصيد سابق مستعمل:": "Crédit client utilisé :",
   "الموردون": "Fournisseurs",
   "تعديل المورد": "Modifier le fournisseur",
   "المبيعات": "Ventes",

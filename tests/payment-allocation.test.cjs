@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { applyPaymentToInvoice, allocateCreditNoteAcrossInvoices, allocatePaymentAcrossInvoices } = require('../.test-build/domain/payment-allocation.js');
+const { applyExistingCustomerCredits, applyPaymentToInvoice, allocateCreditNoteAcrossInvoices, allocatePaymentAcrossInvoices } = require('../.test-build/domain/payment-allocation.js');
 
 test('partial payment updates paid amount and remaining balance', () => {
   const result = applyPaymentToInvoice({type:'invoice',total:250,paidCentimes:0,status:'صادرة'},7500);
@@ -50,4 +50,14 @@ test('credit notes reduce invoice due and payments cannot exceed the remaining a
 test('credit note leaves unapplied customer credit when no invoice is due',()=>{
  const result=allocateCreditNoteAcrossInvoices([{id:7,total:30,paidCentimes:3000,status:'paid'}],4500,7);
  assert.deepEqual(result,{allocations:[],unappliedCentimes:4500});
+});
+
+test('unapplied customer credits are carried forward to future invoices FIFO',()=>{
+ const result=applyExistingCustomerCredits([{id:30,unappliedCentimes:500},{id:10,unappliedCentimes:1200},{id:20,unappliedCentimes:400}],99,1400);
+ assert.deepEqual(result,{creditedCentimes:1400,remainingDueCentimes:0,allocations:[{creditNoteId:10,invoiceId:99,amountCentimes:1200},{creditNoteId:20,invoiceId:99,amountCentimes:200}]});
+});
+
+test('customer credits validate source records and cannot exceed invoice balance',()=>{
+ assert.deepEqual(applyExistingCustomerCredits([{id:1,unappliedCentimes:900}],99,400),{creditedCentimes:400,remainingDueCentimes:0,allocations:[{creditNoteId:1,invoiceId:99,amountCentimes:400}]});
+ assert.throws(()=>applyExistingCustomerCredits([{id:1,unappliedCentimes:-1}],99,400));
 });

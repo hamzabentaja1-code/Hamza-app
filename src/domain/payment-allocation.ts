@@ -12,6 +12,30 @@ export type PaymentResult = {
 export type InvoiceForAllocation={id:number;total:number;paidCentimes?:number;creditedCentimes?:number;status:string};
 export type InvoiceAllocation={invoiceId:number;paidCentimes:number;creditedCentimes?:number;allocatedCentimes:number;status:'partially_paid'|'paid'};
 export type CreditAllocation={invoiceId:number;creditedCentimes:number;allocatedCentimes:number;status:'partially_paid'|'paid'};
+export type AppliedCustomerCredit={creditNoteId:number;invoiceId:number;amountCentimes:number};
+
+/** Uses the oldest unapplied customer credit notes against a new invoice balance. */
+export function applyExistingCustomerCredits(
+  credits:readonly {id:number;unappliedCentimes:number}[],invoiceId:number,dueCentimes:number,
+):{creditedCentimes:number;remainingDueCentimes:number;allocations:AppliedCustomerCredit[]} {
+  if(!Number.isSafeInteger(invoiceId)||invoiceId<=0||!Number.isSafeInteger(dueCentimes)||dueCentimes<0)throw new Error('Invoice balance is invalid');
+  const ids=new Set<number>();
+  const ordered=[...credits].sort((a,b)=>a.id-b.id);
+  for(const credit of ordered){
+    if(!Number.isSafeInteger(credit.id)||ids.has(credit.id)||!Number.isSafeInteger(credit.unappliedCentimes)||credit.unappliedCentimes<0)throw new Error('Customer credit is invalid');
+    ids.add(credit.id);
+  }
+  let left=dueCentimes;
+  const allocations:AppliedCustomerCredit[]=[];
+  for(const credit of ordered){
+    if(left<=0)break;
+    if(credit.unappliedCentimes<=0)continue;
+    const amountCentimes=Math.min(left,credit.unappliedCentimes);
+    left-=amountCentimes;
+    allocations.push({creditNoteId:credit.id,invoiceId,amountCentimes});
+  }
+  return {creditedCentimes:dueCentimes-left,remainingDueCentimes:left,allocations};
+}
 
 /** Allocates a payment to one invoice using integer centimes. */
 export function applyPaymentToInvoice(
