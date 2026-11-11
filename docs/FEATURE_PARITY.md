@@ -17,7 +17,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Users, roles, permissions, activity history
 - [ ] Arabic/French complete localization, language persistence, theme
 - [ ] Numbering series, document templates, custom fields
-- [x] JSON backup export and validated restore for local app data (manual copy/paste; encrypted backup not implemented)
+- [x] Shareable JSON backup export, file picker restore and validated restore for local app data (encrypted backup not implemented)
 - [ ] Automated scheduled backups and encrypted backup files
 
 ### Products and inventory
@@ -54,15 +54,16 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Cash, payments and banking
 - [ ] Expenses and recurring expenses/categories
 - [ ] Cash registers, opening balance, cash in/out and transfers
-- [ ] Customer and supplier payments, allocations and balances
+- [x] Customer payment allocation to open invoices, supplier debt and partial payment tracking
 - [ ] Cheques, drafts, unpaid items and due-date tracking
 - [ ] Bank statement import and reconciliation
 
 ### POS
-- [x] Product name search and stock-aware cart with quantity controls
-- [x] Customer selection, general discount, cash/card/transfer methods and checkout validation
+- [x] Product name/reference/barcode search and stock-aware cart with quantity controls; keyboard barcode scanners can submit the scanned code
+- [x] Customer selection, general discount, cash/card/transfer/credit methods and checkout validation
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
-- [ ] Barcode scanning, categories and stock filters
+- [x] Credit checkout creates an invoice receivable and records partial payments
+- [ ] Camera barcode scanning, categories and stock filters
 - [ ] Returns, parked sales and physical receipt-printer integration
 
 ### Projects and field operations
