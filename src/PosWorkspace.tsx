@@ -10,7 +10,7 @@ type Props = {
   language: 'AR'|'FR';
   products: Product[];
   customers: Customer[];
-  onCheckout: (data:{customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'; total:number})=>boolean|void;
+  onCheckout: (data:{customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'|'credit'; total:number;paidAmount:number})=>boolean|void;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
@@ -19,26 +19,31 @@ export default function PosWorkspace({language,products,customers,onCheckout}:Pr
   const tr=(value:string)=>translate(language,value);
   const [term,setTerm]=useState('');
   const [customerId,setCustomerId]=useState('');
-  const [method,setMethod]=useState<'cash'|'card'|'transfer'>('cash');
+  const [method,setMethod]=useState<'cash'|'card'|'transfer'|'credit'>('cash');
+  const [creditPaidText,setCreditPaidText]=useState('0');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
   const mapped:PosProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,salePrice:p.price,stock:p.qty,trackStock:true})),[products]);
   const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>p.name.toLocaleLowerCase().includes(q)).slice(0,8);},[mapped,term]);
   const discount=Number(discountText.replace(',','.'));
-  const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:0};
+  const creditPaid=Number(creditPaidText.replace(',','.'));
+  const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:method==='credit'&&Number.isFinite(creditPaid)?Math.max(0,creditPaid):0};
   const totals=posTotals(currentCart);
   const add=(p:PosProduct)=>{try{setCart(old=>addPosLine(old,p));setTerm('');}catch(e){Alert.alert(tr('المخزون غير كافٍ'),e instanceof Error?e.message:tr('تعذر إضافة المنتج'));}};
   const changeQty=(productId:string,delta:number)=>{setCart(old=>({...old,lines:old.lines.map(line=>line.productId===productId?{...line,quantity:line.quantity+delta}:line).filter(line=>line.quantity>0)}));};
   const remove=(productId:string)=>setCart(old=>({...old,lines:old.lines.filter(line=>line.productId!==productId)}));
   const checkout=()=>{
     if(!Number.isFinite(discount)||discount<0){Alert.alert(tr('تخفيض غير صالح'),tr('دخل تخفيض صحيح.'));return;}
-    const validation=validateCheckout({...currentCart,paidAmount:totals.total});
-    if(validation.length){Alert.alert(tr('راجع السلة'),validation.join('\n'));return;}
+    if(method==='credit'&&(!customerId||!Number.isFinite(creditPaid)||creditPaid<0||creditPaid>totals.total)){Alert.alert(tr('معلومات ناقصة'),tr('اختار زبوناً مسجلاً ومبلغاً مؤدى لا يتجاوز المجموع.'));return;}
+    const paidAmount=method==='credit'?creditPaid:totals.total;
+    const validation=validateCheckout({...currentCart,paidAmount});
+    if(validation.length){Alert.alert(tr('راجع السلة'),validation.map(message=>tr(message)).join('\n'));return;}
     const lines:CheckoutLine[]=currentCart.lines.map(line=>({productId:Number(line.productId),name:line.name,quantity:line.quantity,unitPrice:line.unitPrice,discount:line.discount}));
     const name=customers.find(c=>String(c.id)===customerId)?.name||'زبون عابر';
-    Alert.alert(tr('تأكيد البيع'),`${tr('المجموع النهائي:')} ${money(totals.total)}\n${tr('الزبون')}: ${name}\n${tr('طريقة الأداء')}: ${tr(method==='cash'?'نقداً':method==='card'?'بطاقة':'تحويل')}`,[
+    const remaining=Math.max(0,totals.total-paidAmount);
+    Alert.alert(tr('تأكيد البيع'),`${tr('المجموع النهائي:')} ${money(totals.total)}\n${tr('الزبون')}: ${name}\n${tr('طريقة الأداء')}: ${tr(method==='cash'?'نقداً':method==='card'?'بطاقة':method==='credit'?'دين':'تحويل')}${method==='credit'?`\n${tr('المؤدى الآن:')} ${money(paidAmount)}\n${tr('الباقي:')} ${money(remaining)}`:''}`,[
       {text:tr('رجوع'),style:'cancel'},
-      {text:tr('تأكيد'),onPress:()=>{const accepted=onCheckout({customerName:name,lines,paymentMethod:method,total:totals.total});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');}}
+      {text:tr('تأكيد'),onPress:()=>{const accepted=onCheckout({customerName:name,lines,paymentMethod:method,total:totals.total,paidAmount});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');}}
     ]);
   };
   return <View style={{gap:12,direction:getLayoutDirection(language)}}>
@@ -76,8 +81,9 @@ export default function PosWorkspace({language,products,customers,onCheckout}:Pr
       </View>
       <Text style={{color:'#CCC',marginTop:12,marginBottom:6}}>{tr('طريقة الأداء')}</Text>
       <View style={{flexDirection:'row',gap:7}}>
-        {([{id:'cash',label:'نقداً'},{id:'card',label:'بطاقة'},{id:'transfer',label:'تحويل'}] as const).map(m=><Pressable key={m.id} onPress={()=>setMethod(m.id)} style={{flex:1,borderWidth:1,borderColor:method===m.id?GOLD:'#444',borderRadius:8,padding:10,alignItems:'center'}}><Text style={{color:'#FFF'}}>{tr(m.label)}</Text></Pressable>)}
+        {([{id:'cash',label:'نقداً'},{id:'card',label:'بطاقة'},{id:'transfer',label:'تحويل'},{id:'credit',label:'دين'}] as const).map(m=><Pressable key={m.id} onPress={()=>setMethod(m.id)} style={{flex:1,borderWidth:1,borderColor:method===m.id?GOLD:'#444',borderRadius:8,padding:10,alignItems:'center'}}><Text style={{color:'#FFF'}}>{tr(m.label)}</Text></Pressable>)}
       </View>
+      {method==='credit'&&<><TextInput value={creditPaidText} onChangeText={setCreditPaidText} keyboardType="decimal-pad" placeholder={tr('المؤدى الآن (DH)')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',marginTop:8,textAlign:'auto'}}/><Text style={{color:'#AAA'}}>{tr('اختار زبوناً مسجلاً ومبلغاً مؤدى لا يتجاوز المجموع.')}</Text></>}
       <TextInput value={discountText} onChangeText={setDiscountText} keyboardType="decimal-pad" placeholder={tr('تخفيض عام (DH)')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',marginTop:12,textAlign:'right'}}/>
       <View style={{backgroundColor:'#111',borderRadius:9,padding:12,marginTop:10,gap:6}}>
         <Text style={{color:'#DDD'}}>{tr('المجموع قبل التخفيض:')} {money(totals.subtotal)}</Text>

@@ -241,7 +241,7 @@ export default function App() {
       else Alert.alert(tr('PDF جاهز'),file.uri);
     }catch(e){Alert.alert(tr('خطأ'),tr('تعذر إنشاء PDF. تأكد من تثبيت مكتبات expo-print و expo-sharing.'));}
   };
-  const checkoutPos=(data:{customerName:string;lines:{productId:number;name:string;quantity:number;unitPrice:number;discount:number}[];paymentMethod:'cash'|'card'|'transfer';total:number})=>{
+  const checkoutPos=(data:{customerName:string;lines:{productId:number;name:string;quantity:number;unitPrice:number;discount:number}[];paymentMethod:'cash'|'card'|'transfer'|'credit';total:number;paidAmount:number})=>{
     const invalid=data.lines.find(line=>{const product=products.find(p=>p.id===line.productId);return !product||warehouseStock(stockMovements,String(line.productId),activeWarehouseId)<line.quantity;});
     if(invalid){Alert.alert(tr('المخزون تبدل'),tr('الكمية المتوفرة ما بقاتش كافية. راجع السلة.'));return false;}
     const subtotal=data.lines.reduce((sum,line)=>sum+line.quantity*line.unitPrice-line.discount,0);
@@ -251,8 +251,14 @@ export default function App() {
     setSales(current=>[...records,...current]);
     setProducts(current=>current.map(product=>{const sold=data.lines.filter(line=>line.productId===product.id).reduce((sum,line)=>sum+line.quantity,0);return sold?{...product,qty:product.qty-sold}:product;}));
     setStockMovements(current=>[...current,...data.lines.map((line,index)=>({id:'pos-'+Date.now()+'-'+index,productId:String(line.productId),warehouseId:activeWarehouseId,kind:'sale' as const,quantity:line.quantity,createdAt:new Date().toISOString(),note:'بيع نقطة البيع'}))]);
-    const methodLabel=data.paymentMethod==='cash'?'نقداً':data.paymentMethod==='card'?'بطاقة':'تحويل';
-    exportPdf('Reçu de vente',data.customerName,[...data.lines.map(line=>line.name+' × '+line.quantity+' — '+(line.quantity*line.unitPrice-line.discount).toFixed(2)+' DH'), ''+tr('طريقة الأداء:')+' '+methodLabel],data.total);
+    const invoiceId=Date.now()+data.lines.length+1;
+    const paidCentimes=Math.round(data.paidAmount*100);
+    const invoice:CommercialDocument={id:invoiceId,number:'FV-'+invoiceId,type:'invoice',customerName:data.customerName,total:data.total,paidCentimes,status:paidCentimes>=Math.round(data.total*100)?'paid':paidCentimes>0?'partially_paid':'صادرة',date:today,sourceQuoteId:-invoiceId,lines:records.map(record=>({productId:record.productId,productName:record.productName,qty:record.qty,unitPrice:record.unitPrice,total:record.total}))};
+    setDocuments(current=>[invoice,...current]);
+    const methodLabel=data.paymentMethod==='cash'?'نقداً':data.paymentMethod==='card'?'بطاقة':data.paymentMethod==='credit'?'دين':'تحويل';
+    if(paidCentimes>0)setPayments(current=>[{id:invoiceId+1,customerName:data.customerName,amount:paidCentimes/100,method:methodLabel,date:today,note:'أداء نقطة البيع',documentId:invoiceId,allocations:[{documentId:invoiceId,amountCentimes:paidCentimes}]},...current]);
+    const due=Math.max(0,data.total-paidCentimes/100);
+    exportPdf('Reçu de vente',data.customerName,[...records.map(record=>record.productName+' × '+record.qty+' — '+record.total.toFixed(2)+' DH'),tr('طريقة الأداء:')+' '+tr(methodLabel),tr('المؤدى الآن:')+' '+(paidCentimes/100).toFixed(2)+' DH',...(due>0?[tr('الباقي:')+' '+due.toFixed(2)+' DH']:[])],data.total);
     return true;
   };
   const go=(s:string)=>{setScreen(s);setSearch('');};

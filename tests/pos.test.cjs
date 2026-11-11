@@ -43,5 +43,12 @@ test('POS checkout rejects empty carts and underpaid cash checkouts', () => {
     paidAmount:20,
   };
   assert.ok(validateCheckout(cart).includes('المبلغ المؤدى أقل من المجموع'));
-  assert.deepEqual(validateCheckout({...cart, paymentMethod:'credit'}), []);
+  assert.ok(validateCheckout({...cart, paymentMethod:'credit'}).includes('اختار زبوناً مسجلاً للبيع بالدين'));
+});
+
+test('credit checkout requires a registered customer and a valid partial payment',()=>{
+  const cart={...emptyPosCart(),lines:[{productId:'1',name:'Cable',quantity:2,unitPrice:10,discount:0}],paymentMethod:'credit',paidAmount:5};
+  assert.ok(validateCheckout(cart).includes('اختار زبوناً مسجلاً للبيع بالدين'));
+  assert.deepEqual(validateCheckout({...cart,customerId:'7'}),[]);
+  assert.ok(validateCheckout({...cart,customerId:'7',paidAmount:25}).includes('المبلغ المؤدى ما صالحش'));
 });

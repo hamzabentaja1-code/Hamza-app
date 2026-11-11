@@ -41,6 +41,8 @@ export function validateCheckout(cart: PosCart): string[] {
   }
   const totals = posTotals(cart);
   if (cart.paymentMethod !== "credit" && totals.remaining > 0) errors.push("المبلغ المؤدى أقل من المجموع");
+  if (cart.paymentMethod === "credit" && !cart.customerId) errors.push("اختار زبوناً مسجلاً للبيع بالدين");
+  if (cart.paymentMethod === "credit" && (!Number.isFinite(cart.paidAmount) || cart.paidAmount < 0 || cart.paidAmount > totals.total)) errors.push("المبلغ المؤدى ما صالحش");
   return errors;
 }
 
