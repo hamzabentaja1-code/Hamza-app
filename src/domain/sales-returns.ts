@@ -47,6 +47,34 @@ export function recordCustomerRefund(item:SalesReturnRecord,amount:number,id:num
   return {...item,unappliedCentimes:unapplied-amountCentimes,refunds:[...(item.refunds||[]),{id,amountCentimes,date,method:'cash'}]};
 }
 
+export function applyCustomerCreditsToSalesReturns(
+  returns:readonly SalesReturnRecord[],
+  allocations:readonly {creditNoteId:number;invoiceId:number;amountCentimes:number}[],
+  invoiceId:number,
+  status:'partially_paid'|'paid',
+):SalesReturnRecord[] {
+  if(!Number.isSafeInteger(invoiceId)||invoiceId<=0)throw new Error('معرف الفاتورة غير صالح.');
+  const usedByCredit=new Map<number,number>();
+  for(const allocation of allocations){
+    if(allocation.invoiceId!==invoiceId||!Number.isSafeInteger(allocation.creditNoteId)||!Number.isSafeInteger(allocation.amountCentimes)||allocation.amountCentimes<=0)throw new Error('توزيع الإشعار الدائن غير صالح.');
+    usedByCredit.set(allocation.creditNoteId,(usedByCredit.get(allocation.creditNoteId)||0)+allocation.amountCentimes);
+  }
+  for(const [creditNoteId,amount] of usedByCredit){
+    const item=returns.find(value=>value.id===creditNoteId);
+    if(!item||amount>(item.unappliedCentimes??0))throw new Error('رصيد الزبون غير كافٍ لتطبيق الإشعار الدائن.');
+  }
+  return returns.map(item=>{
+    const amount=usedByCredit.get(item.id)||0;
+    if(!amount)return item;
+    const previous=item.invoiceAllocations||[];
+    const existing=previous.find(value=>value.documentId===invoiceId);
+    const invoiceAllocations=existing
+      ?previous.map(value=>value.documentId===invoiceId?{...value,creditedCentimes:value.creditedCentimes+amount,allocatedCentimes:value.allocatedCentimes+amount,status}:value)
+      :[...previous,{documentId:invoiceId,creditedCentimes:amount,allocatedCentimes:amount,status}];
+    return {...item,invoiceAllocations,unappliedCentimes:(item.unappliedCentimes??0)-amount};
+  });
+}
+
 export function normalizeSalesReturns(value:unknown):SalesReturnRecord[] {
   if(!Array.isArray(value)) return [];
   return value.filter((item):item is SalesReturnRecord=>{
