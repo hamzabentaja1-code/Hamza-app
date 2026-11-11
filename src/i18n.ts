@@ -164,6 +164,7 @@ const fr: Record<string, string> = {
   "المجموع": "Total",
   "مشتريات": "achats",
   "أداء": "Payer",
+  "دفعة:": "Versement :",
   "المدفوع:": "Payé :",
   "هامش الربح من المبيعات ذات التكلفة المسجلة:": "Marge brute sur les ventes dont le coût est enregistré :",
   "قيمة المبيعات بلا تكلفة محفوظة:": "Ventes sans coût enregistré :",
