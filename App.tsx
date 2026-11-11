@@ -20,6 +20,7 @@ import {translate, getLayoutDirection} from './src/i18n';
 import {CompanyProfile, EMPTY_COMPANY_PROFILE, normalizeCompanyProfile} from './src/company-profile';
 import {buildCsv, CsvCell} from './src/domain/csv-export';
 import {calculateProfitLoss} from './src/domain/profit-loss';
+import {BUSINESS_LEDGER_HEADERS,buildBusinessLedgerRows} from './src/domain/business-ledger';
 
 const GOLD = '#D6AE55';
 const htmlSafe=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
@@ -160,6 +161,8 @@ export default function App() {
   const exportSalesCsv=()=>exportCsvFile('HamZa-sales',
     ['Date','Produit','Client','Quantité','Prix unitaire DH','Total DH'],
     sales.map(item=>[item.date,item.productName,item.customerName,item.qty,item.unitPrice,item.total]));
+  const exportBusinessLedger=()=>exportCsvFile('HamZa-business-ledger',BUSINESS_LEDGER_HEADERS,
+    buildBusinessLedgerRows({products,sales,returns:salesReturns,purchases,expenses,payments,receivables:customerBalances}));
   const addCustomer=()=>{if(!customer.trim()){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم الزبون.'));return;}setCustomers(v=>[{id:Date.now(),name:customer.trim(),phone:customerPhone.trim(),address:customerAddress.trim(),ice:customerIce.trim()},...v]);setCustomer('');setCustomerPhone('');setCustomerAddress('');setCustomerIce('');};
   const addSale=()=>{const p=products.find(x=>String(x.id)===saleProduct);const c=customers.find(x=>String(x.id)===saleCustomer);const q=Number(saleQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert(tr('معلومات ناقصة'),tr('اختار منتج وزبون ودخل كمية صحيحة.'));return;}const available=warehouseStock(stockMovements,String(p.id),activeWarehouseId);if(q>available){Alert.alert(tr('المخزون غير كافٍ'),`${tr('المتوفر في المخزن المحدد هو')} ${available}.`);return;}const sale:Sale={id:Date.now(),productId:p.id,warehouseId:activeWarehouseId,productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,unitCost:p.costPrice,total:q*p.price,date:new Date().toLocaleDateString('fr-MA')};setSales(v=>[sale,...v]);setProducts(v=>v.map(x=>x.id===p.id?{...x,qty:x.qty-q}:x));setStockMovements(v=>[...v,{id:'sale-'+sale.id,productId:String(p.id),warehouseId:activeWarehouseId,kind:'sale',quantity:q,createdAt:new Date().toISOString(),reference:String(sale.id),note:'بيع مباشر'}]);setSaleQty('1');Alert.alert(tr('تم تسجيل البيع'),`المجموع: ${sale.total.toFixed(2)} DH`);};
   const addSupplier=()=>{if(!supplierName.trim()){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم المورد.'));return;}setSuppliers(v=>[{id:Date.now(),name:supplierName.trim(),phone:supplierPhone.trim(),address:supplierAddress.trim(),ice:supplierIce.trim()},...v]);setSupplierName('');setSupplierPhone('');setSupplierAddress('');setSupplierIce('');};
@@ -373,6 +376,7 @@ export default function App() {
           <Text style={s.panelText}>{tr('النتيجة بعد المصاريف على البيانات المحتسبة:')} {profitLoss.netProfitOnCostedSales.toFixed(2)} DH</Text>
           {profitLoss.uncostedRevenue>0&&<Text style={s.note}>{tr('قيمة المبيعات بلا تكلفة محفوظة:')} {profitLoss.uncostedRevenue.toFixed(2)} DH</Text>}
           <Pressable style={s.action} onPress={()=>exportPdf('Rapport d’activité','',['Ventes nettes: '+salesTotal.toFixed(2)+' DH','Achats (stock): '+purchaseTotal.toFixed(2)+' DH','Dépenses: '+expenseTotal.toFixed(2)+' DH','Coût de revient enregistré: '+profitLoss.costOfGoodsSold.toFixed(2)+' DH','Marge brute calculable: '+profitLoss.grossProfitOnCostedSales.toFixed(2)+' DH','Résultat après dépenses (données comptabilisées): '+profitLoss.netProfitOnCostedSales.toFixed(2)+' DH','Ventes sans coût enregistré: '+profitLoss.uncostedRevenue.toFixed(2)+' DH'],profitLoss.netProfitOnCostedSales)}><Text style={s.actionText}>{tr('تصدير تقرير النشاط PDF')}</Text></Pressable>
+          <Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportBusinessLedger}><Text style={s.gold}>{tr('تصدير السجل الكامل CSV')}</Text></Pressable>
         </View>
         <View style={[s.panel,{marginTop:12}]}>
           <Text style={s.panelTitle}>{tr('تقرير ديون الزبناء')}</Text>

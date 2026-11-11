@@ -208,6 +208,7 @@ const fr: Record<string, string> = {
   "استيراد اللائحة وإضافة المنتجات": "Importer la liste et ajouter les produits",
   "تصدير لائحة المنتجات CSV": "Exporter la liste des produits CSV",
   "تصدير سجل المبيعات CSV": "Exporter l’historique des ventes CSV",
+  "تصدير السجل الكامل CSV": "Exporter le registre complet CSV",
   "مشاركة ملف CSV": "Partager le fichier CSV",
   "ما قدرناش نشاركوا ملف CSV.": "Impossible de partager le fichier CSV.",
   "لائحة المنتجات": "Liste des produits",
