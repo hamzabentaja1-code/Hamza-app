@@ -9,9 +9,9 @@ export type QuoteLine = {productId:number; productName:string; qty:number; unitP
 export type QuoteRecord = {
   id:number; productName:string; customerName:string; qty:number;
   unitPrice:number; total:number; date:string; status:string;
-  lines?:QuoteLine[]; notes?:string;
+  lines?:QuoteLine[]; notes?:string; validUntil?:string;
 };
-export type QuoteConversionType = 'invoice' | 'delivery';
+export type QuoteConversionType = 'invoice' | 'delivery' | 'proforma';
 type Props = {
   language:'AR'|'FR';
   products:Product[];
@@ -41,6 +41,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
   const [discount,setDiscount]=useState('0');
   const [lines,setLines]=useState<QuoteLine[]>([]);
   const [notes,setNotes]=useState('');
+  const [validUntil,setValidUntil]=useState('');
   const selectedCustomer=customers.find(c=>String(c.id)===customerId);
   const selectedProduct=products.find(p=>String(p.id)===productId);
   const filteredCustomers=customers.filter(c=>c.name.toLocaleLowerCase().includes(customerSearch.trim().toLocaleLowerCase()));
@@ -90,10 +91,11 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
       unitPrice:0,total:calculation.totalCentimes/100,
       date:new Date().toLocaleDateString('fr-MA'),status:'معلق',
       notes:notes.trim(),
+      validUntil:validUntil.trim()||undefined,
       lines:lines.map((line,index)=>({...line,total:calculation.lines[index].lineTotalCentimes/100})),
     };
     onSave(record);
-    setLines([]);setDiscount('0');setNotes('');
+    setLines([]);setDiscount('0');setNotes('');setValidUntil('');
     Alert.alert(tr('تم حفظ عرض السعر'),tr('تقدر دابا تصدره PDF.'));
   };
   const quoteLines=(quote:QuoteRecord)=>quote.lines?.length
@@ -130,6 +132,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
       </View>)}
       <TextInput value={discount} onChangeText={setDiscount} keyboardType="decimal-pad" placeholder={tr('تخفيض إجمالي (DH)')} placeholderTextColor="#888" style={[input,{marginTop:12}]}/>
       <TextInput value={notes} onChangeText={setNotes} placeholder={tr('ملاحظات (اختياري)')} placeholderTextColor="#888" style={input}/>
+      <TextInput value={validUntil} onChangeText={setValidUntil} placeholder={tr('تاريخ صلاحية العرض (اختياري) YYYY-MM-DD')} placeholderTextColor="#888" style={input}/>
       <View style={{backgroundColor:'#111',borderRadius:9,padding:12,marginVertical:8}}>
         <Text style={{color:'#DDD'}}>{tr('المجموع قبل التخفيض:')} {calculation?money(calculation.subtotalCentimes):'0.00 DH'}</Text>
         <Text style={{color:'#DDD',marginTop:5}}>{tr('التخفيض:')} {calculation?money(calculation.discountCentimes):'0.00 DH'}</Text>
@@ -141,10 +144,12 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
     {quotes.map(q=><View key={q.id} style={[panel,{marginBottom:8}]}>
       <Text style={{color:'#FFF',fontWeight:'800'}}>{q.customerName}</Text>
       <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {tr(q.status)}</Text>
+      {q.validUntil&&<Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{tr('صالحة إلى غاية:')} {q.validUntil}</Text>}
       {quoteLines(q).map((line,i)=><Text key={i} style={{color:'#DDD',marginTop:5}}>{line}</Text>)}
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:8}}>
-        <Pressable onPress={()=>onPdf('Devis',q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[])],q.total)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
+        <Pressable onPress={()=>onPdf('Devis',q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[]),...(q.validUntil?[tr('صالحة إلى غاية:')+' '+q.validUntil]:[])],q.total)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
+        <Pressable onPress={()=>onConvert(q,'proforma')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('Proforma')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'delivery')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('سند خروج')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'invoice')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة')}</Text></Pressable>
       </View>

@@ -12,10 +12,11 @@ export type QuoteForConversion = {
   qty:number;
   unitPrice:number;
   total:number;
+  validUntil?:string;
   lines?:ConversionLine[];
 };
 export type StockProduct = {id:number; qty:number};
-export type DocumentKind = 'invoice'|'delivery';
+export type DocumentKind = 'invoice'|'delivery'|'proforma';
 export type ConvertedDocument = {
   id:number;
   number:string;
@@ -25,6 +26,7 @@ export type ConvertedDocument = {
   date:string;
   status:string;
   sourceQuoteId:number;
+  validUntil?:string;
   lines:ConversionLine[];
 };
 export type ExistingDocument = {sourceQuoteId:number; type:DocumentKind};
@@ -34,7 +36,7 @@ export type ConversionResult = {
 };
 
 /** Creates a quote-derived document and returns the stock snapshot.
- * Delivery notes post stock once; invoices never change stock.
+ * Delivery notes post stock once; invoices and pro forma documents never change stock.
  */
 export function convertQuote(
   quote:QuoteForConversion,
@@ -71,13 +73,14 @@ export function convertQuote(
   }];
   const document:ConvertedDocument={
     id,
-    number:(type==='invoice'?'FAC-':'BL-')+id,
+    number:(type==='invoice'?'FAC-':type==='delivery'?'BL-':'PRO-')+id,
     type,
     customerName:quote.customerName,
     total:quote.total,
     date,
     status:'صادرة',
     sourceQuoteId:quote.id,
+    ...(type==='proforma'&&quote.validUntil?{validUntil:quote.validUntil}:{}),
     lines:documentLines,
   };
   return {document,updatedProducts};

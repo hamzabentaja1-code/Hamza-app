@@ -22,3 +22,12 @@ test('delivery conversion rejects insufficient stock', () => {
   const quote = {id:3,productName:'Widget',customerName:'Client',qty:4,unitPrice:100,total:400,lines:[{productId:7,productName:'Widget',qty:4,unitPrice:100,total:400}]};
   assert.throws(() => convertQuote(quote,'delivery',[],[{id:7,qty:2}],102,'04/11/2026'));
 });
+
+test('pro forma keeps quote validity without changing stock', () => {
+  const quote = {id:4,productName:'Widget',customerName:'Client',qty:2,unitPrice:100,total:200,validUntil:'2026-11-30',lines:[{productId:7,productName:'Widget',qty:2,unitPrice:100,total:200}]};
+  const products = [{id:7,qty:8}];
+  const result = convertQuote(quote,'proforma',[],products,103,'11/11/2026');
+  assert.equal(result.document.number,'PRO-103');
+  assert.equal(result.document.validUntil,'2026-11-30');
+  assert.deepEqual(result.updatedProducts,products);
+});
