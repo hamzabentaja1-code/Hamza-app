@@ -7,7 +7,7 @@ export const BUSINESS_LEDGER_HEADERS:CsvCell[]=[
 type LedgerInput={
   products:readonly {id:number;name:string;qty:number;costPrice?:number;price:number;reference?:string}[];
   sales:readonly {id:number;date:string;productName:string;customerName:string;qty:number;unitCost?:number;unitPrice:number;total:number;paymentMethod?:string}[];
-  returns:readonly {id:number;date:string;number:string;saleId:number;productName:string;customerName:string;qty:number;total:number;restocked:boolean;invoiceAllocations?:{documentId:number;allocatedCentimes:number}[];unappliedCentimes?:number}[];
+  returns:readonly {id:number;date:string;number:string;saleId:number;productName:string;customerName:string;qty:number;total:number;restocked:boolean;invoiceAllocations?:{documentId:number;allocatedCentimes:number}[];unappliedCentimes?:number;refunds?:{id:number;amountCentimes:number;date:string;method:'cash'}[]}[];
   purchases:readonly {id:number;date:string;productName:string;supplierName:string;qty:number;unitCost:number;total:number;paidAmount?:number}[];
   expenses:readonly {id:number;date:string;title:string;amount:number}[];
   payments:readonly {id:number;date:string;customerName:string;amount:number;method:string;documentId?:number;allocations?:{documentId:number;amountCentimes:number}[]}[];
@@ -23,6 +23,7 @@ export function buildBusinessLedgerRows(input:LedgerInput):CsvCell[][] {
   for(const item of input.returns){
     const allocated=item.invoiceAllocations?.reduce((sum,allocation)=>sum+allocation.allocatedCentimes,0)??0;
     rows.push(['Credit note',item.id,item.date,item.productName,item.customerName,-item.qty,'','',-item.total,`${item.number}; sale ${item.saleId}; allocated ${(allocated/100).toFixed(2)} DH; customer credit ${((item.unappliedCentimes??0)/100).toFixed(2)} DH; ${item.restocked?'restocked':'not restocked'}`]);
+    for(const refund of item.refunds??[]) rows.push(['Customer refund',refund.id,refund.date,`Cash refund ${item.number}`,item.customerName,'','','',-(refund.amountCentimes/100),`cash; credit note ${item.number}`]);
   }
   for(const purchase of input.purchases){
     rows.push(['Purchase',purchase.id,purchase.date,purchase.productName,purchase.supplierName,purchase.qty,purchase.unitCost,purchase.unitCost,purchase.total,`initial paid ${purchase.paidAmount??0} DH`]);

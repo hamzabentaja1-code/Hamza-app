@@ -5,6 +5,7 @@ export type SaleForReturn={
 export type SalesReturnRecord={
   id:number;number:string;saleId:number;productId?:number;warehouseId:string;
   documentId?:number;invoiceAllocations?:{documentId:number;creditedCentimes:number;allocatedCentimes:number;status:'partially_paid'|'paid'}[];
+  refunds?:{id:number;amountCentimes:number;date:string;method:'cash'}[];
   unappliedCentimes?:number;productName:string;customerName:string;qty:number;total:number;reason:string;restocked:boolean;date:string;
 };
 
@@ -36,6 +37,16 @@ export function createSalesReturn(input:{
   };
 }
 
+export function recordCustomerRefund(item:SalesReturnRecord,amount:number,id:number,date:string):SalesReturnRecord {
+  const unapplied=item.unappliedCentimes??0;
+  const amountCentimes=Math.round(amount*100);
+  if(!Number.isFinite(amount)||amount<=0||!Number.isSafeInteger(amountCentimes)||amountCentimes<=0)throw new Error('مبلغ الرد خاصو يكون أكبر من صفر.');
+  if(!Number.isSafeInteger(id)||id<=0||item.refunds?.some(refund=>refund.id===id))throw new Error('معرف الرد غير صالح أو مستعمل.');
+  if(!date.trim())throw new Error('تاريخ الرد مطلوب.');
+  if(amountCentimes>unapplied)throw new Error('مبلغ الرد أكبر من رصيد الزبون المتاح.');
+  return {...item,unappliedCentimes:unapplied-amountCentimes,refunds:[...(item.refunds||[]),{id,amountCentimes,date,method:'cash'}]};
+}
+
 export function normalizeSalesReturns(value:unknown):SalesReturnRecord[] {
   if(!Array.isArray(value)) return [];
   return value.filter((item):item is SalesReturnRecord=>{
@@ -45,6 +56,7 @@ export function normalizeSalesReturns(value:unknown):SalesReturnRecord[] {
       typeof r.warehouseId==='string'&&(r.documentId===undefined||Number.isSafeInteger(r.documentId))&&
       (r.unappliedCentimes===undefined||Number.isSafeInteger(r.unappliedCentimes)&&r.unappliedCentimes>=0)&&
       (r.invoiceAllocations===undefined||Array.isArray(r.invoiceAllocations)&&r.invoiceAllocations.every(allocation=>typeof allocation==='object'&&allocation!==null&&Number.isSafeInteger(allocation.documentId)&&Number.isSafeInteger(allocation.creditedCentimes)&&Number.isSafeInteger(allocation.allocatedCentimes)&&['partially_paid','paid'].includes(allocation.status)))&&
+      (r.refunds===undefined||Array.isArray(r.refunds)&&r.refunds.every(refund=>typeof refund==='object'&&refund!==null&&Number.isSafeInteger(refund.id)&&Number.isSafeInteger(refund.amountCentimes)&&refund.amountCentimes>0&&typeof refund.date==='string'&&refund.method==='cash'))&&
       typeof r.productName==='string'&&typeof r.customerName==='string'&&
       Number.isFinite(r.qty)&&Number(r.qty)>0&&Number.isFinite(r.total)&&Number(r.total)>=0&&
       typeof r.reason==='string'&&typeof r.restocked==='boolean'&&typeof r.date==='string';
