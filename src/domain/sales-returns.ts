@@ -44,7 +44,7 @@ export function normalizeSalesReturns(value:unknown):SalesReturnRecord[] {
     return Number.isSafeInteger(r.id)&&typeof r.number==='string'&&Number.isSafeInteger(r.saleId)&&
       typeof r.warehouseId==='string'&&(r.documentId===undefined||Number.isSafeInteger(r.documentId))&&
       (r.unappliedCentimes===undefined||Number.isSafeInteger(r.unappliedCentimes)&&r.unappliedCentimes>=0)&&
-      (r.invoiceAllocations===undefined||Array.isArray(r.invoiceAllocations)&&r.invoiceAllocations.every(allocation=>Number.isSafeInteger(allocation.documentId)&&Number.isSafeInteger(allocation.creditedCentimes)&&Number.isSafeInteger(allocation.allocatedCentimes)&&['partially_paid','paid'].includes(allocation.status)))&&
+      (r.invoiceAllocations===undefined||Array.isArray(r.invoiceAllocations)&&r.invoiceAllocations.every(allocation=>typeof allocation==='object'&&allocation!==null&&Number.isSafeInteger(allocation.documentId)&&Number.isSafeInteger(allocation.creditedCentimes)&&Number.isSafeInteger(allocation.allocatedCentimes)&&['partially_paid','paid'].includes(allocation.status)))&&
       typeof r.productName==='string'&&typeof r.customerName==='string'&&
       Number.isFinite(r.qty)&&Number(r.qty)>0&&Number.isFinite(r.total)&&Number(r.total)>=0&&
       typeof r.reason==='string'&&typeof r.restocked==='boolean'&&typeof r.date==='string';

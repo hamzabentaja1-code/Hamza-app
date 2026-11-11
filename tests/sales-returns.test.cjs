@@ -38,7 +38,7 @@ test('normalizes valid stored credit notes and drops malformed records',()=>{
 
 test('preserves invoice credit allocations and customer credits across backup restore',()=>{
   const credit={id:80,number:'AV-80',saleId:11,productId:3,warehouseId:'main',documentId:20,invoiceAllocations:[{documentId:20,creditedCentimes:2500,allocatedCentimes:2500,status:'partially_paid'}],unappliedCentimes:300,productName:'Cable',customerName:'Client',qty:1,total:28,reason:'',restocked:false,date:'11/11/2026'};
-  const normalized=normalizeSalesReturns([credit,{...credit,id:81,invoiceAllocations:[{documentId:20,creditedCentimes:-1,allocatedCentimes:-1,status:'invalid'}]}]);
+  const normalized=normalizeSalesReturns([credit,{...credit,id:81,invoiceAllocations:[{documentId:20,creditedCentimes:-1,allocatedCentimes:-1,status:'invalid'}]},{...credit,id:83,invoiceAllocations:[null]}]);
   assert.deepEqual(normalized,[credit]);
 });
 
