@@ -1,6 +1,7 @@
 import React, {useMemo, useState} from 'react';
 import {Alert, Pressable, ScrollView, Text, TextInput, View} from 'react-native';
 import {calculateQuote} from './domain/quote-calculator';
+import {isValidIsoDate} from './domain/document-conversion';
 import {translate, getLayoutDirection} from './i18n';
 
 type Product = {id:number; name:string; price:number; qty:number};
@@ -84,6 +85,8 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
   const save=()=>{
     if(!selectedCustomer){Alert.alert(tr('اختار الزبون'),tr('خاصك تحدد الزبون قبل الحفظ.'));return;}
     if(!calculation){Alert.alert(tr('راجع العرض'),tr('زيد منتج واحد على الأقل وتأكد من التخفيض.'));return;}
+    const validity=validUntil.trim();
+    if(validity&&!isValidIsoDate(validity)){Alert.alert(tr('تاريخ غير صالح'),tr('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.'));return;}
     const now=Date.now();
     const record:QuoteRecord={
       id:now,productName:lines.map(x=>x.productName).join(', '),
@@ -91,7 +94,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
       unitPrice:0,total:calculation.totalCentimes/100,
       date:new Date().toLocaleDateString('fr-MA'),status:'معلق',
       notes:notes.trim(),
-      validUntil:validUntil.trim()||undefined,
+      validUntil:validity||undefined,
       lines:lines.map((line,index)=>({...line,total:calculation.lines[index].lineTotalCentimes/100})),
     };
     onSave(record);
@@ -149,7 +152,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:8}}>
         <Pressable onPress={()=>onPdf('Devis',q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[]),...(q.validUntil?[tr('صالحة إلى غاية:')+' '+q.validUntil]:[])],q.total)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
-        <Pressable onPress={()=>onConvert(q,'proforma')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('Proforma')}</Text></Pressable>
+        <Pressable onPress={()=>onConvert(q,'proforma')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة أولية')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'delivery')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('سند خروج')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'invoice')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة')}</Text></Pressable>
       </View>

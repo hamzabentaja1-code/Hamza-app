@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { convertQuote } = require('../.test-build/domain/document-conversion.js');
+const { convertQuote, isValidIsoDate } = require('../.test-build/domain/document-conversion.js');
 
 test('invoice conversion preserves stock', () => {
   const products = [{id:7,qty:10}];
@@ -30,4 +30,12 @@ test('pro forma keeps quote validity without changing stock', () => {
   assert.equal(result.document.number,'PRO-103');
   assert.equal(result.document.validUntil,'2026-11-30');
   assert.deepEqual(result.updatedProducts,products);
+});
+
+test('ISO quote validity accepts real calendar dates and rejects malformed dates', () => {
+  assert.equal(isValidIsoDate('2026-11-30'),true);
+  assert.equal(isValidIsoDate('2024-02-29'),true);
+  assert.equal(isValidIsoDate('2026-02-29'),false);
+  assert.equal(isValidIsoDate('2026-13-01'),false);
+  assert.equal(isValidIsoDate('30/11/2026'),false);
 });
