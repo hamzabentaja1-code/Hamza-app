@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {createSalesReturn,normalizeSalesReturns,recordCustomerRefund}=require('../.test-build/domain/sales-returns.js');
+const {applyCustomerCreditsToSalesReturns,createSalesReturn,normalizeSalesReturns,recordCustomerRefund}=require('../.test-build/domain/sales-returns.js');
 const {allocateCreditNoteAcrossInvoices}=require('../.test-build/domain/payment-allocation.js');
 const {calculateCustomerBalances}=require('../.test-build/domain/customer-balances.js');
 
@@ -70,4 +70,19 @@ test('cash refund rejects invalid amounts, duplicate ids, missing dates and cred
 test('normalization drops malformed refund records without dropping valid returns',()=>{
   const item={...createSalesReturn({sale,quantity:1,existingReturns:[],id:88,date:'11/11/2026',restock:false}),unappliedCentimes:2500,refunds:[{id:89,amountCentimes:100,date:'12/11/2026',method:'cash'}]};
   assert.deepEqual(normalizeSalesReturns([item,{...item,id:90,refunds:[null]}]),[item]);
+});
+
+test('applies customer credit to an invoice and retains source-note history',()=>{
+  const item={...createSalesReturn({sale,quantity:1,existingReturns:[],id:91,date:'11/11/2026',restock:false}),unappliedCentimes:2500};
+  const updated=applyCustomerCreditsToSalesReturns([item],[{creditNoteId:item.id,invoiceId:99,amountCentimes:2000}],99,'partially_paid');
+  assert.equal(updated[0].unappliedCentimes,500);
+  assert.deepEqual(updated[0].invoiceAllocations,[{documentId:99,creditedCentimes:2000,allocatedCentimes:2000,status:'partially_paid'}]);
+});
+
+test('reuses invoice allocation rows and rejects credits absent from the source notes',()=>{
+  const item={...createSalesReturn({sale,quantity:1,existingReturns:[],id:92,date:'11/11/2026',restock:false}),unappliedCentimes:2500,invoiceAllocations:[{documentId:99,creditedCentimes:100,allocatedCentimes:100,status:'partially_paid'}]};
+  const updated=applyCustomerCreditsToSalesReturns([item],[{creditNoteId:item.id,invoiceId:99,amountCentimes:500}],99,'paid');
+  assert.deepEqual(updated[0].invoiceAllocations,[{documentId:99,creditedCentimes:600,allocatedCentimes:600,status:'paid'}]);
+  assert.throws(()=>applyCustomerCreditsToSalesReturns([item],[{creditNoteId:item.id,invoiceId:99,amountCentimes:3000}],99,'paid'));
+  assert.throws(()=>applyCustomerCreditsToSalesReturns([item],[{creditNoteId:999,invoiceId:99,amountCentimes:100}],99,'paid'));
 });
