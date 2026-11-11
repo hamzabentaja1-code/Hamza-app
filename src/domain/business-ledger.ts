@@ -10,7 +10,7 @@ type LedgerInput={
   returns:readonly {id:number;date:string;number:string;saleId:number;productName:string;customerName:string;qty:number;total:number;restocked:boolean}[];
   purchases:readonly {id:number;date:string;productName:string;supplierName:string;qty:number;unitCost:number;total:number;paidAmount?:number}[];
   expenses:readonly {id:number;date:string;title:string;amount:number}[];
-  payments:readonly {id:number;date:string;customerName:string;amount:number;method:string;documentId?:number}[];
+  payments:readonly {id:number;date:string;customerName:string;amount:number;method:string;documentId?:number;allocations?:{documentId:number;amountCentimes:number}[]}[];
   supplierPayments:readonly {id:number;purchaseId:number;date:string;supplierName:string;amount:number;method:string;reference?:string}[];
   receivables:readonly {customerName:string;outstandingCentimes:number;invoiceCount:number}[];
 };
@@ -26,7 +26,10 @@ export function buildBusinessLedgerRows(input:LedgerInput):CsvCell[][] {
     if((purchase.paidAmount??0)>0)rows.push(['Supplier payment',`initial-${purchase.id}`,purchase.date,'Initial supplier payment',purchase.supplierName,'','','',-purchase.paidAmount!,`purchase ${purchase.id}; initial payment`]);
   }
   for(const expense of input.expenses) rows.push(['Expense',expense.id,expense.date,expense.title,'','','','',-expense.amount,'']);
-  for(const payment of input.payments) rows.push(['Payment',payment.id,payment.date,'Customer payment',payment.customerName,'','','',payment.amount,`${payment.method}${payment.documentId?`; invoice ${payment.documentId}`:''}`]);
+  for(const payment of input.payments){
+    const allocations=payment.allocations?.map(item=>`invoice ${item.documentId}: ${(item.amountCentimes/100).toFixed(2)} DH`).join(', ');
+    rows.push(['Payment',payment.id,payment.date,'Customer payment',payment.customerName,'','','',payment.amount,`${payment.method}${allocations?`; ${allocations}`:payment.documentId?`; invoice ${payment.documentId}`:''}`]);
+  }
   for(const payment of input.supplierPayments) rows.push(['Supplier payment',payment.id,payment.date,'Supplier payment',payment.supplierName,'','','',-payment.amount,`purchase ${payment.purchaseId}; ${payment.method}${payment.reference?`; ${payment.reference}`:''}`]);
   for(const balance of input.receivables) rows.push(['Receivable','', '',`Open invoices (${balance.invoiceCount})`,balance.customerName,'','','',balance.outstandingCentimes/100,'']);
   return rows;

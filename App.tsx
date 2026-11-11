@@ -13,7 +13,7 @@ import {ProjectRecord,ProjectStatus,addProjectTask,createProject,normalizeProjec
 import SalesReturnWorkspace from './src/SalesReturnWorkspace';
 import {createSalesReturn,normalizeSalesReturns,SaleForReturn,SalesReturnRecord} from './src/domain/sales-returns';
 import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/domain/document-conversion';
-import {applyPaymentToInvoice} from './src/domain/payment-allocation';
+import {allocatePaymentAcrossInvoices,applyPaymentToInvoice} from './src/domain/payment-allocation';
 import {calculateCustomerBalances} from './src/domain/customer-balances';
 import {StockMovement, Warehouse, DEFAULT_WAREHOUSE, normalizeWarehouses, validateWarehouse, warehouseStock, createStockCount, applyStockCount, transferStock} from './src/inventory';
 import {translate, getLayoutDirection} from './src/i18n';
@@ -47,7 +47,7 @@ type Expense = {id:number; title:string; amount:number; date:string; projectId?:
 type Supplier = {id:number; name:string; phone?:string; address?:string; ice?:string};
 type Quote = QuoteRecord;
 type CommercialDocument = ConvertedDocument & {paidCentimes?:number};
-type Payment = {id:number; customerName:string; amount:number; method:string; date:string; note:string; documentId?:number};
+type Payment = {id:number; customerName:string; amount:number; method:string; date:string; note:string; documentId?:number; allocations?:{documentId:number;amountCentimes:number}[]};
 export default function App() {
   const [screen,setScreen]=useState('الرئيسية');
   const [search,setSearch]=useState(''); const [productSearch,setProductSearch]=useState(''); const [photoData,setPhotoData]=useState(''); const [photoPreview,setPhotoPreview]=useState<string|null>(null);
@@ -202,17 +202,26 @@ export default function App() {
     if(!c||!Number.isFinite(a)||a<=0){Alert.alert(tr('معلومات ناقصة'),tr('اختار الزبون ودخل مبلغ صحيح.'));return;}
     const invoice=documents.find(d=>d.id===Number(paymentDocument)&&d.type==='invoice'&&d.customerName===c.name);
     if(paymentDocument&&!invoice){Alert.alert(tr('الفاتورة غير موجودة'),tr('عاود اختار فاتورة صالحة لهذا الزبون.'));return;}
-    let paidCentimes:number|undefined;
+    let paymentAllocations:{documentId:number;amountCentimes:number}[]=[];
     if(invoice){
       try{
         const result=applyPaymentToInvoice({type:'invoice',total:invoice.total,paidCentimes:invoice.paidCentimes,status:invoice.status},Math.round(a*100));
-        paidCentimes=result.invoice.paidCentimes;
+        paymentAllocations=[{documentId:invoice.id,amountCentimes:Math.round(a*100)}];
         setDocuments(current=>current.map(d=>d.id===invoice.id?{...d,paidCentimes:result.invoice.paidCentimes,status:result.invoice.status}:d));
       }catch(error){Alert.alert(tr('تعذر تسجيل الأداء'),error instanceof Error?error.message:'راجع مبلغ الأداء.');return;}
+    }else{
+      const openInvoices=documents.filter(d=>d.type==='invoice'&&d.customerName===c.name&&Math.round(d.total*100)>(d.paidCentimes||0));
+      if(openInvoices.length){
+        try{
+          const allocations=allocatePaymentAcrossInvoices(openInvoices,Math.round(a*100));
+          paymentAllocations=allocations.map(item=>({documentId:item.invoiceId,amountCentimes:item.allocatedCentimes}));
+          setDocuments(current=>current.map(d=>{const allocation=allocations.find(item=>item.invoiceId===d.id);return allocation?{...d,paidCentimes:allocation.paidCentimes,status:allocation.status}:d;}));
+        }catch(error){Alert.alert(tr('تعذر تسجيل الأداء'),error instanceof Error?tr(error.message):tr('راجع مبلغ الأداء.'));return;}
+      }
     }
-    setPayments(v=>[{id:Date.now(),customerName:c.name,amount:a,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:paymentNote.trim(),...(invoice?{documentId:invoice.id}:{})},...v]);
+    setPayments(v=>[{id:Date.now(),customerName:c.name,amount:a,method:paymentMethod,date:new Date().toLocaleDateString('fr-MA'),note:paymentNote.trim(),...(invoice?{documentId:invoice.id}:{}),...(paymentAllocations.length?{allocations:paymentAllocations}:{})},...v]);
     setPaymentAmount('');setPaymentNote('');setPaymentDocument('');
-    Alert.alert(tr('تم تسجيل الأداء'),invoice?'تحدّث الرصيد المتبقي ديال الفاتورة.':'تسجل الأداء كدفعة غير مخصصة لفاتورة.');
+    Alert.alert(tr('تم تسجيل الأداء'),invoice?tr('تحدّث الرصيد المتبقي ديال الفاتورة.'):paymentAllocations.length?tr('توزع الأداء تلقائياً على أقدم الفواتير المفتوحة.'):tr('ما كايناش فاتورة مفتوحة؛ تسجل الأداء كدفعة غير مخصصة.'));
   };
   const exportBackup=async()=>{try{setBackupBusy(true);const json=await createBackup({language,companyProfile,products,stockMovements,warehouses,activeWarehouseId,customers,sales,purchases,expenses,suppliers,quotes,payments,documents,projects,salesReturns,supplierPayments});await Share.share({title:'HamZa backup',message:json});}catch(e){Alert.alert(tr('خطأ'),tr('ما قدرناش نوجدوا النسخة الاحتياطية.'));}finally{setBackupBusy(false);}};
   const importBackup=()=>{Alert.alert(tr('استرجاع البيانات'),tr('هاد العملية غادي تعوض البيانات الحالية بالنسخة اللي لصقتي. واش متأكد؟'),[{text:tr('إلغاء'),style:'cancel'},{text:'استرجاع',style:'destructive',onPress:async()=>{try{setBackupBusy(true);const d=await restoreBackup(backupText);setLanguage(d.language==='FR'?'FR':'AR');setCompanyProfile(normalizeCompanyProfile(d.companyProfile));setWarehouses(normalizeWarehouses(d.warehouses));setActiveWarehouseId(typeof d.activeWarehouseId==='string'&&normalizeWarehouses(d.warehouses).some(w=>w.id===d.activeWarehouseId)?d.activeWarehouseId:'main');setProducts(Array.isArray(d.products)?d.products as Product[]:[]);setStockMovements(Array.isArray(d.stockMovements)?d.stockMovements as StockMovement[]:(Array.isArray(d.products)?(d.products as Product[]).filter(p=>p.qty>0).map(p=>({id:'opening-backup-'+p.id,productId:String(p.id),warehouseId:'main',kind:'opening' as const,quantity:p.qty,unitCost:p.costPrice||0,createdAt:new Date().toISOString(),note:'رصيد افتتاحي مرحّل من النسخة الاحتياطية'})):[]));setCustomers(Array.isArray(d.customers)?d.customers as Customer[]:[]);setSales(Array.isArray(d.sales)?d.sales as Sale[]:[]);setPurchases(Array.isArray(d.purchases)?(d.purchases as Purchase[]).map(p=>({...p,paidAmount:normalizePurchasePaidAmount(p.total,p.paidAmount)})):[]);setExpenses(Array.isArray(d.expenses)?d.expenses as Expense[]:[]);setSuppliers(Array.isArray(d.suppliers)?d.suppliers as Supplier[]:[]);setQuotes(Array.isArray(d.quotes)?d.quotes as Quote[]:[]);setPayments(Array.isArray(d.payments)?d.payments as Payment[]:[]);setDocuments(Array.isArray(d.documents)?d.documents as CommercialDocument[]:[]);setProjects(normalizeProjects(d.projects));setSalesReturns(normalizeSalesReturns(d.salesReturns));setSupplierPayments(normalizeSupplierPayments(d.supplierPayments));setBackupText('');Alert.alert(tr('تم الاسترجاع'),tr('ترجعات البيانات بنجاح.'));}catch(e){Alert.alert(tr('تعذر الاسترجاع'),e instanceof Error?e.message:'النسخة غير صالحة.');}finally{setBackupBusy(false);}}}]);};
@@ -369,8 +378,9 @@ export default function App() {
       </>
       :screen==='الأداءات'?<><View style={s.panel}><Text style={s.panelTitle}>{tr('تسجيل أداء زبون')}</Text>{customers.map(c=><Pressable key={c.id} onPress={()=>{setPaymentCustomer(String(c.id));setPaymentDocument('');}} style={[s.choice,paymentCustomer===String(c.id)&&s.choiceActive]}><Text style={s.itemTitle}>{c.name}</Text></Pressable>)}
         <Text style={s.fieldLabel}>{tr('اختار الفاتورة (اختياري)')}</Text>
+        <Text style={s.panelText}>{tr('إلا ما اخترتيش فاتورة، الأداء كيتوزع على أقدم الفواتير المفتوحة ديال الزبون.')}</Text>
         {documents.filter(d=>d.type==='invoice'&&(!paymentCustomer||d.customerName===customers.find(c=>String(c.id)===paymentCustomer)?.name)&&d.paidCentimes!==Math.round(d.total*100)).map(d=><Pressable key={d.id} onPress={()=>setPaymentDocument(String(d.id))} style={[s.choice,paymentDocument===String(d.id)&&s.choiceActive]}><Text style={s.itemTitle}>{d.number} — {tr('باقي')} {((d.total*100-(d.paidCentimes||0))/100).toFixed(2)} DH</Text></Pressable>)}
-        <TextInput value={paymentAmount} onChangeText={setPaymentAmount} keyboardType="decimal-pad" placeholder={tr("المبلغ DH")} placeholderTextColor="#888" style={s.input}/><View style={s.row}>{['نقداً','تحويل','شيك'].map(m=><Pressable key={m} onPress={()=>setPaymentMethod(m)} style={[s.choice,{flex:1},paymentMethod===m&&s.choiceActive]}><Text style={s.itemTitle}>{tr(m)}</Text></Pressable>)}</View><TextInput value={paymentNote} onChangeText={setPaymentNote} placeholder={tr('ملاحظات (اختياري)')} placeholderTextColor="#888" style={s.input}/><Pressable style={s.action} onPress={addPayment}><Text style={s.actionText}>{tr('تسجيل الأداء')}</Text></Pressable></View><Text style={s.section}>{tr('سجل الأداءات')} ({payments.length})</Text>{payments.map(x=><View key={x.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{x.customerName} • {tr(x.method)}</Text><Text style={s.itemSub}>{x.date} {x.note}</Text></View><Text style={s.itemPrice}>{x.amount.toFixed(2)} DH</Text><Pressable onPress={()=>exportPdf('Reçu de paiement',x.customerName,[`Mode: ${x.method}`,`Montant: ${x.amount.toFixed(2)} DH`,x.note],x.amount)}><Text style={s.gold}>PDF</Text></Pressable></View>)}</>
+        <TextInput value={paymentAmount} onChangeText={setPaymentAmount} keyboardType="decimal-pad" placeholder={tr("المبلغ DH")} placeholderTextColor="#888" style={s.input}/><View style={s.row}>{['نقداً','تحويل','شيك'].map(m=><Pressable key={m} onPress={()=>setPaymentMethod(m)} style={[s.choice,{flex:1},paymentMethod===m&&s.choiceActive]}><Text style={s.itemTitle}>{tr(m)}</Text></Pressable>)}</View><TextInput value={paymentNote} onChangeText={setPaymentNote} placeholder={tr('ملاحظات (اختياري)')} placeholderTextColor="#888" style={s.input}/><Pressable style={s.action} onPress={addPayment}><Text style={s.actionText}>{tr('تسجيل الأداء')}</Text></Pressable></View><Text style={s.section}>{tr('سجل الأداءات')} ({payments.length})</Text>{payments.map(x=><View key={x.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{x.customerName} • {tr(x.method)}</Text><Text style={s.itemSub}>{x.date} {x.note}{x.allocations?.length?` • ${tr('موزع على الفواتير:')} ${x.allocations.map(allocation=>`${documents.find(document=>document.id===allocation.documentId)?.number||allocation.documentId} ${(allocation.amountCentimes/100).toFixed(2)} DH`).join('، ')}`:''}</Text></View><Text style={s.itemPrice}>{x.amount.toFixed(2)} DH</Text><Pressable onPress={()=>exportPdf('Reçu de paiement',x.customerName,[`Mode: ${x.method}`,`Montant: ${x.amount.toFixed(2)} DH`,x.note],x.amount)}><Text style={s.gold}>PDF</Text></Pressable></View>)}</>
       :screen==='النسخ الاحتياطي'?<><View style={s.panel}><Text style={s.panelTitle}>{tr('حماية بياناتك')}</Text><Text style={s.panelText}>{tr('صدر نسخة JSON فيها المنتجات والزبناء والموردين والمبيعات والمرتجعات والمشتريات وأداءات الموردين والمصاريف والمشاريع والمهام والعروض والأداءات. خزن الملف فمكان آمن.')}</Text><Pressable style={[s.action,{marginTop:14}]} disabled={backupBusy} onPress={exportBackup}><Text style={s.actionText}>{backupBusy?tr('جاري التحضير...'):tr('تصدير نسخة احتياطية')}</Text></Pressable></View><View style={[s.panel,{marginTop:14}]}><Text style={s.panelTitle}>{tr('استرجاع نسخة')}</Text><Text style={s.panelText}>{tr('حل ملف النسخة الاحتياطية، نسخ المحتوى كامل، ولصقو هنا. الاسترجاع كيعوض البيانات الحالية.')}</Text><TextInput value={backupText} onChangeText={setBackupText} multiline numberOfLines={8} textAlignVertical="top" placeholder={tr('لصق محتوى ملف JSON هنا...')} placeholderTextColor="#888" style={[s.input,{minHeight:150,textAlign:'left'}]}/><Pressable style={s.action} disabled={backupBusy||!backupText.trim()} onPress={importBackup}><Text style={s.actionText}>{tr('استرجاع البيانات')}</Text></Pressable></View></>
       :screen==='التقارير'?<>
         <View style={s.panel}>
