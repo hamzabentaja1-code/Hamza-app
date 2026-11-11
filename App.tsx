@@ -19,6 +19,7 @@ import {StockMovement, Warehouse, DEFAULT_WAREHOUSE, normalizeWarehouses, valida
 import {translate, getLayoutDirection} from './src/i18n';
 import {CompanyProfile, EMPTY_COMPANY_PROFILE, normalizeCompanyProfile} from './src/company-profile';
 import {buildCsv, CsvCell} from './src/domain/csv-export';
+import {calculateProfitLoss} from './src/domain/profit-loss';
 
 const GOLD = '#D6AE55';
 const htmlSafe=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
@@ -38,7 +39,7 @@ const modules = [
 ];
 type Product = {id:number; name:string; price:number; qty:number; costPrice?:number; reference?:string; barcode?:string; category?:string; brand?:string; unit?:string; variant?:string; photoData?:string};
 type Customer = {id:number; name:string; phone?:string; address?:string; ice?:string};
-type Sale = {id:number; productId?:number; warehouseId?:string; productName:string; customerName:string; qty:number; unitPrice:number; total:number; date:string; paymentMethod?:string; discount?:number};
+type Sale = {id:number; productId?:number; warehouseId?:string; productName:string; customerName:string; qty:number; unitPrice:number; unitCost?:number; total:number; date:string; paymentMethod?:string; discount?:number};
 type Purchase = {id:number; productName:string; supplierName:string; qty:number; unitCost:number; total:number; date:string};
 type Expense = {id:number; title:string; amount:number; date:string; projectId?:number};
 type Supplier = {id:number; name:string; phone?:string; address?:string; ice?:string};
@@ -102,6 +103,7 @@ export default function App() {
   const salesReturnTotal=useMemo(()=>salesReturns.reduce((sum,item)=>sum+item.total,0),[salesReturns]);
   const salesTotal=useMemo(()=>Math.max(0,sales.reduce((a,x)=>a+x.total,0)-salesReturnTotal),[sales,salesReturnTotal]);
   const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
+  const profitLoss=useMemo(()=>calculateProfitLoss(sales,salesReturns,expenses),[sales,salesReturns,expenses]);
   const customerBalances=useMemo(()=>calculateCustomerBalances(documents),[documents]);
   const balanceFor=(customerName:string)=>customerBalances.find(x=>x.customerName===customerName);
   const receivablesTotal=useMemo(()=>customerBalances.reduce((sum,x)=>sum+x.outstandingCentimes,0)/100,[customerBalances]);
@@ -159,7 +161,7 @@ export default function App() {
     ['Date','Produit','Client','Quantité','Prix unitaire DH','Total DH'],
     sales.map(item=>[item.date,item.productName,item.customerName,item.qty,item.unitPrice,item.total]));
   const addCustomer=()=>{if(!customer.trim()){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم الزبون.'));return;}setCustomers(v=>[{id:Date.now(),name:customer.trim(),phone:customerPhone.trim(),address:customerAddress.trim(),ice:customerIce.trim()},...v]);setCustomer('');setCustomerPhone('');setCustomerAddress('');setCustomerIce('');};
-  const addSale=()=>{const p=products.find(x=>String(x.id)===saleProduct);const c=customers.find(x=>String(x.id)===saleCustomer);const q=Number(saleQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert(tr('معلومات ناقصة'),tr('اختار منتج وزبون ودخل كمية صحيحة.'));return;}const available=warehouseStock(stockMovements,String(p.id),activeWarehouseId);if(q>available){Alert.alert(tr('المخزون غير كافٍ'),`${tr('المتوفر في المخزن المحدد هو')} ${available}.`);return;}const sale:Sale={id:Date.now(),productId:p.id,warehouseId:activeWarehouseId,productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,total:q*p.price,date:new Date().toLocaleDateString('fr-MA')};setSales(v=>[sale,...v]);setProducts(v=>v.map(x=>x.id===p.id?{...x,qty:x.qty-q}:x));setStockMovements(v=>[...v,{id:'sale-'+sale.id,productId:String(p.id),warehouseId:activeWarehouseId,kind:'sale',quantity:q,createdAt:new Date().toISOString(),reference:String(sale.id),note:'بيع مباشر'}]);setSaleQty('1');Alert.alert(tr('تم تسجيل البيع'),`المجموع: ${sale.total.toFixed(2)} DH`);};
+  const addSale=()=>{const p=products.find(x=>String(x.id)===saleProduct);const c=customers.find(x=>String(x.id)===saleCustomer);const q=Number(saleQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert(tr('معلومات ناقصة'),tr('اختار منتج وزبون ودخل كمية صحيحة.'));return;}const available=warehouseStock(stockMovements,String(p.id),activeWarehouseId);if(q>available){Alert.alert(tr('المخزون غير كافٍ'),`${tr('المتوفر في المخزن المحدد هو')} ${available}.`);return;}const sale:Sale={id:Date.now(),productId:p.id,warehouseId:activeWarehouseId,productName:p.name,customerName:c.name,qty:q,unitPrice:p.price,unitCost:p.costPrice,total:q*p.price,date:new Date().toLocaleDateString('fr-MA')};setSales(v=>[sale,...v]);setProducts(v=>v.map(x=>x.id===p.id?{...x,qty:x.qty-q}:x));setStockMovements(v=>[...v,{id:'sale-'+sale.id,productId:String(p.id),warehouseId:activeWarehouseId,kind:'sale',quantity:q,createdAt:new Date().toISOString(),reference:String(sale.id),note:'بيع مباشر'}]);setSaleQty('1');Alert.alert(tr('تم تسجيل البيع'),`المجموع: ${sale.total.toFixed(2)} DH`);};
   const addSupplier=()=>{if(!supplierName.trim()){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم المورد.'));return;}setSuppliers(v=>[{id:Date.now(),name:supplierName.trim(),phone:supplierPhone.trim(),address:supplierAddress.trim(),ice:supplierIce.trim()},...v]);setSupplierName('');setSupplierPhone('');setSupplierAddress('');setSupplierIce('');};
   const addPurchase=()=>{const p=products.find(x=>String(x.id)===purchaseProduct);const sup=suppliers.find(x=>String(x.id)===purchaseSupplier);const q=Number(purchaseQty),cost=Number(purchaseCost.replace(',','.'));if(!p||!sup||!Number.isInteger(q)||q<1||!Number.isFinite(cost)||cost<0){Alert.alert(tr('معلومات ناقصة'),tr('اختار المنتج والمورد ودخل الكمية وثمن الشراء.'));return;}const item:Purchase={id:Date.now(),productName:p.name,supplierName:sup.name,qty:q,unitCost:cost,total:q*cost,date:new Date().toLocaleDateString('fr-MA')};setPurchases(v=>[item,...v]);setProducts(v=>v.map(x=>x.id===p.id?{...x,qty:x.qty+q}:x));setStockMovements(v=>[...v,{id:'purchase-'+item.id,productId:String(p.id),warehouseId:activeWarehouseId,kind:'purchase',quantity:q,unitCost:cost,createdAt:new Date().toISOString(),reference:String(item.id),note:'شراء من المورد '+sup.name}]);setPurchaseQty('1');setPurchaseCost('');Alert.alert(tr('تم تسجيل الشراء'),`المجموع: ${item.total.toFixed(2)} DH`);};
   const addExpense=()=>{const a=Number(expenseAmount.replace(',','.'));if(!expenseTitle.trim()||!Number.isFinite(a)||a<=0){Alert.alert(tr('معلومات ناقصة'),tr('دخل وصف المصروف ومبلغ صحيح.'));return;}setExpenses(v=>[{id:Date.now(),title:expenseTitle.trim(),amount:a,date:new Date().toLocaleDateString('fr-MA')},...v]);setExpenseTitle('');setExpenseAmount('');};
@@ -224,7 +226,7 @@ export default function App() {
     const subtotal=data.lines.reduce((sum,line)=>sum+line.quantity*line.unitPrice-line.discount,0);
     const globalDiscount=Math.max(0,subtotal-data.total);
     const today=new Date().toLocaleDateString('fr-MA');
-    const records=data.lines.map((line,index)=>{const raw=line.quantity*line.unitPrice-line.discount;const share=subtotal>0?globalDiscount*(raw/subtotal):0;return {id:Date.now()+index,productId:line.productId,warehouseId:activeWarehouseId,productName:line.name,customerName:data.customerName,qty:line.quantity,unitPrice:line.unitPrice,total:Math.max(0,raw-share),discount:line.discount+share,date:today,paymentMethod:data.paymentMethod};});
+    const records=data.lines.map((line,index)=>{const raw=line.quantity*line.unitPrice-line.discount;const share=subtotal>0?globalDiscount*(raw/subtotal):0;return {id:Date.now()+index,productId:line.productId,warehouseId:activeWarehouseId,productName:line.name,customerName:data.customerName,qty:line.quantity,unitPrice:line.unitPrice,unitCost:products.find(product=>product.id===line.productId)?.costPrice,total:Math.max(0,raw-share),discount:line.discount+share,date:today,paymentMethod:data.paymentMethod};});
     setSales(current=>[...records,...current]);
     setProducts(current=>current.map(product=>{const sold=data.lines.filter(line=>line.productId===product.id).reduce((sum,line)=>sum+line.quantity,0);return sold?{...product,qty:product.qty-sold}:product;}));
     setStockMovements(current=>[...current,...data.lines.map((line,index)=>({id:'pos-'+Date.now()+'-'+index,productId:String(line.productId),warehouseId:activeWarehouseId,kind:'sale' as const,quantity:line.quantity,createdAt:new Date().toISOString(),note:'بيع نقطة البيع'}))]);
@@ -246,7 +248,8 @@ export default function App() {
           <Text style={s.summaryText}>{tr('المبيعات المسجلة:')} {salesTotal.toFixed(2)} DH • {sales.length} عملية</Text>
           <Text style={s.summaryText}>{tr('المشتريات:')} {purchaseTotal.toFixed(2)} DH</Text>
           <Text style={s.summaryText}>{tr('المصاريف:')} {expenseTotal.toFixed(2)} DH</Text>
-          <Text style={s.summaryText}>{tr('الصافي الأولي:')} {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text>
+          <Text style={s.summaryText}>{tr('هامش الربح من المبيعات ذات التكلفة المسجلة:')} {profitLoss.grossProfitOnCostedSales.toFixed(2)} DH</Text>
+          {profitLoss.uncostedRevenue>0&&<Text style={s.note}>{tr('قيمة المبيعات بلا تكلفة محفوظة:')} {profitLoss.uncostedRevenue.toFixed(2)} DH</Text>}
         </View>
         <View style={s.stats}>
           <View style={s.stat}><Text style={s.statNum}>{receivablesTotal.toFixed(2)} DH</Text><Text style={s.statLabel}>{tr('ديون الزبناء')}</Text></View>
@@ -365,8 +368,11 @@ export default function App() {
           <Text style={s.panelText}>{tr('إجمالي المبيعات:')} {salesTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>{tr('إجمالي المشتريات:')} {purchaseTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>{tr('إجمالي المصاريف:')} {expenseTotal.toFixed(2)} DH</Text>
-          <Text style={s.panelText}>{tr('الصافي الأولي:')} {(salesTotal-purchaseTotal-expenseTotal).toFixed(2)} DH</Text>
-          <Pressable style={s.action} onPress={()=>exportPdf('Rapport d’activité','',['Ventes: '+salesTotal.toFixed(2)+' DH','Achats: '+purchaseTotal.toFixed(2)+' DH','Dépenses: '+expenseTotal.toFixed(2)+' DH','Résultat initial: '+(salesTotal-purchaseTotal-expenseTotal).toFixed(2)+' DH'],salesTotal-purchaseTotal-expenseTotal)}><Text style={s.actionText}>{tr('تصدير تقرير النشاط PDF')}</Text></Pressable>
+          <Text style={s.panelText}>{tr('تكلفة البضاعة المباعة (حسب تكلفة البيع المحفوظة):')} {profitLoss.costOfGoodsSold.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>{tr('هامش الربح من المبيعات ذات التكلفة المسجلة:')} {profitLoss.grossProfitOnCostedSales.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>{tr('النتيجة بعد المصاريف على البيانات المحتسبة:')} {profitLoss.netProfitOnCostedSales.toFixed(2)} DH</Text>
+          {profitLoss.uncostedRevenue>0&&<Text style={s.note}>{tr('قيمة المبيعات بلا تكلفة محفوظة:')} {profitLoss.uncostedRevenue.toFixed(2)} DH</Text>}
+          <Pressable style={s.action} onPress={()=>exportPdf('Rapport d’activité','',['Ventes nettes: '+salesTotal.toFixed(2)+' DH','Achats (stock): '+purchaseTotal.toFixed(2)+' DH','Dépenses: '+expenseTotal.toFixed(2)+' DH','Coût de revient enregistré: '+profitLoss.costOfGoodsSold.toFixed(2)+' DH','Marge brute calculable: '+profitLoss.grossProfitOnCostedSales.toFixed(2)+' DH','Résultat après dépenses (données comptabilisées): '+profitLoss.netProfitOnCostedSales.toFixed(2)+' DH','Ventes sans coût enregistré: '+profitLoss.uncostedRevenue.toFixed(2)+' DH'],profitLoss.netProfitOnCostedSales)}><Text style={s.actionText}>{tr('تصدير تقرير النشاط PDF')}</Text></Pressable>
         </View>
         <View style={[s.panel,{marginTop:12}]}>
           <Text style={s.panelTitle}>{tr('تقرير ديون الزبناء')}</Text>
@@ -385,7 +391,7 @@ export default function App() {
           {products.map(p=><View key={p.id} style={s.listItem}><View style={{flex:1}}><Text style={s.itemTitle}>{p.name}</Text><Text style={s.itemSub}>{tr('الكمية:')} {p.qty}</Text></View><Text style={s.itemPrice}>{(p.price*p.qty).toFixed(2)} DH</Text></View>)}
           <Pressable style={s.action} onPress={()=>exportPdf('Etat du stock','',products.map(p=>p.name+' — '+p.qty+' × '+p.price.toFixed(2)+' DH'),stockValue)}><Text style={s.actionText}>{tr('تصدير حالة المخزون PDF')}</Text></Pressable>
         </View>
-        <Text style={s.note}>{tr('الأرقام مبنية على السجلات الموجودة داخل HamZa. الصافي الأولي ليس ربحاً محاسبياً نهائياً، ولا يشمل تكلفة البضاعة المباعة أو الضرائب أو الالتزامات غير المسجلة.')}</Text>
+        <Text style={s.note}>{tr('الربح المحسوب يعتمد على تكلفة الوحدة المسجلة وقت البيع. السجلات القديمة بلا تكلفة تبقى خارج هامش الربح، والنتيجة لا تشمل الضرائب أو الالتزامات غير المسجلة.')}</Text>
       </>
       :<View style={s.panel}><Text style={s.panelTitle}>{tr('قسم ')}{tr(screen)}</Text><Text style={s.panelText}>{tr('الواجهة الأولية موجودة. الوظائف التفصيلية لهذا القسم مازال ما تبرمجاتش.')}</Text><Text style={s.note}>{tr('الحالة: قيد التطوير')}</Text></View>}
       <Text style={s.footer}>HamZa • com.hamza.app • v0.8.0 • {tr('البيانات محفوظة على الهاتف')}</Text>

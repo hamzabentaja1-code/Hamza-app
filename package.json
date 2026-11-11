@@ -9,7 +9,7 @@
     "web": "expo start --web",
     "build:apk": "eas build --platform android --profile preview",
     "build:production": "eas build --platform android --profile production",
-    "test:quote": "tsc src/i18n.ts src/company-profile.ts src/domain/csv-export.ts src/domain/quote-calculator.ts src/domain/document-conversion.ts src/domain/payment-allocation.ts src/domain/customer-balances.ts src/domain/sales-returns.ts src/pos.ts src/inventory.ts src/projects.ts --target ES2020 --module commonjs --outDir .test-build && node --test tests/quote-calculator.test.cjs tests/document-conversion.test.cjs tests/payment-allocation.test.cjs tests/customer-balances.test.cjs tests/sales-returns.test.cjs tests/csv-export.test.cjs tests/pos.test.cjs tests/inventory.test.cjs tests/i18n.test.cjs tests/company-profile.test.cjs tests/projects.test.cjs"
+    "test:quote": "tsc src/i18n.ts src/company-profile.ts src/domain/csv-export.ts src/domain/profit-loss.ts src/domain/quote-calculator.ts src/domain/document-conversion.ts src/domain/payment-allocation.ts src/domain/customer-balances.ts src/domain/sales-returns.ts src/pos.ts src/inventory.ts src/projects.ts --target ES2020 --module commonjs --outDir .test-build && node --test tests/quote-calculator.test.cjs tests/document-conversion.test.cjs tests/payment-allocation.test.cjs tests/customer-balances.test.cjs tests/sales-returns.test.cjs tests/csv-export.test.cjs tests/profit-loss.test.cjs tests/pos.test.cjs tests/inventory.test.cjs tests/i18n.test.cjs tests/company-profile.test.cjs tests/projects.test.cjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
