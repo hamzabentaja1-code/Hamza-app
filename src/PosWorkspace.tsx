@@ -1,9 +1,9 @@
 import React, {useMemo, useState} from 'react';
 import {Alert, Image, Pressable, Text, TextInput, View} from 'react-native';
-import {addPosLine, emptyPosCart, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
+import {addPosLine, emptyPosCart, findPosProduct, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
 import {translate, getLayoutDirection} from './i18n';
 
-type Product = {id:number; name:string; price:number; qty:number; photoData?:string};
+type Product = {id:number; name:string; price:number; qty:number; reference?:string; barcode?:string; photoData?:string};
 type Customer = {id:number; name:string};
 type CheckoutLine = {productId:number; name:string; quantity:number; unitPrice:number; discount:number};
 type Props = {
@@ -23,8 +23,8 @@ export default function PosWorkspace({language,products,customers,onCheckout}:Pr
   const [creditPaidText,setCreditPaidText]=useState('0');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
-  const mapped:PosProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,salePrice:p.price,stock:p.qty,trackStock:true})),[products]);
-  const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>p.name.toLocaleLowerCase().includes(q)).slice(0,8);},[mapped,term]);
+  const mapped:PosProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,reference:p.reference,barcode:p.barcode,salePrice:p.price,stock:p.qty,trackStock:true})),[products]);
+  const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>[p.name,p.reference||'',p.barcode||''].some(value=>value.toLocaleLowerCase().includes(q))).slice(0,8);},[mapped,term]);
   const discount=Number(discountText.replace(',','.'));
   const creditPaid=Number(creditPaidText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:method==='credit'&&Number.isFinite(creditPaid)?Math.max(0,creditPaid):0};
@@ -53,9 +53,9 @@ export default function PosWorkspace({language,products,customers,onCheckout}:Pr
     </View>
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>{tr('البحث عن منتج')}</Text>
-      <TextInput value={term} onChangeText={setTerm} placeholder={tr('اسم المنتج...')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto'}}/>
+      <TextInput value={term} onChangeText={setTerm} onSubmitEditing={()=>{const product=findPosProduct(mapped,term);if(product){add(product);}}} returnKeyType="search" placeholder={tr('اسم المنتج أو المرجع أو الباركود...')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto'}}/>
       {matches.map(p=><Pressable key={p.id} onPress={()=>add(p)} style={{padding:11,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:10}}>
-        <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{p.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{tr('المتوفر:')} {p.stock} • {money(p.salePrice)}</Text></View>
+        <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{p.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{p.reference?tr('مرجع:')+' '+p.reference+' • ':''}{p.barcode?tr('باركود:')+' '+p.barcode+' • ':''}{tr('المتوفر:')} {p.stock} • {money(p.salePrice)}</Text></View>
         <Text style={{color:GOLD,fontWeight:'900'}}>{tr('+ أضف')}</Text>
       </Pressable>)}
       {!!term.trim()&&matches.length===0&&<Text style={{color:'#999',padding:10}}>{tr('ما لقيناش منتج بهاد الاسم.')}</Text>}

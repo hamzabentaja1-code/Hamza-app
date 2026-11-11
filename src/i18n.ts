@@ -200,6 +200,7 @@ const fr: Record<string, string> = {
   "قلب على المنتج بالاسم، زيدو للسلة، وكمّل البيع.": "Recherchez un produit, ajoutez-le au panier et finalisez la vente.",
   "البحث عن منتج": "Rechercher un produit",
   "اسم المنتج...": "Nom du produit...",
+  "اسم المنتج أو المرجع أو الباركود...": "Nom, référence ou code-barres...",
   "المتوفر:": "Disponible :",
   "+ أضف": "+ Ajouter",
   "ما لقيناش منتج بهاد الاسم.": "Aucun produit trouvé avec ce nom.",
