@@ -12,6 +12,7 @@ type LedgerInput={
   expenses:readonly {id:number;date:string;title:string;amount:number}[];
   payments:readonly {id:number;date:string;customerName:string;amount:number;method:string;documentId?:number;allocations?:{documentId:number;amountCentimes:number}[]}[];
   supplierPayments:readonly {id:number;purchaseId:number;date:string;supplierName:string;amount:number;method:string;reference?:string}[];
+  bankTransfers?:readonly {id:string;bankAccountId:string;date:string;direction:'cash_to_bank'|'bank_to_cash';amountCentimes:number;description:string}[];
   receivables:readonly {customerName:string;outstandingCentimes:number;invoiceCount:number;customerCreditCentimes?:number}[];
 };
 
@@ -35,6 +36,12 @@ export function buildBusinessLedgerRows(input:LedgerInput):CsvCell[][] {
     rows.push(['Payment',payment.id,payment.date,'Customer payment',payment.customerName,'','','',payment.amount,`${payment.method}${allocations?`; ${allocations}`:payment.documentId?`; invoice ${payment.documentId}`:''}`]);
   }
   for(const payment of input.supplierPayments) rows.push(['Supplier payment',payment.id,payment.date,'Supplier payment',payment.supplierName,'','','',-payment.amount,`purchase ${payment.purchaseId}; ${payment.method}${payment.reference?`; ${payment.reference}`:''}`]);
+  for(const transfer of input.bankTransfers??[]){
+    const amount=transfer.amountCentimes/100;
+    const cashOut=transfer.direction==='cash_to_bank';
+    rows.push(['Cash-bank transfer',`${transfer.id}-cash`,transfer.date,cashOut?'Transfer from cash':'Transfer to cash','Cash register','','','',cashOut?-amount:amount,`bank ${transfer.bankAccountId}; paired ${transfer.id}`]);
+    rows.push(['Cash-bank transfer',`${transfer.id}-bank`,transfer.date,transfer.description,transfer.bankAccountId,'','','',cashOut?amount:-amount,`cash register; paired ${transfer.id}`]);
+  }
   for(const balance of input.receivables) rows.push(['Receivable','', '',`Open invoices (${balance.invoiceCount})`,balance.customerName,'','','',balance.outstandingCentimes/100,'']);
   for(const balance of input.receivables) if((balance.customerCreditCentimes??0)>0)rows.push(['Customer credit','', '', 'Unapplied credit note balance',balance.customerName,'','','',-(balance.customerCreditCentimes??0)/100,'Available for refund or future application']);
   return rows;
