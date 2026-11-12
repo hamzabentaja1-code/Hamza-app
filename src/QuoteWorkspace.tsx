@@ -19,8 +19,10 @@ type Props = {
   customers:Customer[];
   quotes:QuoteRecord[];
   onSave:(quote:QuoteRecord)=>void;
+  initialMode?:'quote'|'invoice';
+  showHistory?:boolean;
   onPdf:(title:string, customerName:string, lines:string[], total:number)=>void;
-  onConvert:(quote:QuoteRecord,type:QuoteConversionType)=>void;
+  onConvert:(quote:QuoteRecord,type:QuoteConversionType,direct?:boolean)=>boolean;
 };
 
 const gold='#D6AE55';
@@ -31,7 +33,7 @@ const choice={borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marg
 const active={borderColor:gold,backgroundColor:'#302819'};
 const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
-export default function QuoteWorkspace({language,products,customers,quotes,onSave,onPdf,onConvert}:Props) {
+export default function QuoteWorkspace({language,products,customers,quotes,onSave,onPdf,onConvert,initialMode='quote',showHistory=true}:Props) {
   const tr=(value:string)=>translate(language,value);
   const [customerId,setCustomerId]=useState('');
   const [productId,setProductId]=useState('');
@@ -97,9 +99,9 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
       validUntil:validity||undefined,
       lines:lines.map((line,index)=>({...line,total:calculation.lines[index].lineTotalCentimes/100})),
     };
-    onSave(record);
+    if(initialMode==='invoice') { if(!onConvert(record,'invoice',true)) return; } else onSave(record);
     setLines([]);setDiscount('0');setNotes('');setValidUntil('');
-    Alert.alert(tr('تم حفظ عرض السعر'),tr('تقدر دابا تصدره PDF.'));
+    if(initialMode==='quote') Alert.alert(tr('تم حفظ عرض السعر'),tr('تقدر دابا تصدره PDF.'));
   };
   const quoteLines=(quote:QuoteRecord)=>quote.lines?.length
     ? quote.lines.map(line=>`${line.productName} × ${line.qty} — ${line.total.toFixed(2)} DH`)
@@ -107,7 +109,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
 
   return <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom:20}}>
     <View style={panel}>
-      <Text style={{color:gold,fontSize:19,fontWeight:'800',marginBottom:12}}>{tr('إنشاء عرض سعر متعدد المنتجات')}</Text>
+      <Text style={{color:gold,fontSize:19,fontWeight:'800',marginBottom:12}}>{tr(initialMode==='invoice'?'إنشاء فاتورة متعددة المنتجات':'إنشاء عرض سعر متعدد المنتجات')}</Text>
       <Text style={{color:'#CCC',marginBottom:7}}>{tr('الزبون')}</Text>
       <TextInput value={customerSearch} onChangeText={setCustomerSearch} placeholder={tr('بحث عن الزبون بالاسم')} placeholderTextColor="#888" style={input}/>
       {filteredCustomers.map(c=><Pressable key={c.id} onPress={()=>setCustomerId(String(c.id))} style={[choice,customerId===String(c.id)&&active]}><Text style={{color:'#FFF',fontWeight:'700'}}>{c.name}</Text></Pressable>)}
@@ -135,15 +137,15 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
       </View>)}
       <TextInput value={discount} onChangeText={setDiscount} keyboardType="decimal-pad" placeholder={tr('تخفيض إجمالي (DH)')} placeholderTextColor="#888" style={[input,{marginTop:12}]}/>
       <TextInput value={notes} onChangeText={setNotes} placeholder={tr('ملاحظات (اختياري)')} placeholderTextColor="#888" style={input}/>
-      <TextInput value={validUntil} onChangeText={setValidUntil} placeholder={tr('تاريخ صلاحية العرض (اختياري) YYYY-MM-DD')} placeholderTextColor="#888" style={input}/>
+      {initialMode==='quote'&&<TextInput value={validUntil} onChangeText={setValidUntil} placeholder={tr('تاريخ صلاحية العرض (اختياري) YYYY-MM-DD')} placeholderTextColor="#888" style={input}/>}
       <View style={{backgroundColor:'#111',borderRadius:9,padding:12,marginVertical:8}}>
         <Text style={{color:'#DDD'}}>{tr('المجموع قبل التخفيض:')} {calculation?money(calculation.subtotalCentimes):'0.00 DH'}</Text>
         <Text style={{color:'#DDD',marginTop:5}}>{tr('التخفيض:')} {calculation?money(calculation.discountCentimes):'0.00 DH'}</Text>
         <Text style={{color:gold,fontSize:20,fontWeight:'900',marginTop:7}}>{tr('المجموع النهائي:')} {calculation?money(calculation.totalCentimes):'0.00 DH'}</Text>
       </View>
-      <Pressable onPress={save} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('حفظ عرض السعر')}</Text></Pressable>
+      <Pressable onPress={save} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr(initialMode==='invoice'?'إنشاء الفاتورة':'حفظ عرض السعر')}</Text></Pressable>
     </View>
-    <Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>{tr('عروض الأسعار السابقة')} ({quotes.length})</Text>
+    {showHistory&&<><Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>{tr('عروض الأسعار السابقة')} ({quotes.length})</Text>
     {quotes.map(q=><View key={q.id} style={[panel,{marginBottom:8}]}>
       <Text style={{color:'#FFF',fontWeight:'800'}}>{q.customerName}</Text>
       <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {tr(q.status)}</Text>
@@ -157,6 +159,6 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
         <Pressable onPress={()=>onConvert(q,'invoice')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة')}</Text></Pressable>
       </View>
     </View>)}
-    {quotes.length===0&&<Text style={{color:'#999',textAlign:'center',padding:12}}>{tr('مازال ما كاين حتى عرض سعر.')}</Text>}
+    {quotes.length===0&&<Text style={{color:'#999',textAlign:'center',padding:12}}>{tr('مازال ما كاين حتى عرض سعر.')}</Text>}</>}
   </ScrollView>;
 }

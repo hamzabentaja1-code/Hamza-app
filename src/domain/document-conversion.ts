@@ -13,6 +13,7 @@ export type QuoteForConversion = {
   unitPrice:number;
   total:number;
   validUntil?:string;
+  notes?:string;
   lines?:ConversionLine[];
 };
 export type StockProduct = {id:number; qty:number};
@@ -27,6 +28,7 @@ export type ConvertedDocument = {
   status:string;
   sourceQuoteId:number;
   validUntil?:string;
+  notes?:string;
   lines:ConversionLine[];
 };
 export type ExistingDocument = {sourceQuoteId:number; type:DocumentKind};
@@ -87,6 +89,7 @@ export function convertQuote(
     status:'صادرة',
     sourceQuoteId:quote.id,
     ...(type==='proforma'&&quote.validUntil?{validUntil:quote.validUntil}:{}),
+    ...(quote.notes?.trim()?{notes:quote.notes.trim()}:{}),
     lines:documentLines,
   };
   return {document,updatedProducts};

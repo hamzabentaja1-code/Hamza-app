@@ -9,6 +9,11 @@ test('invoice conversion preserves stock', () => {
   assert.deepEqual(result.updatedProducts,products);
 });
 
+test('invoice conversion preserves optional notes for PDF output', () => {
+  const result=convertQuote({id:10,productName:'Widget',customerName:'Client',qty:1,unitPrice:500,total:500,notes:'Due on delivery',lines:[{productId:7,productName:'Widget',qty:1,unitPrice:500,total:500}]},'invoice',[],[{id:7,qty:4}],110,'12/11/2026');
+  assert.equal(result.document.notes,'Due on delivery');
+});
+
 test('delivery conversion deducts stock and blocks duplicate conversion', () => {
   const quote = {id:2,productName:'Widget',customerName:'Client',qty:3,unitPrice:100,total:300,lines:[{productId:7,productName:'Widget',qty:3,unitPrice:100,total:300}]};
   const products = [{id:7,qty:8}];
