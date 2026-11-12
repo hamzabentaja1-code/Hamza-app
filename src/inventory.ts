@@ -64,6 +64,20 @@ export function validateStockIssue(movements: StockMovement[], productId: string
   return quantity > available ? `المخزون غير كافي. المتوفر: ${available}` : null;
 }
 
+export function validateStockDemand(movements: StockMovement[], warehouseId: string, lines: readonly { productId: string; quantity: number }[]): string | null {
+  const required = new Map<string, number>();
+  for (const line of lines) {
+    if (!line.productId.trim()) return "المنتج غير محدد";
+    if (!Number.isFinite(line.quantity) || line.quantity <= 0) return "الكمية خاصها تكون أكبر من صفر";
+    required.set(line.productId, (required.get(line.productId) || 0) + line.quantity);
+  }
+  for (const [productId, quantity] of required) {
+    const error = validateStockIssue(movements, productId, warehouseId, quantity);
+    if (error) return error;
+  }
+  return null;
+}
+
 export function transferStock(input: {
   id: string; productId: string; fromWarehouseId: string; toWarehouseId: string;
   quantity: number; createdAt: string; reference?: string;

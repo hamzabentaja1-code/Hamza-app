@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  warehouseStock, inventoryValue, transferStock, validateStockIssue,
+  warehouseStock, inventoryValue, transferStock, validateStockIssue, validateStockDemand,
   createStockCount, applyStockCount,
 } = require('../.test-build/inventory.js');
 
@@ -33,6 +33,13 @@ test('transfer posts paired movements and preserves total stock', () => {
 test('stock issue rejects invalid and unavailable quantities', () => {
   assert.match(validateStockIssue(base, 'p1', 'w1', 0) ?? '', /أكبر من صفر/);
   assert.match(validateStockIssue(base, 'p1', 'w1', 99) ?? '', /غير كافي/);
+});
+
+test('stock demand aggregates duplicate invoice lines before checking availability',()=>{
+  const movements=[{id:'open',productId:'p1',warehouseId:'w1',kind:'opening',quantity:5,createdAt:'2026-11-12'}];
+  assert.equal(validateStockDemand(movements,'w1',[{productId:'p1',quantity:2},{productId:'p1',quantity:3}]),null);
+  assert.match(validateStockDemand(movements,'w1',[{productId:'p1',quantity:3},{productId:'p1',quantity:3}])??' ',/غير كافي/);
+  assert.match(validateStockDemand(movements,'w1',[{productId:'p1',quantity:0}])??' ',/أكبر من صفر/);
 });
 
 test('stock count records only differences as auditable adjustments', () => {
