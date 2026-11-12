@@ -278,6 +278,7 @@ const fr: Record<string, string> = {
   "إنشاء الفاتورة": "Créer la facture",
   "تم إنشاء الفاتورة": "Facture créée",
   "تسجلات الفاتورة وتطبق عليها رصيد الزبون المتاح.": "La facture est enregistrée et le crédit disponible du client a été appliqué.",
+  "استعمال رصيد الزبون المتاح": "Utiliser le crédit disponible du client",
   "المنتجات المضافة": "Articles ajoutés",
   "المجموع قبل التخفيض:": "Sous-total avant remise :",
   "التخفيض:": "Remise :",

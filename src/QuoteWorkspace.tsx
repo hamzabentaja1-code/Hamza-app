@@ -17,12 +17,13 @@ type Props = {
   language:'AR'|'FR';
   products:Product[];
   customers:Customer[];
+  customerCredits?:Record<string,number>;
   quotes:QuoteRecord[];
   onSave:(quote:QuoteRecord)=>void;
   initialMode?:'quote'|'invoice';
   showHistory?:boolean;
   onPdf:(title:string, customerName:string, lines:string[], total:number)=>void;
-  onConvert:(quote:QuoteRecord,type:QuoteConversionType,direct?:boolean)=>boolean;
+  onConvert:(quote:QuoteRecord,type:QuoteConversionType,direct?:boolean,applyCredit?:boolean)=>boolean;
 };
 
 const gold='#D6AE55';
@@ -33,7 +34,7 @@ const choice={borderWidth:1,borderColor:'#393939',borderRadius:8,padding:10,marg
 const active={borderColor:gold,backgroundColor:'#302819'};
 const money=(n:number)=>(n/100).toFixed(2)+' DH';
 
-export default function QuoteWorkspace({language,products,customers,quotes,onSave,onPdf,onConvert,initialMode='quote',showHistory=true}:Props) {
+export default function QuoteWorkspace({language,products,customers,quotes,customerCredits={},onSave,onPdf,onConvert,initialMode='quote',showHistory=true}:Props) {
   const tr=(value:string)=>translate(language,value);
   const [customerId,setCustomerId]=useState('');
   const [productId,setProductId]=useState('');
@@ -45,7 +46,9 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
   const [lines,setLines]=useState<QuoteLine[]>([]);
   const [notes,setNotes]=useState('');
   const [validUntil,setValidUntil]=useState('');
+  const [applyCustomerCredit,setApplyCustomerCredit]=useState(true);
   const selectedCustomer=customers.find(c=>String(c.id)===customerId);
+  const availableCreditCentimes=selectedCustomer?customerCredits[selectedCustomer.name]||0:0;
   const selectedProduct=products.find(p=>String(p.id)===productId);
   const filteredCustomers=customers.filter(c=>c.name.toLocaleLowerCase().includes(customerSearch.trim().toLocaleLowerCase()));
   const filteredProducts=products.filter(p=>p.name.toLocaleLowerCase().includes(productSearch.trim().toLocaleLowerCase()));
@@ -99,7 +102,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
       validUntil:initialMode==='quote'&&validity?validity:undefined,
       lines:lines.map((line,index)=>({...line,total:calculation.lines[index].lineTotalCentimes/100})),
     };
-    if(initialMode==='invoice') { if(!onConvert(record,'invoice',true)) return; } else onSave(record);
+    if(initialMode==='invoice') { if(!onConvert(record,'invoice',true,applyCustomerCredit)) return; } else onSave(record);
     setLines([]);setDiscount('0');setNotes('');setValidUntil('');
     if(initialMode==='quote') Alert.alert(tr('تم حفظ عرض السعر'),tr('تقدر دابا تصدره PDF.'));
   };
@@ -114,6 +117,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
       <TextInput value={customerSearch} onChangeText={setCustomerSearch} placeholder={tr('بحث عن الزبون بالاسم')} placeholderTextColor="#888" style={input}/>
       {filteredCustomers.map(c=><Pressable key={c.id} onPress={()=>setCustomerId(String(c.id))} style={[choice,customerId===String(c.id)&&active]}><Text style={{color:'#FFF',fontWeight:'700'}}>{c.name}</Text></Pressable>)}
       {customers.length===0&&<Text style={{color:'#999',padding:8}}>{tr('زيد زبون أولاً من قسم الزبناء.')}</Text>}
+      {initialMode==='invoice'&&selectedCustomer&&availableCreditCentimes>0&&<Pressable onPress={()=>setApplyCustomerCredit(value=>!value)} style={[choice,{borderColor:gold}]}><Text style={{color:'#FFF'}}>{applyCustomerCredit?'☑':'□'} {tr('استعمال رصيد الزبون المتاح')}: {(availableCreditCentimes/100).toFixed(2)} DH</Text></Pressable>}
       <Text style={{color:'#CCC',marginVertical:8}}>{tr('المنتج')}</Text>
       <TextInput value={productSearch} onChangeText={setProductSearch} placeholder={tr('بحث عن المنتج بالاسم')} placeholderTextColor="#888" style={input}/>
       {filteredProducts.map(p=><Pressable key={p.id} onPress={()=>{setProductId(String(p.id));setCustomPrice(p.price.toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text></Pressable>)}
