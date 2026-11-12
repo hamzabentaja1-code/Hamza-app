@@ -88,7 +88,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
     if(!selectedCustomer){Alert.alert(tr('اختار الزبون'),tr('خاصك تحدد الزبون قبل الحفظ.'));return;}
     if(!calculation){Alert.alert(tr('راجع العرض'),tr('زيد منتج واحد على الأقل وتأكد من التخفيض.'));return;}
     const validity=validUntil.trim();
-    if(validity&&!isValidIsoDate(validity)){Alert.alert(tr('تاريخ غير صالح'),tr('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.'));return;}
+    if(initialMode==='quote'&&validity&&!isValidIsoDate(validity)){Alert.alert(tr('تاريخ غير صالح'),tr('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.'));return;}
     const now=Date.now();
     const record:QuoteRecord={
       id:now,productName:lines.map(x=>x.productName).join(', '),
@@ -96,7 +96,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,onSav
       unitPrice:0,total:calculation.totalCentimes/100,
       date:new Date().toLocaleDateString('fr-MA'),status:'معلق',
       notes:notes.trim(),
-      validUntil:validity||undefined,
+      validUntil:initialMode==='quote'&&validity?validity:undefined,
       lines:lines.map((line,index)=>({...line,total:calculation.lines[index].lineTotalCentimes/100})),
     };
     if(initialMode==='invoice') { if(!onConvert(record,'invoice',true)) return; } else onSave(record);
