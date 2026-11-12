@@ -72,3 +72,39 @@ test('bank accounts and transfers reject invalid, duplicate, and overdrawn opera
  assert.equal(calculateBankBalance(account,[],incoming,supplier,outflows),8500);
  assert.throws(()=>recordBankTransfer({id:'out-linked',bankAccountId:account.id,date:'today',direction:'bank_to_cash',amount:86,description:'سحب'},[account],[],10000,incoming,supplier,outflows),/رصيد الحساب البنكي/);
 });
+
+test('bank statement CSV parses French debit and credit columns and matches exact dated movements',()=>{
+ const {parseBankStatementCsv,matchBankStatementLines}=require('../.test-build/domain/bank-accounts.js');
+ const csv='Date;Libellé;Débit;Crédit;Solde\n12/11/2026;"Achat; câble";25,00;;975,00\n2026-11-12;Versement;;10,50;985,50';
+ const parsed=parseBankStatementCsv(csv,'bank-1');
+ assert.equal(parsed.lines.length,2);assert.equal(parsed.rejected,0);
+ assert.equal(parsed.lines[0].description,'Achat; câble');assert.equal(parsed.lines[0].amountCentimes,-2500);
+ assert.equal(parsed.lines[1].amountCentimes,1050);assert.equal(parsed.lines[1].reportedBalanceCentimes,98550);
+ const duplicate=parseBankStatementCsv(csv,'bank-1',parsed.lines);assert.equal(duplicate.lines.length,0);assert.equal(duplicate.rejected,2);
+ const matches=matchBankStatementLines(parsed.lines,[{id:'expense-1',bankAccountId:'bank-1',date:'12/11/2026',amountCentimes:-2500},{id:'payment-1',bankAccountId:'bank-1',date:'12/11/2026',amountCentimes:1050}]);
+ assert.deepEqual(matches.map(item=>item.status),['matched','matched']);
+ const ambiguous=matchBankStatementLines([parsed.lines[0]],[{id:'a',bankAccountId:'bank-1',date:'2026-11-12',amountCentimes:-2500},{id:'b',bankAccountId:'bank-1',date:'2026-11-12',amountCentimes:-2500}]);
+ assert.equal(ambiguous[0].status,'ambiguous');
+});
+
+test('bank statement CSV recognizes currency suffixes in debit, credit and balance headings',()=>{
+ const {parseBankStatementCsv}=require('../.test-build/domain/bank-accounts.js');
+ const parsed=parseBankStatementCsv('Date;Libellé;Débit MAD;Crédit MAD;Solde MAD\n12/11/2026;Frais;12,50;;87,50','bank-1');
+ assert.equal(parsed.lines.length,1);assert.equal(parsed.lines[0].amountCentimes,-1250);assert.equal(parsed.lines[0].reportedBalanceCentimes,8750);
+});
+
+test('bank reconciliation compares the latest reported balance with app movements through statement date',()=>{
+ const {reconcileBankStatement,matchBankStatementLines}=require('../.test-build/domain/bank-accounts.js');
+ const account={id:'bank-1',name:'CIH',openingBalanceCentimes:10000,openingDate:'2026-11-01'};
+ const lines=[{id:'s1',bankAccountId:'bank-1',date:'2026-11-02',description:'Receipt',amountCentimes:5000,reportedBalanceCentimes:15500}];
+ const entries=[{id:'p1',bankAccountId:'bank-1',date:'2026-11-02',amountCentimes:5000},{id:'later',bankAccountId:'bank-1',date:'2026-11-03',amountCentimes:2000}];
+ const result=reconcileBankStatement(account,lines,entries,matchBankStatementLines(lines,entries));
+ assert.equal(result.matched,1);assert.equal(result.expectedBalanceCentimes,15000);assert.equal(result.differenceCentimes,500);
+});
+
+test('bank reconciliation history restore keeps valid account records and drops invalid entries',()=>{
+ const {normalizeBankReconciliationHistory}=require('../.test-build/domain/bank-accounts.js');
+ const account={id:'bank-1',name:'CIH',openingBalanceCentimes:0,openingDate:'2026-11-01'};
+ const valid={id:'rec-1',bankAccountId:'bank-1',createdAt:'2026-11-12T10:00:00.000Z',fromDate:'2026-11-01',toDate:'2026-11-12',reportedBalanceCentimes:10000,expectedBalanceCentimes:9500,differenceCentimes:500,matched:3,confirmed:2,unmatched:1,ambiguous:0};
+ assert.deepEqual(normalizeBankReconciliationHistory([valid,valid,{...valid,id:'bad',bankAccountId:'missing'},{...valid,id:'broken',matched:-1}], [account]),[valid]);
+});
