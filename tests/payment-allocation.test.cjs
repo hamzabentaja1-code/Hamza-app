@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { applyExistingCustomerCredits, applyPaymentToInvoice, allocateCreditNoteAcrossInvoices, allocatePaymentAcrossInvoices } = require('../.test-build/domain/payment-allocation.js');
+const { applyExistingCustomerCredits, applyExistingCustomerCreditsWhenSelected, applyPaymentToInvoice, allocateCreditNoteAcrossInvoices, allocatePaymentAcrossInvoices } = require('../.test-build/domain/payment-allocation.js');
 
 test('partial payment updates paid amount and remaining balance', () => {
   const result = applyPaymentToInvoice({type:'invoice',total:250,paidCentimes:0,status:'صادرة'},7500);
@@ -60,4 +60,10 @@ test('unapplied customer credits are carried forward to future invoices FIFO',()
 test('customer credits validate source records and cannot exceed invoice balance',()=>{
  assert.deepEqual(applyExistingCustomerCredits([{id:1,unappliedCentimes:900}],99,400),{creditedCentimes:400,remainingDueCentimes:0,allocations:[{creditNoteId:1,invoiceId:99,amountCentimes:400}]});
  assert.throws(()=>applyExistingCustomerCredits([{id:1,unappliedCentimes:-1}],99,400));
+});
+
+test('direct invoice applies customer credit only when selected',()=>{
+ const credits=[{id:4,unappliedCentimes:1200}];
+ assert.deepEqual(applyExistingCustomerCreditsWhenSelected(credits,99,2000,false),{creditedCentimes:0,remainingDueCentimes:2000,allocations:[]});
+ assert.deepEqual(applyExistingCustomerCreditsWhenSelected(credits,99,2000,true),{creditedCentimes:1200,remainingDueCentimes:800,allocations:[{creditNoteId:4,invoiceId:99,amountCentimes:1200}]});
 });

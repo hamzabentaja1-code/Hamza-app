@@ -43,7 +43,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Quotes, customer orders, delivery notes, invoices, proforma invoices
 - [x] Customer returns create PDF credit notes, reduce open invoice balances, carry excess credit into a later POS credit sale or quote-converted invoice, and record confirmed partial cash refunds against available unapplied credit in the return history, statement PDF and financial CSV
 - [x] Standalone multi-product invoice creation with stock validation and selected-warehouse deduction; available customer credit is applied automatically and invoice notes are included in PDF output
-- [ ] Add a standalone invoice form for manually applying credit; refunds are recorded after the user confirms the cash payout and do not move physical cash automatically
+- [x] Choose whether to apply available customer credit while creating a standalone invoice; payment workspace can apply credit to a selected existing invoice. Refunds require confirmation and do not move physical cash automatically
 - [x] Apply customer credit to a selected open invoice from the payments workspace after confirmation; cash refunds are recorded only after the user confirms the payout
 - [ ] Document lifecycle, conversion/linking, reminders and follow-up
 - [ ] Discounts, fees, notes/sections, barcode entry, multi-line editing

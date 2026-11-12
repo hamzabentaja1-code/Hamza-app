@@ -37,6 +37,15 @@ export function applyExistingCustomerCredits(
   return {creditedCentimes:dueCentimes-left,remainingDueCentimes:left,allocations};
 }
 
+export function applyExistingCustomerCreditsWhenSelected(
+  credits:readonly {id:number;unappliedCentimes:number}[],invoiceId:number,invoiceTotalCentimes:number,selected:boolean,
+):{creditedCentimes:number;remainingDueCentimes:number;allocations:{creditNoteId:number;invoiceId:number;amountCentimes:number}[]} {
+  if(selected)return applyExistingCustomerCredits(credits,invoiceId,invoiceTotalCentimes);
+  if(!Number.isSafeInteger(invoiceId)||invoiceId<=0)throw new Error('Invoice ID is invalid');
+  if(!Number.isSafeInteger(invoiceTotalCentimes)||invoiceTotalCentimes<0)throw new Error('Invoice total is invalid');
+  return {creditedCentimes:0,remainingDueCentimes:invoiceTotalCentimes,allocations:[]};
+}
+
 /** Allocates a payment to one invoice using integer centimes. */
 export function applyPaymentToInvoice(
   invoice:InvoiceForPayment,
