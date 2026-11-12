@@ -66,6 +66,9 @@ test('bank accounts and transfers reject invalid, duplicate, and overdrawn opera
  assert.deepEqual(deleteBankAccount([account],[],'bank-1'),[]);
  assert.throws(()=>deleteBankAccount([account],[t],'bank-1'),/حركات مالية محفوظة/);
  assert.throws(()=>deleteBankAccount([account],[],'bank-1',[{id:1,bankAccountId:'bank-1'}]),/حركات مالية محفوظة/);
- assert.equal(calculateBankBalance(account,[],[{id:1,method:'تحويل',bankAccountId:'bank-1',amount:100,date:'today'}],[{id:2,method:'تحويل',bankAccountId:'bank-1',amount:30,date:'today'}]),9500);
- assert.throws(()=>recordBankTransfer({id:'out-linked',bankAccountId:account.id,date:'today',direction:'bank_to_cash',amount:96,description:'سحب'},[account],[],10000,[{id:1,method:'تحويل',bankAccountId:'bank-1',amount:100,date:'today'}],[{id:2,method:'تحويل',bankAccountId:'bank-1',amount:30,date:'today'}]),/رصيد الحساب البنكي/);
+ const incoming=[{id:1,method:'تحويل',bankAccountId:'bank-1',amount:100,date:'today'},{id:3,method:'بطاقة',bankAccountId:'bank-1',amount:10,date:'today'}];
+ const supplier=[{id:2,method:'تحويل',bankAccountId:'bank-1',amount:30,date:'today'}];
+ const outflows=[{id:4,method:'بطاقة',bankAccountId:'bank-1',amount:20,date:'today'}];
+ assert.equal(calculateBankBalance(account,[],incoming,supplier,outflows),8500);
+ assert.throws(()=>recordBankTransfer({id:'out-linked',bankAccountId:account.id,date:'today',direction:'bank_to_cash',amount:86,description:'سحب'},[account],[],10000,incoming,supplier,outflows),/رصيد الحساب البنكي/);
 });
