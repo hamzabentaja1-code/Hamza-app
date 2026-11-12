@@ -43,7 +43,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Quotes, customer orders, delivery notes, invoices, proforma invoices
 - [x] Customer returns create PDF credit notes, reduce open invoice balances, carry excess credit into a later POS credit sale or quote-converted invoice, and record confirmed partial cash refunds against available unapplied credit in the return history, statement PDF and financial CSV
 - [ ] Add a standalone invoice form for manually applying credit; refunds are recorded after the user confirms the cash payout and do not move physical cash automatically
-- [ ] Apply customer credit directly on invoice forms; refunds are recorded after the user confirms the cash payout and do not move physical cash automatically
+- [x] Apply customer credit to a selected open invoice from the payments workspace after confirmation; cash refunds are recorded only after the user confirms the payout
 - [ ] Document lifecycle, conversion/linking, reminders and follow-up
 - [ ] Discounts, fees, notes/sections, barcode entry, multi-line editing
 - [ ] PDF layouts, print, share, document numbering and status tracking
@@ -56,7 +56,8 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Cash, payments and banking
 - [ ] Expenses and recurring expenses/categories
-- [ ] Cash registers, opening balance, cash in/out and transfers
+- [x] Cash opening balance, manual cash in/out, and live balance tied to recorded cash customer/supplier payments, cash paid purchases, cash expenses and confirmed refunds; PDF/CSV cash history
+- [ ] Transfers between cash and bank accounts, and separate bank accounts/reconciliation
 - [x] Customer payment allocation to open invoices, supplier debt and partial payment tracking
 - [ ] Cheques, drafts, unpaid items and due-date tracking
 - [ ] Bank statement import and reconciliation
