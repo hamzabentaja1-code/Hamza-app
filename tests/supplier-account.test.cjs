@@ -4,13 +4,14 @@ const {purchaseOutstanding,recordSupplierPayment,supplierAccountBalances,normali
 
 const purchase={id:9,supplierName:'Fournisseur',total:1000,paidAmount:200};
 test('partial supplier payments reduce only the linked purchase balance',()=>{
-  const first=recordSupplierPayment({purchase,payments:[],amount:300,id:1,date:'11/11/2026',method:'تحويل'});
+  const first=recordSupplierPayment({purchase,payments:[],amount:300,id:1,date:'11/11/2026',method:'تحويل',bankAccountId:'bank-1'});
   assert.equal(purchaseOutstanding(purchase,[first]),500);
   assert.equal(purchaseOutstanding({...purchase,id:10},[first]),800);
 });
 test('supplier payment rejects overpayment and requires cheque reference',()=>{
   assert.throws(()=>recordSupplierPayment({purchase,payments:[],amount:801,id:2,date:'today',method:'نقداً'}));
   assert.throws(()=>recordSupplierPayment({purchase,payments:[],amount:50,id:3,date:'today',method:'شيك'}));
+  assert.throws(()=>recordSupplierPayment({purchase,payments:[],amount:50,id:30,date:'today',method:'تحويل'}),/الحساب البنكي/);
 });
 test('supplier balances group purchases and payments by supplier',()=>{
   const payment=recordSupplierPayment({purchase,payments:[],amount:300,id:4,date:'today',method:'نقداً'});

@@ -1,5 +1,5 @@
 export type SupplierAccountPurchase={id:number;supplierName:string;total:number;paidAmount:number};
-export type SupplierAccountPayment={id:number;purchaseId:number;supplierName:string;amount:number;date:string;method:'نقداً'|'تحويل'|'شيك';reference?:string};
+export type SupplierAccountPayment={id:number;purchaseId:number;supplierName:string;amount:number;date:string;method:'نقداً'|'تحويل'|'شيك';reference?:string;bankAccountId?:string};
 export type SupplierAccountBalance={supplierName:string;purchaseCount:number;total:number;paid:number;outstanding:number};
 
 /** Legacy purchase records never tracked settlement; count them as settled until the user records new terms. */
@@ -14,16 +14,17 @@ export function purchaseOutstanding(purchase:SupplierAccountPurchase,payments:re
   return Math.max(0,Math.round((purchase.total-purchase.paidAmount-laterPaid)*100)/100);
 }
 
-export function recordSupplierPayment(input:{purchase:SupplierAccountPurchase;payments:readonly SupplierAccountPayment[];amount:number;id:number;date:string;method:'نقداً'|'تحويل'|'شيك';reference?:string}):SupplierAccountPayment {
+export function recordSupplierPayment(input:{purchase:SupplierAccountPurchase;payments:readonly SupplierAccountPayment[];amount:number;id:number;date:string;method:'نقداً'|'تحويل'|'شيك';reference?:string;bankAccountId?:string}):SupplierAccountPayment {
   if(!Number.isSafeInteger(input.id)||input.id<=0||input.payments.some(payment=>payment.id===input.id))throw new Error('معرف الأداء غير صالح أو مستعمل.');
   if(!Number.isSafeInteger(input.purchase.id)||!Number.isFinite(input.purchase.total)||input.purchase.total<0)throw new Error('مرجع الشراء غير صالح.');
   if(!Number.isFinite(input.amount)||input.amount<=0)throw new Error('مبلغ الأداء خاصو يكون أكبر من صفر.');
   if(!input.date.trim())throw new Error('تاريخ الأداء إجباري.');
   if(!input.purchase.supplierName.trim())throw new Error('اسم المورد إجباري.');
   if(input.method==='شيك'&&!input.reference?.trim())throw new Error('مرجع الشيك إجباري.');
+  if(input.method==='تحويل'&&!input.bankAccountId?.trim())throw new Error('اختار الحساب البنكي للتحويل.');
   const outstanding=purchaseOutstanding(input.purchase,input.payments);
   if(input.amount>outstanding+1e-9)throw new Error('مبلغ الأداء أكبر من الدين المتبقي.');
-  return {id:input.id,purchaseId:input.purchase.id,supplierName:input.purchase.supplierName,amount:Math.round(input.amount*100)/100,date:input.date,method:input.method,reference:input.reference?.trim()||undefined};
+  return {id:input.id,purchaseId:input.purchase.id,supplierName:input.purchase.supplierName,amount:Math.round(input.amount*100)/100,date:input.date,method:input.method,reference:input.reference?.trim()||undefined,bankAccountId:input.method==='تحويل'?input.bankAccountId?.trim():undefined};
 }
 
 export function supplierAccountBalances(purchases:readonly SupplierAccountPurchase[],payments:readonly SupplierAccountPayment[]):SupplierAccountBalance[] {
