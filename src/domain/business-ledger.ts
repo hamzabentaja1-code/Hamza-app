@@ -8,8 +8,8 @@ type LedgerInput={
   products:readonly {id:number;name:string;qty:number;costPrice?:number;price:number;reference?:string}[];
   sales:readonly {id:number;date:string;productName:string;customerName:string;qty:number;unitCost?:number;unitPrice:number;total:number;paymentMethod?:string}[];
   returns:readonly {id:number;date:string;number:string;saleId:number;productName:string;customerName:string;qty:number;total:number;restocked:boolean;invoiceAllocations?:{documentId:number;allocatedCentimes:number}[];unappliedCentimes?:number;refunds?:{id:number;amountCentimes:number;date:string;method:'cash'}[]}[];
-  purchases:readonly {id:number;date:string;productName:string;supplierName:string;qty:number;unitCost:number;total:number;paidAmount?:number}[];
-  expenses:readonly {id:number;date:string;title:string;amount:number}[];
+  purchases:readonly {id:number;date:string;productName:string;supplierName:string;qty:number;unitCost:number;total:number;paidAmount?:number;paymentMethod?:string;bankAccountId?:string}[];
+  expenses:readonly {id:number;date:string;title:string;amount:number;paymentMethod?:string;bankAccountId?:string}[];
   payments:readonly {id:number;date:string;customerName:string;amount:number;method:string;documentId?:number;bankAccountId?:string;allocations?:{documentId:number;amountCentimes:number}[]}[];
   supplierPayments:readonly {id:number;purchaseId:number;date:string;supplierName:string;amount:number;method:string;reference?:string;bankAccountId?:string}[];
   bankTransfers?:readonly {id:string;bankAccountId:string;date:string;direction:'cash_to_bank'|'bank_to_cash';amountCentimes:number;description:string}[];
@@ -27,10 +27,10 @@ export function buildBusinessLedgerRows(input:LedgerInput):CsvCell[][] {
     for(const refund of item.refunds??[]) rows.push(['Customer refund',refund.id,refund.date,`Cash refund ${item.number}`,item.customerName,'','','',-(refund.amountCentimes/100),`cash; credit note ${item.number}`]);
   }
   for(const purchase of input.purchases){
-    rows.push(['Purchase',purchase.id,purchase.date,purchase.productName,purchase.supplierName,purchase.qty,purchase.unitCost,purchase.unitCost,purchase.total,`initial paid ${purchase.paidAmount??0} DH`]);
-    if((purchase.paidAmount??0)>0)rows.push(['Supplier payment',`initial-${purchase.id}`,purchase.date,'Initial supplier payment',purchase.supplierName,'','','',-purchase.paidAmount!,`purchase ${purchase.id}; initial payment`]);
+    rows.push(['Purchase',purchase.id,purchase.date,purchase.productName,purchase.supplierName,purchase.qty,purchase.unitCost,purchase.unitCost,purchase.total,`initial paid ${purchase.paidAmount??0} DH${purchase.bankAccountId?`; bank ${purchase.bankAccountId}`:''}`]);
+    if((purchase.paidAmount??0)>0)rows.push(['Supplier payment',`initial-${purchase.id}`,purchase.date,'Initial supplier payment',purchase.supplierName,'','','',-purchase.paidAmount!,`purchase ${purchase.id}; initial payment${purchase.paymentMethod?`; ${purchase.paymentMethod}`:''}${purchase.bankAccountId?`; bank ${purchase.bankAccountId}`:''}`]);
   }
-  for(const expense of input.expenses) rows.push(['Expense',expense.id,expense.date,expense.title,'','','','',-expense.amount,'']);
+  for(const expense of input.expenses) rows.push(['Expense',expense.id,expense.date,expense.title,'','','','',-expense.amount,`${expense.paymentMethod||''}${expense.bankAccountId?`; bank ${expense.bankAccountId}`:''}`]);
   for(const payment of input.payments){
     const allocations=payment.allocations?.map(item=>`invoice ${item.documentId}: ${(item.amountCentimes/100).toFixed(2)} DH`).join(', ');
     rows.push(['Payment',payment.id,payment.date,'Customer payment',payment.customerName,'','','',payment.amount,`${payment.method}${payment.bankAccountId?`; bank ${payment.bankAccountId}`:''}${allocations?`; ${allocations}`:payment.documentId?`; invoice ${payment.documentId}`:''}`]);

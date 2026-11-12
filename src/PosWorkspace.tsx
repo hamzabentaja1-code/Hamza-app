@@ -5,22 +5,26 @@ import {translate, getLayoutDirection} from './i18n';
 
 type Product = {id:number; name:string; price:number; qty:number; reference?:string; barcode?:string; photoData?:string};
 type Customer = {id:number; name:string};
+type BankAccountOption={id:string;name:string;balance:number};
 type CheckoutLine = {productId:number; name:string; quantity:number; unitPrice:number; discount:number};
 type Props = {
   language: 'AR'|'FR';
   products: Product[];
   customers: Customer[];
+  bankAccounts:BankAccountOption[];
   creditByCustomer: Record<string,number>;
-  onCheckout: (data:{customerId?:number;customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'|'credit'; total:number;paidAmount:number})=>boolean|void;
+  onCheckout: (data:{customerId?:number;customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'|'credit'; total:number;paidAmount:number;bankAccountId?:string;creditPaymentMethod?:'cash'|'card'|'transfer'})=>boolean|void;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PosWorkspace({language,products,customers,creditByCustomer,onCheckout}:Props){
+export default function PosWorkspace({language,products,customers,bankAccounts,creditByCustomer,onCheckout}:Props){
   const tr=(value:string)=>translate(language,value);
   const [term,setTerm]=useState('');
   const [customerId,setCustomerId]=useState('');
   const [method,setMethod]=useState<'cash'|'card'|'transfer'|'credit'>('cash');
+  const [bankAccountId,setBankAccountId]=useState('');
+  const [creditPaymentMethod,setCreditPaymentMethod]=useState<'cash'|'card'|'transfer'>('cash');
   const [creditPaidText,setCreditPaidText]=useState('0');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
@@ -36,6 +40,8 @@ export default function PosWorkspace({language,products,customers,creditByCustom
   const checkout=()=>{
     if(!Number.isFinite(discount)||discount<0){Alert.alert(tr('تخفيض غير صالح'),tr('دخل تخفيض صحيح.'));return;}
     if(method==='credit'&&(!customerId||!Number.isFinite(creditPaid)||creditPaid<0||creditPaid>totals.total)){Alert.alert(tr('معلومات ناقصة'),tr('اختار زبوناً مسجلاً ومبلغاً مؤدى لا يتجاوز المجموع.'));return;}
+    const bankRequired=method==='card'||method==='transfer'||(method==='credit'&&creditPaid>0&&creditPaymentMethod!=='cash');
+    if(bankRequired&&!bankAccounts.some(account=>account.id===bankAccountId)){Alert.alert(tr('معلومات ناقصة'),tr('اختار الحساب البنكي للتحويل.'));return;}
     const paidAmount=method==='credit'?creditPaid:totals.total;
     const validation=validateCheckout({...currentCart,paidAmount});
     if(validation.length){Alert.alert(tr('راجع السلة'),validation.map(message=>tr(message)).join('\n'));return;}
@@ -45,7 +51,7 @@ export default function PosWorkspace({language,products,customers,creditByCustom
     const creditApplied=method==='credit'?Math.min(Math.max(0,creditByCustomer[name]||0),remaining):0;
     Alert.alert(tr('تأكيد البيع'),`${tr('المجموع النهائي:')} ${money(totals.total)}\n${tr('الزبون')}: ${name}\n${tr('طريقة الأداء')}: ${tr(method==='cash'?'نقداً':method==='card'?'بطاقة':method==='credit'?'دين':'تحويل')}${method==='credit'?`\n${tr('المؤدى الآن:')} ${money(paidAmount)}${creditApplied>0?`\n${tr('رصيد سابق مستعمل:')} ${money(creditApplied)}`:''}\n${tr('الباقي:')} ${money(remaining-creditApplied)}`:''}`,[
       {text:tr('رجوع'),style:'cancel'},
-      {text:tr('تأكيد'),onPress:()=>{const accepted=onCheckout({customerId:customerId?Number(customerId):undefined,customerName:name,lines,paymentMethod:method,total:totals.total,paidAmount});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');}}
+      {text:tr('تأكيد'),onPress:()=>{const accepted=onCheckout({customerId:customerId?Number(customerId):undefined,customerName:name,lines,paymentMethod:method,total:totals.total,paidAmount,...(bankRequired?{bankAccountId}:{}),...(method==='credit'?{creditPaymentMethod}:{})});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');}}
     ]);
   };
   return <View style={{gap:12,direction:getLayoutDirection(language)}}>
@@ -85,7 +91,8 @@ export default function PosWorkspace({language,products,customers,creditByCustom
       <View style={{flexDirection:'row',gap:7}}>
         {([{id:'cash',label:'نقداً'},{id:'card',label:'بطاقة'},{id:'transfer',label:'تحويل'},{id:'credit',label:'دين'}] as const).map(m=><Pressable key={m.id} onPress={()=>setMethod(m.id)} style={{flex:1,borderWidth:1,borderColor:method===m.id?GOLD:'#444',borderRadius:8,padding:10,alignItems:'center'}}><Text style={{color:'#FFF'}}>{tr(m.label)}</Text></Pressable>)}
       </View>
-      {method==='credit'&&<><TextInput value={creditPaidText} onChangeText={setCreditPaidText} keyboardType="decimal-pad" placeholder={tr('المؤدى الآن (DH)')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',marginTop:8,textAlign:'auto'}}/><Text style={{color:'#AAA'}}>{tr('اختار زبوناً مسجلاً ومبلغاً مؤدى لا يتجاوز المجموع.')}</Text></>}
+      {method==='credit'&&<><TextInput value={creditPaidText} onChangeText={setCreditPaidText} keyboardType="decimal-pad" placeholder={tr('المؤدى الآن (DH)')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',marginTop:8,textAlign:'auto'}}/><Text style={{color:'#AAA'}}>{tr('اختار زبوناً مسجلاً ومبلغاً مؤدى لا يتجاوز المجموع.')}</Text><Text style={{color:'#CCC',marginTop:10}}>{tr('طريقة أداء التسبيق')}</Text><View style={{flexDirection:'row',gap:7}}>{([{id:'cash',label:'نقداً'},{id:'card',label:'بطاقة'},{id:'transfer',label:'تحويل'}] as const).map(item=><Pressable key={item.id} onPress={()=>setCreditPaymentMethod(item.id)} style={{flex:1,borderWidth:1,borderColor:creditPaymentMethod===item.id?GOLD:'#444',borderRadius:8,padding:9,alignItems:'center'}}><Text style={{color:'#FFF'}}>{tr(item.label)}</Text></Pressable>)}</View></>}
+      {(method==='card'||method==='transfer'||(method==='credit'&&creditPaid>0&&creditPaymentMethod!=='cash'))&&<View><Text style={{color:'#CCC',marginTop:10,marginBottom:5}}>{tr('الحساب البنكي')}</Text>{bankAccounts.map(account=><Pressable key={account.id} onPress={()=>setBankAccountId(account.id)} style={{borderWidth:1,borderColor:bankAccountId===account.id?GOLD:'#444',borderRadius:8,padding:9,marginBottom:5}}><Text style={{color:'#FFF'}}>{account.name} • {money(account.balance)}</Text></Pressable>)}{bankAccounts.length===0&&<Text style={{color:'#AAA'}}>{tr('أضف حساباً بنكياً من شاشة الصندوق أولاً.')}</Text>}</View>}
       <TextInput value={discountText} onChangeText={setDiscountText} keyboardType="decimal-pad" placeholder={tr('تخفيض عام (DH)')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',marginTop:12,textAlign:'right'}}/>
       <View style={{backgroundColor:'#111',borderRadius:9,padding:12,marginTop:10,gap:6}}>
         <Text style={{color:'#DDD'}}>{tr('المجموع قبل التخفيض:')} {money(totals.subtotal)}</Text>

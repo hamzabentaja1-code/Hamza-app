@@ -52,13 +52,15 @@ export function deleteBankAccount(accounts:readonly BankAccount[],transfers:read
   return accounts.filter(item=>item.id!==accountId);
 }
 
-export function calculateBankBalance(account:BankAccount,transfers:readonly BankTransfer[],customerPayments:readonly LinkedBankPayment[]=[],supplierPayments:readonly LinkedBankPayment[]=[]):number{
-  const customerIn=customerPayments.filter(item=>item.bankAccountId===account.id&&item.method==='تحويل').reduce((sum,item)=>sum+(Number.isFinite(item.amount)&&item.amount>0?Math.round(item.amount*100):0),0);
+const bankMethod=(method:string)=>method==='تحويل'||method==='بطاقة'||method==='transfer'||method==='card';
+export function calculateBankBalance(account:BankAccount,transfers:readonly BankTransfer[],customerPayments:readonly LinkedBankPayment[]=[],supplierPayments:readonly LinkedBankPayment[]=[],otherOutflows:readonly LinkedBankPayment[]=[]):number{
+  const customerIn=customerPayments.filter(item=>item.bankAccountId===account.id&&bankMethod(item.method)).reduce((sum,item)=>sum+(Number.isFinite(item.amount)&&item.amount>0?Math.round(item.amount*100):0),0);
   const supplierOut=supplierPayments.filter(item=>item.bankAccountId===account.id&&item.method==='تحويل').reduce((sum,item)=>sum+(Number.isFinite(item.amount)&&item.amount>0?Math.round(item.amount*100):0),0);
-  return account.openingBalanceCentimes+customerIn-supplierOut+transfers.filter(item=>item.bankAccountId===account.id).reduce((sum,item)=>sum+(item.direction==='cash_to_bank'?item.amountCentimes:-item.amountCentimes),0);
+  const otherOut=otherOutflows.filter(item=>item.bankAccountId===account.id&&bankMethod(item.method)).reduce((sum,item)=>sum+(Number.isFinite(item.amount)&&item.amount>0?Math.round(item.amount*100):0),0);
+  return account.openingBalanceCentimes+customerIn-supplierOut-otherOut+transfers.filter(item=>item.bankAccountId===account.id).reduce((sum,item)=>sum+(item.direction==='cash_to_bank'?item.amountCentimes:-item.amountCentimes),0);
 }
 
-export function recordBankTransfer(input:{id:string;bankAccountId:string;date:string;direction:BankTransfer['direction'];amount:number;description:string},accounts:readonly BankAccount[],transfers:readonly BankTransfer[],cashBalanceCentimes:number,customerPayments:readonly LinkedBankPayment[]=[],supplierPayments:readonly LinkedBankPayment[]=[]):BankTransfer{
+export function recordBankTransfer(input:{id:string;bankAccountId:string;date:string;direction:BankTransfer['direction'];amount:number;description:string},accounts:readonly BankAccount[],transfers:readonly BankTransfer[],cashBalanceCentimes:number,customerPayments:readonly LinkedBankPayment[]=[],supplierPayments:readonly LinkedBankPayment[]=[],otherOutflows:readonly LinkedBankPayment[]=[]):BankTransfer{
   const account=accounts.find(item=>item.id===input.bankAccountId);
   if(!account)throw new Error('اختار حساب بنكي موجود.');
   if(!input.id.trim()||transfers.some(item=>item.id===input.id))throw new Error('معرف التحويل غير صالح أو مستعمل.');
@@ -66,6 +68,6 @@ export function recordBankTransfer(input:{id:string;bankAccountId:string;date:st
   const amountCentimes=Math.round(input.amount*100);
   if(!Number.isFinite(input.amount)||input.amount<=0||!Number.isSafeInteger(amountCentimes)||amountCentimes<=0)throw new Error('مبلغ التحويل خاصو يكون أكبر من صفر.');
   if(input.direction==='cash_to_bank'&&amountCentimes>cashBalanceCentimes)throw new Error('المبلغ أكبر من رصيد الصندوق المتوفر.');
-  if(input.direction==='bank_to_cash'&&amountCentimes>calculateBankBalance(account,transfers,customerPayments,supplierPayments))throw new Error('المبلغ أكبر من رصيد الحساب البنكي المتوفر.');
+  if(input.direction==='bank_to_cash'&&amountCentimes>calculateBankBalance(account,transfers,customerPayments,supplierPayments,otherOutflows))throw new Error('المبلغ أكبر من رصيد الحساب البنكي المتوفر.');
   return {id:input.id.trim(),bankAccountId:account.id,date:input.date,direction:input.direction,amountCentimes,description:input.description.trim()};
 }
