@@ -52,7 +52,7 @@ test('bank transfers reconcile both the cash register and the selected bank acco
 });
 
 test('bank accounts and transfers reject invalid, duplicate, and overdrawn operations',()=>{
- const {createBankAccount,recordBankTransfer,normalizeBankAccounts,normalizeBankTransfers}=require('../.test-build/domain/bank-accounts.js');
+ const {createBankAccount,deleteBankAccount,recordBankTransfer,renameBankAccount,normalizeBankAccounts,normalizeBankTransfers}=require('../.test-build/domain/bank-accounts.js');
  const account=createBankAccount({id:'bank-1',name:'CIH',openingBalance:25,openingDate:'12/11/2026'},[]);
  assert.throws(()=>createBankAccount({id:'bank-2',name:'cih',openingBalance:0,openingDate:'12/11/2026'},[account]),/اسم الحساب/);
  assert.throws(()=>recordBankTransfer({id:'out',bankAccountId:account.id,date:'today',direction:'bank_to_cash',amount:30,description:'سحب'},[account],[],10000),/رصيد الحساب البنكي/);
@@ -61,4 +61,8 @@ test('bank accounts and transfers reject invalid, duplicate, and overdrawn opera
  assert.throws(()=>recordBankTransfer({id:'in',bankAccountId:account.id,date:'today',direction:'cash_to_bank',amount:1,description:'مكرر'},[account],[t],10000),/مستعمل/);
  assert.equal(normalizeBankAccounts([{...account},{...account,id:'bank-2',name:'cih'}]).length,1);
  assert.equal(normalizeBankTransfers([{...t},{...t,bankAccountId:'missing'}],[account]).length,1);
+ assert.deepEqual(renameBankAccount([account],'bank-1','CIH Pro')[0].name,'CIH Pro');
+ assert.throws(()=>renameBankAccount([account],'bank-1',''),/اسم الحساب/);
+ assert.deepEqual(deleteBankAccount([account],[],'bank-1'),[]);
+ assert.throws(()=>deleteBankAccount([account],[t],'bank-1'),/تحويلات محفوظة/);
 });
