@@ -59,7 +59,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Expenses and recurring expenses/categories
 - [x] Cash opening balance, manual cash in/out, and live balance tied to recorded cash customer/supplier payments, cash paid purchases, cash expenses and confirmed refunds; PDF/CSV cash history
 - [x] Bank account opening balances and confirmed transfers to/from the cash register; both balances and the cash ledger update together
-- [ ] Link card/bank customer and supplier payments to a bank account; bank statement import and reconciliation
+- [ ] Link every card/bank transaction to a bank account; the payment workspace and later supplier debt payments now support bank transfers, update balances, block overdrafts and protect linked accounts from deletion. Direct/POS sales, initial purchase payments and expenses still need account selection; bank statement import and reconciliation remain pending.
 - [x] Customer payment allocation to open invoices, supplier debt and partial payment tracking
 - [ ] Cheques, drafts, unpaid items and due-date tracking
 - [ ] Bank statement import and reconciliation

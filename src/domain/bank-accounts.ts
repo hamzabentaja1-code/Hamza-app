@@ -1,5 +1,6 @@
 export type BankAccount={id:string;name:string;openingBalanceCentimes:number;openingDate:string};
 export type BankTransfer={id:string;bankAccountId:string;date:string;direction:'cash_to_bank'|'bank_to_cash';amountCentimes:number;description:string};
+export type LinkedBankPayment={id:number;bankAccountId?:string;method:string;amount:number;date:string;customerName?:string;supplierName?:string;reference?:string};
 
 export function normalizeBankAccounts(value:unknown):BankAccount[]{
   if(!Array.isArray(value))return [];
@@ -45,17 +46,19 @@ export function renameBankAccount(accounts:readonly BankAccount[],accountId:stri
   return accounts.map(item=>item.id===accountId?{...item,name}:item);
 }
 
-export function deleteBankAccount(accounts:readonly BankAccount[],transfers:readonly BankTransfer[],accountId:string):BankAccount[]{
+export function deleteBankAccount(accounts:readonly BankAccount[],transfers:readonly BankTransfer[],accountId:string,linkedPayments:readonly LinkedBankPayment[]=[]):BankAccount[]{
   if(!accounts.some(item=>item.id===accountId))throw new Error('اختار حساب بنكي موجود.');
-  if(transfers.some(item=>item.bankAccountId===accountId))throw new Error('ما يمكنش تحذف حساب مرتبط بتحويلات محفوظة.');
+  if(transfers.some(item=>item.bankAccountId===accountId)||linkedPayments.some(item=>item.bankAccountId===accountId))throw new Error('ما يمكنش تحذف حساب مرتبط بحركات مالية محفوظة.');
   return accounts.filter(item=>item.id!==accountId);
 }
 
-export function calculateBankBalance(account:BankAccount,transfers:readonly BankTransfer[]):number{
-  return account.openingBalanceCentimes+transfers.filter(item=>item.bankAccountId===account.id).reduce((sum,item)=>sum+(item.direction==='cash_to_bank'?item.amountCentimes:-item.amountCentimes),0);
+export function calculateBankBalance(account:BankAccount,transfers:readonly BankTransfer[],customerPayments:readonly LinkedBankPayment[]=[],supplierPayments:readonly LinkedBankPayment[]=[]):number{
+  const customerIn=customerPayments.filter(item=>item.bankAccountId===account.id&&item.method==='تحويل').reduce((sum,item)=>sum+(Number.isFinite(item.amount)&&item.amount>0?Math.round(item.amount*100):0),0);
+  const supplierOut=supplierPayments.filter(item=>item.bankAccountId===account.id&&item.method==='تحويل').reduce((sum,item)=>sum+(Number.isFinite(item.amount)&&item.amount>0?Math.round(item.amount*100):0),0);
+  return account.openingBalanceCentimes+customerIn-supplierOut+transfers.filter(item=>item.bankAccountId===account.id).reduce((sum,item)=>sum+(item.direction==='cash_to_bank'?item.amountCentimes:-item.amountCentimes),0);
 }
 
-export function recordBankTransfer(input:{id:string;bankAccountId:string;date:string;direction:BankTransfer['direction'];amount:number;description:string},accounts:readonly BankAccount[],transfers:readonly BankTransfer[],cashBalanceCentimes:number):BankTransfer{
+export function recordBankTransfer(input:{id:string;bankAccountId:string;date:string;direction:BankTransfer['direction'];amount:number;description:string},accounts:readonly BankAccount[],transfers:readonly BankTransfer[],cashBalanceCentimes:number,customerPayments:readonly LinkedBankPayment[]=[],supplierPayments:readonly LinkedBankPayment[]=[]):BankTransfer{
   const account=accounts.find(item=>item.id===input.bankAccountId);
   if(!account)throw new Error('اختار حساب بنكي موجود.');
   if(!input.id.trim()||transfers.some(item=>item.id===input.id))throw new Error('معرف التحويل غير صالح أو مستعمل.');
@@ -63,6 +66,6 @@ export function recordBankTransfer(input:{id:string;bankAccountId:string;date:st
   const amountCentimes=Math.round(input.amount*100);
   if(!Number.isFinite(input.amount)||input.amount<=0||!Number.isSafeInteger(amountCentimes)||amountCentimes<=0)throw new Error('مبلغ التحويل خاصو يكون أكبر من صفر.');
   if(input.direction==='cash_to_bank'&&amountCentimes>cashBalanceCentimes)throw new Error('المبلغ أكبر من رصيد الصندوق المتوفر.');
-  if(input.direction==='bank_to_cash'&&amountCentimes>calculateBankBalance(account,transfers))throw new Error('المبلغ أكبر من رصيد الحساب البنكي المتوفر.');
+  if(input.direction==='bank_to_cash'&&amountCentimes>calculateBankBalance(account,transfers,customerPayments,supplierPayments))throw new Error('المبلغ أكبر من رصيد الحساب البنكي المتوفر.');
   return {id:input.id.trim(),bankAccountId:account.id,date:input.date,direction:input.direction,amountCentimes,description:input.description.trim()};
 }

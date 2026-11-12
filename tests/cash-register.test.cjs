@@ -52,7 +52,7 @@ test('bank transfers reconcile both the cash register and the selected bank acco
 });
 
 test('bank accounts and transfers reject invalid, duplicate, and overdrawn operations',()=>{
- const {createBankAccount,deleteBankAccount,recordBankTransfer,renameBankAccount,normalizeBankAccounts,normalizeBankTransfers}=require('../.test-build/domain/bank-accounts.js');
+ const {calculateBankBalance,createBankAccount,deleteBankAccount,recordBankTransfer,renameBankAccount,normalizeBankAccounts,normalizeBankTransfers}=require('../.test-build/domain/bank-accounts.js');
  const account=createBankAccount({id:'bank-1',name:'CIH',openingBalance:25,openingDate:'12/11/2026'},[]);
  assert.throws(()=>createBankAccount({id:'bank-2',name:'cih',openingBalance:0,openingDate:'12/11/2026'},[account]),/اسم الحساب/);
  assert.throws(()=>recordBankTransfer({id:'out',bankAccountId:account.id,date:'today',direction:'bank_to_cash',amount:30,description:'سحب'},[account],[],10000),/رصيد الحساب البنكي/);
@@ -64,5 +64,8 @@ test('bank accounts and transfers reject invalid, duplicate, and overdrawn opera
  assert.deepEqual(renameBankAccount([account],'bank-1','CIH Pro')[0].name,'CIH Pro');
  assert.throws(()=>renameBankAccount([account],'bank-1',''),/اسم الحساب/);
  assert.deepEqual(deleteBankAccount([account],[],'bank-1'),[]);
- assert.throws(()=>deleteBankAccount([account],[t],'bank-1'),/تحويلات محفوظة/);
+ assert.throws(()=>deleteBankAccount([account],[t],'bank-1'),/حركات مالية محفوظة/);
+ assert.throws(()=>deleteBankAccount([account],[],'bank-1',[{id:1,bankAccountId:'bank-1'}]),/حركات مالية محفوظة/);
+ assert.equal(calculateBankBalance(account,[],[{id:1,method:'تحويل',bankAccountId:'bank-1',amount:100,date:'today'}],[{id:2,method:'تحويل',bankAccountId:'bank-1',amount:30,date:'today'}]),9500);
+ assert.throws(()=>recordBankTransfer({id:'out-linked',bankAccountId:account.id,date:'today',direction:'bank_to_cash',amount:96,description:'سحب'},[account],[],10000,[{id:1,method:'تحويل',bankAccountId:'bank-1',amount:100,date:'today'}],[{id:2,method:'تحويل',bankAccountId:'bank-1',amount:30,date:'today'}]),/رصيد الحساب البنكي/);
 });
