@@ -38,6 +38,19 @@ export function createBankAccount(input:{id:string;name:string;openingBalance:nu
   return {id,name,openingBalanceCentimes:amount,openingDate:input.openingDate};
 }
 
+export function renameBankAccount(accounts:readonly BankAccount[],accountId:string,nameValue:string):BankAccount[]{
+  const name=nameValue.trim(),account=accounts.find(item=>item.id===accountId);
+  if(!account)throw new Error('اختار حساب بنكي موجود.');
+  if(!name||accounts.some(item=>item.id!==accountId&&item.name.toLocaleLowerCase()===name.toLocaleLowerCase()))throw new Error('اسم الحساب البنكي مطلوب وما خاصوش يكون مكرر.');
+  return accounts.map(item=>item.id===accountId?{...item,name}:item);
+}
+
+export function deleteBankAccount(accounts:readonly BankAccount[],transfers:readonly BankTransfer[],accountId:string):BankAccount[]{
+  if(!accounts.some(item=>item.id===accountId))throw new Error('اختار حساب بنكي موجود.');
+  if(transfers.some(item=>item.bankAccountId===accountId))throw new Error('ما يمكنش تحذف حساب مرتبط بتحويلات محفوظة.');
+  return accounts.filter(item=>item.id!==accountId);
+}
+
 export function calculateBankBalance(account:BankAccount,transfers:readonly BankTransfer[]):number{
   return account.openingBalanceCentimes+transfers.filter(item=>item.bankAccountId===account.id).reduce((sum,item)=>sum+(item.direction==='cash_to_bank'?item.amountCentimes:-item.amountCentimes),0);
 }
