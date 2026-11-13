@@ -12,6 +12,12 @@ export type ProjectRecord={
 };
 export type ProjectExpense={id:number;projectId?:number;amount:number};
 
+function isValidIsoDate(value:string):boolean {
+  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+  const parsed=new Date(value+'T00:00:00.000Z');
+  return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===value;
+}
+
 export function createProject(input:{name:string;customerName?:string;budget:number;targetDate?:string},id:number):ProjectRecord {
   const name=input.name.trim();
   const budget=Number(input.budget);
@@ -31,9 +37,7 @@ export function addProjectTask(project:ProjectRecord,title:string,id:number,opti
   if(!trimmed) throw new Error('دخل اسم المهمة.');
   const dueDate=options.dueDate?.trim();
   if(dueDate){
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) throw new Error('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.');
-    const parsed=new Date(dueDate+'T00:00:00.000Z');
-    if(!Number.isFinite(parsed.getTime())||parsed.toISOString().slice(0,10)!==dueDate) throw new Error('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.');
+    if(!isValidIsoDate(dueDate)) throw new Error('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.');
   }
   const priority=options.priority??'عادي';
   if(!['عادي','مهم','عاجل'].includes(priority)) throw new Error('اختار أولوية صحيحة للمهمة.');
@@ -60,6 +64,6 @@ export function normalizeProjects(value:unknown):ProjectRecord[] {
       Number.isFinite(p.budget)&&['مخطط','جارٍ','مكتمل','متوقف'].includes(p.status||'')&&Array.isArray(p.tasks);
   }).map(project=>({...project,tasks:project.tasks.filter(task=>
     Number.isFinite(task.id)&&typeof task.title==='string'&&typeof task.done==='boolean'&&
-    (!task.dueDate||(typeof task.dueDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(task.dueDate)))&&
-    (!task.priority||['عادي','مهم','عاجل'].includes(task.priority)))}));
+    (!task.dueDate||(typeof task.dueDate==='string'&&isValidIsoDate(task.dueDate)))&&
+    (!task.priority||['عادي','مهم','عاجل'].includes(task.priority))).map(task=>({...task,priority:task.priority??'عادي'}))}));
 }
