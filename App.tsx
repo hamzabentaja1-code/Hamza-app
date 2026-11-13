@@ -10,7 +10,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import QuoteWorkspace, {QuoteRecord, QuoteConversionType} from './src/QuoteWorkspace';
 import PosWorkspace from './src/PosWorkspace';
 import ProjectsWorkspace from './src/ProjectsWorkspace';
-import {ProjectRecord,ProjectStatus,addProjectTask,createProject,normalizeProjects,setProjectTaskDone} from './src/projects';
+import {ProjectRecord,ProjectStatus,ProjectTaskPriority,addProjectTask,createProject,normalizeProjects,setProjectTaskDone} from './src/projects';
 import SalesReturnWorkspace from './src/SalesReturnWorkspace';
 import {applyCustomerCreditsToSalesReturns,createSalesReturn,normalizeSalesReturns,recordCustomerRefund,SaleForReturn,SalesReturnRecord} from './src/domain/sales-returns';
 import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/domain/document-conversion';
@@ -96,7 +96,7 @@ export default function App() {
   const addWarehouseTransfer=()=>{try{const quantity=Number(transferQuantity.replace(',','.'));if(!transferProductId||!transferTargetId||!Number.isFinite(quantity)){throw new Error('اختار المنتج والمخزن المستهدف والكمية.');}const next=transferStock({id:'transfer-'+Date.now(),productId:transferProductId,fromWarehouseId:activeWarehouseId,toWarehouseId:transferTargetId,quantity,createdAt:new Date().toISOString()},stockMovements);setStockMovements(next);setTransferQuantity('1');Alert.alert(tr('تم التحويل'),tr('تسجل تحويل المخزون بنجاح.'));}catch(error){Alert.alert(tr('تعذر تحويل المخزون'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}};
   const addProject=(input:{name:string;customerName:string;budget:number;targetDate:string})=>{try{const project=createProject(input,Date.now());setProjects(current=>[project,...current]);Alert.alert(tr('تمت إضافة المشروع'),project.name);}catch(error){Alert.alert(tr('تعذر إضافة المشروع'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}};
   const changeProjectStatus=(projectId:number,status:ProjectStatus)=>setProjects(current=>current.map(project=>project.id===projectId?{...project,status}:project));
-  const addTaskToProject=(projectId:number,title:string)=>{try{setProjects(current=>current.map(project=>project.id===projectId?addProjectTask(project,title,Date.now()):project));}catch(error){Alert.alert(tr('تعذر إضافة المهمة'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}};
+  const addTaskToProject=(projectId:number,task:{title:string;dueDate?:string;priority:ProjectTaskPriority})=>{try{setProjects(current=>current.map(project=>project.id===projectId?addProjectTask(project,task.title,Date.now(),{dueDate:task.dueDate,priority:task.priority}):project));}catch(error){Alert.alert(tr('تعذر إضافة المهمة'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}};
   const toggleProjectTask=(projectId:number,taskId:number,done:boolean)=>setProjects(current=>current.map(project=>project.id===projectId?setProjectTaskDone(project,taskId,done):project));
   const addProjectExpense=(projectId:number,title:string,amount:number)=>setExpenses(current=>[{id:Date.now(),projectId,title:title.trim(),amount,paymentMethod:'نقداً',date:new Date().toLocaleDateString('fr-MA')},...current]);
   const addSalesReturn=(input:{sale:SaleForReturn;quantity:number;reason:string;restock:boolean}):boolean=>{

@@ -30,8 +30,19 @@ test('project expenses are linked to budget totals and can exceed budget',()=>{
   assert.deepEqual(projectFinancials(project,[{id:1,projectId:1,amount:120},{id:2,projectId:2,amount:40}]),{spent:120,remaining:-20,overBudget:true});
 });
 
+test('stores task deadline and urgency and rejects invalid metadata',()=>{
+  const project=createProject({name:'Project',budget:100},1);
+  const taskProject=addProjectTask(project,'Site inspection',2,{dueDate:'2026-12-05',priority:'عاجل'});
+  assert.equal(taskProject.tasks[0].dueDate,'2026-12-05');
+  assert.equal(taskProject.tasks[0].priority,'عاجل');
+  assert.equal(addProjectTask(project,'Basic',3).tasks[0].priority,'عادي');
+  assert.throws(()=>addProjectTask(project,'Bad date',4,{dueDate:'2026-02-30'}));
+  assert.throws(()=>addProjectTask(project,'Bad priority',5,{priority:'مستعجل'}));
+});
+
 test('normalizes safe project records and discards malformed entries or tasks',()=>{
-  const projects=normalizeProjects([{id:1,name:'Saved',customerName:'Client',budget:50,status:'جارٍ',tasks:[{id:2,title:'Task',done:false},{id:'bad',title:'bad',done:false}]},{id:2,name:'invalid'}]);
+  const projects=normalizeProjects([{id:1,name:'Saved',customerName:'Client',budget:50,status:'جارٍ',tasks:[{id:2,title:'Task',done:false},{id:3,title:'Bad date',done:false,dueDate:'2026-02-30'},{id:'bad',title:'bad',done:false}]},{id:2,name:'invalid'}]);
   assert.equal(projects.length,1);
   assert.equal(projects[0].tasks.length,1);
+  assert.equal(projects[0].tasks[0].priority,'عادي');
 });

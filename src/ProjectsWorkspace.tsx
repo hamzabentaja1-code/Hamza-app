@@ -1,7 +1,7 @@
 import React,{useState} from 'react';
 import {Alert,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
 import {translate} from './i18n';
-import {ProjectRecord,ProjectStatus,projectFinancials} from './projects';
+import {ProjectRecord,ProjectStatus,ProjectTaskPriority,projectFinancials} from './projects';
 import {isValidIsoDate} from './domain/document-conversion';
 
 type Props={
@@ -10,7 +10,7 @@ type Props={
   expenses:{id:number;projectId?:number;amount:number}[];
   onCreate:(input:{name:string;customerName:string;budget:number;targetDate:string})=>void;
   onStatusChange:(projectId:number,status:ProjectStatus)=>void;
-  onAddTask:(projectId:number,title:string)=>void;
+  onAddTask:(projectId:number,task:{title:string;dueDate?:string;priority:ProjectTaskPriority})=>void;
   onToggleTask:(projectId:number,taskId:number,done:boolean)=>void;
   onAddExpense:(projectId:number,title:string,amount:number)=>void;
 };
@@ -28,6 +28,8 @@ export default function ProjectsWorkspace({language,projects,expenses,onCreate,o
   const [budget,setBudget]=useState('');
   const [targetDate,setTargetDate]=useState('');
   const [taskDrafts,setTaskDrafts]=useState<Record<number,string>>({});
+  const [taskDates,setTaskDates]=useState<Record<number,string>>({});
+  const [taskPriorities,setTaskPriorities]=useState<Record<number,ProjectTaskPriority>>({});
   const [expenseDrafts,setExpenseDrafts]=useState<Record<number,{title:string;amount:string}>>({});
   const saveProject=()=>{
     const amount=Number(budget.replace(',','.'));
@@ -49,6 +51,8 @@ export default function ProjectsWorkspace({language,projects,expenses,onCreate,o
     {projects.map(project=>{
       const totals=projectFinancials(project,expenses);
       const taskTitle=taskDrafts[project.id]||'';
+      const taskDate=taskDates[project.id]||'';
+      const taskPriority=taskPriorities[project.id]||'عادي';
       const expense=expenseDrafts[project.id]||{title:'',amount:''};
       return <View key={project.id} style={[panel,{marginBottom:10}]}>
         <Text style={{color:'#FFF',fontWeight:'800',fontSize:17}}>{project.name}</Text>
@@ -62,8 +66,10 @@ export default function ProjectsWorkspace({language,projects,expenses,onCreate,o
         <Text style={{color:gold,fontWeight:'800',marginTop:12,marginBottom:6}}>{tr('حالة المشروع')}</Text>
         <View style={{flexDirection:'row',flexWrap:'wrap',gap:6}}>{statuses.map(status=><Pressable key={status} onPress={()=>onStatusChange(project.id,status)} style={{borderColor:project.status===status?gold:'#444',borderWidth:1,borderRadius:8,padding:7}}><Text style={{color:project.status===status?gold:'#DDD'}}>{tr(status)}</Text></Pressable>)}</View>
         <Text style={{color:gold,fontWeight:'800',marginTop:12}}>{tr('المهام')} ({project.tasks.filter(task=>task.done).length}/{project.tasks.length})</Text>
-        {project.tasks.map(task=><Pressable key={task.id} onPress={()=>onToggleTask(project.id,task.id,!task.done)} style={{paddingVertical:6}}><Text style={{color:task.done?'#777':'#EEE'}}>{task.done?'☑':'☐'} {task.title}</Text></Pressable>)}
-        <View style={{flexDirection:'row',gap:7,marginTop:6}}><TextInput value={taskTitle} onChangeText={value=>setTaskDrafts(current=>({...current,[project.id]:value}))} placeholder={tr('مهمة جديدة')} placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0}]}/><Pressable onPress={()=>{if(!taskTitle.trim()){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم المهمة.'));return;}onAddTask(project.id,taskTitle);setTaskDrafts(current=>({...current,[project.id]:''}));}} style={[button,{marginTop:0,paddingHorizontal:12}]}><Text style={{color:'#151515',fontWeight:'900'}}>+</Text></Pressable></View>
+        {project.tasks.map(task=><Pressable key={task.id} onPress={()=>onToggleTask(project.id,task.id,!task.done)} style={{paddingVertical:6}}><Text style={{color:task.done?'#777':'#EEE'}}>{task.done?'☑':'☐'} {task.title}{task.priority?` · ${tr(task.priority)}`:''}{task.dueDate?` · ${tr('الأجل')}: ${task.dueDate}`:''}</Text></Pressable>)}
+        <TextInput value={taskDate} onChangeText={value=>setTaskDates(current=>({...current,[project.id]:value}))} placeholder={tr('آخر أجل (اختياري) YYYY-MM-DD')} placeholderTextColor="#888" style={[input,{marginTop:7}]}/>
+        <Text style={{color:'#AAA',marginBottom:6}}>{tr('أولوية المهمة')}</Text><View style={{flexDirection:'row',gap:6,marginBottom:7}}>{(['عادي','مهم','عاجل'] as ProjectTaskPriority[]).map(priority=><Pressable key={priority} onPress={()=>setTaskPriorities(current=>({...current,[project.id]:priority}))} style={{borderColor:taskPriority===priority?gold:'#444',borderWidth:1,borderRadius:8,padding:7}}><Text style={{color:taskPriority===priority?gold:'#DDD'}}>{tr(priority)}</Text></Pressable>)}</View>
+        <View style={{flexDirection:'row',gap:7,marginTop:6}}><TextInput value={taskTitle} onChangeText={value=>setTaskDrafts(current=>({...current,[project.id]:value}))} placeholder={tr('مهمة جديدة')} placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0}]}/><Pressable onPress={()=>{if(!taskTitle.trim()){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم المهمة.'));return;}if(taskDate.trim()&&!isValidIsoDate(taskDate.trim())){Alert.alert(tr('تاريخ غير صالح'),tr('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.'));return;}onAddTask(project.id,{title:taskTitle,dueDate:taskDate,priority:taskPriority});setTaskDrafts(current=>({...current,[project.id]:''}));setTaskDates(current=>({...current,[project.id]:''}));}} style={[button,{marginTop:0,paddingHorizontal:12}]}><Text style={{color:'#151515',fontWeight:'900'}}>+</Text></Pressable></View>
         <Text style={{color:gold,fontWeight:'800',marginTop:14,marginBottom:6}}>{tr('إضافة مصروف للمشروع')}</Text>
         <TextInput value={expense.title} onChangeText={value=>setExpenseDrafts(current=>({...current,[project.id]:{...expense,title:value}}))} placeholder={tr('وصف المصروف')} placeholderTextColor="#888" style={input}/>
         <TextInput value={expense.amount} onChangeText={value=>setExpenseDrafts(current=>({...current,[project.id]:{...expense,amount:value}}))} keyboardType="decimal-pad" placeholder={tr('المبلغ DH')} placeholderTextColor="#888" style={input}/>
