@@ -604,6 +604,8 @@ const fr: Record<string, string> = {
   "عاجل": "Urgente",
   "آخر أجل (اختياري) YYYY-MM-DD": "Échéance (facultatif) AAAA-MM-JJ",
   "الأجل": "Échéance",
+  "صور المنتج": "Photos du produit",
+  "الحد الأقصى أربع صور للمنتج.": "Quatre photos maximum par produit.",
 };
 
 export function translate(language: AppLanguage, value: string): string {
