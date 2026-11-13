@@ -11,7 +11,7 @@ type LedgerInput={
   purchases:readonly {id:number;date:string;productName:string;supplierName:string;qty:number;unitCost:number;total:number;paidAmount?:number;paymentMethod?:string;bankAccountId?:string}[];
   expenses:readonly {id:number;date:string;title:string;amount:number;paymentMethod?:string;bankAccountId?:string}[];
   payments:readonly {id:number;date:string;customerName:string;amount:number;method:string;documentId?:number;bankAccountId?:string;allocations?:{documentId:number;amountCentimes:number}[]}[];
-  supplierPayments:readonly {id:number;purchaseId:number;date:string;supplierName:string;amount:number;method:string;reference?:string;bankAccountId?:string}[];
+  supplierPayments:readonly {id:number;purchaseId?:number;openingBalanceAppliedCentimes?:number;date:string;supplierName:string;amount:number;method:string;reference?:string;bankAccountId?:string}[];
   bankTransfers?:readonly {id:string;bankAccountId:string;date:string;direction:'cash_to_bank'|'bank_to_cash';amountCentimes:number;description:string}[];
   receivables:readonly {customerName:string;outstandingCentimes:number;invoiceCount:number;customerCreditCentimes?:number}[];
 };
@@ -35,7 +35,7 @@ export function buildBusinessLedgerRows(input:LedgerInput):CsvCell[][] {
     const allocations=payment.allocations?.map(item=>`invoice ${item.documentId}: ${(item.amountCentimes/100).toFixed(2)} DH`).join(', ');
     rows.push(['Payment',payment.id,payment.date,'Customer payment',payment.customerName,'','','',payment.amount,`${payment.method}${payment.bankAccountId?`; bank ${payment.bankAccountId}`:''}${allocations?`; ${allocations}`:payment.documentId?`; invoice ${payment.documentId}`:''}`]);
   }
-  for(const payment of input.supplierPayments) rows.push(['Supplier payment',payment.id,payment.date,'Supplier payment',payment.supplierName,'','','',-payment.amount,`purchase ${payment.purchaseId}; ${payment.method}${payment.bankAccountId?`; bank ${payment.bankAccountId}`:''}${payment.reference?`; ${payment.reference}`:''}`]);
+  for(const payment of input.supplierPayments) rows.push(['Supplier payment',payment.id,payment.date,'Supplier payment',payment.supplierName,'','','',-payment.amount,`${payment.purchaseId===undefined?'opening balance':`purchase ${payment.purchaseId}`}; ${payment.method}${payment.bankAccountId?`; bank ${payment.bankAccountId}`:''}${payment.reference?`; ${payment.reference}`:''}`]);
   for(const transfer of input.bankTransfers??[]){
     const amount=transfer.amountCentimes/100;
     const cashOut=transfer.direction==='cash_to_bank';
