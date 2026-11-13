@@ -2,9 +2,10 @@ import React, {useMemo, useState} from 'react';
 import {Alert, Image, Pressable, Text, TextInput, View} from 'react-native';
 import {addPosLine, emptyPosCart, findPosProduct, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
 import {translate, getLayoutDirection} from './i18n';
+import {canExtendCredit} from './domain/contact-credit';
 
 type Product = {id:number; name:string; price:number; qty:number; reference?:string; barcode?:string; photoData?:string};
-type Customer = {id:number; name:string};
+type Customer = {id:number; name:string; creditLimitCentimes?:number};
 type BankAccountOption={id:string;name:string;balance:number};
 type CheckoutLine = {productId:number; name:string; quantity:number; unitPrice:number; discount:number};
 type Props = {
@@ -13,12 +14,13 @@ type Props = {
   customers: Customer[];
   bankAccounts:BankAccountOption[];
   creditByCustomer: Record<string,number>;
+  outstandingByCustomer: Record<string,number>;
   onCheckout: (data:{customerId?:number;customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'|'credit'; total:number;paidAmount:number;bankAccountId?:string;creditPaymentMethod?:'cash'|'card'|'transfer'})=>boolean|void;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PosWorkspace({language,products,customers,bankAccounts,creditByCustomer,onCheckout}:Props){
+export default function PosWorkspace({language,products,customers,bankAccounts,creditByCustomer,outstandingByCustomer,onCheckout}:Props){
   const tr=(value:string)=>translate(language,value);
   const [term,setTerm]=useState('');
   const [customerId,setCustomerId]=useState('');
@@ -49,6 +51,8 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
     const name=customers.find(c=>String(c.id)===customerId)?.name||'زبون عابر';
     const remaining=Math.max(0,totals.total-paidAmount);
     const creditApplied=method==='credit'?Math.min(Math.max(0,creditByCustomer[name]||0),remaining):0;
+    const selectedCustomer=customers.find(c=>String(c.id)===customerId);
+    if(method==='credit'&&selectedCustomer&&!canExtendCredit({creditLimitCentimes:selectedCustomer.creditLimitCentimes},Math.round((outstandingByCustomer[name]||0)*100),Math.round((remaining-creditApplied)*100))){Alert.alert(tr('تجاوز سقف الدين'),tr('هاد البيع غادي يفوت سقف الدين المحدد للزبون.'));return;}
     Alert.alert(tr('تأكيد البيع'),`${tr('المجموع النهائي:')} ${money(totals.total)}\n${tr('الزبون')}: ${name}\n${tr('طريقة الأداء')}: ${tr(method==='cash'?'نقداً':method==='card'?'بطاقة':method==='credit'?'دين':'تحويل')}${method==='credit'?`\n${tr('المؤدى الآن:')} ${money(paidAmount)}${creditApplied>0?`\n${tr('رصيد سابق مستعمل:')} ${money(creditApplied)}`:''}\n${tr('الباقي:')} ${money(remaining-creditApplied)}`:''}`,[
       {text:tr('رجوع'),style:'cancel'},
       {text:tr('تأكيد'),onPress:()=>{const accepted=onCheckout({customerId:customerId?Number(customerId):undefined,customerName:name,lines,paymentMethod:method,total:totals.total,paidAmount,...(bankRequired?{bankAccountId}:{}),...(method==='credit'?{creditPaymentMethod}:{})});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');}}
