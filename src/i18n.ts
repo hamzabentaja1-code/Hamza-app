@@ -585,6 +585,17 @@ const fr: Record<string, string> = {
   "غير مطابق": "Non rapproché",
   "بدون وصف": "Sans description",
   "راجع البيانات وحاول من جديد.": "Vérifiez les données et réessayez."
+  "اختار الحساب البنكي": "Choisissez un compte bancaire.",
+  "تم تحميل كشف البنك": "Relevé bancaire chargé",
+  "حركة مستوردة": "opérations importées",
+  "سطور مرفوضة أو مكررة": "lignes rejetées ou en double",
+  "تعذر حفظ التسوية": "Impossible d’enregistrer le rapprochement",
+  "استورد كشفاً بنكياً صالحاً أولاً.": "Importez d’abord un relevé bancaire valide.",
+  "تم حفظ التسوية": "Rapprochement enregistré",
+  "اختار حساباً بنكياً من الأعلى، ثم حمّل ملف CSV صادر من البنك.": "Choisissez un compte bancaire ci-dessus, puis importez un fichier CSV de votre banque.",
+  "جاري التحميل...": "Chargement…",
+  "ما لقيناش عناوين التاريخ والمبلغ أو المدين والدائن.": "Les colonnes de date et de montant, ou débit et crédit, sont introuvables.",
+  "كشف البنك خاصو يحتوي على العناوين وسطر واحد على الأقل.": "Le relevé doit contenir les en-têtes et au moins une ligne.",
 };
 
 export function translate(language: AppLanguage, value: string): string {
