@@ -74,7 +74,7 @@ export function parseBankStatementCsv(text:string,bankAccountId:string,existing:
   for(let i=0;i<Math.min(source.length,8);i++){
     const cells=splitCsvRow(source[i],delimiter).map(bankHeader);
     const hasDate=cells.some(value=>['date','التاريخ','التاريخ'].includes(value)||value.includes('date'));
-    const hasAmount=cells.some(value=>['amount','montant','المبلغ','مبلغ'].includes(value));
+    const hasAmount=cells.some(value=>['amount','montant','المبلغ','مبلغ'].includes(value)||value.startsWith('amount')||value.startsWith('montant'));
     const hasDebit=cells.some(value=>value==='مدين'||value.startsWith('debit'));
     const hasCredit=cells.some(value=>value==='دائن'||value.startsWith('credit'));
     if(hasDate&&(hasAmount||(hasDebit&&hasCredit))){headerIndex=i;headers=cells;break;}
@@ -82,7 +82,7 @@ export function parseBankStatementCsv(text:string,bankAccountId:string,existing:
   if(headerIndex<0)return {lines:[],rejected:0,errors:['ما لقيناش عناوين التاريخ والمبلغ أو المدين والدائن.']};
   const dateIndex=headers.findIndex(value=>value.includes('date')||value==='التاريخ');
   const descIndex=headers.findIndex(value=>['description','libelle','label','details','البيان','الوصف','التفاصيل'].includes(value));
-  const amountIndex=headers.findIndex(value=>['amount','montant','المبلغ','مبلغ'].includes(value));
+  const amountIndex=headers.findIndex(value=>['amount','montant','المبلغ','مبلغ'].includes(value)||value.startsWith('amount')||value.startsWith('montant'));
   const debitIndex=headers.findIndex(value=>value==='مدين'||value.startsWith('debit'));
   const creditIndex=headers.findIndex(value=>value==='دائن'||value.startsWith('credit'));
   const balanceIndex=headers.findIndex(value=>value.startsWith('balance')||value.startsWith('solde')||value==='الرصيد'||value==='رصيد');
