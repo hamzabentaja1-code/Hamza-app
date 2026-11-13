@@ -41,7 +41,8 @@ test('stores task deadline and urgency and rejects invalid metadata',()=>{
 });
 
 test('normalizes safe project records and discards malformed entries or tasks',()=>{
-  const projects=normalizeProjects([{id:1,name:'Saved',customerName:'Client',budget:50,status:'جارٍ',tasks:[{id:2,title:'Task',done:false},{id:'bad',title:'bad',done:false}]},{id:2,name:'invalid'}]);
+  const projects=normalizeProjects([{id:1,name:'Saved',customerName:'Client',budget:50,status:'جارٍ',tasks:[{id:2,title:'Task',done:false},{id:3,title:'Bad date',done:false,dueDate:'2026-02-30'},{id:'bad',title:'bad',done:false}]},{id:2,name:'invalid'}]);
   assert.equal(projects.length,1);
   assert.equal(projects[0].tasks.length,1);
+  assert.equal(projects[0].tasks[0].priority,'عادي');
 });
