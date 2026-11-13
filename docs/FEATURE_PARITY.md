@@ -81,8 +81,9 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Agenda and reports
 - [ ] Tasks, assignments, durations and attachments
 - [x] Project task priorities (normal, important, urgent) and validated optional due dates, persisted with project data
-- [ ] Sales/purchase/stock/cash/receivables/payables/profit reports
-- [ ] Filters, date ranges, export and print
+- [ ] Sales/purchase/stock/cash/receivables/payables reports with full filtering and export
+- [x] Activity summary with validated date range, filtered sales/purchases/expenses and profit summary, plus PDF output
+- [ ] Filters and date ranges across all report types; export and print
 
 ## Acceptance tests required before calling a module complete
 - Create, read, update and delete (with confirmation) persist after app restart.
