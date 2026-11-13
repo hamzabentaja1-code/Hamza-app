@@ -1,5 +1,6 @@
 export type ProjectStatus='مخطط'|'جارٍ'|'مكتمل'|'متوقف';
-export type ProjectTask={id:number;title:string;done:boolean};
+export type ProjectTaskPriority='عادي'|'مهم'|'عاجل';
+export type ProjectTask={id:number;title:string;done:boolean;dueDate?:string;priority?:ProjectTaskPriority};
 export type ProjectRecord={
   id:number;
   name:string;
@@ -25,10 +26,18 @@ export function createProject(input:{name:string;customerName?:string;budget:num
   return {id,name,customerName:input.customerName?.trim()||'',budget,targetDate,status:'مخطط',tasks:[]};
 }
 
-export function addProjectTask(project:ProjectRecord,title:string,id:number):ProjectRecord {
+export function addProjectTask(project:ProjectRecord,title:string,id:number,options:{dueDate?:string;priority?:ProjectTaskPriority}={}):ProjectRecord {
   const trimmed=title.trim();
   if(!trimmed) throw new Error('دخل اسم المهمة.');
-  return {...project,tasks:[...project.tasks,{id,title:trimmed,done:false}]};
+  const dueDate=options.dueDate?.trim();
+  if(dueDate){
+    if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(dueDate)) throw new Error('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.');
+    const parsed=new Date(dueDate+'T00:00:00.000Z');
+    if(!Number.isFinite(parsed.getTime())||parsed.toISOString().slice(0,10)!==dueDate) throw new Error('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.');
+  }
+  const priority=options.priority??'عادي';
+  if(!['عادي','مهم','عاجل'].includes(priority)) throw new Error('اختار أولوية صحيحة للمهمة.');
+  return {...project,tasks:[...project.tasks,{id,title:trimmed,done:false,...(dueDate?{dueDate}:{}),priority}]};
 }
 
 export function setProjectTaskDone(project:ProjectRecord,taskId:number,done:boolean):ProjectRecord {
@@ -50,5 +59,7 @@ export function normalizeProjects(value:unknown):ProjectRecord[] {
     return Number.isFinite(p.id)&&typeof p.name==='string'&&typeof p.customerName==='string'&&
       Number.isFinite(p.budget)&&['مخطط','جارٍ','مكتمل','متوقف'].includes(p.status||'')&&Array.isArray(p.tasks);
   }).map(project=>({...project,tasks:project.tasks.filter(task=>
-    Number.isFinite(task.id)&&typeof task.title==='string'&&typeof task.done==='boolean')}));
+    Number.isFinite(task.id)&&typeof task.title==='string'&&typeof task.done==='boolean'&&
+    (!task.dueDate||(typeof task.dueDate==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(task.dueDate)))&&
+    (!task.priority||['عادي','مهم','عاجل'].includes(task.priority)))}));
 }
