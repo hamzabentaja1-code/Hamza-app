@@ -22,7 +22,7 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Products and inventory
 - [ ] Product/service catalog with references, barcodes and multiple images
-- [x] Single product photo: choose, replace, remove, preview, and persist in local product data
+- [x] Product gallery: add up to four photos, preview, remove individually, persist locally, and preserve the first photo for older records
 - [x] Product name search and product edit flow
 - [x] Categories, brands, units, variants
 - [x] Basic product purchase cost, sale price, unit margin and estimated stock margin
