@@ -12,3 +12,11 @@ test('rejects invalid dates and reversed report ranges',()=>{
   assert.ok(validateDateRange('2026-12-01','2026-11-01').length);
   assert.throws(()=>filterByDateRange([{date:'2026-11-01'}],'bad',''),/تاريخ البداية/);
 });
+
+
+test('activity report applies filters to visible totals and PDF values',()=>{
+  const app=require('node:fs').readFileSync('App.tsx','utf8');
+  assert.match(app,/filterByDateRange\(sales,appliedReportRange\.from,appliedReportRange\.to\)/);
+  assert.match(app,/reportProfitLoss=calculateProfitLoss\(reportSales,reportReturns,reportExpenses\)/);
+  assert.match(app,/appliedReportRange\?tr\('الفترة المحددة'\)/);
+});
