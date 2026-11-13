@@ -24,7 +24,7 @@ test('rejects malformed rows and repeated imports without losing valid rows', ()
 test('requires recognizable date and amount headers', () => {
   const parsed = bank.parseBankStatementCsv('foo;bar\na;b', 'bank-1');
   assert.equal(parsed.lines.length, 0);
-  assert.match(parsed.errors[0], /العناوين/);
+  assert.match(parsed.errors[0], /عناوين/);
 });
 
 test('matches account, normalized date and signed amount; leaves unmatched rows visible', () => {
