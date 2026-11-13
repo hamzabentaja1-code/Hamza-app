@@ -584,7 +584,7 @@ const fr: Record<string, string> = {
   "مطابقة محتملة متعددة": "Plusieurs correspondances possibles",
   "غير مطابق": "Non rapproché",
   "بدون وصف": "Sans description",
-  "راجع البيانات وحاول من جديد.": "Vérifiez les données et réessayez."
+  "راجع البيانات وحاول من جديد.": "Vérifiez les données et réessayez.",
   "اختار الحساب البنكي": "Choisissez un compte bancaire.",
   "تم تحميل كشف البنك": "Relevé bancaire chargé",
   "حركة مستوردة": "opérations importées",
