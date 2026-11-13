@@ -78,7 +78,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Time entries, rates, costs, settlement and history
 
 ### Agenda and reports
-- [ ] Tasks, assignments, priorities, due dates, durations and attachments
+- [ ] Tasks, assignments, durations and attachments
+- [x] Project task priorities (normal, important, urgent) and validated optional due dates, persisted with project data
 - [ ] Sales/purchase/stock/cash/receivables/payables/profit reports
 - [ ] Filters, date ranges, export and print
 
