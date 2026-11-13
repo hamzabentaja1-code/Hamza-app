@@ -11,6 +11,13 @@ test('parses French debit and credit CSV rows and normalizes dates and MAD value
   assert.equal(parsed.lines[0].reportedBalanceCentimes, 874950);
 });
 
+test('accepts a Moroccan bank amount column with a currency qualifier', () => {
+  const parsed = bank.parseBankStatementCsv('Date;Montant (MAD)\n2026-02-01;1.234,50', 'bank-1');
+  assert.equal(parsed.errors.length, 0);
+  assert.equal(parsed.lines.length, 1);
+  assert.equal(parsed.lines[0].amountCentimes, 123450);
+});
+
 test('rejects malformed rows and repeated imports without losing valid rows', () => {
   const csv = 'Date;Libellé;Montant\n2026-02-01;Client;120,00\n31/02/2026;bad date;4,00\n2026-02-02;Client;120,00';
   const first = bank.parseBankStatementCsv(csv, 'bank-1');
