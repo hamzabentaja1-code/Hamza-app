@@ -598,6 +598,12 @@ const fr: Record<string, string> = {
   "كشف البنك خاصو يحتوي على العناوين وسطر واحد على الأقل.": "Le relevé doit contenir les en-têtes et au moins une ligne.",
   "الحفظ متوقف لحماية بياناتك. استرجع نسخة احتياطية صالحة قبل المتابعة.": "L’enregistrement est suspendu pour protéger vos données. Restaurez une sauvegarde valide avant de continuer.",
   "فتح النسخ الاحتياطي": "Ouvrir les sauvegardes",
+  "أولوية المهمة": "Priorité de la tâche",
+  "عادي": "Normale",
+  "مهم": "Importante",
+  "عاجل": "Urgente",
+  "آخر أجل (اختياري) YYYY-MM-DD": "Échéance (facultatif) AAAA-MM-JJ",
+  "الأجل": "Échéance",
 };
 
 export function translate(language: AppLanguage, value: string): string {
