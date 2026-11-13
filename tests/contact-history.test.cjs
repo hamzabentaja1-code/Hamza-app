@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {createContactInteraction,filterContactInteractions} = require('../.test-build/contact-history.js');
+const {createContactInteraction,filterContactInteractions} = require('../.test-build/domain/contact-history.js');
 
 test('creates validated contact call, message, meeting and note history',()=>{
  const item=createContactInteraction({contactType:'customer',contactId:12,contactName:'Client A',kind:'call',summary:'Discussed pending quote'},91,'2026-11-07T10:00:00.000Z');
