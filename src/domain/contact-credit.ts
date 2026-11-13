@@ -1,5 +1,15 @@
 export type CreditTerms = { creditLimitCentimes?: number; paymentDelayDays?: number };
 
+export function normalizeOpeningBalanceCentimes(amountText: string): number | undefined {
+  if (amountText.trim() === '') return undefined;
+  const amount = Number(amountText.trim().replace(',', '.'));
+  const centimes = Math.round(amount * 100);
+  if (!Number.isFinite(amount) || amount < 0 || !Number.isSafeInteger(centimes)) {
+    throw new Error('الرصيد الافتتاحي للزبون غير صالح');
+  }
+  return centimes;
+}
+
 /** Blank credit limits mean unlimited credit; limits are stored in integer centimes. */
 export function normalizeCreditTerms(limitText: string, delayText: string): CreditTerms {
   const limit = limitText.trim() === '' ? undefined : Number(limitText.trim().replace(',', '.'));
