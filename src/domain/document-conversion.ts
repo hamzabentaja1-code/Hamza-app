@@ -29,6 +29,7 @@ export type ConvertedDocument = {
   sourceQuoteId:number;
   validUntil?:string;
   notes?:string;
+  paymentDelayDays?:number;
   lines:ConversionLine[];
 };
 export type ExistingDocument = {sourceQuoteId:number; type:DocumentKind};

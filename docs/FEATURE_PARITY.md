@@ -37,7 +37,9 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Contacts
 - [ ] Customer and supplier profiles with phone/WhatsApp, address, ICE/RC/IF
 - [x] Customer and supplier account statements as shareable PDFs, including invoices, payments, credit notes and current balances
-- [ ] Opening balances, credit ceilings and payment terms
+- [x] Customer and supplier opening balances are included in account debt, statements and partial settlement flows; credit ceilings are validated and enforced before credit purchases and sales
+- [x] Contact payment terms are copied to new invoices and purchases; dashboard shows overdue records and links to their settlement screens
+- [ ] Automatic reminders and scheduled follow-up remain pending
 - [ ] Attachments, contacts, custom fields, price groups
 
 ### Sales documents
