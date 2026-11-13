@@ -25,6 +25,7 @@ import {CompanyProfile, EMPTY_COMPANY_PROFILE, normalizeCompanyProfile} from './
 import {buildCsv, CsvCell} from './src/domain/csv-export';
 import {calculateProfitLoss} from './src/domain/profit-loss';
 import {BUSINESS_LEDGER_HEADERS,buildBusinessLedgerRows} from './src/domain/business-ledger';
+import {filterByDateRange,validateDateRange} from './src/report-filters';
 import {normalizePurchasePaidAmount,normalizeSupplierPayments,purchaseOutstanding,recordSupplierPayment,supplierAccountBalances,SupplierAccountPayment} from './src/supplier-account';
 import {buildCashRegisterRows,calculateCashBalance,EMPTY_CASH_ACCOUNT,normalizeCashAccount,recordManualCashEntry,setCashOpeningBalance,CashAccount} from './src/domain/cash-register';
 import {BankAccount,BankTransfer,BankStatementLine,BankLedgerEntry,BankReconciliationRecord,calculateBankBalance,createBankAccount,deleteBankAccount,matchBankStatementLines,normalizeBankAccounts,normalizeBankTransfers,normalizeBankStatementLines,normalizeBankReconciliationHistory,parseBankStatementCsv,reconcileBankStatement,recordBankTransfer,renameBankAccount} from './src/domain/bank-accounts';
@@ -56,6 +57,7 @@ type CommercialDocument = ConvertedDocument & {paidCentimes?:number;creditedCent
 type Payment = {id:number; customerName:string; amount:number; method:string; date:string; note:string; documentId?:number; allocations?:{documentId:number;amountCentimes:number}[];bankAccountId?:string};
 export default function App() {
   const [screen,setScreen]=useState('الرئيسية');
+  const [reportStart,setReportStart]=useState(''); const [reportEnd,setReportEnd]=useState(''); const [appliedReportRange,setAppliedReportRange]=useState<{from:string;to:string}|null>(null);
   const [search,setSearch]=useState(''); const [productSearch,setProductSearch]=useState(''); const [photoGallery,setPhotoGallery]=useState<string[]>([]); const [photoPreview,setPhotoPreview]=useState<string|null>(null);
   const [imageSearchActive,setImageSearchActive]=useState(false); const [imageSearchBusy,setImageSearchBusy]=useState(false); const [imageSearchPreview,setImageSearchPreview]=useState<string|null>(null); const [imageSearchMatches,setImageSearchMatches]=useState<Array<{id:number;distance:number}>>([]);
   const imageFingerprintCache=useRef(new Map<string,{photo:string;fingerprint:string}>());
@@ -159,6 +161,15 @@ export default function App() {
   const salesTotal=useMemo(()=>Math.max(0,sales.reduce((a,x)=>a+x.total,0)-salesReturnTotal),[sales,salesReturnTotal]);
   const purchaseTotal=useMemo(()=>purchases.reduce((a,x)=>a+x.total,0),[purchases]); const expenseTotal=useMemo(()=>expenses.reduce((a,x)=>a+x.amount,0),[expenses]);
   const profitLoss=useMemo(()=>calculateProfitLoss(sales,salesReturns,expenses),[sales,salesReturns,expenses]);
+  const reportSales=appliedReportRange?filterByDateRange(sales,appliedReportRange.from,appliedReportRange.to):sales;
+  const reportPurchases=appliedReportRange?filterByDateRange(purchases,appliedReportRange.from,appliedReportRange.to):purchases;
+  const reportExpenses=appliedReportRange?filterByDateRange(expenses,appliedReportRange.from,appliedReportRange.to):expenses;
+  const reportReturns=appliedReportRange?filterByDateRange(salesReturns,appliedReportRange.from,appliedReportRange.to):salesReturns;
+  const reportSalesTotal=Math.max(0,reportSales.reduce((sum,item)=>sum+item.total,0)-reportReturns.reduce((sum,item)=>sum+item.total,0));
+  const reportPurchaseTotal=reportPurchases.reduce((sum,item)=>sum+item.total,0);
+  const reportExpenseTotal=reportExpenses.reduce((sum,item)=>sum+item.amount,0);
+  const reportProfitLoss=calculateProfitLoss(reportSales,reportReturns,reportExpenses);
+  const applyReportRange=()=>{const errors=validateDateRange(reportStart,reportEnd);if(errors.length){Alert.alert(tr('تاريخ غير صالح'),tr(errors[0]));return;}setAppliedReportRange(reportStart.trim()||reportEnd.trim()?{from:reportStart,to:reportEnd}:null);};
   const customerBalances=useMemo(()=>calculateCustomerBalances(documents,salesReturns.map(item=>({customerName:item.customerName,unappliedCentimes:item.unappliedCentimes??0}))),[documents,salesReturns]);
   const supplierBalances=useMemo(()=>supplierAccountBalances(purchases.map(item=>({id:item.id,supplierName:item.supplierName,total:item.total,paidAmount:normalizePurchasePaidAmount(item.total,item.paidAmount)})),supplierPayments),[purchases,supplierPayments]);
   const supplierOutstandingTotal=useMemo(()=>supplierBalances.reduce((sum,item)=>sum+item.outstanding,0),[supplierBalances]);
@@ -455,8 +466,8 @@ export default function App() {
           <Text style={s.summaryText}>{tr('المبيعات المسجلة:')} {salesTotal.toFixed(2)} DH • {sales.length} عملية</Text>
           <Text style={s.summaryText}>{tr('المشتريات:')} {purchaseTotal.toFixed(2)} DH</Text>
           <Text style={s.summaryText}>{tr('المصاريف:')} {expenseTotal.toFixed(2)} DH</Text><Text style={s.summaryText}>{tr('الرصيد الحالي:')} {(cashBalanceCentimes/100).toFixed(2)} DH</Text><Text style={s.summaryText}>{tr('ديون الموردين:')} {supplierOutstandingTotal.toFixed(2)} DH</Text>
-          <Text style={s.summaryText}>{tr('هامش الربح من المبيعات ذات التكلفة المسجلة:')} {profitLoss.grossProfitOnCostedSales.toFixed(2)} DH</Text>
-          {profitLoss.uncostedRevenue>0&&<Text style={s.note}>{tr('قيمة المبيعات بلا تكلفة محفوظة:')} {profitLoss.uncostedRevenue.toFixed(2)} DH</Text>}
+          <Text style={s.summaryText}>{tr('هامش الربح من المبيعات ذات التكلفة المسجلة:')} {reportProfitLoss.grossProfitOnCostedSales.toFixed(2)} DH</Text>
+          {reportProfitLoss.uncostedRevenue>0&&<Text style={s.note}>{tr('قيمة المبيعات بلا تكلفة محفوظة:')} {reportProfitLoss.uncostedRevenue.toFixed(2)} DH</Text>}
         </View>
         <View style={s.stats}>
           <View style={s.stat}><Text style={s.statNum}>{receivablesTotal.toFixed(2)} DH</Text><Text style={s.statLabel}>{tr('ديون الزبناء')}</Text></View>
@@ -575,15 +586,18 @@ export default function App() {
       :screen==='التقارير'?<>
         <View style={s.panel}>
           <Text style={s.panelTitle}>{tr('تقرير النشاط التجاري')}</Text>
-          <Text style={s.panelText}>{tr('إجمالي المبيعات:')} {salesTotal.toFixed(2)} DH</Text>
-          <Text style={s.panelText}>{tr('إجمالي المشتريات:')} {purchaseTotal.toFixed(2)} DH</Text>
-          <Text style={s.panelText}>{tr('إجمالي المصاريف:')} {expenseTotal.toFixed(2)} DH</Text>
+          <View style={[s.row,{marginTop:8}]}><TextInput value={reportStart} onChangeText={setReportStart} placeholder={tr('من تاريخ YYYY-MM-DD')} placeholderTextColor="#888" style={[s.input,s.half]}/><TextInput value={reportEnd} onChangeText={setReportEnd} placeholder={tr('إلى تاريخ YYYY-MM-DD')} placeholderTextColor="#888" style={[s.input,s.half]}/></View>
+          <View style={s.row}><Pressable style={[s.choice,{flex:1,borderColor:GOLD}]} onPress={applyReportRange}><Text style={s.gold}>{tr('تطبيق الفترة')}</Text></Pressable><Pressable style={[s.choice,{flex:1}]} onPress={()=>{setReportStart('');setReportEnd('');setAppliedReportRange(null);}}><Text style={s.itemTitle}>{tr('مسح الفترة')}</Text></Pressable></View>
+          <Text style={s.note}>{appliedReportRange?tr('الفترة المحددة')+': '+(appliedReportRange.from||'—')+' → '+(appliedReportRange.to||'—'):tr('كل الفترات')}</Text>
+          <Text style={s.panelText}>{tr('إجمالي المبيعات:')} {reportSalesTotal.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>{tr('إجمالي المشتريات:')} {reportPurchaseTotal.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>{tr('إجمالي المصاريف:')} {reportExpenseTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>{tr('الرصيد الحالي:')} {(cashBalanceCentimes/100).toFixed(2)} DH</Text>
-          <Text style={s.panelText}>{tr('تكلفة البضاعة المباعة (حسب تكلفة البيع المحفوظة):')} {profitLoss.costOfGoodsSold.toFixed(2)} DH</Text>
-          <Text style={s.panelText}>{tr('هامش الربح من المبيعات ذات التكلفة المسجلة:')} {profitLoss.grossProfitOnCostedSales.toFixed(2)} DH</Text>
-          <Text style={s.panelText}>{tr('النتيجة بعد المصاريف على البيانات المحتسبة:')} {profitLoss.netProfitOnCostedSales.toFixed(2)} DH</Text>
-          {profitLoss.uncostedRevenue>0&&<Text style={s.note}>{tr('قيمة المبيعات بلا تكلفة محفوظة:')} {profitLoss.uncostedRevenue.toFixed(2)} DH</Text>}
-          <Pressable style={s.action} onPress={()=>exportPdf('Rapport d’activité','',['Ventes nettes: '+salesTotal.toFixed(2)+' DH','Achats (stock): '+purchaseTotal.toFixed(2)+' DH','Dépenses: '+expenseTotal.toFixed(2)+' DH','Solde de caisse: '+(cashBalanceCentimes/100).toFixed(2)+' DH','Coût de revient enregistré: '+profitLoss.costOfGoodsSold.toFixed(2)+' DH','Marge brute calculable: '+profitLoss.grossProfitOnCostedSales.toFixed(2)+' DH','Résultat après dépenses (données comptabilisées): '+profitLoss.netProfitOnCostedSales.toFixed(2)+' DH','Ventes sans coût enregistré: '+profitLoss.uncostedRevenue.toFixed(2)+' DH'],profitLoss.netProfitOnCostedSales)}><Text style={s.actionText}>{tr('تصدير تقرير النشاط PDF')}</Text></Pressable>
+          <Text style={s.panelText}>{tr('تكلفة البضاعة المباعة (حسب تكلفة البيع المحفوظة):')} {reportProfitLoss.costOfGoodsSold.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>{tr('هامش الربح من المبيعات ذات التكلفة المسجلة:')} {reportProfitLoss.grossProfitOnCostedSales.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>{tr('النتيجة بعد المصاريف على البيانات المحتسبة:')} {reportProfitLoss.netProfitOnCostedSales.toFixed(2)} DH</Text>
+          {reportProfitLoss.uncostedRevenue>0&&<Text style={s.note}>{tr('قيمة المبيعات بلا تكلفة محفوظة:')} {reportProfitLoss.uncostedRevenue.toFixed(2)} DH</Text>}
+          <Pressable style={s.action} onPress={()=>exportPdf('Rapport d’activité','',[appliedReportRange?tr('الفترة المحددة')+': '+(appliedReportRange.from||'—')+' → '+(appliedReportRange.to||'—'):tr('كل الفترات'),'Ventes nettes: '+reportSalesTotal.toFixed(2)+' DH','Achats (stock): '+reportPurchaseTotal.toFixed(2)+' DH','Dépenses: '+reportExpenseTotal.toFixed(2)+' DH','Solde de caisse: '+(cashBalanceCentimes/100).toFixed(2)+' DH','Coût de revient enregistré: '+reportProfitLoss.costOfGoodsSold.toFixed(2)+' DH','Marge brute calculable: '+reportProfitLoss.grossProfitOnCostedSales.toFixed(2)+' DH','Résultat après dépenses (données comptabilisées): '+reportProfitLoss.netProfitOnCostedSales.toFixed(2)+' DH','Ventes sans coût enregistré: '+reportProfitLoss.uncostedRevenue.toFixed(2)+' DH'],reportProfitLoss.netProfitOnCostedSales)}><Text style={s.actionText}>{tr('تصدير تقرير النشاط PDF')}</Text></Pressable>
           <Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportBusinessLedger}><Text style={s.gold}>{tr('تصدير السجل الكامل CSV')}</Text></Pressable>
         </View>
         <View style={[s.panel,{marginTop:12}]}>

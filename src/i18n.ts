@@ -613,6 +613,16 @@ const fr: Record<string, string> = {
   "النتائج كتقارن الشكل العام والإضاءة ديال الصور المحفوظة.": "Les résultats comparent la forme générale et la luminosité des photos enregistrées.",
   "إلغاء البحث بالصورة": "Annuler la recherche par image",
   "ما لقيناش صور قريبة. زيد صور واضحة للمنتجات وجرب صورة أخرى.": "Aucune photo proche. Ajoutez des images claires aux produits ou essayez une autre photo.",
+  "من تاريخ YYYY-MM-DD": "À partir du (AAAA-MM-JJ)",
+  "إلى تاريخ YYYY-MM-DD": "Jusqu’au (AAAA-MM-JJ)",
+  "تطبيق الفترة": "Appliquer la période",
+  "مسح الفترة": "Effacer la période",
+  "الفترة المحددة": "Période sélectionnée",
+  "كل الفترات": "Toutes les périodes",
+  "تاريخ غير صالح": "Date invalide",
+  "تاريخ البداية غير صالح": "Date de début invalide",
+  "تاريخ النهاية غير صالح": "Date de fin invalide",
+  "تاريخ البداية خاصو يكون قبل تاريخ النهاية": "La date de début doit précéder la date de fin",
 };
 
 export function translate(language: AppLanguage, value: string): string {
