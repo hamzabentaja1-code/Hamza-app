@@ -619,7 +619,7 @@ const fr: Record<string, string> = {
   "مسح الفترة": "Effacer la période",
   "الفترة المحددة": "Période sélectionnée",
   "كل الفترات": "Toutes les périodes",
-  "تاريخ غير صالح": "Date invalide",
+
   "تاريخ البداية غير صالح": "Date de début invalide",
   "تاريخ النهاية غير صالح": "Date de fin invalide",
   "تاريخ البداية خاصو يكون قبل تاريخ النهاية": "La date de début doit précéder la date de fin",
