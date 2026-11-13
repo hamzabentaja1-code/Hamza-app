@@ -21,7 +21,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Automated scheduled backups and encrypted backup files
 
 ### Products and inventory
-- [ ] Product/service catalog with references, barcodes and multiple images
+- [ ] Product/service catalog with references and barcodes
+- [x] Product photo gallery with up to four images per product, individual preview/removal and backward-compatible local persistence
 - [x] Product gallery: add up to four photos, preview, remove individually, persist locally, and preserve the first photo for older records
 - [x] Product name search and product edit flow
 - [x] Categories, brands, units, variants
@@ -31,7 +32,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] HT/TTC display mode and configurable tax rules where required
 - [ ] Stock tracking separately for delivery notes and invoices
 - [x] Multiple warehouse records, active warehouse selection, paired stock transfers, per-warehouse stock counts, warehouse-filtered movement ledger and persistent audit trail (normal purchase/sale/POS/delivery operations use the selected warehouse; warehouse deactivation and location/site hierarchies remain pending)
-- [x] Bulk product import/export with name search and saved product catalog (image search remains pending)
+- [x] Bulk product import/export with name search, saved product catalog, and offline visual search that ranks each product by its closest saved photo
 
 ### Contacts
 - [ ] Customer and supplier profiles with phone/WhatsApp, address, ICE/RC/IF

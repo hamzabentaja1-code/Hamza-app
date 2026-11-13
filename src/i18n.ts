@@ -606,6 +606,13 @@ const fr: Record<string, string> = {
   "الأجل": "Échéance",
   "صور المنتج": "Photos du produit",
   "الحد الأقصى أربع صور للمنتج.": "Quatre photos maximum par produit.",
+  "البحث بالصورة": "Recherche par image",
+  "ما كايناش صور المنتجات. زيد صورة لكل منتج ثم عاود البحث.": "Aucune photo de produit. Ajoutez des photos puis relancez la recherche.",
+  "البحث عن صور المنتجات": "Recherche des photos de produits",
+  "عدد النتائج:": "Nombre de résultats :",
+  "النتائج كتقارن الشكل العام والإضاءة ديال الصور المحفوظة.": "Les résultats comparent la forme générale et la luminosité des photos enregistrées.",
+  "إلغاء البحث بالصورة": "Annuler la recherche par image",
+  "ما لقيناش صور قريبة. زيد صور واضحة للمنتجات وجرب صورة أخرى.": "Aucune photo proche. Ajoutez des images claires aux produits ou essayez une autre photo.",
 };
 
 export function translate(language: AppLanguage, value: string): string {

@@ -1,8 +1,10 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView, View, Text, Pressable, ScrollView, TextInput, StyleSheet, Alert, ActivityIndicator, Image, Modal} from 'react-native';
 import {StatusBar} from 'expo-status-bar';
 import {readAppData, writeAppData, createBackup, restoreBackup} from './src/storage';
 import {appendProductPhoto, productPhotos, removeProductPhoto, serializeProductPhotos} from './src/product-gallery';
+import {fingerprintJpegDataUri} from './src/image-fingerprint';
+import {rankUniqueProductImageMatches} from './src/domain/image-search';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -55,6 +57,8 @@ type Payment = {id:number; customerName:string; amount:number; method:string; da
 export default function App() {
   const [screen,setScreen]=useState('الرئيسية');
   const [search,setSearch]=useState(''); const [productSearch,setProductSearch]=useState(''); const [photoGallery,setPhotoGallery]=useState<string[]>([]); const [photoPreview,setPhotoPreview]=useState<string|null>(null);
+  const [imageSearchActive,setImageSearchActive]=useState(false); const [imageSearchBusy,setImageSearchBusy]=useState(false); const [imageSearchPreview,setImageSearchPreview]=useState<string|null>(null); const [imageSearchMatches,setImageSearchMatches]=useState<Array<{id:number;distance:number}>>([]);
+  const imageFingerprintCache=useRef(new Map<string,{photo:string;fingerprint:string}>());
   const [language,setLanguage]=useState<'AR'|'FR'>('AR');
   const [companyProfile,setCompanyProfile]=useState<CompanyProfile>({...EMPTY_COMPANY_PROFILE});
   const updateCompanyProfile=(key:keyof CompanyProfile,value:string)=>setCompanyProfile(current=>({...current,[key]:value}));
@@ -95,6 +99,38 @@ export default function App() {
   useEffect(()=>{if(loaded&&storageReady){writeAppData({language,companyProfile,products,stockMovements,warehouses,activeWarehouseId,customers,sales,purchases,expenses,suppliers,quotes,payments,documents,projects,salesReturns,supplierPayments,cashAccount,bankAccounts,bankTransfers,bankStatementLines,confirmedBankStatementLineIds,bankReconciliationHistory}).catch(()=>Alert.alert(tr('خطأ'),tr('ما قدرناش نحفظو البيانات.')));}},[language,companyProfile,products,stockMovements,warehouses,activeWarehouseId,customers,sales,purchases,expenses,suppliers,quotes,payments,documents,projects,salesReturns,supplierPayments,cashAccount,bankAccounts,bankTransfers,bankStatementLines,confirmedBankStatementLineIds,bankReconciliationHistory,loaded,storageReady]);
   const addWarehouse=()=>{const nameValue=warehouseName.trim();const warehouse:Warehouse={id:'wh-'+Date.now(),name:nameValue,address:warehouseAddress.trim()||undefined,active:true};const errors=validateWarehouse(warehouse,warehouses);if(errors.length){Alert.alert(tr('تعذر إضافة المخزن'),tr(errors[0]));return;}setWarehouses(current=>[...current,warehouse]);setActiveWarehouseId(warehouse.id);setWarehouseName('');setWarehouseAddress('');Alert.alert(tr('تمت إضافة المخزن'),warehouse.name);};
   const addWarehouseTransfer=()=>{try{const quantity=Number(transferQuantity.replace(',','.'));if(!transferProductId||!transferTargetId||!Number.isFinite(quantity)){throw new Error('اختار المنتج والمخزن المستهدف والكمية.');}const next=transferStock({id:'transfer-'+Date.now(),productId:transferProductId,fromWarehouseId:activeWarehouseId,toWarehouseId:transferTargetId,quantity,createdAt:new Date().toISOString()},stockMovements);setStockMovements(next);setTransferQuantity('1');Alert.alert(tr('تم التحويل'),tr('تسجل تحويل المخزون بنجاح.'));}catch(error){Alert.alert(tr('تعذر تحويل المخزون'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}};
+  const clearImageSearch=()=>{setImageSearchActive(false);setImageSearchPreview(null);setImageSearchMatches([]);};
+  const searchProductsByImage=async()=>{
+    if(!products.some(product=>productPhotos(product).length>0)){Alert.alert(tr('البحث بالصورة'),tr('ما كايناش صور المنتجات. زيد صورة لكل منتج ثم عاود البحث.'));return;}
+    try{
+      const permission=await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if(!permission.granted){Alert.alert(tr('إذن الصور مطلوب'),tr('سمح للتطبيق بالوصول للصور لاختيار صورة المنتج.'));return;}
+      const selected=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,aspect:[1,1],quality:0.55,base64:true});
+      if(selected.canceled)return;
+      const asset=selected.assets[0];
+      if(!asset.base64){Alert.alert(tr('تعذر تحميل الصورة'),tr('اختار صورة أخرى.'));return;}
+      setImageSearchBusy(true);
+      await new Promise(resolve=>setTimeout(resolve,20));
+      const queryData='data:image/jpeg;base64,'+asset.base64;
+      setProductSearch('');setImageSearchPreview(queryData);setImageSearchMatches([]);setImageSearchActive(true);
+      const queryFingerprint=fingerprintJpegDataUri(queryData);
+      const candidates:Array<{item:Product;fingerprint:string}>=[];
+      const photos=products.flatMap(product=>productPhotos(product).map((photo,index)=>({product,photo,key:product.id+':'+index})));
+      for(let index=0;index<photos.length;index++){
+        const {product,photo,key}=photos[index];
+        try{
+          const cached=imageFingerprintCache.current.get(key);
+          const fingerprint=cached?.photo===photo?cached.fingerprint:fingerprintJpegDataUri(photo);
+          if(cached?.photo!==photo)imageFingerprintCache.current.set(key,{photo,fingerprint});
+          candidates.push({item:product,fingerprint});
+        }catch{}
+        if(index%4===3)await new Promise(resolve=>setTimeout(resolve,0));
+      }
+      const matches=rankUniqueProductImageMatches(queryFingerprint,candidates,14,20);
+      setImageSearchMatches(matches.map(match=>({id:match.item.id,distance:match.distance})));
+    }catch(error){Alert.alert(tr('تعذر تحميل الصورة'),error instanceof Error?error.message:tr('اختار صورة أخرى.'));}
+    finally{setImageSearchBusy(false);}
+  };
   const addProject=(input:{name:string;customerName:string;budget:number;targetDate:string})=>{try{const project=createProject(input,Date.now());setProjects(current=>[project,...current]);Alert.alert(tr('تمت إضافة المشروع'),project.name);}catch(error){Alert.alert(tr('تعذر إضافة المشروع'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}};
   const changeProjectStatus=(projectId:number,status:ProjectStatus)=>setProjects(current=>current.map(project=>project.id===projectId?{...project,status}:project));
   const addTaskToProject=(projectId:number,task:{title:string;dueDate?:string;priority:ProjectTaskPriority})=>{try{setProjects(current=>current.map(project=>project.id===projectId?addProjectTask(project,task.title,Date.now(),{dueDate:task.dueDate,priority:task.priority}):project));}catch(error){Alert.alert(tr('تعذر إضافة المهمة'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}};
@@ -404,6 +440,8 @@ export default function App() {
     return true;
   };
   const go=(s:string)=>{setScreen(s);setSearch('');};
+  const productImageDistance=new Map(imageSearchMatches.map(match=>[match.id,match.distance]));
+  const visibleProducts=products.filter(product=>imageSearchActive?productImageDistance.has(product.id):[product.name,product.reference||'',product.barcode||'',product.category||'',product.brand||'',product.unit||'',product.variant||''].some(value=>value.toLowerCase().includes(productSearch.trim().toLowerCase()))).sort((left,right)=>imageSearchActive?(productImageDistance.get(left.id)??65)-(productImageDistance.get(right.id)??65):0);
   if(!loaded)return <SafeAreaView style={s.safe}><StatusBar style="light"/><ActivityIndicator color={GOLD} style={{flex:1}}/></SafeAreaView>;
   return <SafeAreaView style={[s.safe,{direction:getLayoutDirection(language)}]}><StatusBar style="light"/><View style={s.header}><View><Text style={s.brand}>HamZa</Text><Text style={s.sub}>{language==='FR'?'Gestion commerciale':'تسيير تجاري'}</Text></View><Pressable onPress={()=>setLanguage(language==='AR'?'FR':'AR')} style={s.lang}><Text style={s.gold}>{language}</Text></Pressable></View>
     <ScrollView contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
@@ -442,7 +480,7 @@ export default function App() {
           <Pressable style={s.action} onPress={importProductsBulk}><Text style={s.actionText}>{tr("استيراد اللائحة وإضافة المنتجات")}</Text></Pressable>
           <Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportProductsCsv}><Text style={s.gold}>{tr("تصدير لائحة المنتجات CSV")}</Text></Pressable>
         </View>
-        <Text style={s.section}>{tr("لائحة المنتجات")} ({products.length})</Text><TextInput value={productSearch} onChangeText={setProductSearch} placeholder={tr("بحث بالاسم أو المرجع أو الباركود أو الصنف...")} placeholderTextColor="#888" style={s.search}/>{products.length===0?<Text style={s.empty}>{tr("مازال ما زدتي حتى منتج.")}</Text> :products.filter(p=>[p.name,p.reference||'',p.barcode||'',p.category||'',p.brand||'',p.unit||'',p.variant||''].some(value=>value.toLowerCase().includes(productSearch.trim().toLowerCase()))).map(p=><View key={p.id} style={s.listItem}>{p.photoData?<Pressable onPress={()=>setPhotoPreview(p.photoData||null)}><Image source={{uri:p.photoData}} style={{width:48,height:48,borderRadius:8}}/></Pressable>:null}<View style={{flex:1}}><Text style={s.itemTitle}>{p.name}</Text><Text style={s.itemSub}>{[p.reference?tr('مرجع: ')+p.reference:'',p.barcode?tr('باركود: ')+p.barcode:'',p.category?tr('الصنف: ')+p.category:'',p.brand?tr('العلامة: ')+p.brand:'',p.unit?tr('الوحدة: ')+p.unit:'',p.variant?tr('الموديل: ')+p.variant:''].filter(Boolean).join(' • ')}</Text><Text style={s.itemSub}>{tr("الكمية:")} {p.qty} • {tr("الشراء:")} {(p.costPrice||0).toFixed(2)} DH • ربح الوحدة: {(p.price-(p.costPrice||0)).toFixed(2)} DH</Text></View><Text style={s.itemPrice}>{p.price.toFixed(2)} DH</Text><Pressable onPress={()=>startEditProduct(p)}><Text style={s.gold}>{tr("تعديل")}</Text></Pressable><Pressable onPress={()=>Alert.alert(tr('حذف المنتج؟'),p.name,[{text:'إلغاء'},{text:tr('حذف'),style:'destructive',onPress:()=>{setProducts(v=>v.filter(x=>x.id!==p.id));if(editingProductId===p.id)resetProductForm();}}])}><Text style={s.delete}>{tr("حذف")}</Text></Pressable></View>)}
+        <Text style={s.section}>{tr("لائحة المنتجات")} ({products.length})</Text><TextInput value={productSearch} onChangeText={value=>{clearImageSearch();setProductSearch(value);}} placeholder={tr("بحث بالاسم أو المرجع أو الباركود أو الصنف...")} placeholderTextColor="#888" style={s.search}/><View style={[s.row,{justifyContent:'flex-end',marginBottom:10}]}><Pressable onPress={searchProductsByImage} disabled={imageSearchBusy} accessibilityRole="button" accessibilityLabel={tr('البحث بالصورة')} style={{minWidth:76,minHeight:44,paddingHorizontal:10,borderRadius:9,borderWidth:1,borderColor:GOLD,backgroundColor:'#211D14',alignItems:'center',justifyContent:'center'}}><Text style={s.gold}>{imageSearchBusy?'…':tr('البحث بالصورة')}</Text></Pressable></View>{imageSearchPreview?<View style={[s.row,{alignItems:'center',marginBottom:10}]}><Image source={{uri:imageSearchPreview}} style={{width:48,height:48,borderRadius:8}}/><View style={{flex:1}}><Text style={s.itemSub}>{imageSearchBusy?tr('البحث عن صور المنتجات'):tr('عدد النتائج:')+' '+imageSearchMatches.length}</Text><Text style={[s.itemSub,{fontSize:10}]}>{tr('النتائج كتقارن الشكل العام والإضاءة ديال الصور المحفوظة.')}</Text></View><Pressable onPress={clearImageSearch}><Text style={s.gold}>{tr('إلغاء البحث بالصورة')}</Text></Pressable></View>:null}{imageSearchActive&&imageSearchMatches.length===0&&!imageSearchBusy?<Text style={s.empty}>{tr('ما لقيناش صور قريبة. زيد صور واضحة للمنتجات وجرب صورة أخرى.')}</Text>:null}{products.length===0?<Text style={s.empty}>{tr("مازال ما زدتي حتى منتج.")}</Text> :visibleProducts.map(p=><View key={p.id} style={s.listItem}>{p.photoData?<Pressable onPress={()=>setPhotoPreview(p.photoData||null)}><Image source={{uri:p.photoData}} style={{width:48,height:48,borderRadius:8}}/></Pressable>:null}<View style={{flex:1}}><Text style={s.itemTitle}>{p.name}</Text><Text style={s.itemSub}>{[p.reference?tr('مرجع: ')+p.reference:'',p.barcode?tr('باركود: ')+p.barcode:'',p.category?tr('الصنف: ')+p.category:'',p.brand?tr('العلامة: ')+p.brand:'',p.unit?tr('الوحدة: ')+p.unit:'',p.variant?tr('الموديل: ')+p.variant:''].filter(Boolean).join(' • ')}</Text><Text style={s.itemSub}>{tr("الكمية:")} {p.qty} • {tr("الشراء:")} {(p.costPrice||0).toFixed(2)} DH • ربح الوحدة: {(p.price-(p.costPrice||0)).toFixed(2)} DH</Text></View><Text style={s.itemPrice}>{p.price.toFixed(2)} DH</Text><Pressable onPress={()=>startEditProduct(p)}><Text style={s.gold}>{tr("تعديل")}</Text></Pressable><Pressable onPress={()=>Alert.alert(tr('حذف المنتج؟'),p.name,[{text:'إلغاء'},{text:tr('حذف'),style:'destructive',onPress:()=>{setProducts(v=>v.filter(x=>x.id!==p.id));if(editingProductId===p.id)resetProductForm();}}])}><Text style={s.delete}>{tr("حذف")}</Text></Pressable></View>)}
       </>:screen==='الإعدادات'?<>
         <View style={s.panel}>
           <Text style={s.panelTitle}>{tr('اختار اللغة')}</Text>
