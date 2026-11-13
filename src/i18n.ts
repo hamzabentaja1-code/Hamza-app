@@ -18,6 +18,7 @@ const fr: Record<string, string> = {
   "تعذر حذف المورد": "Impossible de supprimer le fournisseur",
   "مخصص للرصيد الافتتاحي:": "Affecté au solde initial :",
   "المتبقي على الزبون:": "Solde restant dû par le client :",
+  "مرجع الشيك إجباري.": "La référence du chèque est obligatoire.",
   "ما يمكنش حذف زبون عندو معاملات؛ استعمل تعديل الاسم باش يبقى كشف الحساب محفوظ.": "Un client avec des opérations ne peut pas être supprimé. Modifiez son nom pour conserver son relevé.",
   "ما يمكنش حذف مورد عندو معاملات؛ استعمل تعديل الاسم باش يبقى كشف الحساب محفوظ.": "Un fournisseur avec des opérations ne peut pas être supprimé. Modifiez son nom pour conserver son relevé.",
   "المنتجات": "Produits",
