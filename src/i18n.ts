@@ -596,6 +596,8 @@ const fr: Record<string, string> = {
   "جاري التحميل...": "Chargement…",
   "ما لقيناش عناوين التاريخ والمبلغ أو المدين والدائن.": "Les colonnes de date et de montant, ou débit et crédit, sont introuvables.",
   "كشف البنك خاصو يحتوي على العناوين وسطر واحد على الأقل.": "Le relevé doit contenir les en-têtes et au moins une ligne.",
+  "الحفظ متوقف لحماية بياناتك. استرجع نسخة احتياطية صالحة قبل المتابعة.": "L’enregistrement est suspendu pour protéger vos données. Restaurez une sauvegarde valide avant de continuer.",
+  "فتح النسخ الاحتياطي": "Ouvrir les sauvegardes",
 };
 
 export function translate(language: AppLanguage, value: string): string {
