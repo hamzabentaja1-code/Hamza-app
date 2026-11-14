@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  warehouseStock, inventoryValue, averageInventoryUnitCost, transferStock, validateStockIssue, validateStockDemand,
+  warehouseStock, inventoryValue, averageInventoryUnitCost, averageInventoryCostAcrossWarehouses, transferStock, validateStockIssue, validateStockDemand,
   createStockCount, applyStockCount,
 } = require('../.test-build/inventory.js');
 
@@ -20,6 +20,12 @@ test('stock balance and weighted inventory value remain consistent', () => {
 test('average cost distinguishes explicit zero-cost stock from records with no cost history',()=>{
   assert.equal(averageInventoryUnitCost([{id:'free',productId:'p1',warehouseId:'w1',kind:'opening',quantity:2,unitCost:0,createdAt:'2026-01-01'}],'p1','w1'),0);
   assert.equal(averageInventoryUnitCost([{id:'legacy',productId:'p1',warehouseId:'w1',kind:'opening',quantity:2,createdAt:'2026-01-01'}],'p1','w1'),undefined);
+});
+
+test('product export cost weights on-hand stock across distinct warehouses',()=>{
+  const movements=[...base,{id:'open-w2',productId:'p1',warehouseId:'w2',kind:'opening',quantity:4,unitCost:40,createdAt:'2026-01-01'}];
+  assert.equal(averageInventoryCostAcrossWarehouses(movements,'p1',['w1','w2','w2'],10),(280+160)/16);
+  assert.equal(averageInventoryCostAcrossWarehouses(movements,'missing',['w1','w2'],7),7);
 });
 
 test('manual sales and POS store the active warehouse weighted cost snapshot',()=>{
