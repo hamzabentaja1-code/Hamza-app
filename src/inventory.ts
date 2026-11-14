@@ -202,6 +202,21 @@ export function averageInventoryUnitCost(movements: StockMovement[], productId: 
   return hasExplicitZeroCost?0:undefined;
 }
 
+/** Return the on-hand weighted-average cost across a product's warehouses. */
+export function averageInventoryCostAcrossWarehouses(movements:StockMovement[],productId:string,warehouseIds:readonly string[],fallback=0):number {
+  const uniqueIds=new Set(warehouseIds.filter(id=>typeof id==='string'&&id.trim()));
+  let totalQuantity=0,totalValue=0;
+  for(const warehouseId of uniqueIds){
+    const quantity=Math.max(0,warehouseStock(movements,productId,warehouseId));
+    if(quantity<=0)continue;
+    const average=averageInventoryUnitCost(movements,productId,warehouseId);
+    const unitCost=average??(Number.isFinite(fallback)&&fallback>=0?fallback:0);
+    totalQuantity+=quantity;
+    totalValue+=quantity*unitCost;
+  }
+  return totalQuantity>0?totalValue/totalQuantity:(Number.isFinite(fallback)&&fallback>=0?fallback:0);
+}
+
 export function validateWarehouse(warehouse: Partial<Warehouse>, existing: Warehouse[] = []): string[] {
   const errors: string[] = [];
   if (!warehouse.id?.trim()) errors.push("معرف المخزن إجباري");
