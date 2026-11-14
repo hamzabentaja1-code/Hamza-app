@@ -661,6 +661,12 @@ const fr: Record<string, string> = {
   "تعذر البحث بالصوت. تأكد من الميكروفون وخدمة التعرف على الكلام.": "Recherche vocale impossible. Vérifiez le microphone et le service de reconnaissance vocale.",
   "التعرف على الكلام غير متوفر. فعّل خدمة البحث الصوتي فالهاتف.": "La reconnaissance vocale est indisponible. Activez un service vocal sur le téléphone.",
   "خاصك تسمح باستعمال الميكروفون للبحث بالصوت.": "Autorisez l’accès au microphone pour utiliser la recherche vocale.",
+  "مشاركة ملف Excel": "Partager le fichier Excel",
+  "ما قدرناش نشاركوا ملف Excel.": "Impossible de partager le fichier Excel.",
+  "تصدير لائحة المنتجات Excel": "Exporter les produits vers Excel",
+  "تصدير سجل المبيعات Excel": "Exporter les ventes vers Excel",
+  "تصدير السجل الكامل Excel": "Exporter le registre complet vers Excel",
+  "تصدير سجل الصندوق Excel": "Exporter la caisse vers Excel",
 };
 
 export function translate(language: AppLanguage, value: string): string {
