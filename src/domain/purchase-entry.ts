@@ -1,3 +1,5 @@
+import {canExtendCredit} from './contact-credit';
+
 export type PurchaseEntryProduct = {id:number;name:string;qty:number};
 export type PurchaseEntrySupplier = {name:string;creditLimitCentimes?:number;paymentDelayDays?:number};
 export type PurchaseEntryMethod = 'نقداً'|'بطاقة'|'تحويل';
@@ -34,7 +36,7 @@ export function preparePurchaseEntry(input:PurchaseEntryInput):PurchaseEntryResu
     throw new Error('راجع كمية الشراء والثمن والمبلغ المؤدى.');
   }
   const debtAfterPurchase=totalCentimes-paidCentimes;
-  if(input.supplier.creditLimitCentimes!==undefined&&input.currentSupplierDebtCentimes+debtAfterPurchase>input.supplier.creditLimitCentimes){
+  if(!canExtendCredit(input.supplier,input.currentSupplierDebtCentimes,debtAfterPurchase)){
     throw new Error('تجاوز سقف الدين');
   }
   const usesBank=paidCentimes>0&&(input.method==='بطاقة'||input.method==='تحويل');
