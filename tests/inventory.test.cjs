@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  warehouseStock, inventoryValue, transferStock, validateStockIssue, validateStockDemand,
+  warehouseStock, inventoryValue, averageInventoryUnitCost, transferStock, validateStockIssue, validateStockDemand,
   createStockCount, applyStockCount,
 } = require('../.test-build/inventory.js');
 
@@ -14,6 +14,18 @@ const base = [
 test('stock balance and weighted inventory value remain consistent', () => {
   assert.equal(warehouseStock(base, 'p1', 'w1'), 12);
   assert.equal(inventoryValue(base, 'p1', 'w1'), 280);
+  assert.equal(averageInventoryUnitCost(base, 'p1', 'w1'), 280/12);
+});
+
+test('average cost distinguishes explicit zero-cost stock from records with no cost history',()=>{
+  assert.equal(averageInventoryUnitCost([{id:'free',productId:'p1',warehouseId:'w1',kind:'opening',quantity:2,unitCost:0,createdAt:'2026-01-01'}],'p1','w1'),0);
+  assert.equal(averageInventoryUnitCost([{id:'legacy',productId:'p1',warehouseId:'w1',kind:'opening',quantity:2,createdAt:'2026-01-01'}],'p1','w1'),undefined);
+});
+
+test('manual sales and POS store the active warehouse weighted cost snapshot',()=>{
+  const app=require('node:fs').readFileSync('App.tsx','utf8');
+  assert.match(app,/unitCost:averageInventoryUnitCost\(stockMovements,String\(p\.id\),activeWarehouseId\)/);
+  assert.match(app,/unitCost:averageInventoryUnitCost\(stockMovements,String\(line\.productId\),activeWarehouseId\)/);
 });
 
 test('transfer posts paired movements and preserves total stock', () => {
@@ -24,6 +36,8 @@ test('transfer posts paired movements and preserves total stock', () => {
   assert.equal(warehouseStock(next, 'p1', 'w1'), 8);
   assert.equal(warehouseStock(next, 'p1', 'w2'), 4);
   assert.equal(warehouseStock(next, 'p1', 'w1') + warehouseStock(next, 'p1', 'w2'), 12);
+  assert.ok(Math.abs(inventoryValue(next, 'p1', 'w1') + inventoryValue(next, 'p1', 'w2') - inventoryValue(base, 'p1', 'w1')) < 1e-8);
+  assert.equal(averageInventoryUnitCost(next, 'p1', 'w2'), 280/12);
   assert.throws(() => transferStock({
     id: 'tr-1', productId: 'p1', fromWarehouseId: 'w1',
     toWarehouseId: 'w2', quantity: 1, createdAt: '2026-01-05',
@@ -56,6 +70,13 @@ test('stock count records only differences as auditable adjustments', () => {
   assert.equal(warehouseStock(next, 'p2', 'w1'), 7);
   assert.equal(next.filter(m => m.stockCountId === 'count-1').length, 2);
   assert.throws(() => applyStockCount(count, next), /تطبق/);
+});
+
+test('positive stock counts carry a cost fallback when the warehouse has no cost history',()=>{
+  const count=createStockCount({id:'count-cost',warehouseId:'w1',createdAt:'2026-02-03',lines:[{productId:'p2',countedQuantity:7,unitCost:8}]},base);
+  const next=applyStockCount(count,base);
+  assert.equal(next.find(m=>m.stockCountId==='count-cost')?.unitCost,8);
+  assert.equal(inventoryValue(next,'p2','w1'),56);
 });
 
 test('stock count rejects duplicate products and negative or invalid counts', () => {
