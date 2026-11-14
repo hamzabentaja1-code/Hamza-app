@@ -35,7 +35,7 @@ jobs:
           java-version: 17
 
       - name: Install npm dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Check Expo project health (advisory)
         continue-on-error: true
@@ -45,8 +45,8 @@ jobs:
         continue-on-error: true
         run: npx expo install --check
 
-      - name: Run Replica quote and document tests
-        run: npm run test:quote
+      - name: Run business logic tests
+        run: npm run test:domain
 
       - name: TypeScript validation
         run: npx tsc --noEmit
