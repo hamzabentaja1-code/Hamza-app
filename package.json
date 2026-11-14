@@ -5,17 +5,15 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
-    "android": "expo run:android",
+    "android": "expo start --android",
     "web": "expo start --web",
     "build:apk": "eas build --platform android --profile preview",
     "build:production": "eas build --platform android --profile production",
     "test:quote": "tsc src/i18n.ts src/contacts.ts src/domain/contact-history.ts src/domain/contact-credit.ts src/company-profile.ts src/supplier-account.ts src/domain/bank-accounts.ts src/storage.ts src/domain/cash-register.ts src/domain/csv-export.ts src/domain/business-ledger.ts src/domain/profit-loss.ts src/domain/quote-calculator.ts src/domain/document-conversion.ts src/domain/payment-allocation.ts src/domain/customer-balances.ts src/domain/sales-returns.ts src/pos.ts src/inventory.ts src/projects.ts src/product-gallery.ts src/domain/image-search.ts src/image-fingerprint.ts src/report-filters.ts src/domain/due-dates.ts src/domain/contact-deletion.ts --target ES2020 --module commonjs --outDir .test-build && node --test tests/quote-calculator.test.cjs tests/document-conversion.test.cjs tests/payment-allocation.test.cjs tests/customer-balances.test.cjs tests/sales-returns.test.cjs tests/csv-export.test.cjs tests/business-ledger.test.cjs tests/profit-loss.test.cjs tests/supplier-account.test.cjs tests/pos.test.cjs tests/inventory.test.cjs tests/i18n.test.cjs tests/company-profile.test.cjs tests/projects.test.cjs tests/bank-accounts.test.cjs tests/storage.test.cjs tests/cash-register.test.cjs tests/product-gallery.test.cjs tests/image-search.test.cjs tests/image-fingerprint.test.cjs tests/report-filters.test.cjs tests/contact-history.test.cjs tests/contacts.test.cjs tests/contact-credit.test.cjs tests/due-dates.test.cjs tests/contact-deletion.test.cjs",
-    "test:domain": "tsc src/i18n.ts src/contacts.ts src/domain/contact-history.ts src/domain/contact-credit.ts src/company-profile.ts src/supplier-account.ts src/domain/bank-accounts.ts src/storage.ts src/domain/cash-register.ts src/domain/csv-export.ts src/domain/business-ledger.ts src/domain/profit-loss.ts src/domain/quote-calculator.ts src/domain/document-conversion.ts src/domain/payment-allocation.ts src/domain/customer-balances.ts src/domain/sales-returns.ts src/pos.ts src/inventory.ts src/projects.ts src/product-gallery.ts src/domain/image-search.ts src/image-fingerprint.ts src/report-filters.ts src/domain/due-dates.ts src/domain/contact-deletion.ts --target ES2020 --module commonjs --outDir .test-build && node --test tests/quote-calculator.test.cjs tests/document-conversion.test.cjs tests/payment-allocation.test.cjs tests/customer-balances.test.cjs tests/sales-returns.test.cjs tests/csv-export.test.cjs tests/business-ledger.test.cjs tests/profit-loss.test.cjs tests/supplier-account.test.cjs tests/pos.test.cjs tests/inventory.test.cjs tests/i18n.test.cjs tests/company-profile.test.cjs tests/projects.test.cjs tests/bank-accounts.test.cjs tests/storage.test.cjs tests/cash-register.test.cjs tests/product-gallery.test.cjs tests/image-search.test.cjs tests/image-fingerprint.test.cjs tests/report-filters.test.cjs tests/contact-history.test.cjs tests/contacts.test.cjs tests/contact-credit.test.cjs tests/due-dates.test.cjs tests/contact-deletion.test.cjs",
-    "ios": "expo run:ios"
+    "test:domain": "tsc src/i18n.ts src/contacts.ts src/domain/contact-history.ts src/domain/contact-credit.ts src/company-profile.ts src/supplier-account.ts src/domain/bank-accounts.ts src/storage.ts src/domain/cash-register.ts src/domain/csv-export.ts src/domain/business-ledger.ts src/domain/profit-loss.ts src/domain/quote-calculator.ts src/domain/document-conversion.ts src/domain/payment-allocation.ts src/domain/customer-balances.ts src/domain/sales-returns.ts src/pos.ts src/inventory.ts src/projects.ts src/product-gallery.ts src/domain/image-search.ts src/image-fingerprint.ts src/report-filters.ts src/domain/due-dates.ts src/domain/contact-deletion.ts --target ES2020 --module commonjs --outDir .test-build && node --test tests/quote-calculator.test.cjs tests/document-conversion.test.cjs tests/payment-allocation.test.cjs tests/customer-balances.test.cjs tests/sales-returns.test.cjs tests/csv-export.test.cjs tests/business-ledger.test.cjs tests/profit-loss.test.cjs tests/supplier-account.test.cjs tests/pos.test.cjs tests/inventory.test.cjs tests/i18n.test.cjs tests/company-profile.test.cjs tests/projects.test.cjs tests/bank-accounts.test.cjs tests/storage.test.cjs tests/cash-register.test.cjs tests/product-gallery.test.cjs tests/image-search.test.cjs tests/image-fingerprint.test.cjs tests/report-filters.test.cjs tests/contact-history.test.cjs tests/contacts.test.cjs tests/contact-credit.test.cjs tests/due-dates.test.cjs tests/contact-deletion.test.cjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
-    "base64-js": "1.5.1",
     "expo": "~54.0.0",
     "expo-build-properties": "~1.0.10",
     "expo-document-picker": "~14.0.8",
@@ -25,9 +23,10 @@
     "expo-sharing": "~14.0.7",
     "expo-status-bar": "~3.0.0",
     "expo-system-ui": "~6.0.9",
-    "jpeg-js": "0.4.4",
     "react": "19.1.0",
-    "react-native": "0.81.5"
+    "react-native": "0.81.5",
+    "base64-js": "1.5.1",
+    "jpeg-js": "0.4.4"
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
@@ -35,4 +34,3 @@
     "@types/jpeg-js": "^0.3.0"
   }
 }
-345273 package-lock.json
