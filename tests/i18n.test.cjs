@@ -23,6 +23,7 @@ test('French translations cover POS validation and backup guidance',()=>{
 });
 test('voice product search controls and permission errors are translated to French',()=>{
   assert.equal(translate('FR','البحث بالصوت'),'Recherche vocale');
+  assert.equal(translate('FR','إملاء اسم المنتج'),'Dicter le nom du produit');
   assert.equal(translate('FR','إيقاف البحث بالصوت'),'Arrêter la recherche vocale');
   assert.notEqual(translate('FR','خاصك تسمح باستعمال الميكروفون للبحث بالصوت.'),'خاصك تسمح باستعمال الميكروفون للبحث بالصوت.');
 });

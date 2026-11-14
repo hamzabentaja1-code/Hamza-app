@@ -656,6 +656,7 @@ const fr: Record<string, string> = {
   "تاريخ النهاية غير صالح": "Date de fin invalide",
   "تاريخ البداية خاصو يكون قبل تاريخ النهاية": "La date de début doit précéder la date de fin",
   "البحث بالصوت": "Recherche vocale",
+  "إملاء اسم المنتج": "Dicter le nom du produit",
   "إيقاف البحث بالصوت": "Arrêter la recherche vocale",
   "تعذر البحث بالصوت. تأكد من الميكروفون وخدمة التعرف على الكلام.": "Recherche vocale impossible. Vérifiez le microphone et le service de reconnaissance vocale.",
   "التعرف على الكلام غير متوفر. فعّل خدمة البحث الصوتي فالهاتف.": "La reconnaissance vocale est indisponible. Activez un service vocal sur le téléphone.",
