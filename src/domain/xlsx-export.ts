@@ -4,11 +4,13 @@ const JSZip=require('jszip');
 export type XlsxCell = string | number | boolean | null | undefined;
 export type XlsxSheet = {name:string;headers:readonly XlsxCell[];rows:readonly (readonly XlsxCell[])[]};
 
-const xmlEscape=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+const removeXmlInvalidCharacters=(value:string)=>value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g,'');
+const xmlEscape=(value:string)=>removeXmlInvalidCharacters(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 const columnName=(index:number)=>{let name='';for(let value=index+1;value>0;value=Math.floor((value-1)/26))name=String.fromCharCode(65+(value-1)%26)+name;return name;};
 
 function safeSheetName(input:string,used:Set<string>):string{
-  const base=(input.replace(/[\\/*?:\[\]]/g,' ').trim()||'Sheet').slice(0,31);
+  const normalized=removeXmlInvalidCharacters(input).replace(/[\\/*?:\[\]]/g,' ').trim().replace(/^'+|'+$/g,'');
+  const base=(normalized||'Sheet').slice(0,31);
   let name=base;let suffix=2;
   while(used.has(name.toLocaleLowerCase())){const tag=` ${suffix++}`;name=base.slice(0,31-tag.length)+tag;}
   used.add(name.toLocaleLowerCase());
