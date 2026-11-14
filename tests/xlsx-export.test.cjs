@@ -22,9 +22,13 @@ test('builds a valid multi-sheet XLSX with typed numbers, Unicode and safe text 
 
 test('rejects an empty workbook and sanitizes duplicate sheet names',async()=>{
   await assert.rejects(buildXlsx([]),/ورقة واحدة/);
-  const base64=await buildXlsx([{name:'Sales/Report',headers:['A'],rows:[]},{name:'Sales Report',headers:['B'],rows:[]}]);
+  const base64=await buildXlsx([{name:"'Sales/Report'",headers:['A'],rows:[['bad\u0000text\u0007']]},{name:'Sales Report',headers:['B'],rows:[]}]);
   const zip=await JSZip.loadAsync(base64,{base64:true});
   const workbook=await zip.file('xl/workbook.xml').async('string');
   assert.match(workbook,/name="Sales Report"/);
   assert.match(workbook,/name="Sales Report 2"/);
+  assert.doesNotMatch(workbook,/name="'[^\"]*"/);
+  const sheet=await zip.file('xl/worksheets/sheet1.xml').async('string');
+  assert.match(sheet,/<t xml:space="preserve">badtext<\/t>/);
+  assert.doesNotMatch(sheet,/\u0000|\u0007/);
 });
