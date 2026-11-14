@@ -21,6 +21,11 @@ test('French translations cover POS validation and backup guidance',()=>{
   assert.equal(translate('FR','راجع السلة'),'Vérifiez le panier');
   assert.equal(translate('FR','تخفيض غير صالح'),'Remise invalide');
 });
+test('voice product search controls and permission errors are translated to French',()=>{
+  assert.equal(translate('FR','البحث بالصوت'),'Recherche vocale');
+  assert.equal(translate('FR','إيقاف البحث بالصوت'),'Arrêter la recherche vocale');
+  assert.notEqual(translate('FR','خاصك تسمح باستعمال الميكروفون للبحث بالصوت.'),'خاصك تسمح باستعمال الميكروفون للبحث بالصوت.');
+});
 
 
 const fs = require('node:fs');

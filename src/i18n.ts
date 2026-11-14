@@ -655,6 +655,11 @@ const fr: Record<string, string> = {
   "تاريخ البداية غير صالح": "Date de début invalide",
   "تاريخ النهاية غير صالح": "Date de fin invalide",
   "تاريخ البداية خاصو يكون قبل تاريخ النهاية": "La date de début doit précéder la date de fin",
+  "البحث بالصوت": "Recherche vocale",
+  "إيقاف البحث بالصوت": "Arrêter la recherche vocale",
+  "تعذر البحث بالصوت. تأكد من الميكروفون وخدمة التعرف على الكلام.": "Recherche vocale impossible. Vérifiez le microphone et le service de reconnaissance vocale.",
+  "التعرف على الكلام غير متوفر. فعّل خدمة البحث الصوتي فالهاتف.": "La reconnaissance vocale est indisponible. Activez un service vocal sur le téléphone.",
+  "خاصك تسمح باستعمال الميكروفون للبحث بالصوت.": "Autorisez l’accès au microphone pour utiliser la recherche vocale.",
 };
 
 export function translate(language: AppLanguage, value: string): string {
