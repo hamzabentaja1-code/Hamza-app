@@ -31,6 +31,7 @@ test('bank-paid purchase requires a selected funded account and stores the accou
 test('purchase entry rejects overpayment, over-credit and invalid product or warehouse details',()=>{
   assert.throws(()=>preparePurchaseEntry({...base,paidAmount:50}),/راجع كمية الشراء/);
   assert.throws(()=>preparePurchaseEntry({...base,currentSupplierDebtCentimes:9000}),/سقف الدين/);
+  assert.throws(()=>preparePurchaseEntry({...base,supplier:{...base.supplier,creditLimitCentimes:-1}}),/سقف الدين/);
   assert.throws(()=>preparePurchaseEntry({...base,quantity:0}),/راجع كمية الشراء/);
   assert.throws(()=>preparePurchaseEntry({...base,warehouseId:''}),/راجع كمية الشراء/);
 });
