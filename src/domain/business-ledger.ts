@@ -19,7 +19,7 @@ type LedgerInput={
 /** One Excel-friendly ledger for the app's current product and financial records. */
 export function buildBusinessLedgerRows(input:LedgerInput):CsvCell[][] {
   const rows:CsvCell[][]=[];
-  for(const product of input.products) rows.push(['Stock',product.id,'',product.name,'',product.qty,product.costPrice??'',product.price,product.qty*product.price,product.reference??'']);
+  for(const product of input.products) rows.push(['Stock',product.id,'',product.name,'',product.qty,product.costPrice??'',product.price,product.qty*(product.costPrice??0),product.reference??'']);
   for(const sale of input.sales) rows.push(['Sale',sale.id,sale.date,sale.productName,sale.customerName,sale.qty,sale.unitCost??'',sale.unitPrice,sale.total,sale.paymentMethod??'']);
   for(const item of input.returns){
     const allocated=item.invoiceAllocations?.reduce((sum,allocation)=>sum+allocation.allocatedCentimes,0)??0;
