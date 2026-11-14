@@ -15,6 +15,7 @@ test('business export contains current stock and all financial records in one le
     receivables:[{customerName:'Ali',outstandingCentimes:1000,invoiceCount:1,customerCreditCentimes:300}],
   });
   assert.deepEqual(rows.map(row=>row[0]),['Stock','Sale','Credit note','Customer refund','Purchase','Supplier payment','Expense','Payment','Supplier payment','Cash-bank transfer','Cash-bank transfer','Cash-bank transfer','Cash-bank transfer','Receivable','Customer credit']);
+  assert.equal(rows[0][8],20,'stock asset value uses unit cost, not its retail price');
   assert.equal(rows[2][8],-10);
   assert.match(rows[2][9],/allocated 7.00 DH; customer credit 3.00 DH/);
   assert.equal(rows[3][8],-1);
