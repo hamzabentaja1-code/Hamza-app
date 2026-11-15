@@ -82,7 +82,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Local projects with editable details, protected deletion when records are linked, budgets, expenses, tasks, priorities, due dates, status, and technician time logs with hourly cost and labor totals in budget tracking; installation request workflow remains open
 - [x] Local technician directory with name, optional phone and specialty, hourly rate, duplicate/name/rate validation; project task assignment and time logging can select a saved technician, and selected time logs copy the saved hourly rate
 - [x] Local technician equipment register with editable name/category, serial number, availability status, notes, optional technician assignment, duplicate serial validation, backup/restore and category reuse chips
-- [ ] Time entries currently record technician name, date, hours, hourly rate, note, deletion and project labor cost; payroll settlement and technician directory/history reports remain open
+- [x] Payroll balances calculate earned labor from saved time-entry rate snapshots; partial cash or bank settlements cannot exceed the outstanding amount, affect the correct cash/bank balance, and remain in local storage, backup and register history without being counted again as a project expense
+- [ ] Technician directory/history reports and payroll period summaries
 
 ### Agenda and reports
 - [ ] Tasks, assignments, durations and attachments

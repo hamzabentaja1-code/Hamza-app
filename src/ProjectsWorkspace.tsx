@@ -4,6 +4,8 @@ import {translate} from './i18n';
 import {ProjectRecord,ProjectStatus,ProjectTaskPriority,ProjectTimeEntry,projectFinancials} from './projects';
 import {Technician} from './technicians';
 import {EquipmentStatus,TechnicianEquipment} from './technician-equipment';
+import {BankAccount} from './domain/bank-accounts';
+import {PayrollSettlement,TechnicianPayrollRow} from './technician-payroll';
 import {isValidIsoDate} from './domain/document-conversion';
 
 type Props={
@@ -18,6 +20,10 @@ type Props={
   onAddEquipment:(input:{name:string;category:string;serialNumber?:string;technicianId?:number;status:EquipmentStatus;note?:string})=>boolean;
   onUpdateEquipment:(id:number,input:{name:string;category:string;serialNumber?:string;technicianId?:number;status:EquipmentStatus;note?:string})=>boolean;
   onDeleteEquipment:(id:number)=>void;
+  payrollRows:TechnicianPayrollRow[];
+  payrollSettlements:PayrollSettlement[];
+  bankAccounts:BankAccount[];
+  onSettlePayroll:(technicianId:number,amount:number,method:'نقداً'|'بطاقة'|'تحويل',bankAccountId?:string,note?:string)=>boolean;
   onCreate:(input:{name:string;customerName:string;budget:number;targetDate:string})=>void;
   onUpdate:(projectId:number,input:{name:string;customerName:string;budget:number;targetDate:string})=>boolean;
   onDelete:(projectId:number)=>void;
@@ -27,7 +33,7 @@ type Props={
   onToggleTask:(projectId:number,taskId:number,done:boolean)=>void;
   onDeleteTask:(projectId:number,taskId:number)=>void;
   onAddExpense:(projectId:number,title:string,amount:number)=>void;
-  onAddTime:(projectId:number,input:{technician:string;date:string;hours:number;hourlyRate:number;note?:string})=>boolean;
+  onAddTime:(projectId:number,input:{technician:string;technicianId?:number;date:string;hours:number;hourlyRate:number;note?:string})=>boolean;
   onDeleteTime:(projectId:number,entryId:number)=>void;
 };
 
@@ -37,7 +43,7 @@ const input={backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRa
 const button={backgroundColor:gold,borderRadius:9,padding:11,alignItems:'center' as const,marginTop:5};
 const statuses:ProjectStatus[]=['مخطط','جارٍ','مكتمل','متوقف'];
 
-export default function ProjectsWorkspace({language,projects,expenses,technicians,technicianEquipment,onAddEquipment,onUpdateEquipment,onDeleteEquipment,onAddTechnician,onUpdateTechnician,onDeleteTechnician,onCreate,onUpdate,onDelete,onStatusChange,onAddTask,onUpdateTask,onToggleTask,onDeleteTask,onAddExpense,onAddTime,onDeleteTime}:Props){
+export default function ProjectsWorkspace({language,projects,expenses,technicians,technicianEquipment,payrollRows,payrollSettlements,bankAccounts,onSettlePayroll,onAddEquipment,onUpdateEquipment,onDeleteEquipment,onAddTechnician,onUpdateTechnician,onDeleteTechnician,onCreate,onUpdate,onDelete,onStatusChange,onAddTask,onUpdateTask,onToggleTask,onDeleteTask,onAddExpense,onAddTime,onDeleteTime}:Props){
   const tr=(value:string)=>translate(language,value);
   const [name,setName]=useState('');
   const [customerName,setCustomerName]=useState('');
@@ -55,12 +61,15 @@ export default function ProjectsWorkspace({language,projects,expenses,technician
   const [equipmentStatus,setEquipmentStatus]=useState<EquipmentStatus>('متاح');
   const [equipmentNote,setEquipmentNote]=useState('');
   const [editingEquipmentId,setEditingEquipmentId]=useState<number|null>(null);
+  const [payrollAmounts,setPayrollAmounts]=useState<Record<number,string>>({});
+  const [payrollMethods,setPayrollMethods]=useState<Record<number,'نقداً'|'بطاقة'|'تحويل'>>({});
+  const [payrollBankIds,setPayrollBankIds]=useState<Record<number,string>>({});
   const [taskDrafts,setTaskDrafts]=useState<Record<number,string>>({});
   const [taskDates,setTaskDates]=useState<Record<number,string>>({});
   const [taskPriorities,setTaskPriorities]=useState<Record<number,ProjectTaskPriority>>({});
   const [taskAssignees,setTaskAssignees]=useState<Record<number,string>>({});
   const [expenseDrafts,setExpenseDrafts]=useState<Record<number,{title:string;amount:string}>>({});
-  const [timeDrafts,setTimeDrafts]=useState<Record<number,{technician:string;date:string;hours:string;rate:string;note:string}>>({});
+  const [timeDrafts,setTimeDrafts]=useState<Record<number,{technician:string;technicianId?:number;date:string;hours:string;rate:string;note:string}>>({});
   const [editingProjectId,setEditingProjectId]=useState<number|null>(null);
   const [projectEditDraft,setProjectEditDraft]=useState<{name:string;customerName:string;budget:string;targetDate:string}>({name:'',customerName:'',budget:'',targetDate:''});
   const [editingTaskKey,setEditingTaskKey]=useState<string|null>(null);
@@ -113,6 +122,14 @@ export default function ProjectsWorkspace({language,projects,expenses,technician
       {technicianEquipment.map(item=><View key={item.id} style={{flexDirection:'row',alignItems:'center',paddingVertical:7,borderBottomWidth:1,borderBottomColor:'#333'}}><View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{item.name} · {item.category}</Text><Text style={{color:'#AAA'}}>{tr(item.status)}{item.serialNumber?` · ${item.serialNumber}`:''}{item.technicianId?` · ${technicians.find(tech=>tech.id===item.technicianId)?.name||''}`:''}</Text>{!!item.note&&<Text style={{color:'#888'}}>{item.note}</Text>}</View><Pressable onPress={()=>{setEditingEquipmentId(item.id);setEquipmentName(item.name);setEquipmentCategory(item.category);setEquipmentSerial(item.serialNumber||'');setEquipmentTechnicianId(item.technicianId);setEquipmentStatus(item.status);setEquipmentNote(item.note||'');}} style={{paddingHorizontal:7}}><Text style={{color:gold}}>{tr('تعديل')}</Text></Pressable><Pressable onPress={()=>onDeleteEquipment(item.id)}><Text style={{color:'#E58B83'}}>{tr('حذف')}</Text></Pressable></View>)}
       {technicianEquipment.length===0&&<Text style={{color:'#888'}}>{tr('مازال ما كايناش معدات.')}</Text>}
     </View>
+    <View style={[panel,{marginTop:12}]}>
+      <Text style={{color:gold,fontSize:18,fontWeight:'800',marginBottom:10}}>{tr('تسوية أجور التقنيين')}</Text>
+      {payrollRows.map(row=>{const method=payrollMethods[row.technicianId]||'نقداً';const bankId=payrollBankIds[row.technicianId]||'';return <View key={row.technicianId} style={{backgroundColor:'#111',borderRadius:9,padding:10,marginBottom:8}}><Text style={{color:'#FFF',fontWeight:'800'}}>{row.technicianName}</Text><Text style={{color:'#CCC',marginTop:5}}>{tr('المستحق')}: {(row.earnedCentimes/100).toFixed(2)} DH · {tr('المدفوع')}: {(row.paidCentimes/100).toFixed(2)} DH</Text><Text style={{color:row.dueCentimes?'#F0C76A':'#80C98C',fontWeight:'800',marginTop:4}}>{tr('الباقي')}: {(row.dueCentimes/100).toFixed(2)} DH</Text>{row.dueCentimes>0&&<><TextInput value={payrollAmounts[row.technicianId]||''} onChangeText={value=>setPayrollAmounts(current=>({...current,[row.technicianId]:value}))} keyboardType="decimal-pad" placeholder={tr('مبلغ الأداء DH')} placeholderTextColor="#888" style={[input,{marginTop:8}]}/><View style={{flexDirection:'row',gap:6}}>{(['نقداً','بطاقة','تحويل'] as const).map(value=><Pressable key={value} onPress={()=>setPayrollMethods(current=>({...current,[row.technicianId]:value}))} style={{borderColor:method===value?gold:'#444',borderWidth:1,borderRadius:8,padding:7,flex:1,alignItems:'center'}}><Text style={{color:method===value?gold:'#DDD'}}>{tr(value)}</Text></Pressable>)}</View>{method!=='نقداً'&&<View style={{marginTop:7}}>{bankAccounts.map(account=><Pressable key={account.id} onPress={()=>setPayrollBankIds(current=>({...current,[row.technicianId]:account.id}))} style={{borderColor:bankId===account.id?gold:'#444',borderWidth:1,borderRadius:8,padding:8,marginBottom:5}}><Text style={{color:bankId===account.id?gold:'#DDD'}}>{account.name}</Text></Pressable>)}{bankAccounts.length===0&&<Text style={{color:'#E58B83'}}>{tr('أضف حساباً بنكياً من شاشة الصندوق أولاً.')}</Text>}</View>}<Pressable onPress={()=>{const amount=Number((payrollAmounts[row.technicianId]||'').replace(',','.'));if(onSettlePayroll(row.technicianId,amount,method,bankId||undefined)){setPayrollAmounts(current=>({...current,[row.technicianId]:''}));}}} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تسجيل الأداء')}</Text></Pressable></>}</View>;})}
+      {payrollRows.length===0&&<Text style={{color:'#888'}}>{tr('زيد التقنيين وسجل ساعات العمل باش يبان المستحق.')}</Text>}
+      <Text style={{color:'#DDD',fontWeight:'700',marginTop:5,marginBottom:5}}>{tr('سجل تسويات الأجور')}</Text>
+      {payrollSettlements.map(item=><View key={item.id} style={{flexDirection:'row',paddingVertical:5,borderBottomWidth:1,borderBottomColor:'#333'}}><Text style={{color:'#CCC',flex:1}}>{item.technicianName} · {item.date} · {tr(item.method)}</Text><Text style={{color:'#E58B83'}}>{(item.amountCentimes/100).toFixed(2)} DH</Text></View>)}
+      {payrollSettlements.length===0&&<Text style={{color:'#888'}}>{tr('مازال ما تسجل حتى أداء للأجور.')}</Text>}
+    </View>
     <Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>{tr('المشاريع')} ({projects.length})</Text>
     {projects.map(project=>{
       const totals=projectFinancials(project,expenses);
@@ -146,11 +163,11 @@ export default function ProjectsWorkspace({language,projects,expenses,technician
         <Pressable onPress={()=>{const amount=Number(expense.amount.replace(',','.'));if(!expense.title.trim()||!Number.isFinite(amount)||amount<=0){Alert.alert(tr('معلومات ناقصة'),tr('دخل وصف المصروف ومبلغ صحيح.'));return;}onAddExpense(project.id,expense.title,amount);setExpenseDrafts(current=>({...current,[project.id]:{title:'',amount:''}}));}} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تسجيل مصروف المشروع')}</Text></Pressable>
         <Text style={{color:gold,fontWeight:'800',marginTop:14,marginBottom:6}}>{tr('ساعات العمل')}: {project.timeEntries.reduce((sum,entry)=>sum+entry.hours,0).toFixed(2)} {tr('ساعة')}</Text>
         {project.timeEntries.map((entry:ProjectTimeEntry)=><View key={entry.id} style={{flexDirection:'row',alignItems:'center',paddingVertical:5,borderBottomWidth:1,borderBottomColor:'#333'}}><View style={{flex:1}}><Text style={{color:'#EEE'}}>{entry.technician} · {entry.date}</Text><Text style={{color:'#AAA'}}>{entry.hours} {tr('ساعة')} × {entry.hourlyRate.toFixed(2)} DH = {(entry.hours*entry.hourlyRate).toFixed(2)} DH{entry.note?` · ${entry.note}`:''}</Text></View><Pressable onPress={()=>onDeleteTime(project.id,entry.id)}><Text style={{color:'#E58B83'}}>{tr('حذف')}</Text></Pressable></View>)}
-        <TextInput value={time.technician} onChangeText={value=>setTimeDrafts(current=>({...current,[project.id]:{...time,technician:value}}))} placeholder={tr('اسم التقني')} placeholderTextColor="#888" style={[input,{marginTop:8}]}/>
-        {technicians.length>0&&<><Text style={{color:'#AAA',marginBottom:5}}>{tr('اختر تقنياً محفوظاً لساعات العمل')}</Text><View style={{flexDirection:'row',flexWrap:'wrap',gap:6}}>{technicians.map(technician=><Pressable key={technician.id} onPress={()=>setTimeDrafts(current=>({...current,[project.id]:{...time,technician:technician.name,rate:String(technician.hourlyRate)}}))} style={{borderColor:time.technician===technician.name?gold:'#444',borderWidth:1,borderRadius:8,padding:7}}><Text style={{color:time.technician===technician.name?gold:'#DDD'}}>{technician.name} · {technician.hourlyRate.toFixed(2)} DH</Text></Pressable>)}</View></>}
+        <TextInput value={time.technician} onChangeText={value=>setTimeDrafts(current=>({...current,[project.id]:{...time,technician:value,technicianId:undefined}}))} placeholder={tr('اسم التقني')} placeholderTextColor="#888" style={[input,{marginTop:8}]}/>
+        {technicians.length>0&&<><Text style={{color:'#AAA',marginBottom:5}}>{tr('اختر تقنياً محفوظاً لساعات العمل')}</Text><View style={{flexDirection:'row',flexWrap:'wrap',gap:6}}>{technicians.map(technician=><Pressable key={technician.id} onPress={()=>setTimeDrafts(current=>({...current,[project.id]:{...time,technician:technician.name,technicianId:technician.id,rate:String(technician.hourlyRate)}}))} style={{borderColor:time.technicianId===technician.id?gold:'#444',borderWidth:1,borderRadius:8,padding:7}}><Text style={{color:time.technicianId===technician.id?gold:'#DDD'}}>{technician.name} · {technician.hourlyRate.toFixed(2)} DH</Text></Pressable>)}</View></>}
         <View style={{flexDirection:'row',gap:7}}><TextInput value={time.date} onChangeText={value=>setTimeDrafts(current=>({...current,[project.id]:{...time,date:value}}))} placeholder="YYYY-MM-DD" placeholderTextColor="#888" style={[input,{flex:1}]}/><TextInput value={time.hours} onChangeText={value=>setTimeDrafts(current=>({...current,[project.id]:{...time,hours:value}}))} keyboardType="decimal-pad" placeholder={tr('عدد الساعات')} placeholderTextColor="#888" style={[input,{flex:1}]}/></View>
         <View style={{flexDirection:'row',gap:7}}><TextInput value={time.rate} onChangeText={value=>setTimeDrafts(current=>({...current,[project.id]:{...time,rate:value}}))} keyboardType="decimal-pad" placeholder={tr('أجرة الساعة DH')} placeholderTextColor="#888" style={[input,{flex:1}]}/><TextInput value={time.note} onChangeText={value=>setTimeDrafts(current=>({...current,[project.id]:{...time,note:value}}))} placeholder={tr('ملاحظة')} placeholderTextColor="#888" style={[input,{flex:1}]}/></View>
-        <Pressable onPress={()=>{const hours=Number(time.hours.replace(',','.')),rate=Number(time.rate.replace(',','.'));if(!time.technician.trim()||!Number.isFinite(hours)||!Number.isFinite(rate)){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم التقني والساعات والأجرة.'));return;}if(hours<=0||hours>24||rate<0){Alert.alert(tr('معلومات غير صالحة'),tr('دخل ساعات بين 0 و24 وأجرة صفر أو أكثر.'));return;}if(!isValidIsoDate(time.date.trim())){Alert.alert(tr('تاريخ غير صالح'),tr('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.'));return;}if(onAddTime(project.id,{technician:time.technician,date:time.date,hours,hourlyRate:rate,note:time.note}))setTimeDrafts(current=>({...current,[project.id]:{...time,technician:'',hours:'',rate:'',note:''}}));}} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تسجيل ساعات العمل')}</Text></Pressable>
+        <Pressable onPress={()=>{const hours=Number(time.hours.replace(',','.')),rate=Number(time.rate.replace(',','.'));if(!time.technician.trim()||!Number.isFinite(hours)||!Number.isFinite(rate)){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم التقني والساعات والأجرة.'));return;}if(hours<=0||hours>24||rate<0){Alert.alert(tr('معلومات غير صالحة'),tr('دخل ساعات بين 0 و24 وأجرة صفر أو أكثر.'));return;}if(!isValidIsoDate(time.date.trim())){Alert.alert(tr('تاريخ غير صالح'),tr('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.'));return;}if(onAddTime(project.id,{technician:time.technician,technicianId:time.technicianId,date:time.date,hours,hourlyRate:rate,note:time.note}))setTimeDrafts(current=>({...current,[project.id]:{...time,technician:'',hours:'',rate:'',note:''}}));}} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تسجيل ساعات العمل')}</Text></Pressable>
       </View>;
     })}
     {projects.length===0&&<Text style={{color:'#999',textAlign:'center',padding:12}}>{tr('مازال ما كاين حتى مشروع.')}</Text>}

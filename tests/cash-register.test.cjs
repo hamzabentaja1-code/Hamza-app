@@ -3,6 +3,14 @@ const assert=require('node:assert/strict');
 const {buildCashRegisterRows,calculateCashBalance,EMPTY_CASH_ACCOUNT,normalizeCashAccount,recordManualCashEntry,setCashOpeningBalance}=require('../.test-build/domain/cash-register.js');
 const sources=({bankTransfers=[]}={})=>({payments:[],supplierPayments:[],purchases:[],expenses:[],refunds:[],bankTransfers});
 
+test('cash payroll settlements reduce the cash balance and appear once in the cash register',()=>{
+ const account=setCashOpeningBalance(EMPTY_CASH_ACCOUNT,250,'2026-11-01');
+ const payrollSettlements=[{id:4,technicianName:'Amina',amountCentimes:7500,method:'نقداً',date:'2026-11-02'}];
+ const rows=buildCashRegisterRows(account,{...sources(),payrollSettlements});
+ assert.equal(calculateCashBalance(account,{...sources(),payrollSettlements}),17500);
+ assert.deepEqual(rows.filter(row=>row.source==='payroll').map(({direction,amountCentimes,description})=>({direction,amountCentimes,description})),[{direction:'out',amountCentimes:7500,description:'أجرة التقني Amina'}]);
+});
+
 test('cash balance reconciles cash-only receipts, supplier payments, purchases, expenses, refunds and manual entries',()=>{
   const account=setCashOpeningBalance(EMPTY_CASH_ACCOUNT,100,'12/11/2026');
   const withManual=recordManualCashEntry(account,{id:1,date:'12/11/2026',direction:'in',amount:20,description:'Cash correction'},12000);

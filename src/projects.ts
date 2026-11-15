@@ -1,7 +1,7 @@
 export type ProjectStatus='مخطط'|'جارٍ'|'مكتمل'|'متوقف';
 export type ProjectTaskPriority='عادي'|'مهم'|'عاجل';
 export type ProjectTask={id:number;title:string;done:boolean;dueDate?:string;priority?:ProjectTaskPriority;assignee?:string};
-export type ProjectTimeEntry={id:number;technician:string;date:string;hours:number;hourlyRate:number;note?:string};
+export type ProjectTimeEntry={id:number;technician:string;technicianId?:number;date:string;hours:number;hourlyRate:number;note?:string};
 export type ProjectRecord={
   id:number;
   name:string;
@@ -44,14 +44,14 @@ export function assertProjectCanBeDeleted(project:ProjectRecord,expenses:readonl
     throw new Error('المشروع فيه مهام أو ساعات أو مصاريف مرتبطة؛ ما يمكنش حذفه.');
 }
 
-export function addProjectTimeEntry(project:ProjectRecord,input:{technician:string;date:string;hours:number;hourlyRate:number;note?:string},id:number):ProjectRecord{
+export function addProjectTimeEntry(project:ProjectRecord,input:{technician:string;technicianId?:number;date:string;hours:number;hourlyRate:number;note?:string},id:number):ProjectRecord{
   const technician=input.technician.trim(),date=input.date.trim(),hours=Number(input.hours),hourlyRate=Number(input.hourlyRate);
   if(!technician)throw new Error('دخل اسم التقني.');
   if(!isValidIsoDate(date))throw new Error('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.');
   if(!Number.isFinite(hours)||hours<=0||hours>24)throw new Error('دخل عدد ساعات صحيحاً بين 0 و24.');
   if(!Number.isFinite(hourlyRate)||hourlyRate<0)throw new Error('دخل أجرة الساعة صحيحة أو صفر.');
   if(!Number.isSafeInteger(id)||id<0||project.timeEntries.some(entry=>entry.id===id))throw new Error('معرف سجل الوقت غير صالح أو مستعمل.');
-  return {...project,timeEntries:[...project.timeEntries,{id,technician,date,hours,hourlyRate,...(input.note?.trim()?{note:input.note.trim()}:{})}]};
+  return {...project,timeEntries:[...project.timeEntries,{id,technician,...(Number.isSafeInteger(input.technicianId)&&Number(input.technicianId)>0?{technicianId:input.technicianId}:{}),date,hours,hourlyRate,...(input.note?.trim()?{note:input.note.trim()}:{})}]};
 }
 
 export function removeProjectTimeEntry(project:ProjectRecord,entryId:number):ProjectRecord{
@@ -113,5 +113,5 @@ export function normalizeProjects(value:unknown):ProjectRecord[] {
     Number.isFinite(task.id)&&typeof task.title==='string'&&typeof task.done==='boolean'&&
     (!task.dueDate||(typeof task.dueDate==='string'&&isValidIsoDate(task.dueDate)))&&
     (!task.priority||['عادي','مهم','عاجل'].includes(task.priority))&&(!task.assignee||typeof task.assignee==='string')).map(task=>({...task,priority:task.priority??'عادي',assignee:task.assignee?.trim()||undefined})),timeEntries:Array.isArray(project.timeEntries)?project.timeEntries.filter((entry):entry is ProjectTimeEntry=>
-      Number.isSafeInteger(entry.id)&&entry.id>=0&&typeof entry.technician==='string'&&!!entry.technician.trim()&&typeof entry.date==='string'&&isValidIsoDate(entry.date)&&Number.isFinite(entry.hours)&&entry.hours>0&&entry.hours<=24&&Number.isFinite(entry.hourlyRate)&&entry.hourlyRate>=0&&(!entry.note||typeof entry.note==='string')).map(entry=>({...entry,technician:entry.technician.trim(),note:entry.note?.trim()||undefined})):[]}));
+      Number.isSafeInteger(entry.id)&&entry.id>=0&&typeof entry.technician==='string'&&!!entry.technician.trim()&&(entry.technicianId===undefined||Number.isSafeInteger(entry.technicianId)&&entry.technicianId>0)&&typeof entry.date==='string'&&isValidIsoDate(entry.date)&&Number.isFinite(entry.hours)&&entry.hours>0&&entry.hours<=24&&Number.isFinite(entry.hourlyRate)&&entry.hourlyRate>=0&&(!entry.note||typeof entry.note==='string')).map(entry=>({...entry,technician:entry.technician.trim(),note:entry.note?.trim()||undefined})):[]}));
 }
