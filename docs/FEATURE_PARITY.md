@@ -34,7 +34,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Bulk product import/export with name search, saved product catalog, PDF catalog export with or without product photos, and offline visual search that ranks each product by its closest saved photo
 
 ### Contacts
-- [x] Customer and supplier profiles with phone, address, ICE/RC/IF, opening balances, credit limits, and payment terms; separate WhatsApp field remains open
+- [x] Customer and supplier profiles with phone, separate WhatsApp number and chat shortcut, address, ICE/RC/IF, opening balances, credit limits, and payment terms
 - [x] Customer and supplier account statements as shareable PDFs, including invoices, payments, credit notes and current balances
 - [x] Customer and supplier opening balances are included in account debt, statements and partial settlement flows; credit ceilings are validated and enforced before credit purchases and sales
 - [x] Contact payment terms are copied to new invoices and purchases; dashboard shows overdue records and links to their settlement screens

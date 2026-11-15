@@ -681,6 +681,13 @@ const fr: Record<string, string> = {
   "المرجع": "Référence",
   "الباركود": "Code-barres",
   "ثمن البيع": "Prix de vente",
+  "رقم WhatsApp مع رمز الدولة (اختياري)": "Numéro WhatsApp avec indicatif pays (facultatif)",
+  "WhatsApp: ": "WhatsApp : ",
+  "فتح WhatsApp": "Ouvrir WhatsApp",
+  "رقم WhatsApp غير صالح": "Numéro WhatsApp invalide",
+  "دخل رقم WhatsApp صحيحاً مع رمز الدولة.": "Saisissez un numéro WhatsApp valide avec l’indicatif du pays.",
+  "تعذر فتح WhatsApp": "Impossible d’ouvrir WhatsApp",
+  "تأكد من وجود تطبيق أو متصفح يفتح روابط WhatsApp.": "Vérifiez qu’une application ou un navigateur peut ouvrir les liens WhatsApp.",
 };
 
 export function translate(language: AppLanguage, value: string): string {
