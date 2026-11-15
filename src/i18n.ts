@@ -692,6 +692,23 @@ const fr: Record<string, string> = {
   "المتوفر فقط": "En stock uniquement",
   "إظهار كل المخزون": "Afficher tout le stock",
   "ما كاين حتى منتج فهاد الفلتر.": "Aucun produit ne correspond à ces filtres.",
+  "بيع محفوظ": "Vente mise de côté",
+  "حفظ البيع مؤقتاً": "Mettre la vente de côté",
+  "تعذر حفظ البيع": "Impossible d’enregistrer la vente en attente",
+  "مبيعات محفوظة مؤقتاً": "Ventes mises de côté",
+  "منتج": "produit(s)",
+  "استرجاع البيع": "Reprendre la vente",
+  "حذف البيع المحفوظ": "Supprimer la vente mise de côté",
+  "السلة فيها منتجات": "Le panier contient des produits",
+  "حفظ السلة الحالية أو فرغها قبل فتح بيع محفوظ.": "Enregistrez ou videz le panier actuel avant de reprendre une vente mise de côté.",
+  "وصلتي للحد الأقصى": "Limite atteinte",
+  "حيد بعض المبيعات المحفوظة قبل ما تزيد أخرى.": "Supprimez des ventes mises de côté avant d’en ajouter une autre.",
+  "تم حفظ البيع مؤقتاً": "Vente mise de côté",
+  "حذف البيع المحفوظ؟": "Supprimer cette vente mise de côté ?",
+  "هاد البيع غادي يتحيد من المبيعات المحفوظة.": "Cette vente sera retirée de la liste des ventes mises de côté.",
+  "معرف البيع المحفوظ أو تاريخه غير صالح.": "L’identifiant ou la date de la vente mise de côté est invalide.",
+  "السلة فارغة. زيد منتج قبل حفظ البيع.": "Le panier est vide. Ajoutez un produit avant d’enregistrer la vente.",
+  "طريقة الأداء غير صالحة.": "Le mode de paiement est invalide.",
 };
 
 export function translate(language: AppLanguage, value: string): string {

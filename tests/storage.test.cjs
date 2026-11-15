@@ -58,3 +58,12 @@ test('failed restore keeps the write protection active', async () => {
   await assert.rejects(api.writeAppData({}));
   assert.equal(writes.length, 0);
 });
+
+test('backup and restore keep parked POS sales intact', async () => {
+  const {api,writes}=setup(null);
+  const parkedPosSales=[{id:'parked-1',title:'Sale',cart:{lines:[{productId:'1',quantity:2}]}}];
+  const backup=await api.createBackup({parkedPosSales});
+  const restored=await api.restoreBackup(backup);
+  assert.equal(JSON.stringify(restored.parkedPosSales),JSON.stringify(parkedPosSales));
+  assert.equal(JSON.stringify(JSON.parse(writes[0]).parkedPosSales),JSON.stringify(parkedPosSales));
+});

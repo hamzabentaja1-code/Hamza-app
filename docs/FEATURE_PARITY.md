@@ -72,7 +72,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
 - [x] Credit checkout creates an invoice receivable and records partial payments
 - [x] Camera barcode scanning in product entry and POS; POS category and in-stock filters
-- [ ] Returns, parked sales and physical receipt-printer integration
+- [x] Parked POS sales are stored in local data and backups and can be resumed or removed; returns and physical receipt-printer integration remain open
 
 ### Projects and field operations
 - [x] Local projects with budgets, expenses, tasks, priorities, due dates, and status; installation request workflow remains open
