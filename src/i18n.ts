@@ -541,6 +541,8 @@ const fr: Record<string, string> = {
   "المبلغ DH": "Montant (DH)",
   "تسجيل الأداء": "Enregistrer le paiement",
   "تقرير النشاط التجاري": "Rapport d’activité",
+  "بحث التقرير": "Recherche dans le rapport (client, fournisseur, produit, catégorie, technicien)",
+  "الكل": "Tout",
   "تقرير ديون الموردين": "Dettes fournisseurs",
   "إجمالي ديون الموردين:": "Total des dettes fournisseurs :",
   "ديون الموردين:": "Dettes fournisseurs :",

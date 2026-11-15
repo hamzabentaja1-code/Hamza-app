@@ -1,5 +1,17 @@
 export type DatedRecord = {date:string};
 
+function normalizeSearchText(value:string):string{
+  return value.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().trim();
+}
+
+/** Require every search word to appear somewhere in the supplied record fields. */
+export function matchesReportSearch(query:string,...values:unknown[]):boolean{
+  const terms=normalizeSearchText(query).split(/\s+/).filter(Boolean);
+  if(!terms.length)return true;
+  const haystack=normalizeSearchText(values.filter(value=>value!==undefined&&value!==null).map(String).join(' '));
+  return terms.every(term=>haystack.includes(term));
+}
+
 function iso(value:string):string|undefined{
   const trimmed=value.trim();
   if(/^\d{4}-\d{2}-\d{2}$/.test(trimmed)){

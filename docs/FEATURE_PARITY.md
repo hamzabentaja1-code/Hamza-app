@@ -92,7 +92,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Tasks, assignments, durations and attachments
 - [x] Project task creation, editing, completion, confirmed deletion, priorities (normal, important, urgent), validated optional due dates and optional assignee name, persisted with project data
 - [ ] Sales/purchase/stock/cash/receivables/payables reports with full filtering and export
-- [x] Activity summary with validated date range, filtered sales/purchases/expenses/returns/customer and supplier settlements, project labor hours and costs, per-technician work and payroll summaries, profit summary, PDF, period-scoped CSV details and Excel summary/detail/current debt/cash/bank/stock/project-time sheets (cash and bank flows remain separate from profit totals)
+- [x] Activity summary with validated date range and applied text search across customer, supplier, product, expense category, technician, cash, bank and stock records; filtered totals and PDF/CSV/XLSX exports include the applied search and period, with current debt snapshots kept clearly identified
 - [ ] Filters and date ranges across all report types; export and print
 
 ## Acceptance tests required before calling a module complete
