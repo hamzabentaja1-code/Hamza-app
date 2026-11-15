@@ -15,3 +15,8 @@ test('rejects empty or implausibly short and long WhatsApp numbers',()=>{
   assert.equal(buildWhatsAppChatUrl('12345'),null);
   assert.equal(buildWhatsAppChatUrl('1234567890123456'),null);
 });
+
+test('builds a prefilled WhatsApp message without changing chat-only links',()=>{
+  assert.equal(buildWhatsAppChatUrl('0612345678','Bonjour, facture FA-1 • 250 DH'),'https://wa.me/212612345678?text=Bonjour%2C%20facture%20FA-1%20%E2%80%A2%20250%20DH');
+  assert.equal(buildWhatsAppChatUrl('0612345678','   '),'https://wa.me/212612345678');
+});
