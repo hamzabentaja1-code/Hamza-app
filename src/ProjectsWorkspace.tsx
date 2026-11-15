@@ -11,6 +11,7 @@ type Props={
   expenses:{id:number;projectId?:number;amount:number}[];
   technicians:Technician[];
   onAddTechnician:(input:{name:string;phone?:string;specialty?:string;hourlyRate:number})=>boolean;
+  onUpdateTechnician:(id:number,input:{name:string;phone?:string;specialty?:string;hourlyRate:number})=>boolean;
   onDeleteTechnician:(id:number)=>void;
   onCreate:(input:{name:string;customerName:string;budget:number;targetDate:string})=>void;
   onUpdate:(projectId:number,input:{name:string;customerName:string;budget:number;targetDate:string})=>boolean;
@@ -31,7 +32,7 @@ const input={backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRa
 const button={backgroundColor:gold,borderRadius:9,padding:11,alignItems:'center' as const,marginTop:5};
 const statuses:ProjectStatus[]=['مخطط','جارٍ','مكتمل','متوقف'];
 
-export default function ProjectsWorkspace({language,projects,expenses,technicians,onAddTechnician,onDeleteTechnician,onCreate,onUpdate,onDelete,onStatusChange,onAddTask,onUpdateTask,onToggleTask,onDeleteTask,onAddExpense,onAddTime,onDeleteTime}:Props){
+export default function ProjectsWorkspace({language,projects,expenses,technicians,onAddTechnician,onUpdateTechnician,onDeleteTechnician,onCreate,onUpdate,onDelete,onStatusChange,onAddTask,onUpdateTask,onToggleTask,onDeleteTask,onAddExpense,onAddTime,onDeleteTime}:Props){
   const tr=(value:string)=>translate(language,value);
   const [name,setName]=useState('');
   const [customerName,setCustomerName]=useState('');
@@ -41,6 +42,7 @@ export default function ProjectsWorkspace({language,projects,expenses,technician
   const [techPhone,setTechPhone]=useState('');
   const [techSpecialty,setTechSpecialty]=useState('');
   const [techRate,setTechRate]=useState('');
+  const [editingTechnicianId,setEditingTechnicianId]=useState<number|null>(null);
   const [taskDrafts,setTaskDrafts]=useState<Record<number,string>>({});
   const [taskDates,setTaskDates]=useState<Record<number,string>>({});
   const [taskPriorities,setTaskPriorities]=useState<Record<number,ProjectTaskPriority>>({});
@@ -73,9 +75,10 @@ export default function ProjectsWorkspace({language,projects,expenses,technician
       <TextInput value={techPhone} onChangeText={setTechPhone} keyboardType="phone-pad" placeholder={tr('الهاتف (اختياري)')} placeholderTextColor="#888" style={input}/>
       <TextInput value={techSpecialty} onChangeText={setTechSpecialty} placeholder={tr('التخصص (اختياري)')} placeholderTextColor="#888" style={input}/>
       <TextInput value={techRate} onChangeText={setTechRate} keyboardType="decimal-pad" placeholder={tr('أجرة الساعة DH')} placeholderTextColor="#888" style={input}/>
-      <Pressable onPress={()=>{const rate=Number(techRate.replace(',','.'));if(!techName.trim()||!techRate.trim()||!Number.isFinite(rate)||rate<0){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم التقني وأجرة صحيحة.'));return;}if(onAddTechnician({name:techName,phone:techPhone,specialty:techSpecialty,hourlyRate:rate})){setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('');}}} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('حفظ التقني')}</Text></Pressable>
+      <Pressable onPress={()=>{const rate=Number(techRate.replace(',','.'));if(!techName.trim()||!techRate.trim()||!Number.isFinite(rate)||rate<0){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم التقني وأجرة صحيحة.'));return;}const input={name:techName,phone:techPhone,specialty:techSpecialty,hourlyRate:rate};const saved=editingTechnicianId===null?onAddTechnician(input):onUpdateTechnician(editingTechnicianId,input);if(saved){setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('');setEditingTechnicianId(null);}}} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr(editingTechnicianId===null?'حفظ التقني':'حفظ تعديل التقني')}</Text></Pressable>
+      {editingTechnicianId!==null&&<Pressable onPress={()=>{setEditingTechnicianId(null);setTechName('');setTechPhone('');setTechSpecialty('');setTechRate('');}} style={{borderColor:'#555',borderWidth:1,borderRadius:9,padding:10,alignItems:'center',marginTop:6}}><Text style={{color:'#EEE'}}>{tr('إلغاء')}</Text></Pressable>}
       <Text style={{color:'#DDD',fontWeight:'700',marginTop:12,marginBottom:5}}>{tr('التقنيون')} ({technicians.length})</Text>
-      {technicians.map(technician=><View key={technician.id} style={{flexDirection:'row',alignItems:'center',paddingVertical:7,borderBottomWidth:1,borderBottomColor:'#333'}}><View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{technician.name}{technician.specialty?` · ${technician.specialty}`:''}</Text><Text style={{color:'#AAA'}}>{technician.hourlyRate.toFixed(2)} DH{technician.phone?` · ${technician.phone}`:''}</Text></View><Pressable onPress={()=>onDeleteTechnician(technician.id)}><Text style={{color:'#E58B83'}}>{tr('حذف')}</Text></Pressable></View>)}
+      {technicians.map(technician=><View key={technician.id} style={{flexDirection:'row',alignItems:'center',paddingVertical:7,borderBottomWidth:1,borderBottomColor:'#333'}}><View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{technician.name}{technician.specialty?` · ${technician.specialty}`:''}</Text><Text style={{color:'#AAA'}}>{technician.hourlyRate.toFixed(2)} DH{technician.phone?` · ${technician.phone}`:''}</Text></View><Pressable onPress={()=>{setEditingTechnicianId(technician.id);setTechName(technician.name);setTechPhone(technician.phone||'');setTechSpecialty(technician.specialty||'');setTechRate(String(technician.hourlyRate));}} style={{paddingHorizontal:7}}><Text style={{color:gold}}>{tr('تعديل')}</Text></Pressable><Pressable onPress={()=>onDeleteTechnician(technician.id)}><Text style={{color:'#E58B83'}}>{tr('حذف')}</Text></Pressable></View>)}
       {technicians.length===0&&<Text style={{color:'#888'}}>{tr('مازال ما كاين حتى تقني.')}</Text>}
     </View>
     <Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>{tr('المشاريع')} ({projects.length})</Text>
