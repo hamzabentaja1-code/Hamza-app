@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {createPurchaseDocument,normalizePurchaseDocuments,changePurchaseStatus,convertPurchaseDocument,purchaseTotals}=require('../.test-build/purchases.js');
+const {createPurchaseDocument,normalizePurchaseDocuments,changePurchaseStatus,convertPurchaseDocument,prepareSupplierReturn,purchaseTotals}=require('../.test-build/purchases.js');
 const line={productId:'p1',description:'Camera',quantity:2,unitCost:100,discount:10};
 const create=(kind,id='doc-1',extra={})=>createPurchaseDocument({id,number:`PO-${id}`,kind,supplierId:'s1',lines:[line],createdAt:'2026-11-15T10:00:00.000Z',...extra});
 
@@ -34,4 +34,14 @@ test('normalizes legacy-safe purchase documents and drops malformed or duplicate
 test('confirmed supplier credit notes cannot be cancelled after they affect the account',()=>{
   const credit=changePurchaseStatus(create('supplier_credit'),'confirmed');
   assert.throws(()=>changePurchaseStatus(credit,'cancelled'),/تلغي إشعار دائن/);
+});
+
+test('supplier physical returns remove available stock once and respect purchased quantity',()=>{
+  const credit=create('supplier_credit','credit-1',{sourceDocumentId:'9',physicalReturn:true,warehouseId:'w1',lines:[{...line,quantity:2,unitCost:100,discount:0}]});
+  const movements=[{id:'in-1',productId:'p1',warehouseId:'w1',kind:'purchase',quantity:4,unitCost:100,createdAt:'2026-11-15T10:00:00.000Z'}];
+  const movement=prepareSupplierReturn({document:credit,purchase:{id:9,productId:'p1',qty:4,unitCost:100},movements,previouslyReturnedQuantity:1,createdAt:'2026-11-15T12:00:00.000Z'});
+  assert.equal(movement.kind,'return_out');
+  assert.equal(movement.quantity,2);
+  assert.throws(()=>prepareSupplierReturn({document:credit,purchase:{id:9,productId:'p1',qty:4,unitCost:100},movements,previouslyReturnedQuantity:3,createdAt:'2026-11-15T12:00:00.000Z'}),/الكمية اللي تشرت/);
+  assert.throws(()=>prepareSupplierReturn({document:credit,purchase:{id:9,productId:'p1',qty:4,unitCost:100},movements:[{...movements[0],quantity:1}],previouslyReturnedQuantity:0,createdAt:'2026-11-15T12:00:00.000Z'}),/ما كافيش/);
 });
