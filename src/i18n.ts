@@ -238,6 +238,8 @@ const fr: Record<string, string> = {
   "مشروع": "Projet",
   "ساعات العمل": "Heures de travail",
   "المكلف": "Responsable",
+  "حذف المهمة": "Supprimer la tâche",
+  "واش متأكد تحذف هاد المهمة؟": "Confirmer la suppression de cette tâche ?",
   "اسم المكلف بالمهمة (اختياري)": "Responsable de la tâche (facultatif)",
   "ساعة": "heure(s)",
   "تكلفة الأجور": "Coût de la main-d’œuvre",

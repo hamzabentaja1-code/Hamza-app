@@ -67,6 +67,11 @@ export function setProjectTaskDone(project:ProjectRecord,taskId:number,done:bool
   return {...project,tasks:project.tasks.map(task=>task.id===taskId?{...task,done}:task)};
 }
 
+export function removeProjectTask(project:ProjectRecord,taskId:number):ProjectRecord{
+  if(!project.tasks.some(task=>task.id===taskId))throw new Error('المهمة غير موجودة.');
+  return {...project,tasks:project.tasks.filter(task=>task.id!==taskId)};
+}
+
 export function projectFinancials(project:ProjectRecord,expenses:ProjectExpense[]) {
   const expenseCost=expenses.filter(expense=>expense.projectId===project.id&&Number.isFinite(expense.amount)&&expense.amount>0)
     .reduce((sum,expense)=>sum+expense.amount,0);

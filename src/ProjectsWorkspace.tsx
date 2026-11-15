@@ -12,6 +12,7 @@ type Props={
   onStatusChange:(projectId:number,status:ProjectStatus)=>void;
   onAddTask:(projectId:number,task:{title:string;dueDate?:string;priority:ProjectTaskPriority;assignee?:string})=>void;
   onToggleTask:(projectId:number,taskId:number,done:boolean)=>void;
+  onDeleteTask:(projectId:number,taskId:number)=>void;
   onAddExpense:(projectId:number,title:string,amount:number)=>void;
   onAddTime:(projectId:number,input:{technician:string;date:string;hours:number;hourlyRate:number;note?:string})=>boolean;
   onDeleteTime:(projectId:number,entryId:number)=>void;
@@ -23,7 +24,7 @@ const input={backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRa
 const button={backgroundColor:gold,borderRadius:9,padding:11,alignItems:'center' as const,marginTop:5};
 const statuses:ProjectStatus[]=['مخطط','جارٍ','مكتمل','متوقف'];
 
-export default function ProjectsWorkspace({language,projects,expenses,onCreate,onStatusChange,onAddTask,onToggleTask,onAddExpense,onAddTime,onDeleteTime}:Props){
+export default function ProjectsWorkspace({language,projects,expenses,onCreate,onStatusChange,onAddTask,onToggleTask,onDeleteTask,onAddExpense,onAddTime,onDeleteTime}:Props){
   const tr=(value:string)=>translate(language,value);
   const [name,setName]=useState('');
   const [customerName,setCustomerName]=useState('');
@@ -73,7 +74,7 @@ export default function ProjectsWorkspace({language,projects,expenses,onCreate,o
         <Text style={{color:gold,fontWeight:'800',marginTop:12,marginBottom:6}}>{tr('حالة المشروع')}</Text>
         <View style={{flexDirection:'row',flexWrap:'wrap',gap:6}}>{statuses.map(status=><Pressable key={status} onPress={()=>onStatusChange(project.id,status)} style={{borderColor:project.status===status?gold:'#444',borderWidth:1,borderRadius:8,padding:7}}><Text style={{color:project.status===status?gold:'#DDD'}}>{tr(status)}</Text></Pressable>)}</View>
         <Text style={{color:gold,fontWeight:'800',marginTop:12}}>{tr('المهام')} ({project.tasks.filter(task=>task.done).length}/{project.tasks.length})</Text>
-        {project.tasks.map(task=><Pressable key={task.id} onPress={()=>onToggleTask(project.id,task.id,!task.done)} style={{paddingVertical:6}}><Text style={{color:task.done?'#777':'#EEE'}}>{task.done?'☑':'☐'} {task.title}{task.assignee?` · ${tr('المكلف')}: ${task.assignee}`:''}{task.priority?` · ${tr(task.priority)}`:''}{task.dueDate?` · ${tr('الأجل')}: ${task.dueDate}`:''}</Text></Pressable>)}
+        {project.tasks.map(task=><View key={task.id} style={{flexDirection:'row',alignItems:'center',paddingVertical:6}}><Pressable onPress={()=>onToggleTask(project.id,task.id,!task.done)} style={{flex:1}}><Text style={{color:task.done?'#777':'#EEE'}}>{task.done?'☑':'☐'} {task.title}{task.assignee?` · ${tr('المكلف')}: ${task.assignee}`:''}{task.priority?` · ${tr(task.priority)}`:''}{task.dueDate?` · ${tr('الأجل')}: ${task.dueDate}`:''}</Text></Pressable><Pressable onPress={()=>onDeleteTask(project.id,task.id)} style={{paddingHorizontal:8}}><Text style={{color:'#E58B83'}}>{tr('حذف')}</Text></Pressable></View>)}
         <TextInput value={taskDate} onChangeText={value=>setTaskDates(current=>({...current,[project.id]:value}))} placeholder={tr('آخر أجل (اختياري) YYYY-MM-DD')} placeholderTextColor="#888" style={[input,{marginTop:7}]}/>
         <Text style={{color:'#AAA',marginBottom:6}}>{tr('أولوية المهمة')}</Text><View style={{flexDirection:'row',gap:6,marginBottom:7}}>{(['عادي','مهم','عاجل'] as ProjectTaskPriority[]).map(priority=><Pressable key={priority} onPress={()=>setTaskPriorities(current=>({...current,[project.id]:priority}))} style={{borderColor:taskPriority===priority?gold:'#444',borderWidth:1,borderRadius:8,padding:7}}><Text style={{color:taskPriority===priority?gold:'#DDD'}}>{tr(priority)}</Text></Pressable>)}</View>
         <TextInput value={taskAssignee} onChangeText={value=>setTaskAssignees(current=>({...current,[project.id]:value}))} placeholder={tr('اسم المكلف بالمهمة (اختياري)')} placeholderTextColor="#888" style={[input,{marginTop:7}]}/>

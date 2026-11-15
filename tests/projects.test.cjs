@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {createProject,addProjectTask,addProjectTimeEntry,removeProjectTimeEntry,setProjectTaskDone,projectFinancials,normalizeProjects} = require('../.test-build/projects.js');
+const {createProject,addProjectTask,addProjectTimeEntry,removeProjectTask,removeProjectTimeEntry,setProjectTaskDone,projectFinancials,normalizeProjects} = require('../.test-build/projects.js');
 
 test('creates a project with normalized names and optional target date',()=>{
   const project=createProject({name:'  Kitchen wiring  ',customerName:' Client ',budget:12000,targetDate:'2026-12-15'},10);
@@ -24,6 +24,8 @@ test('adds tasks and toggles completion without changing other tasks',()=>{
   assert.equal(completed.tasks[0].done,true);
   assert.equal(project.tasks.length,0);
   assert.throws(()=>setProjectTaskDone(completed,99,true));
+  assert.equal(removeProjectTask(completed,2).tasks.length,0);
+  assert.throws(()=>removeProjectTask(completed,99));
 });
 
 test('project expenses and labor cost are linked to budget totals and can exceed budget',()=>{

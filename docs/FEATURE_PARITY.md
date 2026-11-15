@@ -84,7 +84,7 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Agenda and reports
 - [ ] Tasks, assignments, durations and attachments
-- [x] Project task priorities (normal, important, urgent), validated optional due dates, and optional assignee name, persisted with project data
+- [x] Project task creation, completion, confirmed deletion, priorities (normal, important, urgent), validated optional due dates and optional assignee name, persisted with project data
 - [ ] Sales/purchase/stock/cash/receivables/payables reports with full filtering and export
 - [x] Activity summary with validated date range, filtered sales/purchases/expenses/returns/customer and supplier settlements, profit summary, PDF, period-scoped CSV details and Excel summary/detail/current debt/cash/bank/stock sheets (cash and bank flows remain separate from profit totals)
 - [ ] Filters and date ranges across all report types; export and print
