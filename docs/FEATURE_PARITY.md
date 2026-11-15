@@ -80,7 +80,8 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Projects and field operations
 - [x] Local projects with editable details, protected deletion when records are linked, budgets, expenses, tasks, priorities, due dates, status, and technician time logs with hourly cost and labor totals in budget tracking; installation request workflow remains open
-- [ ] Technician directory, specialties, equipment and equipment categories (project tasks accept a free-text assignee; work logs store the technician name)
+- [x] Local technician directory with name, optional phone and specialty, hourly rate, duplicate/name/rate validation; project task assignment and time logging can select a saved technician, and selected time logs copy the saved hourly rate
+- [ ] Technician equipment and equipment categories
 - [ ] Time entries currently record technician name, date, hours, hourly rate, note, deletion and project labor cost; payroll settlement and technician directory/history reports remain open
 
 ### Agenda and reports
