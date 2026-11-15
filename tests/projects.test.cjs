@@ -45,11 +45,12 @@ test('project work logs validate, calculate wages, and can be removed',()=>{
   assert.throws(()=>addProjectTimeEntry(logged,{technician:'Tech',date:'2026-11-15',hours:1,hourlyRate:80},4));
 });
 
-test('stores task deadline and urgency and rejects invalid metadata',()=>{
+test('stores task deadline, urgency and assignee and rejects invalid metadata',()=>{
   const project=createProject({name:'Project',budget:100},1);
-  const taskProject=addProjectTask(project,'Site inspection',2,{dueDate:'2026-12-05',priority:'عاجل'});
+  const taskProject=addProjectTask(project,'Site inspection',2,{dueDate:'2026-12-05',priority:'عاجل',assignee:' Tech A '});
   assert.equal(taskProject.tasks[0].dueDate,'2026-12-05');
   assert.equal(taskProject.tasks[0].priority,'عاجل');
+  assert.equal(taskProject.tasks[0].assignee,'Tech A');
   assert.equal(addProjectTask(project,'Basic',3).tasks[0].priority,'عادي');
   assert.throws(()=>addProjectTask(project,'Bad date',4,{dueDate:'2026-02-30'}));
   assert.throws(()=>addProjectTask(project,'Bad priority',5,{priority:'مستعجل'}));

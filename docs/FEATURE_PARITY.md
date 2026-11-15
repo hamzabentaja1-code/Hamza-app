@@ -79,12 +79,12 @@ This project is an independent implementation of the workflows observed in YanCo
 
 ### Projects and field operations
 - [x] Local projects with budgets, expenses, tasks, priorities, due dates, status, and technician time logs with hourly cost and labor totals in budget tracking; installation request workflow remains open
-- [ ] Technicians, specialties, equipment and equipment categories
+- [ ] Technician directory, specialties, equipment and equipment categories (project tasks accept a free-text assignee; work logs store the technician name)
 - [ ] Time entries currently record technician name, date, hours, hourly rate, note, deletion and project labor cost; payroll settlement and technician directory/history reports remain open
 
 ### Agenda and reports
 - [ ] Tasks, assignments, durations and attachments
-- [x] Project task priorities (normal, important, urgent) and validated optional due dates, persisted with project data
+- [x] Project task priorities (normal, important, urgent), validated optional due dates, and optional assignee name, persisted with project data
 - [ ] Sales/purchase/stock/cash/receivables/payables reports with full filtering and export
 - [x] Activity summary with validated date range, filtered sales/purchases/expenses/returns/customer and supplier settlements, profit summary, PDF, period-scoped CSV details and Excel summary/detail/current debt/cash/bank/stock sheets (cash and bank flows remain separate from profit totals)
 - [ ] Filters and date ranges across all report types; export and print

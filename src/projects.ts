@@ -1,6 +1,6 @@
 export type ProjectStatus='مخطط'|'جارٍ'|'مكتمل'|'متوقف';
 export type ProjectTaskPriority='عادي'|'مهم'|'عاجل';
-export type ProjectTask={id:number;title:string;done:boolean;dueDate?:string;priority?:ProjectTaskPriority};
+export type ProjectTask={id:number;title:string;done:boolean;dueDate?:string;priority?:ProjectTaskPriority;assignee?:string};
 export type ProjectTimeEntry={id:number;technician:string;date:string;hours:number;hourlyRate:number;note?:string};
 export type ProjectRecord={
   id:number;
@@ -49,7 +49,7 @@ export function removeProjectTimeEntry(project:ProjectRecord,entryId:number):Pro
   return {...project,timeEntries:project.timeEntries.filter(entry=>entry.id!==entryId)};
 }
 
-export function addProjectTask(project:ProjectRecord,title:string,id:number,options:{dueDate?:string;priority?:ProjectTaskPriority}={}):ProjectRecord {
+export function addProjectTask(project:ProjectRecord,title:string,id:number,options:{dueDate?:string;priority?:ProjectTaskPriority;assignee?:string}={}):ProjectRecord {
   const trimmed=title.trim();
   if(!trimmed) throw new Error('دخل اسم المهمة.');
   const dueDate=options.dueDate?.trim();
@@ -58,7 +58,8 @@ export function addProjectTask(project:ProjectRecord,title:string,id:number,opti
   }
   const priority=options.priority??'عادي';
   if(!['عادي','مهم','عاجل'].includes(priority)) throw new Error('اختار أولوية صحيحة للمهمة.');
-  return {...project,tasks:[...project.tasks,{id,title:trimmed,done:false,...(dueDate?{dueDate}:{}),priority}]};
+  const assignee=options.assignee?.trim();
+  return {...project,tasks:[...project.tasks,{id,title:trimmed,done:false,...(dueDate?{dueDate}:{}),priority,...(assignee?{assignee}:{})}]};
 }
 
 export function setProjectTaskDone(project:ProjectRecord,taskId:number,done:boolean):ProjectRecord {
@@ -84,6 +85,6 @@ export function normalizeProjects(value:unknown):ProjectRecord[] {
   }).map(project=>({...project,tasks:project.tasks.filter(task=>
     Number.isFinite(task.id)&&typeof task.title==='string'&&typeof task.done==='boolean'&&
     (!task.dueDate||(typeof task.dueDate==='string'&&isValidIsoDate(task.dueDate)))&&
-    (!task.priority||['عادي','مهم','عاجل'].includes(task.priority))).map(task=>({...task,priority:task.priority??'عادي'})),timeEntries:Array.isArray(project.timeEntries)?project.timeEntries.filter((entry):entry is ProjectTimeEntry=>
+    (!task.priority||['عادي','مهم','عاجل'].includes(task.priority))&&(!task.assignee||typeof task.assignee==='string')).map(task=>({...task,priority:task.priority??'عادي',assignee:task.assignee?.trim()||undefined})),timeEntries:Array.isArray(project.timeEntries)?project.timeEntries.filter((entry):entry is ProjectTimeEntry=>
       Number.isSafeInteger(entry.id)&&entry.id>=0&&typeof entry.technician==='string'&&!!entry.technician.trim()&&typeof entry.date==='string'&&isValidIsoDate(entry.date)&&Number.isFinite(entry.hours)&&entry.hours>0&&entry.hours<=24&&Number.isFinite(entry.hourlyRate)&&entry.hourlyRate>=0&&(!entry.note||typeof entry.note==='string')).map(entry=>({...entry,technician:entry.technician.trim(),note:entry.note?.trim()||undefined})):[]}));
 }

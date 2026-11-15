@@ -237,6 +237,8 @@ const fr: Record<string, string> = {
   "تاريخ المرتجع مطلوب.": "La date du retour est obligatoire.",
   "مشروع": "Projet",
   "ساعات العمل": "Heures de travail",
+  "المكلف": "Responsable",
+  "اسم المكلف بالمهمة (اختياري)": "Responsable de la tâche (facultatif)",
   "ساعة": "heure(s)",
   "تكلفة الأجور": "Coût de la main-d’œuvre",
   "اسم التقني": "Nom du technicien",
