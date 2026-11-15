@@ -58,7 +58,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Direct supplier purchase entry updates stock and records initial or partial payment; request-to-order-to-receipt and purchase-linked supplier invoice capture are available
 - [x] Supplier payment records, partial settlements, and purchase-linked credit notes; physical supplier returns reduce both stock and supplier debt, without changing cash or bank balances
 - [x] Purchase document PDF, XLSX, and WhatsApp sharing actions for the document register
-- [x] Purchase history and supplier debt reporting; supplier comparison and broader purchase reports remain open
+- [x] Purchase history and supplier debt reporting; period-filtered supplier comparison separates purchase totals, quantities, initial payments, settlements and credit notes in UI, PDF and Excel (broader purchase filters remain open)
 - [x] Link/convert purchase requests to orders and receipts, then update stock and supplier debt on receipt
 
 ### Cash, payments and banking
@@ -92,6 +92,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Project task creation, editing, completion, confirmed deletion, priorities (normal, important, urgent), validated optional due dates, assignee and local file attachments; attachment metadata survives local storage and JSON backups include the file contents with per-file and total size limits
 - [ ] Sales/purchase/stock/cash/receivables/payables reports with full filtering and export
 - [x] Activity summary with validated date range and applied text search across customer, supplier, product, expense category, technician, cash, bank and stock records; filtered totals and PDF/CSV/XLSX exports include the applied search and period, with current debt snapshots kept clearly identified
+- [x] Supplier purchase performance comparison uses the selected purchase/payment period and exports supplier totals to PDF and Excel
 - [ ] Filters and date ranges across all report types; export and print
 
 ## Acceptance tests required before calling a module complete
