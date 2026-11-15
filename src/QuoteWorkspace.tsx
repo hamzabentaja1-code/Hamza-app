@@ -3,8 +3,9 @@ import {Alert, Pressable, ScrollView, Text, TextInput, View} from 'react-native'
 import {calculateQuote} from './domain/quote-calculator';
 import {isValidIsoDate} from './domain/document-conversion';
 import {translate, getLayoutDirection} from './i18n';
+import {resolveDocumentProductPrice} from './domain/product-pricing';
 
-type Product = {id:number; name:string; price:number; qty:number};
+type Product = {id:number; name:string; price:number; quotePrice?:number; invoicePrice?:number; qty:number};
 type Customer = {id:number; name:string};
 export type QuoteLine = {productId:number; productName:string; qty:number; unitPrice:number; total:number};
 export type QuoteRecord = {
@@ -78,7 +79,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,custo
     const qty=Number(quantity.replace(',','.'));
     if(!selectedProduct){Alert.alert(tr('اختار المنتج'),tr('حدد المنتج اللي بغيتي تزيد.'));return;}
     if(!Number.isFinite(qty)||qty<=0){Alert.alert(tr('كمية غير صحيحة'),tr('دخل كمية أكبر من صفر.'));return;}
-    const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):selectedProduct.price;
+    const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):resolveDocumentProductPrice(selectedProduct,initialMode);
     if(!Number.isFinite(unitPrice)||unitPrice<0){Alert.alert(tr('ثمن غير صحيح'),tr('دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.'));return;}
     const line:QuoteLine={productId:selectedProduct.id,productName:selectedProduct.name,qty,unitPrice,total:qty*unitPrice};
     setLines(current=>[...current,line]);
@@ -120,7 +121,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,custo
       {initialMode==='invoice'&&selectedCustomer&&availableCreditCentimes>0&&<Pressable onPress={()=>setApplyCustomerCredit(value=>!value)} style={[choice,{borderColor:gold}]}><Text style={{color:'#FFF'}}>{applyCustomerCredit?'☑':'□'} {tr('استعمال رصيد الزبون المتاح')}: {(availableCreditCentimes/100).toFixed(2)} DH</Text></Pressable>}
       <Text style={{color:'#CCC',marginVertical:8}}>{tr('المنتج')}</Text>
       <TextInput value={productSearch} onChangeText={setProductSearch} placeholder={tr('بحث عن المنتج بالاسم')} placeholderTextColor="#888" style={input}/>
-      {filteredProducts.map(p=><Pressable key={p.id} onPress={()=>{setProductId(String(p.id));setCustomPrice(p.price.toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text></Pressable>)}
+      {filteredProducts.map(p=>{const documentPrice=resolveDocumentProductPrice(p,initialMode);return <Pressable key={p.id} onPress={()=>{setProductId(String(p.id));setCustomPrice(documentPrice.toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {documentPrice.toFixed(2)} DH</Text></Pressable>;})}
       {products.length===0&&<Text style={{color:'#999',padding:8}}>{tr('زيد المنتجات أولاً.')}</Text>}
       {selectedProduct&&<TextInput value={customPrice} onChangeText={setCustomPrice} keyboardType="decimal-pad" placeholder={tr('ثمن البيع لهذا العرض (DH)')} placeholderTextColor="#888" style={input}/>}
       <View style={{flexDirection:'row',gap:8}}>

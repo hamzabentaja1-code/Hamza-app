@@ -29,7 +29,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Categories, brands, units, variants
 - [x] Basic product purchase cost, sale price, unit margin and estimated stock margin
 - [x] Auditable stock ledger for opening balances, purchases, direct sales, POS sales, delivery notes and quantity corrections; physical stock counts post only the differences and prevent replay (single main warehouse UI)
-- [ ] Separate price rules for quotes/orders vs invoices
+- [x] Optional quote and invoice prices per product are used automatically in the corresponding document flow; ordinary catalog price remains the POS/default price
 - [x] MAD amounts use TTC-only pricing with no VAT calculation, as requested; configurable tax rules are not implemented
 - [x] Invoice stock deductions are validated and recorded once; converting a quote already issued on a delivery note does not deduct it twice
 - [x] Multiple warehouse records, active warehouse selection, paired stock transfers, per-warehouse stock counts, warehouse-filtered movement ledger and persistent audit trail (normal purchase/sale/POS/delivery operations use the selected warehouse; warehouse deactivation and location/site hierarchies remain pending)
