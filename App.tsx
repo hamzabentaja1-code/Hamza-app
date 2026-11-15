@@ -377,6 +377,18 @@ export default function App() {
   const exportSalesXlsx=()=>exportXlsxFile('HamZa-sales',[{name:'Ventes',headers:['Date','Produit','Client','Quantité','Prix unitaire DH','Total DH'],rows:sales.map(item=>[item.date,item.productName,item.customerName,item.qty,item.unitPrice,item.total])}]);
   const exportBusinessLedgerXlsx=()=>exportXlsxFile('HamZa-business-ledger',[{name:'Registre',headers:BUSINESS_LEDGER_HEADERS,rows:buildBusinessLedgerRows({products:productsForExport,sales,returns:salesReturns,purchases,expenses,payments,supplierPayments,bankTransfers,receivables:customerBalances})}]);
   const exportCashRegisterXlsx=()=>exportXlsxFile('HamZa-cash-register',[{name:'Caisse',headers:['Date','Direction','Description','Amount DH','Source'],rows:cashRegisterRows.map(row=>[row.date,row.direction==='in'?'In':'Out',row.description,row.amountCentimes/100,row.source])}]);
+  const reportDetailHeaders:CsvCell[]=['Date','Type','Contact','Description','Quantité','Montant DH'];
+  const reportDetailRows:CsvCell[][]=[
+    ...reportSales.map(item=>[item.date,'Vente',item.customerName,item.productName,item.qty,item.total]),
+    ...reportReturns.map(item=>[item.date,'Avoir',item.customerName,item.productName,item.qty,-item.total]),
+    ...reportPurchases.map(item=>[item.date,'Achat',item.supplierName,item.productName,item.qty,item.total]),
+    ...reportExpenses.map(item=>[item.date,'Dépense','',item.title,'',item.amount]),
+  ];
+  const exportActivityReportCsv=()=>exportCsvFile('HamZa-activity-report',reportDetailHeaders,reportDetailRows);
+  const exportActivityReportXlsx=()=>exportXlsxFile('HamZa-activity-report',[
+    {name:'Résumé',headers:['Indicateur','Montant DH'],rows:[['Période',appliedReportRange?`${appliedReportRange.from||'—'} → ${appliedReportRange.to||'—'}`:'Toutes les périodes'],['Ventes nettes',reportSalesTotal],['Achats',reportPurchaseTotal],['Dépenses',reportExpenseTotal],['Solde actuel de caisse',cashBalanceCentimes/100],['Coût des ventes calculable',reportProfitLoss.costOfGoodsSold],['Marge brute calculable',reportProfitLoss.grossProfitOnCostedSales],['Résultat calculable',reportProfitLoss.netProfitOnCostedSales]]},
+    {name:'Détails',headers:reportDetailHeaders,rows:reportDetailRows},
+  ]);
   const addCustomer=()=>{
     if(!customer.trim()){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم الزبون.'));return;}
     let terms;let openingBalanceCentimes:number|undefined;
@@ -770,6 +782,8 @@ export default function App() {
           <Text style={s.panelText}>{tr('النتيجة بعد المصاريف على البيانات المحتسبة:')} {reportProfitLoss.netProfitOnCostedSales.toFixed(2)} DH</Text>
           {reportProfitLoss.uncostedRevenue>0&&<Text style={s.note}>{tr('قيمة المبيعات بلا تكلفة محفوظة:')} {reportProfitLoss.uncostedRevenue.toFixed(2)} DH</Text>}
           <Pressable style={s.action} onPress={()=>exportPdf('Rapport d’activité','',[appliedReportRange?tr('الفترة المحددة')+': '+(appliedReportRange.from||'—')+' → '+(appliedReportRange.to||'—'):tr('كل الفترات'),'Ventes nettes: '+reportSalesTotal.toFixed(2)+' DH','Achats (stock): '+reportPurchaseTotal.toFixed(2)+' DH','Dépenses: '+reportExpenseTotal.toFixed(2)+' DH','Solde de caisse: '+(cashBalanceCentimes/100).toFixed(2)+' DH','Coût de revient enregistré: '+reportProfitLoss.costOfGoodsSold.toFixed(2)+' DH','Marge brute calculable: '+reportProfitLoss.grossProfitOnCostedSales.toFixed(2)+' DH','Résultat après dépenses (données comptabilisées): '+reportProfitLoss.netProfitOnCostedSales.toFixed(2)+' DH','Ventes sans coût enregistré: '+reportProfitLoss.uncostedRevenue.toFixed(2)+' DH'],reportProfitLoss.netProfitOnCostedSales)}><Text style={s.actionText}>{tr('تصدير تقرير النشاط PDF')}</Text></Pressable>
+          <Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportActivityReportCsv}><Text style={s.gold}>{tr('تصدير تفاصيل الفترة CSV')}</Text></Pressable>
+          <Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportActivityReportXlsx}><Text style={s.gold}>{tr('تصدير تقرير الفترة Excel')}</Text></Pressable>
           <Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportBusinessLedger}><Text style={s.gold}>{tr('تصدير السجل الكامل CSV')}</Text></Pressable><Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportBusinessLedgerXlsx}><Text style={s.gold}>{tr('تصدير السجل الكامل Excel')}</Text></Pressable>
         </View>
         <View style={[s.panel,{marginTop:12}]}>
