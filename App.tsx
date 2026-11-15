@@ -24,6 +24,7 @@ import {canExtendCredit, normalizeCreditTerms, normalizeOpeningBalanceCentimes} 
 import {StockMovement, Warehouse, DEFAULT_WAREHOUSE, normalizeWarehouses, validateWarehouse, warehouseStock, inventoryValue, averageInventoryUnitCost, averageInventoryCostAcrossWarehouses, validateStockDemand, createStockCount, applyStockCount, transferStock} from './src/inventory';
 import {translate, getLayoutDirection} from './src/i18n';
 import {CompanyProfile, EMPTY_COMPANY_PROFILE, normalizeCompanyProfile} from './src/company-profile';
+import {buildPdfDocumentHtml} from './src/pdf-document';
 import {buildCsv, CsvCell} from './src/domain/csv-export';
 import {buildXlsx} from './src/domain/xlsx-export';
 import type {XlsxSheet} from './src/domain/xlsx-export';
@@ -42,7 +43,6 @@ let speechRecognition: any;
 try{speechRecognition=require('expo-speech-recognition').ExpoSpeechRecognitionModule;}catch{speechRecognition=undefined;}
 
 const GOLD = '#D6AE55';
-const htmlSafe=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
 const tryCalculateDueDate=(issueDate:string,paymentDelayDays?:number)=>{try{return calculateDueDate(issueDate,paymentDelayDays);}catch{return null;}};
 const STORE_KEY = 'hamza_app_data_v03';
 const modules = [
@@ -516,13 +516,8 @@ export default function App() {
   const importBackup=()=>{Alert.alert(tr('استرجاع البيانات'),tr('هاد العملية غادي تعوض البيانات الحالية بالنسخة اللي لصقتي. واش متأكد؟'),[{text:tr('إلغاء'),style:'cancel'},{text:'استرجاع',style:'destructive',onPress:async()=>{try{setBackupBusy(true);const d=await restoreBackup(backupText);setLanguage(d.language==='FR'?'FR':'AR');setCompanyProfile(normalizeCompanyProfile(d.companyProfile));setWarehouses(normalizeWarehouses(d.warehouses));setActiveWarehouseId(typeof d.activeWarehouseId==='string'&&normalizeWarehouses(d.warehouses).some(w=>w.id===d.activeWarehouseId)?d.activeWarehouseId:'main');setProducts(Array.isArray(d.products)?d.products as Product[]:[]);setStockMovements(Array.isArray(d.stockMovements)?d.stockMovements as StockMovement[]:(Array.isArray(d.products)?(d.products as Product[]).filter(p=>p.qty>0).map(p=>({id:'opening-backup-'+p.id,productId:String(p.id),warehouseId:'main',kind:'opening' as const,quantity:p.qty,unitCost:p.costPrice||0,createdAt:new Date().toISOString(),note:'رصيد افتتاحي مرحّل من النسخة الاحتياطية'})):[]));setCustomers(Array.isArray(d.customers)?d.customers as Customer[]:[]);setSales(Array.isArray(d.sales)?d.sales as Sale[]:[]);setPurchases(Array.isArray(d.purchases)?(d.purchases as Purchase[]).map(p=>({...p,paidAmount:normalizePurchasePaidAmount(p.total,p.paidAmount)})):[]);setExpenses(Array.isArray(d.expenses)?d.expenses as Expense[]:[]);setSuppliers(Array.isArray(d.suppliers)?d.suppliers as Supplier[]:[]);setQuotes(Array.isArray(d.quotes)?d.quotes as Quote[]:[]);setPayments(Array.isArray(d.payments)?d.payments as Payment[]:[]);setDocuments(Array.isArray(d.documents)?d.documents as CommercialDocument[]:[]);setProjects(normalizeProjects(d.projects));setSalesReturns(normalizeSalesReturns(d.salesReturns));setSupplierPayments(normalizeSupplierPayments(d.supplierPayments));setCashAccount(normalizeCashAccount(d.cashAccount));const normalizedBanks=normalizeBankAccounts(d.bankAccounts);setBankAccounts(normalizedBanks);setBankTransfers(normalizeBankTransfers(d.bankTransfers,normalizedBanks));setBankStatementLines(normalizeBankStatementLines(d.bankStatementLines,normalizedBanks));setConfirmedBankStatementLineIds(Array.isArray(d.confirmedBankStatementLineIds)?(d.confirmedBankStatementLineIds as unknown[]).filter((id):id is string=>typeof id==='string'):[]);setBankReconciliationHistory(normalizeBankReconciliationHistory(d.bankReconciliationHistory,normalizedBanks));setStorageReady(true);setBackupText('');Alert.alert(tr('تم الاسترجاع'),tr('ترجعات البيانات بنجاح.'));}catch(e){Alert.alert(tr('تعذر الاسترجاع'),e instanceof Error?e.message:'النسخة غير صالحة.');}finally{setBackupBusy(false);}}}]);};
   const exportPdf=async(title:string,customerName:string,lines:string[],total:number)=>{
     try{
-      const rtl=language==='AR';
-      const labels=rtl
-        ? {client:'الزبون',date:'التاريخ',total:'المجموع',thanks:'شكراً على ثقتكم'}
-        : {client:'Client',date:'Date',total:'Total',thanks:'Thank you for your trust'};
-      const direction=rtl?'rtl':'ltr';
-      const companyLogoHtml=companyProfile.logoData?'<img src="'+htmlSafe(companyProfile.logoData)+'" style="max-width:110px;max-height:80px;object-fit:contain"/>':'';
-      const html=`<html lang="${rtl?'ar':'fr'}" dir="${direction}"><meta charset="utf-8"><body style="font-family:Arial,sans-serif;padding:28px;color:#222;direction:${direction};text-align:${rtl?'right':'left'}">${companyLogoHtml}<h1 style="color:#9A762D">${htmlSafe(companyProfile.name.trim()||'HamZa')}</h1><p>${htmlSafe(companyProfile.address)} ${htmlSafe(companyProfile.phone)} ${htmlSafe(companyProfile.email)}</p><p>${htmlSafe(companyProfile.ice?`ICE: ${companyProfile.ice}`:'')} ${htmlSafe(companyProfile.rc?`RC: ${companyProfile.rc}`:'')} ${htmlSafe(companyProfile.taxId?`IF: ${companyProfile.taxId}`:'')}</p><h2>${htmlSafe(title)}</h2><p>${labels.client}: ${htmlSafe(customerName||'—')}</p><p>${labels.date}: ${new Date().toLocaleDateString(rtl?'ar-MA':'fr-MA')}</p><hr/>${lines.map(x=>`<p>${htmlSafe(x)}</p>`).join('')}<hr/><h2>${labels.total}: ${total.toFixed(2)} DH</h2><p>${labels.thanks}</p></body></html>`;
+      const date=new Date().toLocaleDateString(language==='AR'?'ar-MA':'fr-MA');
+      const html=buildPdfDocumentHtml({language,companyProfile,title,customerName,date,lines,total});
       const file=await Print.printToFileAsync({html});
       if(await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri,{mimeType:'application/pdf',dialogTitle:title});
       else Alert.alert(tr('PDF جاهز'),file.uri);
