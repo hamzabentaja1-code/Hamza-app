@@ -1,7 +1,7 @@
 import React,{useState} from 'react';
 import {Alert,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
 import {translate} from './i18n';
-import {ProjectRecord,ProjectStatus,ProjectTaskPriority,projectFinancials} from './projects';
+import {ProjectRecord,ProjectStatus,ProjectTaskPriority,ProjectTimeEntry,projectFinancials} from './projects';
 import {isValidIsoDate} from './domain/document-conversion';
 
 type Props={
@@ -13,6 +13,8 @@ type Props={
   onAddTask:(projectId:number,task:{title:string;dueDate?:string;priority:ProjectTaskPriority})=>void;
   onToggleTask:(projectId:number,taskId:number,done:boolean)=>void;
   onAddExpense:(projectId:number,title:string,amount:number)=>void;
+  onAddTime:(projectId:number,input:{technician:string;date:string;hours:number;hourlyRate:number;note?:string})=>boolean;
+  onDeleteTime:(projectId:number,entryId:number)=>void;
 };
 
 const gold='#D6AE55';
@@ -21,7 +23,7 @@ const input={backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRa
 const button={backgroundColor:gold,borderRadius:9,padding:11,alignItems:'center' as const,marginTop:5};
 const statuses:ProjectStatus[]=['مخطط','جارٍ','مكتمل','متوقف'];
 
-export default function ProjectsWorkspace({language,projects,expenses,onCreate,onStatusChange,onAddTask,onToggleTask,onAddExpense}:Props){
+export default function ProjectsWorkspace({language,projects,expenses,onCreate,onStatusChange,onAddTask,onToggleTask,onAddExpense,onAddTime,onDeleteTime}:Props){
   const tr=(value:string)=>translate(language,value);
   const [name,setName]=useState('');
   const [customerName,setCustomerName]=useState('');
@@ -31,6 +33,7 @@ export default function ProjectsWorkspace({language,projects,expenses,onCreate,o
   const [taskDates,setTaskDates]=useState<Record<number,string>>({});
   const [taskPriorities,setTaskPriorities]=useState<Record<number,ProjectTaskPriority>>({});
   const [expenseDrafts,setExpenseDrafts]=useState<Record<number,{title:string;amount:string}>>({});
+  const [timeDrafts,setTimeDrafts]=useState<Record<number,{technician:string;date:string;hours:string;rate:string;note:string}>>({});
   const saveProject=()=>{
     const amount=Number(budget.replace(',','.'));
     if(!name.trim()||!budget.trim()||!Number.isFinite(amount)||amount<0){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم المشروع وميزانية صحيحة.'));return;}
@@ -54,6 +57,7 @@ export default function ProjectsWorkspace({language,projects,expenses,onCreate,o
       const taskDate=taskDates[project.id]||'';
       const taskPriority=taskPriorities[project.id]||'عادي';
       const expense=expenseDrafts[project.id]||{title:'',amount:''};
+      const time=timeDrafts[project.id]||{technician:'',date:new Date().toISOString().slice(0,10),hours:'',rate:'',note:''};
       return <View key={project.id} style={[panel,{marginBottom:10}]}>
         <Text style={{color:'#FFF',fontWeight:'800',fontSize:17}}>{project.name}</Text>
         {!!project.customerName&&<Text style={{color:'#AAA',marginTop:4}}>{tr('الزبون')}: {project.customerName}</Text>}
@@ -61,6 +65,7 @@ export default function ProjectsWorkspace({language,projects,expenses,onCreate,o
         <View style={{backgroundColor:'#111',borderRadius:9,padding:10,marginTop:9}}>
           <Text style={{color:'#DDD'}}>{tr('الميزانية')}: {project.budget.toFixed(2)} DH</Text>
           <Text style={{color:'#DDD',marginTop:4}}>{tr('المصاريف المسجلة')}: {totals.spent.toFixed(2)} DH</Text>
+          <Text style={{color:'#DDD',marginTop:4}}>{tr('تكلفة الأجور')}: {totals.laborCost.toFixed(2)} DH</Text>
           <Text style={{color:totals.overBudget?'#F08C78':gold,fontWeight:'800',marginTop:4}}>{tr(totals.overBudget?'تجاوز الميزانية':'المتبقي')}: {totals.remaining.toFixed(2)} DH</Text>
         </View>
         <Text style={{color:gold,fontWeight:'800',marginTop:12,marginBottom:6}}>{tr('حالة المشروع')}</Text>
@@ -74,6 +79,12 @@ export default function ProjectsWorkspace({language,projects,expenses,onCreate,o
         <TextInput value={expense.title} onChangeText={value=>setExpenseDrafts(current=>({...current,[project.id]:{...expense,title:value}}))} placeholder={tr('وصف المصروف')} placeholderTextColor="#888" style={input}/>
         <TextInput value={expense.amount} onChangeText={value=>setExpenseDrafts(current=>({...current,[project.id]:{...expense,amount:value}}))} keyboardType="decimal-pad" placeholder={tr('المبلغ DH')} placeholderTextColor="#888" style={input}/>
         <Pressable onPress={()=>{const amount=Number(expense.amount.replace(',','.'));if(!expense.title.trim()||!Number.isFinite(amount)||amount<=0){Alert.alert(tr('معلومات ناقصة'),tr('دخل وصف المصروف ومبلغ صحيح.'));return;}onAddExpense(project.id,expense.title,amount);setExpenseDrafts(current=>({...current,[project.id]:{title:'',amount:''}}));}} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تسجيل مصروف المشروع')}</Text></Pressable>
+        <Text style={{color:gold,fontWeight:'800',marginTop:14,marginBottom:6}}>{tr('ساعات العمل')}: {project.timeEntries.reduce((sum,entry)=>sum+entry.hours,0).toFixed(2)} {tr('ساعة')}</Text>
+        {project.timeEntries.map((entry:ProjectTimeEntry)=><View key={entry.id} style={{flexDirection:'row',alignItems:'center',paddingVertical:5,borderBottomWidth:1,borderBottomColor:'#333'}}><View style={{flex:1}}><Text style={{color:'#EEE'}}>{entry.technician} · {entry.date}</Text><Text style={{color:'#AAA'}}>{entry.hours} {tr('ساعة')} × {entry.hourlyRate.toFixed(2)} DH = {(entry.hours*entry.hourlyRate).toFixed(2)} DH{entry.note?` · ${entry.note}`:''}</Text></View><Pressable onPress={()=>onDeleteTime(project.id,entry.id)}><Text style={{color:'#E58B83'}}>{tr('حذف')}</Text></Pressable></View>)}
+        <TextInput value={time.technician} onChangeText={value=>setTimeDrafts(current=>({...current,[project.id]:{...time,technician:value}}))} placeholder={tr('اسم التقني')} placeholderTextColor="#888" style={[input,{marginTop:8}]}/>
+        <View style={{flexDirection:'row',gap:7}}><TextInput value={time.date} onChangeText={value=>setTimeDrafts(current=>({...current,[project.id]:{...time,date:value}}))} placeholder="YYYY-MM-DD" placeholderTextColor="#888" style={[input,{flex:1}]}/><TextInput value={time.hours} onChangeText={value=>setTimeDrafts(current=>({...current,[project.id]:{...time,hours:value}}))} keyboardType="decimal-pad" placeholder={tr('عدد الساعات')} placeholderTextColor="#888" style={[input,{flex:1}]}/></View>
+        <View style={{flexDirection:'row',gap:7}}><TextInput value={time.rate} onChangeText={value=>setTimeDrafts(current=>({...current,[project.id]:{...time,rate:value}}))} keyboardType="decimal-pad" placeholder={tr('أجرة الساعة DH')} placeholderTextColor="#888" style={[input,{flex:1}]}/><TextInput value={time.note} onChangeText={value=>setTimeDrafts(current=>({...current,[project.id]:{...time,note:value}}))} placeholder={tr('ملاحظة')} placeholderTextColor="#888" style={[input,{flex:1}]}/></View>
+        <Pressable onPress={()=>{const hours=Number(time.hours.replace(',','.')),rate=Number(time.rate.replace(',','.'));if(!time.technician.trim()||!Number.isFinite(hours)||!Number.isFinite(rate)){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم التقني والساعات والأجرة.'));return;}if(hours<=0||hours>24||rate<0){Alert.alert(tr('معلومات غير صالحة'),tr('دخل ساعات بين 0 و24 وأجرة صفر أو أكثر.'));return;}if(!isValidIsoDate(time.date.trim())){Alert.alert(tr('تاريخ غير صالح'),tr('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.'));return;}if(onAddTime(project.id,{technician:time.technician,date:time.date,hours,hourlyRate:rate,note:time.note}))setTimeDrafts(current=>({...current,[project.id]:{...time,technician:'',hours:'',rate:'',note:''}}));}} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تسجيل ساعات العمل')}</Text></Pressable>
       </View>;
     })}
     {projects.length===0&&<Text style={{color:'#999',textAlign:'center',padding:12}}>{tr('مازال ما كاين حتى مشروع.')}</Text>}

@@ -1,6 +1,7 @@
 export type ProjectStatus='مخطط'|'جارٍ'|'مكتمل'|'متوقف';
 export type ProjectTaskPriority='عادي'|'مهم'|'عاجل';
 export type ProjectTask={id:number;title:string;done:boolean;dueDate?:string;priority?:ProjectTaskPriority};
+export type ProjectTimeEntry={id:number;technician:string;date:string;hours:number;hourlyRate:number;note?:string};
 export type ProjectRecord={
   id:number;
   name:string;
@@ -9,6 +10,7 @@ export type ProjectRecord={
   targetDate?:string;
   status:ProjectStatus;
   tasks:ProjectTask[];
+  timeEntries:ProjectTimeEntry[];
 };
 export type ProjectExpense={id:number;projectId?:number;amount:number};
 
@@ -29,7 +31,22 @@ export function createProject(input:{name:string;customerName?:string;budget:num
     const parsed=new Date(targetDate+'T00:00:00.000Z');
     if(!Number.isFinite(parsed.getTime())||parsed.toISOString().slice(0,10)!==targetDate) throw new Error('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.');
   }
-  return {id,name,customerName:input.customerName?.trim()||'',budget,targetDate,status:'مخطط',tasks:[]};
+  return {id,name,customerName:input.customerName?.trim()||'',budget,targetDate,status:'مخطط',tasks:[],timeEntries:[]};
+}
+
+export function addProjectTimeEntry(project:ProjectRecord,input:{technician:string;date:string;hours:number;hourlyRate:number;note?:string},id:number):ProjectRecord{
+  const technician=input.technician.trim(),date=input.date.trim(),hours=Number(input.hours),hourlyRate=Number(input.hourlyRate);
+  if(!technician)throw new Error('دخل اسم التقني.');
+  if(!isValidIsoDate(date))throw new Error('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.');
+  if(!Number.isFinite(hours)||hours<=0||hours>24)throw new Error('دخل عدد ساعات صحيحاً بين 0 و24.');
+  if(!Number.isFinite(hourlyRate)||hourlyRate<0)throw new Error('دخل أجرة الساعة صحيحة أو صفر.');
+  if(!Number.isSafeInteger(id)||id<0||project.timeEntries.some(entry=>entry.id===id))throw new Error('معرف سجل الوقت غير صالح أو مستعمل.');
+  return {...project,timeEntries:[...project.timeEntries,{id,technician,date,hours,hourlyRate,...(input.note?.trim()?{note:input.note.trim()}:{})}]};
+}
+
+export function removeProjectTimeEntry(project:ProjectRecord,entryId:number):ProjectRecord{
+  if(!project.timeEntries.some(entry=>entry.id===entryId))throw new Error('سجل الوقت غير موجود.');
+  return {...project,timeEntries:project.timeEntries.filter(entry=>entry.id!==entryId)};
 }
 
 export function addProjectTask(project:ProjectRecord,title:string,id:number,options:{dueDate?:string;priority?:ProjectTaskPriority}={}):ProjectRecord {
@@ -50,9 +67,11 @@ export function setProjectTaskDone(project:ProjectRecord,taskId:number,done:bool
 }
 
 export function projectFinancials(project:ProjectRecord,expenses:ProjectExpense[]) {
-  const spent=expenses.filter(expense=>expense.projectId===project.id&&Number.isFinite(expense.amount)&&expense.amount>0)
+  const expenseCost=expenses.filter(expense=>expense.projectId===project.id&&Number.isFinite(expense.amount)&&expense.amount>0)
     .reduce((sum,expense)=>sum+expense.amount,0);
-  return {spent,remaining:project.budget-spent,overBudget:spent>project.budget};
+  const laborCost=project.timeEntries.reduce((sum,entry)=>sum+Math.round(entry.hours*entry.hourlyRate*100)/100,0);
+  const spent=expenseCost+laborCost;
+  return {spent,expenseCost,laborCost,remaining:project.budget-spent,overBudget:spent>project.budget};
 }
 
 export function normalizeProjects(value:unknown):ProjectRecord[] {
@@ -65,5 +84,6 @@ export function normalizeProjects(value:unknown):ProjectRecord[] {
   }).map(project=>({...project,tasks:project.tasks.filter(task=>
     Number.isFinite(task.id)&&typeof task.title==='string'&&typeof task.done==='boolean'&&
     (!task.dueDate||(typeof task.dueDate==='string'&&isValidIsoDate(task.dueDate)))&&
-    (!task.priority||['عادي','مهم','عاجل'].includes(task.priority))).map(task=>({...task,priority:task.priority??'عادي'}))}));
+    (!task.priority||['عادي','مهم','عاجل'].includes(task.priority))).map(task=>({...task,priority:task.priority??'عادي'})),timeEntries:Array.isArray(project.timeEntries)?project.timeEntries.filter((entry):entry is ProjectTimeEntry=>
+      Number.isSafeInteger(entry.id)&&entry.id>=0&&typeof entry.technician==='string'&&!!entry.technician.trim()&&typeof entry.date==='string'&&isValidIsoDate(entry.date)&&Number.isFinite(entry.hours)&&entry.hours>0&&entry.hours<=24&&Number.isFinite(entry.hourlyRate)&&entry.hourlyRate>=0&&(!entry.note||typeof entry.note==='string')).map(entry=>({...entry,technician:entry.technician.trim(),note:entry.note?.trim()||undefined})):[]}));
 }
