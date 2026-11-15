@@ -1,12 +1,16 @@
 import React, {useMemo, useState} from 'react';
 import {Alert, Image, Pressable, Text, TextInput, View} from 'react-native';
 import {addPosLine, emptyPosCart, findPosProduct, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
+import BarcodeScannerButton from './BarcodeScannerButton';
 import {translate, getLayoutDirection} from './i18n';
 import {canExtendCredit} from './domain/contact-credit';
+import {filterPosCatalogProducts} from './domain/pos-catalog';
+import {createParkedPosSale,ParkedPosSale} from './domain/pos-parked-sales';
 
-type Product = {id:number; name:string; price:number; qty:number; reference?:string; barcode?:string; photoData?:string};
+type Product = {id:number; name:string; price:number; qty:number; reference?:string; barcode?:string; category?:string; photoData?:string};
 type Customer = {id:number; name:string; creditLimitCentimes?:number};
 type BankAccountOption={id:string;name:string;balance:number};
+type PosCatalogProduct=PosProduct&{category?:string};
 type CheckoutLine = {productId:number; name:string; quantity:number; unitPrice:number; discount:number};
 type Props = {
   language: 'AR'|'FR';
@@ -15,14 +19,20 @@ type Props = {
   bankAccounts:BankAccountOption[];
   creditByCustomer: Record<string,number>;
   outstandingByCustomer: Record<string,number>;
+  parkedSales:ParkedPosSale[];
+  onPark:(sale:ParkedPosSale)=>boolean;
+  onResume:(id:string)=>void;
+  onDeleteParked:(id:string)=>void;
   onCheckout: (data:{customerId?:number;customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'|'credit'; total:number;paidAmount:number;bankAccountId?:string;creditPaymentMethod?:'cash'|'card'|'transfer'})=>boolean|void;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PosWorkspace({language,products,customers,bankAccounts,creditByCustomer,outstandingByCustomer,onCheckout}:Props){
+export default function PosWorkspace({language,products,customers,bankAccounts,creditByCustomer,outstandingByCustomer,parkedSales,onPark,onResume,onDeleteParked,onCheckout}:Props){
   const tr=(value:string)=>translate(language,value);
   const [term,setTerm]=useState('');
+  const [selectedCategory,setSelectedCategory]=useState('');
+  const [inStockOnly,setInStockOnly]=useState(false);
   const [customerId,setCustomerId]=useState('');
   const [method,setMethod]=useState<'cash'|'card'|'transfer'|'credit'>('cash');
   const [bankAccountId,setBankAccountId]=useState('');
@@ -30,15 +40,34 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
   const [creditPaidText,setCreditPaidText]=useState('0');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
-  const mapped:PosProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,reference:p.reference,barcode:p.barcode,salePrice:p.price,stock:p.qty,trackStock:true})),[products]);
-  const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>[p.name,p.reference||'',p.barcode||''].some(value=>value.toLocaleLowerCase().includes(q))).slice(0,8);},[mapped,term]);
+  const mapped:PosCatalogProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,reference:p.reference,barcode:p.barcode,category:p.category,salePrice:p.price,stock:p.qty,trackStock:true})),[products]);
+  const categories=useMemo(()=>[...new Set(mapped.map(product=>product.category?.trim()||'').filter(Boolean))].sort((a,b)=>a.localeCompare(b,language==='FR'?'fr':'ar')),[mapped,language]);
+  const matches=useMemo(()=>filterPosCatalogProducts(mapped,term,selectedCategory,inStockOnly),[mapped,term,selectedCategory,inStockOnly]);
   const discount=Number(discountText.replace(',','.'));
   const creditPaid=Number(creditPaidText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:method==='credit'&&Number.isFinite(creditPaid)?Math.max(0,creditPaid):0};
   const totals=posTotals(currentCart);
   const add=(p:PosProduct)=>{try{setCart(old=>addPosLine(old,p));setTerm('');}catch(e){Alert.alert(tr('المخزون غير كافٍ'),e instanceof Error?e.message:tr('تعذر إضافة المنتج'));}};
+  const handleBarcodeScanned=(data:string)=>{
+    const code=data.trim();
+    if(!code)return;
+    setTerm(code);
+    const product=findPosProduct(mapped,code);
+    if(product)add(product);
+  };
   const changeQty=(productId:string,delta:number)=>{setCart(old=>({...old,lines:old.lines.map(line=>line.productId===productId?{...line,quantity:line.quantity+delta}:line).filter(line=>line.quantity>0)}));};
   const remove=(productId:string)=>setCart(old=>({...old,lines:old.lines.filter(line=>line.productId!==productId)}));
+  const parkCurrentSale=()=>{
+    try{
+      const parked=createParkedPosSale({title:`${tr('بيع محفوظ')} • ${new Date().toLocaleTimeString(language==='FR'?'fr-MA':'ar-MA')}`,cart:currentCart,customerId,method,bankAccountId,creditPaymentMethod,creditPaidText,discountText},`pos-${Date.now()}`,new Date().toISOString());
+      if(!onPark(parked))return;
+      setCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');setTerm('');
+    }catch(error){Alert.alert(tr('تعذر حفظ البيع'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}
+  };
+  const resumeParkedSale=(sale:ParkedPosSale)=>{
+    if(cart.lines.length){Alert.alert(tr('السلة فيها منتجات'),tr('حفظ السلة الحالية أو فرغها قبل فتح بيع محفوظ.'));return;}
+    setCart(sale.cart);setCustomerId(sale.customerId);setMethod(sale.method);setBankAccountId(sale.bankAccountId);setCreditPaymentMethod(sale.creditPaymentMethod);setCreditPaidText(sale.creditPaidText);setDiscountText(sale.discountText);onResume(sale.id);
+  };
   const checkout=()=>{
     if(!Number.isFinite(discount)||discount<0){Alert.alert(tr('تخفيض غير صالح'),tr('دخل تخفيض صحيح.'));return;}
     if(method==='credit'&&(!customerId||!Number.isFinite(creditPaid)||creditPaid<0||creditPaid>totals.total)){Alert.alert(tr('معلومات ناقصة'),tr('اختار زبوناً مسجلاً ومبلغاً مؤدى لا يتجاوز المجموع.'));return;}
@@ -66,13 +95,27 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>{tr('البحث عن منتج')}</Text>
       <TextInput value={term} onChangeText={setTerm} onSubmitEditing={()=>{const product=findPosProduct(mapped,term);if(product){add(product);}}} returnKeyType="search" placeholder={tr('اسم المنتج أو المرجع أو الباركود...')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto'}}/>
+      <BarcodeScannerButton language={language} onScanned={handleBarcodeScanned}/>
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginVertical:8}}>
+        <Pressable onPress={()=>setSelectedCategory('')} style={{borderWidth:1,borderColor:selectedCategory===''?GOLD:'#444',borderRadius:8,padding:8}}><Text style={{color:'#FFF'}}>{tr('جميع الأصناف')}</Text></Pressable>
+        {categories.map(category=><Pressable key={category} onPress={()=>setSelectedCategory(category)} style={{borderWidth:1,borderColor:selectedCategory===category?GOLD:'#444',borderRadius:8,padding:8}}><Text style={{color:'#FFF'}}>{category}</Text></Pressable>)}
+        <Pressable onPress={()=>setInStockOnly(value=>!value)} accessibilityRole="button" accessibilityState={{selected:inStockOnly}} style={{borderWidth:1,borderColor:inStockOnly?GOLD:'#444',borderRadius:8,padding:8}}><Text style={{color:'#FFF'}}>{tr(inStockOnly?'إظهار كل المخزون':'المتوفر فقط')}</Text></Pressable>
+      </View>
       {matches.map(p=><Pressable key={p.id} onPress={()=>add(p)} style={{padding:11,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:10}}>
-        <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{p.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{p.reference?tr('مرجع:')+' '+p.reference+' • ':''}{p.barcode?tr('باركود:')+' '+p.barcode+' • ':''}{tr('المتوفر:')} {p.stock} • {money(p.salePrice)}</Text></View>
+        <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{p.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{p.category?`${p.category} • `:''}{p.reference?tr('مرجع:')+' '+p.reference+' • ':''}{p.barcode?tr('باركود:')+' '+p.barcode+' • ':''}{tr('المتوفر:')} {p.stock} • {money(p.salePrice)}</Text></View>
         <Text style={{color:GOLD,fontWeight:'900'}}>{tr('+ أضف')}</Text>
       </Pressable>)}
-      {!!term.trim()&&matches.length===0&&<Text style={{color:'#999',padding:10}}>{tr('ما لقيناش منتج بهاد الاسم.')}</Text>}
+      {!!(term.trim()||selectedCategory||inStockOnly)&&matches.length===0&&<Text style={{color:'#999',padding:10}}>{tr('ما كاين حتى منتج فهاد الفلتر.')}</Text>}
       {products.length===0&&<Text style={{color:'#999',padding:10}}>{tr('زيد المنتجات أولاً من قسم المنتجات.')}</Text>}
     </View>
+    {parkedSales.length>0&&<View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
+      <Text style={{color:GOLD,fontSize:17,fontWeight:'800',marginBottom:8}}>{tr('مبيعات محفوظة مؤقتاً')} ({parkedSales.length})</Text>
+      {parkedSales.map(sale=>{const savedTotals=posTotals(sale.cart);return <View key={sale.id} style={{borderBottomWidth:1,borderBottomColor:'#333',paddingVertical:9}}>
+        <Text style={{color:'#FFF',fontWeight:'700'}}>{sale.title}</Text>
+        <Text style={{color:'#AAA',fontSize:12,marginTop:3}}>{new Date(sale.savedAt).toLocaleString(language==='FR'?'fr-MA':'ar-MA')} • {sale.cart.lines.length} {tr('منتج')} • {tr('المجموع النهائي:')} {money(savedTotals.total)}</Text>
+        <View style={{flexDirection:'row',gap:12,marginTop:6}}><Pressable accessibilityRole="button" onPress={()=>resumeParkedSale(sale)}><Text style={{color:GOLD,fontWeight:'800'}}>{tr('استرجاع البيع')}</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>onDeleteParked(sale.id)}><Text style={{color:'#E28A78'}}>{tr('حذف البيع المحفوظ')}</Text></Pressable></View>
+      </View>;})}
+    </View>}
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:GOLD,fontSize:17,fontWeight:'800',marginBottom:10}}>{tr('سلة البيع')} ({cart.lines.length})</Text>
       {cart.lines.length===0?<Text style={{color:'#999',textAlign:'center',padding:14}}>{tr('السلة فارغة. قلب على منتج وزيدو.')}</Text>:cart.lines.map(line=>{
@@ -103,6 +146,7 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
         <Text style={{color:'#DDD'}}>{tr('التخفيض:')} {money(totals.discount)}</Text>
         <Text style={{color:GOLD,fontWeight:'900',fontSize:21}}>{tr('المجموع النهائي:')} {money(totals.total)}</Text>
       </View>
+      <Pressable onPress={parkCurrentSale} disabled={!cart.lines.length} style={{borderWidth:1,borderColor:cart.lines.length?GOLD:'#555',borderRadius:9,padding:12,alignItems:'center',marginTop:10,opacity:cart.lines.length?1:0.55}}><Text style={{color:GOLD,fontWeight:'800'}}>{tr('حفظ البيع مؤقتاً')}</Text></Pressable>
       <Pressable onPress={checkout} disabled={!cart.lines.length} style={{backgroundColor:cart.lines.length?GOLD:'#555',borderRadius:9,padding:14,alignItems:'center',marginTop:12}}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تأكيد البيع')}</Text></Pressable>
     </View>
   </View>;

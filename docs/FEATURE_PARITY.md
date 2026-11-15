@@ -2,40 +2,43 @@
 
 This project is an independent implementation of the workflows observed in YanCommerce. It must use HamZa branding and original code/assets; it must not copy proprietary source code or private account data.
 
-## Current baseline verified in App.tsx
-- Local AsyncStorage persistence for products, customers, suppliers, sales, purchases, expenses, quotes and payments.
-- Basic create flows for those records.
-- Sale reduces stock; purchase increases stock.
-- Basic PDF generation/sharing for quotes, sales documents, expenses and payment receipts.
-- Basic summary screen.
-- The current UI explicitly contains placeholder sections. It is not feature complete.
+## Current baseline verified in App.tsx and src/
+- Local AsyncStorage persistence with protected startup reads, validated backup restore, and data for products, contacts, sales, purchases, payments, inventory, cash, banks and projects.
+- Product catalog includes references, barcodes, images, voice search, bulk import and barcode camera capture in product entry and POS.
+- Sales and purchase flows connect documents, payments, debt balances and stock movements; business logic has automated regression coverage.
+- PDF HTML generation supports Arabic RTL and French LTR; HTML output and text escaping have automated tests. Android PDF rendering still needs device review.
+- The app is a single-user local prototype. Roles, scheduled reminders, some document and purchasing workflows, and device acceptance remain open.
 
 ## Required functional modules
 
 ### Dashboard and core setup
-- [ ] Company profile, logo, address, Moroccan identifiers (ICE, RC, IF), banking details
+- [x] Company profile, logo, address, Moroccan identifiers (ICE, RC, IF), and banking details
 - [ ] Users, roles, permissions, activity history
-- [ ] Arabic/French complete localization, language persistence, theme
-- [ ] Numbering series, document templates, custom fields
+- [x] Arabic/French text localization and saved language choice; static translation coverage is tested. Visual RTL/LTR review remains open; theme uses black and gold.
+- [x] Sequential human-readable numbers for quotes, invoices, delivery notes, pro forma documents and credit notes; old document numbers remain intact
+- [x] Editable Arabic/French settings for all five document number prefixes; preferences persist locally and travel in JSON backups
+- [x] Optional shared payment terms and footer note on generated PDFs; values are escaped and follow Arabic/French document direction
+- [ ] Per-document template assignment and document-specific custom field editing
+- [x] Shared PDF template styles (classic, compact, framed), accent color, and saved custom PDF lines; settings are included in company profile backup data
 - [x] Shareable JSON backup export, file picker restore and validated restore for local app data (encrypted backup not implemented)
 - [ ] Automated scheduled backups and encrypted backup files
 
 ### Products and inventory
-- [ ] Product/service catalog with references and barcodes
+- [x] Product catalog with references, barcodes, and camera barcode capture in product entry and POS
 - [x] Product photo gallery with up to four images per product, individual preview/removal and backward-compatible local persistence
 - [x] Product gallery: add up to four photos, preview, remove individually, persist locally, and preserve the first photo for older records
 - [x] Product name search and product edit flow
 - [x] Categories, brands, units, variants
 - [x] Basic product purchase cost, sale price, unit margin and estimated stock margin
 - [x] Auditable stock ledger for opening balances, purchases, direct sales, POS sales, delivery notes and quantity corrections; physical stock counts post only the differences and prevent replay (single main warehouse UI)
-- [ ] Separate price rules for quotes/orders vs invoices
-- [ ] HT/TTC display mode and configurable tax rules where required
-- [ ] Stock tracking separately for delivery notes and invoices
+- [x] Optional quote and invoice prices per product are used automatically in the corresponding document flow; ordinary catalog price remains the POS/default price
+- [x] MAD amounts use TTC-only pricing with no VAT calculation, as requested; configurable tax rules are not implemented
+- [x] Invoice stock deductions are validated and recorded once; converting a quote already issued on a delivery note does not deduct it twice
 - [x] Multiple warehouse records, active warehouse selection, paired stock transfers, per-warehouse stock counts, warehouse-filtered movement ledger and persistent audit trail (normal purchase/sale/POS/delivery operations use the selected warehouse; warehouse deactivation and location/site hierarchies remain pending)
-- [x] Bulk product import/export with name search, saved product catalog, and offline visual search that ranks each product by its closest saved photo
+- [x] Bulk product import/export with name search, saved product catalog, PDF catalog export with or without product photos, and offline visual search that ranks each product by its closest saved photo
 
 ### Contacts
-- [ ] Customer and supplier profiles with phone/WhatsApp, address, ICE/RC/IF
+- [x] Customer and supplier profiles with phone, separate WhatsApp number and chat shortcut, address, ICE/RC/IF, opening balances, credit limits, and payment terms
 - [x] Customer and supplier account statements as shareable PDFs, including invoices, payments, credit notes and current balances
 - [x] Customer and supplier opening balances are included in account debt, statements and partial settlement flows; credit ceilings are validated and enforced before credit purchases and sales
 - [x] Contact payment terms are copied to new invoices and purchases; dashboard shows overdue records and links to their settlement screens
@@ -43,28 +46,31 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Attachments, contacts, custom fields, price groups
 
 ### Sales documents
-- [ ] Quotes, customer orders, delivery notes, invoices, proforma invoices
+- [x] Quotes, delivery notes, invoices, and pro forma flows; customer orders are not implemented
 - [x] Customer returns create PDF credit notes, reduce open invoice balances, carry excess credit into a later POS credit sale or quote-converted invoice, and record confirmed partial cash refunds against available unapplied credit in the return history, statement PDF and financial CSV
 - [x] Standalone multi-product invoice creation with stock validation and selected-warehouse deduction; available customer credit is applied automatically and invoice notes are included in PDF output
 - [x] Choose whether to apply available customer credit while creating a standalone invoice; payment workspace can apply credit to a selected existing invoice. Refunds require confirmation and do not move physical cash automatically
 - [x] Apply customer credit to a selected open invoice from the payments workspace after confirmation; cash refunds are recorded only after the user confirms the payout
-- [ ] Document lifecycle, conversion/linking, reminders and follow-up
-- [ ] Discounts, fees, notes/sections, barcode entry, multi-line editing
-- [ ] PDF layouts, print, share, document numbering and status tracking
+- [x] Quote conversion to invoice, delivery note, and pro forma; payment statuses and overdue dashboard. Scheduled reminders and follow-up remain open.
+- [x] Line/document discounts, notes, multi-line editing, and barcode entry; fees and section breaks remain open
+- [ ] PDF visual layouts and print output need Android review; per-document template assignment and document-specific field editing remain open
 
 ### Purchases
-- [ ] Price requests, supplier orders, goods receipts, supplier invoices
-- [ ] Supplier credit notes, returns, payment records
-- [ ] Supplier comparison, purchase tracking and purchase reports
-- [ ] Link/convert purchase documents and update stock correctly
+- [x] Direct supplier purchase entry updates stock and records initial or partial payment; request-to-order-to-receipt and purchase-linked supplier invoice capture are available
+- [x] Supplier payment records, partial settlements, and purchase-linked credit notes; physical supplier returns reduce both stock and supplier debt, without changing cash or bank balances
+- [x] Purchase document PDF, XLSX, and WhatsApp sharing actions for the document register
+- [x] Purchase history and supplier debt reporting; period-filtered supplier comparison separates purchase totals, quantities, initial payments, settlements and credit notes in UI, PDF and Excel (broader purchase filters remain open)
+- [x] Link/convert purchase requests to orders and receipts, then update stock and supplier debt on receipt
 
 ### Cash, payments and banking
-- [ ] Expenses and recurring expenses/categories
+- [x] Manual expenses with cash/card/bank payment
+- [x] Recurring expense rules with category, weekly/monthly schedule, due-date validation, explicit payment recording, duplicate occurrence protection, cash/bank balance validation, local persistence, and backup/restore
+- [x] Optional categories on direct expenses with period-filtered category totals in the activity report UI, PDF and Excel summary, and category labels in CSV/XLSX activity detail exports
 - [x] Cash opening balance, manual cash in/out, and live balance tied to recorded cash customer/supplier payments, cash paid purchases, cash expenses and confirmed refunds; PDF/CSV cash history
 - [x] Bank account opening balances and confirmed transfers to/from the cash register; both balances and the cash ledger update together
 - [x] Import bank statement CSV files with French debit/credit headers, optional reported balance, duplicate rejection, local persistence, exact account/date/signed-amount matching with matched, unmatched, and ambiguous results, user confirmation for exact matches, and a closing-balance difference summary. Customer/supplier payments, direct and POS sales, initial purchase payments, and expenses by card or bank transfer select an account, update its balance, block bank overdrafts, and protect linked accounts from deletion.
 - [x] Customer payment allocation to open invoices, supplier debt and partial payment tracking
-- [ ] Cheques, drafts, unpaid items and due-date tracking
+- [x] Supplier cheque reference and due-date tracking for invoices/purchases; returned cheque, draft, and unpaid-item workflows remain open
 - [x] Persist and show bank reconciliation history with timestamp, statement period, closing-balance difference, and confirmed-match count.
 
 ### POS
@@ -72,19 +78,22 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Customer selection, general discount, cash/card/transfer/credit methods and checkout validation
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
 - [x] Credit checkout creates an invoice receivable and records partial payments
-- [ ] Camera barcode scanning, categories and stock filters
-- [ ] Returns, parked sales and physical receipt-printer integration
+- [x] Camera barcode scanning in product entry and POS; POS category and in-stock filters
+- [x] Parked POS sales are stored in local data and backups and can be resumed or removed; returns and physical receipt-printer integration remain open
 
 ### Projects and field operations
-- [ ] Installations/projects, installation requests and financial status
-- [ ] Technicians, specialties, equipment and equipment categories
-- [ ] Time entries, rates, costs, settlement and history
+- [x] Local projects with editable details, protected deletion when records are linked, budgets, expenses, tasks, priorities, due dates, status, and technician time logs with hourly cost and labor totals in budget tracking; installation request workflow remains open
+- [x] Local technician directory with name, optional phone and specialty, hourly rate, duplicate/name/rate validation; project task assignment and time logging can select a saved technician, and selected time logs copy the saved hourly rate
+- [x] Local technician equipment register with editable name/category, serial number, availability status, notes, optional technician assignment, duplicate serial validation, backup/restore and category reuse chips
+- [x] Payroll balances calculate earned labor from saved time-entry rate snapshots; partial cash or bank settlements cannot exceed the outstanding amount, affect the correct cash/bank balance, and remain in local storage, backup and register history without being counted again as a project expense
+- [x] Date-range payroll summaries by technician with payment count, method, notes, CSV/XLSX detail export and period total in the activity report
+- [x] Per-technician project work summaries honor the selected report period and group profile-linked logs separately from legacy name-only records; show hours, labor cost, work-entry count and distinct project count in the report, PDF and Excel
 
 ### Agenda and reports
-- [ ] Tasks, assignments, durations and attachments
-- [x] Project task priorities (normal, important, urgent) and validated optional due dates, persisted with project data
+- [x] Project task creation, editing, completion, confirmed deletion, priorities (normal, important, urgent), validated optional due dates, assignee and local file attachments; attachment metadata survives local storage and JSON backups include the file contents with per-file and total size limits
 - [ ] Sales/purchase/stock/cash/receivables/payables reports with full filtering and export
-- [x] Activity summary with validated date range, filtered sales/purchases/expenses and profit summary, plus PDF output
+- [x] Activity summary with validated date range and applied text search across customer, supplier, product, expense category, technician, cash, bank and stock records; filtered totals and PDF/CSV/XLSX exports include the applied search and period, with current debt snapshots kept clearly identified
+- [x] Supplier purchase performance comparison uses the selected purchase/payment period and exports supplier totals to PDF and Excel
 - [ ] Filters and date ranges across all report types; export and print
 
 ## Acceptance tests required before calling a module complete
@@ -93,8 +102,9 @@ This project is an independent implementation of the workflows observed in YanCo
 - Monetary totals, discounts, payments, balances and stock movements reconcile.
 - Document conversion does not duplicate stock or payments.
 - PDF/print/share outputs contain the correct customer, items, totals and numbering.
-- Arabic and French labels are complete and layout remains readable.
+- Arabic and French generated PDF HTML declares the correct direction and escapes all inserted text; visual layout still needs Android review.
 - Invalid inputs are rejected and no partial records are saved.
+- Project task attachments are limited to 10 files per task, 5 MiB per file and 25 MiB total in a backup; they survive backup and restore.
 - APK builds successfully and is installed/tested on Android.
 
 ## Status policy

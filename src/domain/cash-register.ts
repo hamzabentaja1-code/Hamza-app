@@ -1,6 +1,6 @@
 export type ManualCashEntry={id:number;date:string;direction:'in'|'out';amountCentimes:number;description:string};
 export type CashAccount={openingBalanceCentimes:number;openingDate:string;manualEntries:ManualCashEntry[]};
-export type CashRegisterRow={id:string;date:string;direction:'in'|'out';amountCentimes:number;description:string;source:'opening'|'manual'|'payment'|'supplier'|'purchase'|'expense'|'refund'|'bank_transfer'};
+export type CashRegisterRow={id:string;date:string;direction:'in'|'out';amountCentimes:number;description:string;source:'opening'|'manual'|'payment'|'supplier'|'purchase'|'expense'|'refund'|'bank_transfer'|'payroll'};
 export const EMPTY_CASH_ACCOUNT:CashAccount={openingBalanceCentimes:0,openingDate:'',manualEntries:[]};
 
 const cashMethod=(method:string|undefined)=>method==='نقداً'||method==='Espèces'||method==='cash';
@@ -43,15 +43,17 @@ export function calculateCashBalance(account:CashAccount,sources:{
   expenses:readonly {id:number;amount:number;paymentMethod?:string;date:string;title:string}[];
   refunds:readonly {id:number;amountCentimes:number;method:'cash';date:string;number:string;customerName:string}[];
   bankTransfers?:readonly {id:string;bankAccountId:string;date:string;direction:'cash_to_bank'|'bank_to_cash';amountCentimes:number;description:string}[];
+  payrollSettlements?:readonly {id:number;technicianName:string;amountCentimes:number;method:string;date:string}[];
 }):number {
   const customerIn=sources.payments.filter(item=>cashMethod(item.method)).reduce((sum,item)=>sum+cents(item.amount),0);
   const supplierOut=sources.supplierPayments.filter(item=>cashMethod(item.method)).reduce((sum,item)=>sum+cents(item.amount),0);
   const purchaseOut=sources.purchases.filter(item=>cashMethod(item.paymentMethod)).reduce((sum,item)=>sum+cents(item.paidAmount),0);
   const expenseOut=sources.expenses.filter(item=>cashMethod(item.paymentMethod)).reduce((sum,item)=>sum+cents(item.amount),0);
   const refundsOut=sources.refunds.reduce((sum,item)=>sum+(Number.isSafeInteger(item.amountCentimes)&&item.amountCentimes>0?item.amountCentimes:0),0);
+  const payrollOut=(sources.payrollSettlements??[]).filter(item=>cashMethod(item.method)).reduce((sum,item)=>sum+(Number.isSafeInteger(item.amountCentimes)&&item.amountCentimes>0?item.amountCentimes:0),0);
   const bankTransfersNet=(sources.bankTransfers??[]).reduce((sum,item)=>sum+(item.direction==='cash_to_bank'?-item.amountCentimes:item.amountCentimes),0);
   const manual=account.manualEntries.reduce((sum,item)=>sum+(item.direction==='in'?item.amountCentimes:-item.amountCentimes),0);
-  return account.openingBalanceCentimes+customerIn-supplierOut-purchaseOut-expenseOut-refundsOut+manual+bankTransfersNet;
+  return account.openingBalanceCentimes+customerIn-supplierOut-purchaseOut-expenseOut-refundsOut-payrollOut+manual+bankTransfersNet;
 }
 
 export function buildCashRegisterRows(account:CashAccount,sources:Parameters<typeof calculateCashBalance>[1]):CashRegisterRow[] {
@@ -63,6 +65,7 @@ export function buildCashRegisterRows(account:CashAccount,sources:Parameters<typ
   for(const item of sources.purchases)if(cashMethod(item.paymentMethod)&&cents(item.paidAmount)>0)rows.push({id:'purchase-'+item.id,date:item.date,direction:'out',amountCentimes:cents(item.paidAmount),description:`شراء ${item.productName} • ${item.supplierName}`,source:'purchase'});
   for(const item of sources.expenses)if(cashMethod(item.paymentMethod))rows.push({id:'expense-'+item.id,date:item.date,direction:'out',amountCentimes:cents(item.amount),description:item.title,source:'expense'});
   for(const item of sources.refunds)if(Number.isSafeInteger(item.amountCentimes)&&item.amountCentimes>0)rows.push({id:'refund-'+item.id,date:item.date,direction:'out',amountCentimes:item.amountCentimes,description:`رد للزبون ${item.customerName} • ${item.number}`,source:'refund'});
+  for(const item of sources.payrollSettlements??[])if(cashMethod(item.method))rows.push({id:'payroll-'+item.id,date:item.date,direction:'out',amountCentimes:item.amountCentimes,description:`أجرة التقني ${item.technicianName}`,source:'payroll'});
   for(const item of sources.bankTransfers??[])rows.push({id:'bank-transfer-'+item.id,date:item.date,direction:item.direction==='cash_to_bank'?'out':'in',amountCentimes:item.amountCentimes,description:`${item.direction==='cash_to_bank'?'إيداع بنكي':'سحب من البنك'} • ${item.description}`,source:'bank_transfer'});
   const dateValue=(value:string)=>{const m=value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);return m?new Date(Number(m[3]),Number(m[2])-1,Number(m[1])).getTime():Date.parse(value)||0;};
   return rows.sort((a,b)=>dateValue(b.date)-dateValue(a.date)||b.id.localeCompare(a.id));
