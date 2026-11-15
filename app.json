@@ -32,6 +32,14 @@
           "speechRecognitionPermission": "السماح لـ HamZa بتحويل الكلام إلى كلمات للبحث عن المنتجات.",
           "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox", "com.google.android.tts"]
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "السماح لـ HamZa باستعمال الكاميرا لمسح باركود المنتجات.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
       ]
     ],
     "android": {

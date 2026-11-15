@@ -1,5 +1,6 @@
-import React, {useMemo, useState} from 'react';
-import {Alert, Image, Pressable, Text, TextInput, View} from 'react-native';
+import React, {useMemo, useRef, useState} from 'react';
+import {CameraView, useCameraPermissions} from 'expo-camera';
+import {Alert, Image, Modal, Pressable, Text, TextInput, View} from 'react-native';
 import {addPosLine, emptyPosCart, findPosProduct, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
 import {translate, getLayoutDirection} from './i18n';
 import {canExtendCredit} from './domain/contact-credit';
@@ -30,6 +31,9 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
   const [creditPaidText,setCreditPaidText]=useState('0');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
+  const [scannerOpen,setScannerOpen]=useState(false);
+  const [cameraPermission,requestCameraPermission]=useCameraPermissions();
+  const scanHandled=useRef(false);
   const mapped:PosProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,reference:p.reference,barcode:p.barcode,salePrice:p.price,stock:p.qty,trackStock:true})),[products]);
   const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>[p.name,p.reference||'',p.barcode||''].some(value=>value.toLocaleLowerCase().includes(q))).slice(0,8);},[mapped,term]);
   const discount=Number(discountText.replace(',','.'));
@@ -37,6 +41,22 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:method==='credit'&&Number.isFinite(creditPaid)?Math.max(0,creditPaid):0};
   const totals=posTotals(currentCart);
   const add=(p:PosProduct)=>{try{setCart(old=>addPosLine(old,p));setTerm('');}catch(e){Alert.alert(tr('المخزون غير كافٍ'),e instanceof Error?e.message:tr('تعذر إضافة المنتج'));}};
+  const openScanner=async()=>{
+    const permission=cameraPermission?.granted?cameraPermission:await requestCameraPermission();
+    if(!permission.granted){Alert.alert(tr('صلاحية الكاميرا مطلوبة'),tr('سمح لـ HamZa باستعمال الكاميرا باش يمسح الباركود.'));return;}
+    scanHandled.current=false;
+    setScannerOpen(true);
+  };
+  const handleBarcodeScanned=(data:string)=>{
+    if(scanHandled.current)return;
+    const code=data.trim();
+    if(!code)return;
+    scanHandled.current=true;
+    setScannerOpen(false);
+    setTerm(code);
+    const product=findPosProduct(mapped,code);
+    if(product)add(product);
+  };
   const changeQty=(productId:string,delta:number)=>{setCart(old=>({...old,lines:old.lines.map(line=>line.productId===productId?{...line,quantity:line.quantity+delta}:line).filter(line=>line.quantity>0)}));};
   const remove=(productId:string)=>setCart(old=>({...old,lines:old.lines.filter(line=>line.productId!==productId)}));
   const checkout=()=>{
@@ -66,6 +86,7 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>{tr('البحث عن منتج')}</Text>
       <TextInput value={term} onChangeText={setTerm} onSubmitEditing={()=>{const product=findPosProduct(mapped,term);if(product){add(product);}}} returnKeyType="search" placeholder={tr('اسم المنتج أو المرجع أو الباركود...')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto'}}/>
+      <Pressable onPress={openScanner} accessibilityRole="button" style={{backgroundColor:'#211D14',borderWidth:1,borderColor:GOLD,borderRadius:9,padding:12,alignItems:'center',marginTop:8}}><Text style={{color:GOLD,fontWeight:'800'}}>{tr('مسح الباركود بالكاميرا')}</Text></Pressable>
       {matches.map(p=><Pressable key={p.id} onPress={()=>add(p)} style={{padding:11,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:10}}>
         <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{p.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{p.reference?tr('مرجع:')+' '+p.reference+' • ':''}{p.barcode?tr('باركود:')+' '+p.barcode+' • ':''}{tr('المتوفر:')} {p.stock} • {money(p.salePrice)}</Text></View>
         <Text style={{color:GOLD,fontWeight:'900'}}>{tr('+ أضف')}</Text>
@@ -73,6 +94,14 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
       {!!term.trim()&&matches.length===0&&<Text style={{color:'#999',padding:10}}>{tr('ما لقيناش منتج بهاد الاسم.')}</Text>}
       {products.length===0&&<Text style={{color:'#999',padding:10}}>{tr('زيد المنتجات أولاً من قسم المنتجات.')}</Text>}
     </View>
+    <Modal visible={scannerOpen} animationType="slide" onRequestClose={()=>setScannerOpen(false)}>
+      <View style={{flex:1,backgroundColor:'#000'}}>
+        <CameraView style={{flex:1}} facing="back" autofocus="on" barcodeScannerSettings={{barcodeTypes:['ean13','ean8','upc_a','upc_e','code128','code39','code93','qr']}} onBarcodeScanned={({data})=>handleBarcodeScanned(data)}/>
+        <View pointerEvents="none" style={{position:'absolute',left:'10%',right:'10%',top:'38%',height:120,borderWidth:2,borderColor:GOLD,borderRadius:12}}/>
+        <View style={{position:'absolute',top:44,left:16,right:16,alignItems:'center'}}><Text style={{color:'#FFF',fontWeight:'800',fontSize:18,textAlign:'center'}}>{tr('وجه الباركود داخل الإطار')}</Text></View>
+        <Pressable onPress={()=>setScannerOpen(false)} accessibilityRole="button" style={{position:'absolute',bottom:36,alignSelf:'center',backgroundColor:GOLD,borderRadius:10,paddingHorizontal:28,paddingVertical:13}}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('إغلاق الكاميرا')}</Text></Pressable>
+      </View>
+    </Modal>
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:GOLD,fontSize:17,fontWeight:'800',marginBottom:10}}>{tr('سلة البيع')} ({cart.lines.length})</Text>
       {cart.lines.length===0?<Text style={{color:'#999',textAlign:'center',padding:14}}>{tr('السلة فارغة. قلب على منتج وزيدو.')}</Text>:cart.lines.map(line=>{
