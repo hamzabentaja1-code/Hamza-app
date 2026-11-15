@@ -89,8 +89,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Per-technician project work summaries honor the selected report period and group profile-linked logs separately from legacy name-only records; show hours, labor cost, work-entry count and distinct project count in the report, PDF and Excel
 
 ### Agenda and reports
-- [ ] Tasks, assignments, durations and attachments
-- [x] Project task creation, editing, completion, confirmed deletion, priorities (normal, important, urgent), validated optional due dates and optional assignee name, persisted with project data
+- [x] Project task creation, editing, completion, confirmed deletion, priorities (normal, important, urgent), validated optional due dates, assignee and local file attachments; attachment metadata survives local storage and JSON backups include the file contents with per-file and total size limits
 - [ ] Sales/purchase/stock/cash/receivables/payables reports with full filtering and export
 - [x] Activity summary with validated date range and applied text search across customer, supplier, product, expense category, technician, cash, bank and stock records; filtered totals and PDF/CSV/XLSX exports include the applied search and period, with current debt snapshots kept clearly identified
 - [ ] Filters and date ranges across all report types; export and print
@@ -103,6 +102,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - PDF/print/share outputs contain the correct customer, items, totals and numbering.
 - Arabic and French generated PDF HTML declares the correct direction and escapes all inserted text; visual layout still needs Android review.
 - Invalid inputs are rejected and no partial records are saved.
+- Project task attachments are limited to 10 files per task, 5 MiB per file and 25 MiB total in a backup; they survive backup and restore.
 - APK builds successfully and is installed/tested on Android.
 
 ## Status policy

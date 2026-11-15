@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {createProject,updateProjectDetails,assertProjectCanBeDeleted,addProjectTask,updateProjectTask,addProjectTimeEntry,removeProjectTask,removeProjectTimeEntry,setProjectTaskDone,projectFinancials,normalizeProjects} = require('../.test-build/projects.js');
+const {createProject,updateProjectDetails,assertProjectCanBeDeleted,addProjectTask,addProjectTaskAttachment,updateProjectTask,addProjectTimeEntry,removeProjectTask,removeProjectTaskAttachment,removeProjectTimeEntry,setProjectTaskDone,projectFinancials,normalizeProjects} = require('../.test-build/projects.js');
 
 test('creates a project with normalized names and optional target date',()=>{
   const project=createProject({name:'  Kitchen wiring  ',customerName:' Client ',budget:12000,targetDate:'2026-12-15'},10);
@@ -101,4 +101,31 @@ test('normalizes work logs while dropping invalid entries and remains compatible
   const [project]=normalizeProjects([{id:1,name:'Saved',customerName:'Client',budget:50,status:'جارٍ',tasks:[],timeEntries:[{id:4,technician:'Tech',date:'2026-11-15',hours:2,hourlyRate:80},{id:5,technician:'',date:'bad',hours:-2,hourlyRate:-1}]}]);
   assert.equal(project.timeEntries.length,1);
   assert.deepEqual(normalizeProjects([{id:2,name:'Old',customerName:'',budget:0,status:'مخطط',tasks:[]}])[0].timeEntries,[]);
+});
+
+test('adds, removes and validates locally saved task attachments',()=>{
+  const project=addProjectTask(createProject({name:'Install',budget:100},1),'Mount cameras',2);
+  const attachment={id:'att-2',name:'site-photo.jpg',uri:'file:///app/task-attachments/site-photo.jpg',mimeType:'image/jpeg',size:2048};
+  const updated=addProjectTaskAttachment(project,2,attachment);
+  assert.deepEqual(updated.tasks[0].attachments,[attachment]);
+  assert.equal(removeProjectTaskAttachment(updated,2,'att-2').tasks[0].attachments.length,0);
+  assert.throws(()=>addProjectTaskAttachment(project,99,attachment),/المهمة غير موجودة/);
+  assert.throws(()=>addProjectTaskAttachment(updated,2,attachment),/مسجل من قبل/);
+  assert.throws(()=>addProjectTaskAttachment(project,2,{...attachment,uri:'https://example.com/file'}),/المرفق غير صالح/);
+  assert.throws(()=>addProjectTaskAttachment(project,2,{...attachment,size:6*1024*1024}),/5 ميغابايت/);
+  let full=project;
+  for(let index=0;index<10;index++)full=addProjectTaskAttachment(full,2,{...attachment,id:`att-${index}`,name:`photo-${index}.jpg`,uri:`file:///app/photo-${index}.jpg`});
+  assert.throws(()=>addProjectTaskAttachment(full,2,{...attachment,id:'att-11',uri:'file:///app/photo-11.jpg'}),/10 مرفقات/);
+});
+
+test('restores valid task attachment metadata and drops invalid or duplicate attachment entries',()=>{
+  const backup=normalizeProjects([{id:1,name:'Install',customerName:'',budget:100,status:'جارٍ',tasks:[{id:2,title:'Mount cameras',done:false,attachments:[
+    {id:'a',name:'photo.jpg',uri:'file:///app/photo.jpg',size:100},
+    {id:'a',name:'duplicate-id',uri:'file:///app/other.jpg',size:100},
+    {id:'b',name:'bad-url',uri:'https://example.com/file',size:100},
+    {id:'c',name:'too-large',uri:'file:///app/large.bin',size:6*1024*1024},
+  ]}]}]);
+  assert.deepEqual(backup[0].tasks[0].attachments,[{id:'a',name:'photo.jpg',uri:'file:///app/photo.jpg',size:100}]);
+  const legacy=normalizeProjects([{id:2,name:'Legacy',customerName:'',budget:0,status:'مخطط',tasks:[{id:1,title:'Old task',done:false}]}]);
+  assert.equal(Object.hasOwn(legacy[0].tasks[0],'attachments'),false);
 });
