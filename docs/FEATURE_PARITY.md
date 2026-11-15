@@ -62,7 +62,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Link/convert purchase requests to orders and receipts, then update stock and supplier debt on receipt
 
 ### Cash, payments and banking
-- [x] Manual expenses with cash/card/bank payment; recurring expenses and categories remain open
+- [x] Manual expenses with cash/card/bank payment
+- [x] Recurring expense rules with category, weekly/monthly schedule, due-date validation, explicit payment recording, duplicate occurrence protection, cash/bank balance validation, local persistence, and backup/restore; category-based expense reports remain open
 - [x] Cash opening balance, manual cash in/out, and live balance tied to recorded cash customer/supplier payments, cash paid purchases, cash expenses and confirmed refunds; PDF/CSV cash history
 - [x] Bank account opening balances and confirmed transfers to/from the cash register; both balances and the cash ledger update together
 - [x] Import bank statement CSV files with French debit/credit headers, optional reported balance, duplicate rejection, local persistence, exact account/date/signed-amount matching with matched, unmatched, and ambiguous results, user confirmation for exact matches, and a closing-balance difference summary. Customer/supplier payments, direct and POS sales, initial purchase payments, and expenses by card or bank transfer select an account, update its balance, block bank overdrafts, and protect linked accounts from deletion.

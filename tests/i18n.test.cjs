@@ -31,7 +31,7 @@ test('voice product search controls and permission errors are translated to Fren
 
 const fs = require('node:fs');
 test('static Arabic labels used by workspaces all have French translations',()=>{
-  for (const file of ['App.tsx','src/QuoteWorkspace.tsx','src/PosWorkspace.tsx','src/ProjectsWorkspace.tsx','src/SalesReturnWorkspace.tsx']) {
+  for (const file of ['App.tsx','src/QuoteWorkspace.tsx','src/PosWorkspace.tsx','src/ProjectsWorkspace.tsx','src/SalesReturnWorkspace.tsx','src/RecurringExpensesWorkspace.tsx']) {
     const source = fs.readFileSync(file,'utf8');
     for (const match of source.matchAll(/\btr\((['"])(.*?)\1\)/g)) {
       const key = match[2].replace(/\\n/g,'\n');
