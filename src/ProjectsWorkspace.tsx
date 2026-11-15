@@ -3,6 +3,7 @@ import {Alert,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
 import {translate} from './i18n';
 import {ProjectRecord,ProjectStatus,ProjectTaskPriority,ProjectTimeEntry,projectFinancials} from './projects';
 import {Technician} from './technicians';
+import {EquipmentStatus,TechnicianEquipment} from './technician-equipment';
 import {isValidIsoDate} from './domain/document-conversion';
 
 type Props={
@@ -13,6 +14,10 @@ type Props={
   onAddTechnician:(input:{name:string;phone?:string;specialty?:string;hourlyRate:number})=>boolean;
   onUpdateTechnician:(id:number,input:{name:string;phone?:string;specialty?:string;hourlyRate:number})=>boolean;
   onDeleteTechnician:(id:number)=>void;
+  technicianEquipment:TechnicianEquipment[];
+  onAddEquipment:(input:{name:string;category:string;serialNumber?:string;technicianId?:number;status:EquipmentStatus;note?:string})=>boolean;
+  onUpdateEquipment:(id:number,input:{name:string;category:string;serialNumber?:string;technicianId?:number;status:EquipmentStatus;note?:string})=>boolean;
+  onDeleteEquipment:(id:number)=>void;
   onCreate:(input:{name:string;customerName:string;budget:number;targetDate:string})=>void;
   onUpdate:(projectId:number,input:{name:string;customerName:string;budget:number;targetDate:string})=>boolean;
   onDelete:(projectId:number)=>void;
@@ -32,7 +37,7 @@ const input={backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRa
 const button={backgroundColor:gold,borderRadius:9,padding:11,alignItems:'center' as const,marginTop:5};
 const statuses:ProjectStatus[]=['مخطط','جارٍ','مكتمل','متوقف'];
 
-export default function ProjectsWorkspace({language,projects,expenses,technicians,onAddTechnician,onUpdateTechnician,onDeleteTechnician,onCreate,onUpdate,onDelete,onStatusChange,onAddTask,onUpdateTask,onToggleTask,onDeleteTask,onAddExpense,onAddTime,onDeleteTime}:Props){
+export default function ProjectsWorkspace({language,projects,expenses,technicians,technicianEquipment,onAddEquipment,onUpdateEquipment,onDeleteEquipment,onAddTechnician,onUpdateTechnician,onDeleteTechnician,onCreate,onUpdate,onDelete,onStatusChange,onAddTask,onUpdateTask,onToggleTask,onDeleteTask,onAddExpense,onAddTime,onDeleteTime}:Props){
   const tr=(value:string)=>translate(language,value);
   const [name,setName]=useState('');
   const [customerName,setCustomerName]=useState('');
@@ -43,6 +48,13 @@ export default function ProjectsWorkspace({language,projects,expenses,technician
   const [techSpecialty,setTechSpecialty]=useState('');
   const [techRate,setTechRate]=useState('');
   const [editingTechnicianId,setEditingTechnicianId]=useState<number|null>(null);
+  const [equipmentName,setEquipmentName]=useState('');
+  const [equipmentCategory,setEquipmentCategory]=useState('');
+  const [equipmentSerial,setEquipmentSerial]=useState('');
+  const [equipmentTechnicianId,setEquipmentTechnicianId]=useState<number|undefined>();
+  const [equipmentStatus,setEquipmentStatus]=useState<EquipmentStatus>('متاح');
+  const [equipmentNote,setEquipmentNote]=useState('');
+  const [editingEquipmentId,setEditingEquipmentId]=useState<number|null>(null);
   const [taskDrafts,setTaskDrafts]=useState<Record<number,string>>({});
   const [taskDates,setTaskDates]=useState<Record<number,string>>({});
   const [taskPriorities,setTaskPriorities]=useState<Record<number,ProjectTaskPriority>>({});
@@ -80,6 +92,26 @@ export default function ProjectsWorkspace({language,projects,expenses,technician
       <Text style={{color:'#DDD',fontWeight:'700',marginTop:12,marginBottom:5}}>{tr('التقنيون')} ({technicians.length})</Text>
       {technicians.map(technician=><View key={technician.id} style={{flexDirection:'row',alignItems:'center',paddingVertical:7,borderBottomWidth:1,borderBottomColor:'#333'}}><View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{technician.name}{technician.specialty?` · ${technician.specialty}`:''}</Text><Text style={{color:'#AAA'}}>{technician.hourlyRate.toFixed(2)} DH{technician.phone?` · ${technician.phone}`:''}</Text></View><Pressable onPress={()=>{setEditingTechnicianId(technician.id);setTechName(technician.name);setTechPhone(technician.phone||'');setTechSpecialty(technician.specialty||'');setTechRate(String(technician.hourlyRate));}} style={{paddingHorizontal:7}}><Text style={{color:gold}}>{tr('تعديل')}</Text></Pressable><Pressable onPress={()=>onDeleteTechnician(technician.id)}><Text style={{color:'#E58B83'}}>{tr('حذف')}</Text></Pressable></View>)}
       {technicians.length===0&&<Text style={{color:'#888'}}>{tr('مازال ما كاين حتى تقني.')}</Text>}
+    </View>
+    <View style={[panel,{marginTop:12}]}>
+      <Text style={{color:gold,fontSize:18,fontWeight:'800',marginBottom:10}}>{tr('معدات التقنيين')}</Text>
+      <TextInput value={equipmentName} onChangeText={setEquipmentName} placeholder={tr('اسم المعدة')} placeholderTextColor="#888" style={input}/>
+      <TextInput value={equipmentCategory} onChangeText={setEquipmentCategory} placeholder={tr('تصنيف المعدة')} placeholderTextColor="#888" style={input}/>
+      {Array.from(new Set(technicianEquipment.map(item=>item.category))).map(category=><Pressable key={category} onPress={()=>setEquipmentCategory(category)} style={{alignSelf:'flex-start',borderWidth:1,borderColor:equipmentCategory===category?gold:'#444',borderRadius:8,padding:7,marginBottom:5}}><Text style={{color:equipmentCategory===category?gold:'#DDD'}}>{category}</Text></Pressable>)}
+      <TextInput value={equipmentSerial} onChangeText={setEquipmentSerial} placeholder={tr('الرقم التسلسلي (اختياري)')} placeholderTextColor="#888" style={input}/>
+      <Text style={{color:'#AAA',marginBottom:5}}>{tr('التقني المسؤول (اختياري)')}</Text>
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginBottom:8}}>
+        <Pressable onPress={()=>setEquipmentTechnicianId(undefined)} style={{borderColor:equipmentTechnicianId===undefined?gold:'#444',borderWidth:1,borderRadius:8,padding:7}}><Text style={{color:equipmentTechnicianId===undefined?gold:'#DDD'}}>{tr('غير مسندة')}</Text></Pressable>
+        {technicians.map(technician=><Pressable key={technician.id} onPress={()=>setEquipmentTechnicianId(technician.id)} style={{borderColor:equipmentTechnicianId===technician.id?gold:'#444',borderWidth:1,borderRadius:8,padding:7}}><Text style={{color:equipmentTechnicianId===technician.id?gold:'#DDD'}}>{technician.name}</Text></Pressable>)}
+      </View>
+      <Text style={{color:'#AAA',marginBottom:5}}>{tr('الحالة')}</Text>
+      <View style={{flexDirection:'row',gap:6,marginBottom:8}}>{(['متاح','مستعمل','صيانة'] as EquipmentStatus[]).map(status=><Pressable key={status} onPress={()=>setEquipmentStatus(status)} style={{borderColor:equipmentStatus===status?gold:'#444',borderWidth:1,borderRadius:8,padding:7}}><Text style={{color:equipmentStatus===status?gold:'#DDD'}}>{tr(status)}</Text></Pressable>)}</View>
+      <TextInput value={equipmentNote} onChangeText={setEquipmentNote} placeholder={tr('ملاحظة (اختياري)')} placeholderTextColor="#888" style={input}/>
+      <Pressable onPress={()=>{if(!equipmentName.trim()||!equipmentCategory.trim()){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم المعدة وتصنيفها.'));return;}const item={name:equipmentName,category:equipmentCategory,serialNumber:equipmentSerial,technicianId:equipmentTechnicianId,status:equipmentStatus,note:equipmentNote};const saved=editingEquipmentId===null?onAddEquipment(item):onUpdateEquipment(editingEquipmentId,item);if(saved){setEquipmentName('');setEquipmentCategory('');setEquipmentSerial('');setEquipmentTechnicianId(undefined);setEquipmentStatus('متاح');setEquipmentNote('');setEditingEquipmentId(null);}}} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr(editingEquipmentId===null?'حفظ المعدة':'حفظ تعديل المعدة')}</Text></Pressable>
+      {editingEquipmentId!==null&&<Pressable onPress={()=>{setEditingEquipmentId(null);setEquipmentName('');setEquipmentCategory('');setEquipmentSerial('');setEquipmentTechnicianId(undefined);setEquipmentStatus('متاح');setEquipmentNote('');}} style={{borderColor:'#555',borderWidth:1,borderRadius:9,padding:10,alignItems:'center',marginTop:6}}><Text style={{color:'#EEE'}}>{tr('إلغاء')}</Text></Pressable>}
+      <Text style={{color:'#DDD',fontWeight:'700',marginTop:12,marginBottom:5}}>{tr('سجل المعدات')} ({technicianEquipment.length})</Text>
+      {technicianEquipment.map(item=><View key={item.id} style={{flexDirection:'row',alignItems:'center',paddingVertical:7,borderBottomWidth:1,borderBottomColor:'#333'}}><View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{item.name} · {item.category}</Text><Text style={{color:'#AAA'}}>{tr(item.status)}{item.serialNumber?` · ${item.serialNumber}`:''}{item.technicianId?` · ${technicians.find(tech=>tech.id===item.technicianId)?.name||''}`:''}</Text>{!!item.note&&<Text style={{color:'#888'}}>{item.note}</Text>}</View><Pressable onPress={()=>{setEditingEquipmentId(item.id);setEquipmentName(item.name);setEquipmentCategory(item.category);setEquipmentSerial(item.serialNumber||'');setEquipmentTechnicianId(item.technicianId);setEquipmentStatus(item.status);setEquipmentNote(item.note||'');}} style={{paddingHorizontal:7}}><Text style={{color:gold}}>{tr('تعديل')}</Text></Pressable><Pressable onPress={()=>onDeleteEquipment(item.id)}><Text style={{color:'#E58B83'}}>{tr('حذف')}</Text></Pressable></View>)}
+      {technicianEquipment.length===0&&<Text style={{color:'#888'}}>{tr('مازال ما كايناش معدات.')}</Text>}
     </View>
     <Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>{tr('المشاريع')} ({projects.length})</Text>
     {projects.map(project=>{
