@@ -42,6 +42,7 @@ import {buildCashRegisterRows,calculateCashBalance,EMPTY_CASH_ACCOUNT,normalizeC
 import {BankAccount,BankTransfer,BankStatementLine,BankLedgerEntry,BankReconciliationRecord,calculateBankBalance,createBankAccount,deleteBankAccount,matchBankStatementLines,normalizeBankAccounts,normalizeBankTransfers,normalizeBankStatementLines,normalizeBankReconciliationHistory,parseBankStatementCsv,reconcileBankStatement,recordBankTransfer,renameBankAccount} from './src/domain/bank-accounts';
 import {preparePurchaseEntry} from './src/domain/purchase-entry';
 import {parseOptionalProductPrice} from './src/domain/product-pricing';
+import {buildActivityReportRows} from './src/domain/activity-report';
 
 declare const require: (id:string)=>any;
 let speechRecognition: any;
@@ -222,6 +223,8 @@ export default function App() {
   const reportPurchases=appliedReportRange?filterByDateRange(purchases,appliedReportRange.from,appliedReportRange.to):purchases;
   const reportExpenses=appliedReportRange?filterByDateRange(expenses,appliedReportRange.from,appliedReportRange.to):expenses;
   const reportReturns=appliedReportRange?filterByDateRange(salesReturns,appliedReportRange.from,appliedReportRange.to):salesReturns;
+  const reportPayments=appliedReportRange?filterByDateRange(payments,appliedReportRange.from,appliedReportRange.to):payments;
+  const reportSupplierPayments=appliedReportRange?filterByDateRange(supplierPayments,appliedReportRange.from,appliedReportRange.to):supplierPayments;
   const reportSalesTotal=Math.max(0,reportSales.reduce((sum,item)=>sum+item.total,0)-reportReturns.reduce((sum,item)=>sum+item.total,0));
   const reportPurchaseTotal=reportPurchases.reduce((sum,item)=>sum+item.total,0);
   const reportExpenseTotal=reportExpenses.reduce((sum,item)=>sum+item.amount,0);
@@ -378,16 +381,13 @@ export default function App() {
   const exportBusinessLedgerXlsx=()=>exportXlsxFile('HamZa-business-ledger',[{name:'Registre',headers:BUSINESS_LEDGER_HEADERS,rows:buildBusinessLedgerRows({products:productsForExport,sales,returns:salesReturns,purchases,expenses,payments,supplierPayments,bankTransfers,receivables:customerBalances})}]);
   const exportCashRegisterXlsx=()=>exportXlsxFile('HamZa-cash-register',[{name:'Caisse',headers:['Date','Direction','Description','Amount DH','Source'],rows:cashRegisterRows.map(row=>[row.date,row.direction==='in'?'In':'Out',row.description,row.amountCentimes/100,row.source])}]);
   const reportDetailHeaders:CsvCell[]=['Date','Type','Contact','Description','Quantité','Montant DH'];
-  const reportDetailRows:CsvCell[][]=[
-    ...reportSales.map(item=>[item.date,'Vente',item.customerName,item.productName,item.qty,item.total]),
-    ...reportReturns.map(item=>[item.date,'Avoir',item.customerName,item.productName,item.qty,-item.total]),
-    ...reportPurchases.map(item=>[item.date,'Achat',item.supplierName,item.productName,item.qty,item.total]),
-    ...reportExpenses.map(item=>[item.date,'Dépense','',item.title,'',item.amount]),
-  ];
+  const reportDetailRows:CsvCell[][]=buildActivityReportRows({sales:reportSales,returns:reportReturns,purchases:reportPurchases,expenses:reportExpenses,customerPayments:reportPayments,supplierPayments:reportSupplierPayments});
   const exportActivityReportCsv=()=>exportCsvFile('HamZa-activity-report',reportDetailHeaders,reportDetailRows);
   const exportActivityReportXlsx=()=>exportXlsxFile('HamZa-activity-report',[
-    {name:'Résumé',headers:['Indicateur','Montant DH'],rows:[['Période',appliedReportRange?`${appliedReportRange.from||'—'} → ${appliedReportRange.to||'—'}`:'Toutes les périodes'],['Ventes nettes',reportSalesTotal],['Achats',reportPurchaseTotal],['Dépenses',reportExpenseTotal],['Solde actuel de caisse',cashBalanceCentimes/100],['Coût des ventes calculable',reportProfitLoss.costOfGoodsSold],['Marge brute calculable',reportProfitLoss.grossProfitOnCostedSales],['Résultat calculable',reportProfitLoss.netProfitOnCostedSales]]},
+    {name:'Résumé',headers:['Indicateur','Montant DH'],rows:[['Période',appliedReportRange?`${appliedReportRange.from||'—'} → ${appliedReportRange.to||'—'}`:'Toutes les périodes'],['Ventes nettes',reportSalesTotal],['Achats',reportPurchaseTotal],['Dépenses',reportExpenseTotal],['Encaissements clients (période)',reportPayments.reduce((sum,item)=>sum+item.amount,0)],['Règlements fournisseurs (période)',reportSupplierPayments.reduce((sum,item)=>sum+item.amount,0)],['Créances clients actuelles',receivablesTotal],['Dettes fournisseurs actuelles',supplierOutstandingTotal],['Solde actuel de caisse',cashBalanceCentimes/100],['Coût des ventes calculable',reportProfitLoss.costOfGoodsSold],['Marge brute calculable',reportProfitLoss.grossProfitOnCostedSales],['Résultat calculable',reportProfitLoss.netProfitOnCostedSales]]},
     {name:'Détails',headers:reportDetailHeaders,rows:reportDetailRows},
+    {name:'Créances',headers:['Client','Factures DH','Payé DH','Avoirs DH','Dû DH','Crédit DH'],rows:customerBalances.map(item=>[item.customerName,item.totalCentimes/100,item.paidCentimes/100,item.creditedCentimes/100,item.outstandingCentimes/100,item.customerCreditCentimes/100])},
+    {name:'Dettes',headers:['Fournisseur','Achats DH','Payé DH','Solde initial DH','Solde initial payé DH','Dû DH'],rows:supplierBalances.map(item=>[item.supplierName,item.total,item.paid,item.openingBalanceCentimes/100,item.openingBalancePaidCentimes/100,item.outstanding])},
   ]);
   const addCustomer=()=>{
     if(!customer.trim()){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم الزبون.'));return;}
@@ -776,6 +776,10 @@ export default function App() {
           <Text style={s.panelText}>{tr('إجمالي المبيعات:')} {reportSalesTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>{tr('إجمالي المشتريات:')} {reportPurchaseTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>{tr('إجمالي المصاريف:')} {reportExpenseTotal.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>{tr('تحصيلات الزبناء فالفترة:')} {reportPayments.reduce((sum,item)=>sum+item.amount,0).toFixed(2)} DH</Text>
+          <Text style={s.panelText}>{tr('أداءات الموردين فالفترة:')} {reportSupplierPayments.reduce((sum,item)=>sum+item.amount,0).toFixed(2)} DH</Text>
+          <Text style={s.panelText}>{tr('ديون الزبناء الحالية:')} {receivablesTotal.toFixed(2)} DH</Text>
+          <Text style={s.panelText}>{tr('ديون الموردين الحالية:')} {supplierOutstandingTotal.toFixed(2)} DH</Text>
           <Text style={s.panelText}>{tr('الرصيد الحالي:')} {(cashBalanceCentimes/100).toFixed(2)} DH</Text>
           <Text style={s.panelText}>{tr('تكلفة البضاعة المباعة (حسب تكلفة البيع المحفوظة):')} {reportProfitLoss.costOfGoodsSold.toFixed(2)} DH</Text>
           <Text style={s.panelText}>{tr('هامش الربح من المبيعات ذات التكلفة المسجلة:')} {reportProfitLoss.grossProfitOnCostedSales.toFixed(2)} DH</Text>
