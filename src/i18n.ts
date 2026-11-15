@@ -319,6 +319,8 @@ const fr: Record<string, string> = {
   "ساعات العمل": "Heures de travail",
   "ساعات العمل فالفترة:": "Heures de travail sur la période :",
   "تكلفة أجور المشاريع فالفترة:": "Coût de la main-d’œuvre des projets sur la période :",
+  "ملخص عمل التقني": "Résumé du travail du technicien",
+  "تسجيل": "saisie",
   "وقت المشاريع": "Temps des projets",
   "المشروع": "Projet",
   "التقني": "Technicien",

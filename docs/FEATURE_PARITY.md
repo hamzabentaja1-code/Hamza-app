@@ -86,13 +86,13 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Local technician equipment register with editable name/category, serial number, availability status, notes, optional technician assignment, duplicate serial validation, backup/restore and category reuse chips
 - [x] Payroll balances calculate earned labor from saved time-entry rate snapshots; partial cash or bank settlements cannot exceed the outstanding amount, affect the correct cash/bank balance, and remain in local storage, backup and register history without being counted again as a project expense
 - [x] Date-range payroll summaries by technician with payment count, method, notes, CSV/XLSX detail export and period total in the activity report
-- [ ] Technician directory and full per-technician hours/work-history reports
+- [x] Per-technician project work summaries honor the selected report period and group profile-linked logs separately from legacy name-only records; show hours, labor cost, work-entry count and distinct project count in the report, PDF and Excel
 
 ### Agenda and reports
 - [ ] Tasks, assignments, durations and attachments
 - [x] Project task creation, editing, completion, confirmed deletion, priorities (normal, important, urgent), validated optional due dates and optional assignee name, persisted with project data
 - [ ] Sales/purchase/stock/cash/receivables/payables reports with full filtering and export
-- [x] Activity summary with validated date range, filtered sales/purchases/expenses/returns/customer and supplier settlements, project labor hours and costs, profit summary, PDF, period-scoped CSV details and Excel summary/detail/current debt/cash/bank/stock/project-time sheets (cash and bank flows remain separate from profit totals)
+- [x] Activity summary with validated date range, filtered sales/purchases/expenses/returns/customer and supplier settlements, project labor hours and costs, per-technician work and payroll summaries, profit summary, PDF, period-scoped CSV details and Excel summary/detail/current debt/cash/bank/stock/project-time sheets (cash and bank flows remain separate from profit totals)
 - [ ] Filters and date ranges across all report types; export and print
 
 ## Acceptance tests required before calling a module complete
