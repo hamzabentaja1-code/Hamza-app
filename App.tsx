@@ -19,6 +19,7 @@ import SalesReturnWorkspace from './src/SalesReturnWorkspace';
 import {applyCustomerCreditsToSalesReturns,createSalesReturn,normalizeSalesReturns,recordCustomerRefund,SaleForReturn,SalesReturnRecord} from './src/domain/sales-returns';
 import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/domain/document-conversion';
 import {DEFAULT_DOCUMENT_NUMBER_PREFIXES,DocumentNumberPrefixes,normalizeDocumentNumberPrefixes,nextDocumentNumber} from './src/domain/document-numbering';
+import {planInvoiceStockDeduction} from './src/domain/invoice-stock';
 import {allocateCreditNoteAcrossInvoices,allocatePaymentAcrossInvoices,applyExistingCustomerCredits,applyExistingCustomerCreditsWhenSelected,applyPaymentToInvoice} from './src/domain/payment-allocation';
 import {allocatePaymentAcrossCustomerDebt, calculateCustomerBalances} from './src/domain/customer-balances';
 import {canExtendCredit, normalizeCreditTerms, normalizeOpeningBalanceCentimes} from './src/domain/contact-credit';
@@ -404,11 +405,15 @@ export default function App() {
         });
         if(insufficient)throw new Error('الكمية المطلوبة أكبر من مخزون المستودع المحدد.');
       }
-      const directInvoiceQuantities=new Map<number,number>();
-      if(type==='invoice'&&direct){
-        for(const line of quote.lines||[])directInvoiceQuantities.set(line.productId,(directInvoiceQuantities.get(line.productId)||0)+line.qty);
-        const stockError=validateStockDemand(stockMovements,activeWarehouseId,(quote.lines||[]).map(line=>({productId:String(line.productId),quantity:line.qty})));
-        if(stockError)throw new Error(stockError);
+      const invoiceStockQuantities=new Map<number,number>();
+      const alreadyDelivered=type==='invoice'&&documents.some(document=>document.sourceQuoteId===quote.id&&document.type==='delivery');
+      if(type==='invoice'&&!alreadyDelivered){
+        const invoiceLines=quote.lines?.length?quote.lines:[{productId:products.find(product=>product.name===quote.productName)?.id||0,qty:quote.qty}];
+        for(const line of planInvoiceStockDeduction(invoiceLines,alreadyDelivered))invoiceStockQuantities.set(line.productId,line.quantity);
+        if(invoiceStockQuantities.size){
+          const stockError=validateStockDemand(stockMovements,activeWarehouseId,Array.from(invoiceStockQuantities,([productId,quantity])=>({productId:String(productId),quantity})));
+          if(stockError)throw new Error(stockError);
+        }
       }
       const result=createConvertedDocument(
         quote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),
@@ -427,7 +432,7 @@ export default function App() {
       }
       setDocuments(current=>[convertedDocument,...current]);
       if(type==='delivery'){setProducts(result.updatedProducts as Product[]);const delivery=result.document;setStockMovements(v=>[...v,...delivery.lines.map((line,index)=>({id:'delivery-'+delivery.id+'-'+index,productId:String(line.productId),warehouseId:activeWarehouseId,kind:'sale' as const,quantity:line.qty,createdAt:new Date().toISOString(),reference:delivery.number,note:'سند خروج'}))]);}
-      else if(type==='invoice'&&direct){const invoice=result.document;setProducts(current=>current.map(product=>{const quantity=directInvoiceQuantities.get(product.id)||0;return quantity?{...product,qty:product.qty-quantity}:product;}));setStockMovements(current=>[...current,...Array.from(directInvoiceQuantities.entries()).map(([productId,quantity])=>({id:'invoice-'+invoice.id+'-'+productId,productId:String(productId),warehouseId:activeWarehouseId,kind:'sale' as const,quantity,createdAt:new Date().toISOString(),reference:invoice.number,note:'فاتورة مباشرة'}))]);}
+      else if(type==='invoice'&&invoiceStockQuantities.size){const invoice=result.document;setProducts(current=>current.map(product=>{const quantity=invoiceStockQuantities.get(product.id)||0;return quantity?{...product,qty:product.qty-quantity}:product;}));setStockMovements(current=>[...current,...Array.from(invoiceStockQuantities.entries()).map(([productId,quantity])=>({id:'invoice-'+invoice.id+'-'+productId,productId:String(productId),warehouseId:activeWarehouseId,kind:'sale' as const,quantity,createdAt:new Date().toISOString(),reference:invoice.number,note:direct?'فاتورة مباشرة':'فاتورة محولة من عرض'}))]);}
       Alert.alert(tr('تم التحويل'),type==='invoice'?`تسجلات الفاتورة.${appliedCreditCentimes?` ${tr('رصيد سابق مستعمل:')} ${(appliedCreditCentimes/100).toFixed(2)} DH`:''}`:'تسجل سند الخروج وتحدّث المخزون.');
       return true;
     }catch(error){

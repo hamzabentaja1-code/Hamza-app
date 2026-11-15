@@ -31,7 +31,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Auditable stock ledger for opening balances, purchases, direct sales, POS sales, delivery notes and quantity corrections; physical stock counts post only the differences and prevent replay (single main warehouse UI)
 - [ ] Separate price rules for quotes/orders vs invoices
 - [x] MAD amounts use TTC-only pricing with no VAT calculation, as requested; configurable tax rules are not implemented
-- [ ] Stock tracking separately for delivery notes and invoices
+- [x] Invoice stock deductions are validated and recorded once; converting a quote already issued on a delivery note does not deduct it twice
 - [x] Multiple warehouse records, active warehouse selection, paired stock transfers, per-warehouse stock counts, warehouse-filtered movement ledger and persistent audit trail (normal purchase/sale/POS/delivery operations use the selected warehouse; warehouse deactivation and location/site hierarchies remain pending)
 - [x] Bulk product import/export with name search, saved product catalog, PDF catalog export with or without product photos, and offline visual search that ranks each product by its closest saved photo
 
@@ -51,7 +51,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Apply customer credit to a selected open invoice from the payments workspace after confirmation; cash refunds are recorded only after the user confirms the payout
 - [x] Quote conversion to invoice, delivery note, and pro forma; payment statuses and overdue dashboard. Scheduled reminders and follow-up remain open.
 - [x] Line/document discounts, notes, multi-line editing, and barcode entry; fees and section breaks remain open
-- [ ] PDF visual layouts and print output need Android review; status tracking exists, while configurable numbering series and templates remain open
+- [ ] PDF visual layouts and print output need Android review; custom document templates and fields remain open
 
 ### Purchases
 - [x] Direct supplier purchase entry updates stock and records initial or partial payment; price requests, supplier orders, and separate supplier invoice documents remain open
