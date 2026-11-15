@@ -72,6 +72,18 @@ export function addProjectTask(project:ProjectRecord,title:string,id:number,opti
   return {...project,tasks:[...project.tasks,{id,title:trimmed,done:false,...(dueDate?{dueDate}:{}),priority,...(assignee?{assignee}:{})}]};
 }
 
+export function updateProjectTask(project:ProjectRecord,taskId:number,input:{title:string;dueDate?:string;priority:ProjectTaskPriority;assignee?:string}):ProjectRecord{
+  const current=project.tasks.find(task=>task.id===taskId);
+  if(!current)throw new Error('المهمة غير موجودة.');
+  const title=input.title.trim(),dueDate=input.dueDate?.trim();
+  if(!title)throw new Error('دخل اسم المهمة.');
+  if(dueDate&&!isValidIsoDate(dueDate))throw new Error('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.');
+  if(!['عادي','مهم','عاجل'].includes(input.priority))throw new Error('اختار أولوية صحيحة للمهمة.');
+  const assignee=input.assignee?.trim();
+  const updated={...current,title,...(dueDate?{dueDate}:{dueDate:undefined}),priority:input.priority,...(assignee?{assignee}:{assignee:undefined})};
+  return {...project,tasks:project.tasks.map(task=>task.id===taskId?updated:task)};
+}
+
 export function setProjectTaskDone(project:ProjectRecord,taskId:number,done:boolean):ProjectRecord {
   if(!project.tasks.some(task=>task.id===taskId)) throw new Error('المهمة غير موجودة.');
   return {...project,tasks:project.tasks.map(task=>task.id===taskId?{...task,done}:task)};

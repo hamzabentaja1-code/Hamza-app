@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {createProject,updateProjectDetails,assertProjectCanBeDeleted,addProjectTask,addProjectTimeEntry,removeProjectTask,removeProjectTimeEntry,setProjectTaskDone,projectFinancials,normalizeProjects} = require('../.test-build/projects.js');
+const {createProject,updateProjectDetails,assertProjectCanBeDeleted,addProjectTask,updateProjectTask,addProjectTimeEntry,removeProjectTask,removeProjectTimeEntry,setProjectTaskDone,projectFinancials,normalizeProjects} = require('../.test-build/projects.js');
 
 test('creates a project with normalized names and optional target date',()=>{
   const project=createProject({name:'  Kitchen wiring  ',customerName:' Client ',budget:12000,targetDate:'2026-12-15'},10);
@@ -46,6 +46,17 @@ test('adds tasks and toggles completion without changing other tasks',()=>{
   assert.throws(()=>setProjectTaskDone(completed,99,true));
   assert.equal(removeProjectTask(completed,2).tasks.length,0);
   assert.throws(()=>removeProjectTask(completed,99));
+});
+
+test('updates task details while preserving completion and rejects invalid edits',()=>{
+  const project=setProjectTaskDone(addProjectTask(createProject({name:'Project',budget:100},1),'Old task',2,{assignee:'Tech'}),2,true);
+  const updated=updateProjectTask(project,2,{title:' New task ',dueDate:'2026-12-01',priority:'عاجل',assignee:' Tech B '});
+  assert.deepEqual(updated.tasks[0],{id:2,title:'New task',done:true,priority:'عاجل',dueDate:'2026-12-01',assignee:'Tech B'});
+  assert.equal(updateProjectTask(updated,2,{title:'Renamed',priority:'عادي'}).tasks[0].dueDate,undefined);
+  assert.throws(()=>updateProjectTask(project,2,{title:' ',priority:'عادي'}));
+  assert.throws(()=>updateProjectTask(project,2,{title:'Task',dueDate:'2026-02-30',priority:'عادي'}));
+  assert.throws(()=>updateProjectTask(project,2,{title:'Task',priority:'مستعجل'}));
+  assert.throws(()=>updateProjectTask(project,999,{title:'Task',priority:'عادي'}));
 });
 
 test('project expenses and labor cost are linked to budget totals and can exceed budget',()=>{

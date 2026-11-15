@@ -300,6 +300,7 @@ const fr: Record<string, string> = {
   "دخل اسم المشروع.": "Saisissez le nom du projet.",
   "دخل ميزانية صحيحة.": "Saisissez un budget valide.",
   "المهمة غير موجودة.": "Tâche introuvable.",
+  "تعذر تعديل المهمة": "Impossible de modifier la tâche",
   "تمت إضافة المشروع": "Projet ajouté",
   "عروض الأسعار": "Devis",
   "الفواتير": "Factures",
