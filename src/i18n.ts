@@ -672,6 +672,15 @@ const fr: Record<string, string> = {
   "تصدير سجل المبيعات Excel": "Exporter les ventes vers Excel",
   "تصدير السجل الكامل Excel": "Exporter le registre complet vers Excel",
   "تصدير سجل الصندوق Excel": "Exporter la caisse vers Excel",
+  "تصدير لائحة المنتجات PDF بلا صور": "Exporter le catalogue produits en PDF sans photos",
+  "تصدير لائحة المنتجات PDF بالصور": "Exporter le catalogue produits en PDF avec photos",
+  "لائحة المنتجات بالصور": "Catalogue des produits avec photos",
+  "لائحة المنتجات بلا صور": "Catalogue des produits sans photos",
+  "لائحة المنتجات فارغة": "Le catalogue de produits est vide",
+  "زيد منتجات قبل التصدير.": "Ajoutez des produits avant l’exportation.",
+  "المرجع": "Référence",
+  "الباركود": "Code-barres",
+  "ثمن البيع": "Prix de vente",
 };
 
 export function translate(language: AppLanguage, value: string): string {

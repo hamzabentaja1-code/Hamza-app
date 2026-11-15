@@ -9,6 +9,8 @@ export type PdfDocumentInput={
   date:string;
   lines:string[];
   total:number;
+  imageRows?:Array<{text:string;imageData?:string}>;
+  includeImages?:boolean;
 };
 
 export const escapePdfHtml=(value:string)=>value
@@ -35,5 +37,12 @@ export function buildPdfDocumentHtml(input:PdfDocumentInput):string{
   ].filter(Boolean).join(' • ');
   const font=rtl?'"Noto Naskh Arabic", "Noto Sans Arabic", Arial, sans-serif':'Arial, sans-serif';
   const lines=input.lines.map(line=>`<p class="line" dir="auto">${escapePdfHtml(line)}</p>`).join('');
-  return `<!doctype html><html lang="${rtl?'ar':'fr'}" dir="${direction}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:${font};padding:28px;color:#222;direction:${direction};text-align:${rtl?'right':'left'};line-height:1.7}h1,h2{color:#9A762D;margin:12px 0}p{margin:7px 0}.line{white-space:pre-wrap;unicode-bidi:plaintext}.total{border-top:1px solid #aaa;padding-top:10px;margin-top:16px}</style></head><body>${logo}<h1>${escapePdfHtml(profile.name.trim()||'HamZa')}</h1><p>${escapePdfHtml(profile.address)} ${escapePdfHtml(profile.phone)} ${escapePdfHtml(profile.email)}</p><p>${escapePdfHtml(companyIds)}</p><h2>${escapePdfHtml(input.title)}</h2><p>${labels.client}: ${escapePdfHtml(input.customerName||'—')}</p><p>${labels.date}: ${escapePdfHtml(input.date)}</p><hr/>${lines}<hr/><h2 class="total">${labels.total}: ${input.total.toFixed(2)} DH</h2><p>${labels.thanks}</p></body></html>`;
+  const imageRows=input.includeImages?(input.imageRows||[]).map(row=>{
+    const image=row.imageData&&/^data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/=]+$/i.test(row.imageData)
+      ?`<img alt="" src="${escapePdfHtml(row.imageData)}"/>`
+      :'';
+    return `<div class="image-row" dir="auto">${image}<p class="line">${escapePdfHtml(row.text)}</p></div>`;
+  }).join(''):'';
+  const bodyLines=input.includeImages?imageRows:lines;
+  return `<!doctype html><html lang="${rtl?'ar':'fr'}" dir="${direction}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:${font};padding:28px;color:#222;direction:${direction};text-align:${rtl?'right':'left'};line-height:1.7}h1,h2{color:#9A762D;margin:12px 0}p{margin:7px 0}.line{white-space:pre-wrap;unicode-bidi:plaintext}.image-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #ddd;padding:8px 0;break-inside:avoid}.image-row img{width:68px;height:68px;object-fit:contain}.total{border-top:1px solid #aaa;padding-top:10px;margin-top:16px}</style></head><body>${logo}<h1>${escapePdfHtml(profile.name.trim()||'HamZa')}</h1><p>${escapePdfHtml(profile.address)} ${escapePdfHtml(profile.phone)} ${escapePdfHtml(profile.email)}</p><p>${escapePdfHtml(companyIds)}</p><h2>${escapePdfHtml(input.title)}</h2><p>${labels.client}: ${escapePdfHtml(input.customerName||'—')}</p><p>${labels.date}: ${escapePdfHtml(input.date)}</p><hr/>${bodyLines}<hr/><h2 class="total">${labels.total}: ${input.total.toFixed(2)} DH</h2><p>${labels.thanks}</p></body></html>`;
 }

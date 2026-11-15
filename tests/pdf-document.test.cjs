@@ -57,3 +57,25 @@ test('logo is optional and escaped as an attribute when supplied', () => {
 test('HTML escaping covers ampersands, quotes, apostrophes, and angle brackets', () => {
   assert.equal(escapePdfHtml(`&<>"'`),'&amp;&lt;&gt;&quot;&#39;');
 });
+
+test('product catalog PDF can include saved photos and escapes product text', () => {
+  const html=buildPdfDocumentHtml(input({
+    title:'لائحة المنتجات',
+    imageRows:[{text:'قاطع <A> • 2 DH',imageData:'data:image/jpeg;base64,AA=='},{text:'بدون صورة',imageData:'file:///private/photo.jpg'}],
+    includeImages:true,
+  }));
+  assert.match(html,/data:image\/jpeg;base64,AA==/);
+  assert.match(html,/قاطع &lt;A&gt; • 2 DH/);
+  assert.match(html,/بدون صورة/);
+  assert.doesNotMatch(html,/file:\/\/\/private/);
+  assert.match(html,/class="image-row"/);
+});
+
+test('catalog PDF without photos omits photo markup', () => {
+  const html=buildPdfDocumentHtml(input({
+    imageRows:[{text:'Produit',imageData:'data:image/jpeg;base64,AA=='}],
+    includeImages:false,
+  }));
+  assert.doesNotMatch(html,/class="image-row"/);
+  assert.doesNotMatch(html,/data:image\/jpeg/);
+});
