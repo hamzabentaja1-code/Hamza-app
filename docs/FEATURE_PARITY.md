@@ -15,7 +15,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Company profile, logo, address, Moroccan identifiers (ICE, RC, IF), and banking details
 - [ ] Users, roles, permissions, activity history
 - [x] Arabic/French text localization and saved language choice; static translation coverage is tested. Visual RTL/LTR review remains open; theme uses black and gold.
-- [ ] Numbering series, document templates, custom fields
+- [x] Sequential human-readable numbers for quotes, invoices, delivery notes, pro forma documents and credit notes; old document numbers remain intact
+- [ ] Configurable numbering prefixes, document templates and custom fields
 - [x] Shareable JSON backup export, file picker restore and validated restore for local app data (encrypted backup not implemented)
 - [ ] Automated scheduled backups and encrypted backup files
 
