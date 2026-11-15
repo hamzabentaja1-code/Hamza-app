@@ -71,7 +71,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Customer selection, general discount, cash/card/transfer/credit methods and checkout validation
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
 - [x] Credit checkout creates an invoice receivable and records partial payments
-- [x] Camera barcode scanning in product entry and POS; POS category and stock filters remain open
+- [x] Camera barcode scanning in product entry and POS; POS category and in-stock filters
 - [ ] Returns, parked sales and physical receipt-printer integration
 
 ### Projects and field operations

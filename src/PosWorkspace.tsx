@@ -4,10 +4,12 @@ import {addPosLine, emptyPosCart, findPosProduct, PosCart, PosProduct, posTotals
 import BarcodeScannerButton from './BarcodeScannerButton';
 import {translate, getLayoutDirection} from './i18n';
 import {canExtendCredit} from './domain/contact-credit';
+import {filterPosCatalogProducts} from './domain/pos-catalog';
 
-type Product = {id:number; name:string; price:number; qty:number; reference?:string; barcode?:string; photoData?:string};
+type Product = {id:number; name:string; price:number; qty:number; reference?:string; barcode?:string; category?:string; photoData?:string};
 type Customer = {id:number; name:string; creditLimitCentimes?:number};
 type BankAccountOption={id:string;name:string;balance:number};
+type PosCatalogProduct=PosProduct&{category?:string};
 type CheckoutLine = {productId:number; name:string; quantity:number; unitPrice:number; discount:number};
 type Props = {
   language: 'AR'|'FR';
@@ -24,6 +26,8 @@ const money=(value:number)=>value.toFixed(2)+' DH';
 export default function PosWorkspace({language,products,customers,bankAccounts,creditByCustomer,outstandingByCustomer,onCheckout}:Props){
   const tr=(value:string)=>translate(language,value);
   const [term,setTerm]=useState('');
+  const [selectedCategory,setSelectedCategory]=useState('');
+  const [inStockOnly,setInStockOnly]=useState(false);
   const [customerId,setCustomerId]=useState('');
   const [method,setMethod]=useState<'cash'|'card'|'transfer'|'credit'>('cash');
   const [bankAccountId,setBankAccountId]=useState('');
@@ -31,8 +35,9 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
   const [creditPaidText,setCreditPaidText]=useState('0');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
-  const mapped:PosProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,reference:p.reference,barcode:p.barcode,salePrice:p.price,stock:p.qty,trackStock:true})),[products]);
-  const matches=useMemo(()=>{const q=term.trim().toLocaleLowerCase();if(!q)return [];return mapped.filter(p=>[p.name,p.reference||'',p.barcode||''].some(value=>value.toLocaleLowerCase().includes(q))).slice(0,8);},[mapped,term]);
+  const mapped:PosCatalogProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,reference:p.reference,barcode:p.barcode,category:p.category,salePrice:p.price,stock:p.qty,trackStock:true})),[products]);
+  const categories=useMemo(()=>[...new Set(mapped.map(product=>product.category?.trim()||'').filter(Boolean))].sort((a,b)=>a.localeCompare(b,language==='FR'?'fr':'ar')),[mapped,language]);
+  const matches=useMemo(()=>filterPosCatalogProducts(mapped,term,selectedCategory,inStockOnly),[mapped,term,selectedCategory,inStockOnly]);
   const discount=Number(discountText.replace(',','.'));
   const creditPaid=Number(creditPaidText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:method==='credit'&&Number.isFinite(creditPaid)?Math.max(0,creditPaid):0};
@@ -75,11 +80,16 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>{tr('البحث عن منتج')}</Text>
       <TextInput value={term} onChangeText={setTerm} onSubmitEditing={()=>{const product=findPosProduct(mapped,term);if(product){add(product);}}} returnKeyType="search" placeholder={tr('اسم المنتج أو المرجع أو الباركود...')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto'}}/>
       <BarcodeScannerButton language={language} onScanned={handleBarcodeScanned}/>
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginVertical:8}}>
+        <Pressable onPress={()=>setSelectedCategory('')} style={{borderWidth:1,borderColor:selectedCategory===''?GOLD:'#444',borderRadius:8,padding:8}}><Text style={{color:'#FFF'}}>{tr('جميع الأصناف')}</Text></Pressable>
+        {categories.map(category=><Pressable key={category} onPress={()=>setSelectedCategory(category)} style={{borderWidth:1,borderColor:selectedCategory===category?GOLD:'#444',borderRadius:8,padding:8}}><Text style={{color:'#FFF'}}>{category}</Text></Pressable>)}
+        <Pressable onPress={()=>setInStockOnly(value=>!value)} accessibilityRole="button" accessibilityState={{selected:inStockOnly}} style={{borderWidth:1,borderColor:inStockOnly?GOLD:'#444',borderRadius:8,padding:8}}><Text style={{color:'#FFF'}}>{tr(inStockOnly?'إظهار كل المخزون':'المتوفر فقط')}</Text></Pressable>
+      </View>
       {matches.map(p=><Pressable key={p.id} onPress={()=>add(p)} style={{padding:11,borderBottomWidth:1,borderBottomColor:'#333',flexDirection:'row',alignItems:'center',gap:10}}>
-        <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{p.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{p.reference?tr('مرجع:')+' '+p.reference+' • ':''}{p.barcode?tr('باركود:')+' '+p.barcode+' • ':''}{tr('المتوفر:')} {p.stock} • {money(p.salePrice)}</Text></View>
+        <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{p.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{p.category?`${p.category} • `:''}{p.reference?tr('مرجع:')+' '+p.reference+' • ':''}{p.barcode?tr('باركود:')+' '+p.barcode+' • ':''}{tr('المتوفر:')} {p.stock} • {money(p.salePrice)}</Text></View>
         <Text style={{color:GOLD,fontWeight:'900'}}>{tr('+ أضف')}</Text>
       </Pressable>)}
-      {!!term.trim()&&matches.length===0&&<Text style={{color:'#999',padding:10}}>{tr('ما لقيناش منتج بهاد الاسم.')}</Text>}
+      {!!(term.trim()||selectedCategory||inStockOnly)&&matches.length===0&&<Text style={{color:'#999',padding:10}}>{tr('ما كاين حتى منتج فهاد الفلتر.')}</Text>}
       {products.length===0&&<Text style={{color:'#999',padding:10}}>{tr('زيد المنتجات أولاً من قسم المنتجات.')}</Text>}
     </View>
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
