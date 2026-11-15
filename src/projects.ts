@@ -34,6 +34,16 @@ export function createProject(input:{name:string;customerName?:string;budget:num
   return {id,name,customerName:input.customerName?.trim()||'',budget,targetDate,status:'مخطط',tasks:[],timeEntries:[]};
 }
 
+export function updateProjectDetails(project:ProjectRecord,input:{name:string;customerName?:string;budget:number;targetDate?:string}):ProjectRecord{
+  const normalized=createProject(input,project.id);
+  return {...project,name:normalized.name,customerName:normalized.customerName,budget:normalized.budget,targetDate:normalized.targetDate};
+}
+
+export function assertProjectCanBeDeleted(project:ProjectRecord,expenses:readonly ProjectExpense[]):void{
+  if(project.tasks.length||project.timeEntries.length||expenses.some(expense=>expense.projectId===project.id))
+    throw new Error('المشروع فيه مهام أو ساعات أو مصاريف مرتبطة؛ ما يمكنش حذفه.');
+}
+
 export function addProjectTimeEntry(project:ProjectRecord,input:{technician:string;date:string;hours:number;hourlyRate:number;note?:string},id:number):ProjectRecord{
   const technician=input.technician.trim(),date=input.date.trim(),hours=Number(input.hours),hourlyRate=Number(input.hourlyRate);
   if(!technician)throw new Error('دخل اسم التقني.');

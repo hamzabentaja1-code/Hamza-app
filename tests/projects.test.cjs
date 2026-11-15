@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {createProject,addProjectTask,addProjectTimeEntry,removeProjectTask,removeProjectTimeEntry,setProjectTaskDone,projectFinancials,normalizeProjects} = require('../.test-build/projects.js');
+const {createProject,updateProjectDetails,assertProjectCanBeDeleted,addProjectTask,addProjectTimeEntry,removeProjectTask,removeProjectTimeEntry,setProjectTaskDone,projectFinancials,normalizeProjects} = require('../.test-build/projects.js');
 
 test('creates a project with normalized names and optional target date',()=>{
   const project=createProject({name:'  Kitchen wiring  ',customerName:' Client ',budget:12000,targetDate:'2026-12-15'},10);
@@ -15,6 +15,26 @@ test('rejects empty names, negative budgets, and invalid delivery dates',()=>{
   assert.throws(()=>createProject({name:' ',budget:10},1));
   assert.throws(()=>createProject({name:'Project',budget:-1},2));
   assert.throws(()=>createProject({name:'Project',budget:10,targetDate:'2026-02-30'},3));
+});
+
+test('updates project details while preserving tasks, status and work logs',()=>{
+  const project=addProjectTimeEntry(addProjectTask(createProject({name:'Old',budget:100},1),'Install',2),{technician:'Tech',date:'2026-11-15',hours:1,hourlyRate:30},3);
+  const updated=updateProjectDetails({...project,status:'جارٍ'},{name:' New ',customerName:' Client ',budget:250,targetDate:'2026-12-01'});
+  assert.equal(updated.name,'New');
+  assert.equal(updated.customerName,'Client');
+  assert.equal(updated.budget,250);
+  assert.equal(updated.status,'جارٍ');
+  assert.equal(updated.tasks.length,1);
+  assert.equal(updated.timeEntries.length,1);
+  assert.throws(()=>updateProjectDetails(project,{name:' ',budget:10}));
+});
+
+test('only permits deleting an empty project without linked expenses',()=>{
+  const project=createProject({name:'Empty',budget:0},1);
+  assert.doesNotThrow(()=>assertProjectCanBeDeleted(project,[]));
+  assert.throws(()=>assertProjectCanBeDeleted(addProjectTask(project,'Task',2),[]));
+  assert.throws(()=>assertProjectCanBeDeleted(addProjectTimeEntry(project,{technician:'Tech',date:'2026-11-15',hours:1,hourlyRate:20},3),[]));
+  assert.throws(()=>assertProjectCanBeDeleted(project,[{id:1,projectId:1,amount:5}]));
 });
 
 test('adds tasks and toggles completion without changing other tasks',()=>{

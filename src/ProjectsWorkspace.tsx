@@ -9,6 +9,8 @@ type Props={
   projects:ProjectRecord[];
   expenses:{id:number;projectId?:number;amount:number}[];
   onCreate:(input:{name:string;customerName:string;budget:number;targetDate:string})=>void;
+  onUpdate:(projectId:number,input:{name:string;customerName:string;budget:number;targetDate:string})=>boolean;
+  onDelete:(projectId:number)=>void;
   onStatusChange:(projectId:number,status:ProjectStatus)=>void;
   onAddTask:(projectId:number,task:{title:string;dueDate?:string;priority:ProjectTaskPriority;assignee?:string})=>void;
   onToggleTask:(projectId:number,taskId:number,done:boolean)=>void;
@@ -24,7 +26,7 @@ const input={backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRa
 const button={backgroundColor:gold,borderRadius:9,padding:11,alignItems:'center' as const,marginTop:5};
 const statuses:ProjectStatus[]=['مخطط','جارٍ','مكتمل','متوقف'];
 
-export default function ProjectsWorkspace({language,projects,expenses,onCreate,onStatusChange,onAddTask,onToggleTask,onDeleteTask,onAddExpense,onAddTime,onDeleteTime}:Props){
+export default function ProjectsWorkspace({language,projects,expenses,onCreate,onUpdate,onDelete,onStatusChange,onAddTask,onToggleTask,onDeleteTask,onAddExpense,onAddTime,onDeleteTime}:Props){
   const tr=(value:string)=>translate(language,value);
   const [name,setName]=useState('');
   const [customerName,setCustomerName]=useState('');
@@ -36,6 +38,8 @@ export default function ProjectsWorkspace({language,projects,expenses,onCreate,o
   const [taskAssignees,setTaskAssignees]=useState<Record<number,string>>({});
   const [expenseDrafts,setExpenseDrafts]=useState<Record<number,{title:string;amount:string}>>({});
   const [timeDrafts,setTimeDrafts]=useState<Record<number,{technician:string;date:string;hours:string;rate:string;note:string}>>({});
+  const [editingProjectId,setEditingProjectId]=useState<number|null>(null);
+  const [projectEditDraft,setProjectEditDraft]=useState<{name:string;customerName:string;budget:string;targetDate:string}>({name:'',customerName:'',budget:'',targetDate:''});
   const saveProject=()=>{
     const amount=Number(budget.replace(',','.'));
     if(!name.trim()||!budget.trim()||!Number.isFinite(amount)||amount<0){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم المشروع وميزانية صحيحة.'));return;}
@@ -61,10 +65,9 @@ export default function ProjectsWorkspace({language,projects,expenses,onCreate,o
       const taskAssignee=taskAssignees[project.id]||'';
       const expense=expenseDrafts[project.id]||{title:'',amount:''};
       const time=timeDrafts[project.id]||{technician:'',date:new Date().toISOString().slice(0,10),hours:'',rate:'',note:''};
+      const editing=editingProjectId===project.id;
       return <View key={project.id} style={[panel,{marginBottom:10}]}>
-        <Text style={{color:'#FFF',fontWeight:'800',fontSize:17}}>{project.name}</Text>
-        {!!project.customerName&&<Text style={{color:'#AAA',marginTop:4}}>{tr('الزبون')}: {project.customerName}</Text>}
-        {!!project.targetDate&&<Text style={{color:'#AAA',marginTop:4}}>{tr('تاريخ التسليم')}: {project.targetDate}</Text>}
+        {editing?<><TextInput value={projectEditDraft.name} onChangeText={value=>setProjectEditDraft(current=>({...current,name:value}))} placeholder={tr('اسم المشروع')} placeholderTextColor="#888" style={input}/><TextInput value={projectEditDraft.customerName} onChangeText={value=>setProjectEditDraft(current=>({...current,customerName:value}))} placeholder={tr('الزبون (اختياري)')} placeholderTextColor="#888" style={input}/><TextInput value={projectEditDraft.budget} onChangeText={value=>setProjectEditDraft(current=>({...current,budget:value}))} keyboardType="decimal-pad" placeholder={tr('الميزانية (DH)')} placeholderTextColor="#888" style={input}/><TextInput value={projectEditDraft.targetDate} onChangeText={value=>setProjectEditDraft(current=>({...current,targetDate:value}))} placeholder={tr('تاريخ التسليم (اختياري) YYYY-MM-DD')} placeholderTextColor="#888" style={input}/><View style={{flexDirection:'row',gap:7}}><Pressable onPress={()=>{const amount=Number(projectEditDraft.budget.replace(',','.'));if(!projectEditDraft.name.trim()||!Number.isFinite(amount)||amount<0){Alert.alert(tr('معلومات ناقصة'),tr('دخل اسم المشروع وميزانية صحيحة.'));return;}if(projectEditDraft.targetDate.trim()&&!isValidIsoDate(projectEditDraft.targetDate.trim())){Alert.alert(tr('تاريخ غير صالح'),tr('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.'));return;}if(onUpdate(project.id,{...projectEditDraft,budget:amount}))setEditingProjectId(null);}} style={[button,{flex:1}]}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('حفظ التعديل')}</Text></Pressable><Pressable onPress={()=>setEditingProjectId(null)} style={{borderColor:'#555',borderWidth:1,borderRadius:9,padding:11,marginTop:5}}><Text style={{color:'#EEE'}}>{tr('إلغاء')}</Text></Pressable></View></>:<><View style={{flexDirection:'row',alignItems:'center',gap:8}}><Text style={{color:'#FFF',fontWeight:'800',fontSize:17,flex:1}}>{project.name}</Text><Pressable onPress={()=>{setEditingProjectId(project.id);setProjectEditDraft({name:project.name,customerName:project.customerName,budget:String(project.budget),targetDate:project.targetDate||''});}}><Text style={{color:gold}}>{tr('تعديل')}</Text></Pressable><Pressable onPress={()=>onDelete(project.id)}><Text style={{color:'#E58B83'}}>{tr('حذف')}</Text></Pressable></View>{!!project.customerName&&<Text style={{color:'#AAA',marginTop:4}}>{tr('الزبون')}: {project.customerName}</Text>}{!!project.targetDate&&<Text style={{color:'#AAA',marginTop:4}}>{tr('تاريخ التسليم')}: {project.targetDate}</Text>}</>}
         <View style={{backgroundColor:'#111',borderRadius:9,padding:10,marginTop:9}}>
           <Text style={{color:'#DDD'}}>{tr('الميزانية')}: {project.budget.toFixed(2)} DH</Text>
           <Text style={{color:'#DDD',marginTop:4}}>{tr('المصاريف المسجلة')}: {totals.spent.toFixed(2)} DH</Text>

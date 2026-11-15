@@ -78,7 +78,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Parked POS sales are stored in local data and backups and can be resumed or removed; returns and physical receipt-printer integration remain open
 
 ### Projects and field operations
-- [x] Local projects with budgets, expenses, tasks, priorities, due dates, status, and technician time logs with hourly cost and labor totals in budget tracking; installation request workflow remains open
+- [x] Local projects with editable details, protected deletion when records are linked, budgets, expenses, tasks, priorities, due dates, status, and technician time logs with hourly cost and labor totals in budget tracking; installation request workflow remains open
 - [ ] Technician directory, specialties, equipment and equipment categories (project tasks accept a free-text assignee; work logs store the technician name)
 - [ ] Time entries currently record technician name, date, hours, hourly rate, note, deletion and project labor cost; payroll settlement and technician directory/history reports remain open
 
