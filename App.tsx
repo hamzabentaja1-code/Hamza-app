@@ -816,6 +816,11 @@ export default function App() {
            <TextInput value={companyProfile.rib} onChangeText={v=>updateCompanyProfile('rib',v)} keyboardType="number-pad" placeholder="RIB" placeholderTextColor="#888" style={s.input}/>
            <TextInput value={companyProfile.paymentTerms} onChangeText={v=>updateCompanyProfile('paymentTerms',v)} placeholder={tr('شروط الأداء اللي تظهر فـ PDF (اختياري)')} placeholderTextColor="#888" multiline style={[s.input,{minHeight:56,textAlignVertical:'top'}]}/>
            <TextInput value={companyProfile.documentNote} onChangeText={v=>updateCompanyProfile('documentNote',v)} placeholder={tr('ملاحظة أسفل الوثيقة (اختيارية)')} placeholderTextColor="#888" multiline style={[s.input,{minHeight:72,textAlignVertical:'top'}]}/>
+           <Text style={s.fieldLabel}>{tr('قالب PDF')}</Text>
+           <View style={s.row}>{(['classic','compact','framed'] as const).map(style=><Pressable key={style} onPress={()=>updateCompanyProfile('pdfTemplateStyle',style)} style={[s.choice,{flex:1},companyProfile.pdfTemplateStyle===style&&s.choiceActive]}><Text style={s.itemTitle}>{tr(style==='classic'?'كلاسيكي':style==='compact'?'مضغوط':'مؤطر')}</Text></Pressable>)}</View>
+           <TextInput value={companyProfile.pdfAccentColor} onChangeText={v=>updateCompanyProfile('pdfAccentColor',v)} autoCapitalize="characters" maxLength={7} placeholder={tr('لون القالب بصيغة #RRGGBB')} placeholderTextColor="#888" style={s.input}/>
+           <TextInput value={companyProfile.pdfCustomFields} onChangeText={v=>updateCompanyProfile('pdfCustomFields',v.slice(0,2000))} placeholder={tr('حقول إضافية تظهر في كل PDF (سطر لكل حقل)')} placeholderTextColor="#888" multiline style={[s.input,{minHeight:72,textAlignVertical:'top'}]}/>
+           <Text style={s.note}>{tr('القالب واللون والحقول الإضافية كتطبق على جميع وثائق PDF وكتتحفظ مع النسخة الاحتياطية.')}</Text>
            <Text style={s.note}>{tr('معلومات الشركة كتتحفظ تلقائياً وكتظهر فوثائق PDF.')}</Text>
          </View>
       </>:screen==='المخزون'?<>

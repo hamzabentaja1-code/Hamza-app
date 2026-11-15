@@ -79,6 +79,13 @@ test('catalog PDF without photos omits photo markup', () => {
   assert.doesNotMatch(html,/class="image-row"/);
   assert.doesNotMatch(html,/data:image\/jpeg/);
 });
+test('shared PDF styles apply a validated accent and append escaped custom fields',()=>{
+  const html=buildPdfDocumentHtml(input({companyProfile:{...EMPTY_COMPANY_PROFILE,pdfTemplateStyle:'framed',pdfAccentColor:'#123ABC',pdfCustomFields:'Référence: <ABC>\nGarantie: 1 an'}}));
+  assert.match(html,/<body class="framed">/);assert.match(html,/border:2px solid #123ABC/);
+  assert.match(html,/Référence: &lt;ABC&gt;/);assert.match(html,/Garantie: 1 an/);assert.doesNotMatch(html,/Référence: <ABC>/);
+  const compact=buildPdfDocumentHtml(input({companyProfile:{...EMPTY_COMPANY_PROFILE,pdfTemplateStyle:'compact'}}));
+  assert.match(compact,/<body class="compact">/);
+});
 
 test('PDF includes optional payment terms and document note as safely escaped footer text',()=>{
   const html=buildPdfDocumentHtml(input({language:'FR',companyProfile:{...EMPTY_COMPANY_PROFILE,paymentTerms:'Paiement sous 15 jours',documentNote:'Garantie < 1 an & accessoires'}}));

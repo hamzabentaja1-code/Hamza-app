@@ -18,7 +18,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Sequential human-readable numbers for quotes, invoices, delivery notes, pro forma documents and credit notes; old document numbers remain intact
 - [x] Editable Arabic/French settings for all five document number prefixes; preferences persist locally and travel in JSON backups
 - [x] Optional shared payment terms and footer note on generated PDFs; values are escaped and follow Arabic/French document direction
-- [ ] Per-document templates and custom fields
+- [ ] Per-document template assignment and document-specific custom field editing
+- [x] Shared PDF template styles (classic, compact, framed), accent color, and saved custom PDF lines; settings are included in company profile backup data
 - [x] Shareable JSON backup export, file picker restore and validated restore for local app data (encrypted backup not implemented)
 - [ ] Automated scheduled backups and encrypted backup files
 
@@ -52,7 +53,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Apply customer credit to a selected open invoice from the payments workspace after confirmation; cash refunds are recorded only after the user confirms the payout
 - [x] Quote conversion to invoice, delivery note, and pro forma; payment statuses and overdue dashboard. Scheduled reminders and follow-up remain open.
 - [x] Line/document discounts, notes, multi-line editing, and barcode entry; fees and section breaks remain open
-- [ ] PDF visual layouts and print output need Android review; custom document templates and fields remain open
+- [ ] PDF visual layouts and print output need Android review; per-document template assignment and document-specific field editing remain open
 
 ### Purchases
 - [x] Direct supplier purchase entry updates stock and records initial or partial payment; request-to-order-to-receipt and purchase-linked supplier invoice capture are available
