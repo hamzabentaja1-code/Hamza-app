@@ -1,4 +1,26 @@
 export type NumberedRecord = {number?: string};
+export type DocumentNumberSeries = 'quote'|'invoice'|'delivery'|'proforma'|'creditNote';
+export type DocumentNumberPrefixes = Record<DocumentNumberSeries,string>;
+
+export const DEFAULT_DOCUMENT_NUMBER_PREFIXES: DocumentNumberPrefixes = {
+  quote: 'DEV', invoice: 'FV', delivery: 'BS', proforma: 'PRO', creditNote: 'AV',
+};
+
+export function normalizeDocumentNumberPrefixes(value: unknown): DocumentNumberPrefixes {
+  const source = typeof value === 'object' && value !== null ? value as Partial<Record<DocumentNumberSeries,unknown>> : {};
+  const normalize = (candidate: unknown, fallback: string) => {
+    if (typeof candidate !== 'string') return fallback;
+    const result = candidate.trim().replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 20);
+    return result || fallback;
+  };
+  return {
+    quote: normalize(source.quote, DEFAULT_DOCUMENT_NUMBER_PREFIXES.quote),
+    invoice: normalize(source.invoice, DEFAULT_DOCUMENT_NUMBER_PREFIXES.invoice),
+    delivery: normalize(source.delivery, DEFAULT_DOCUMENT_NUMBER_PREFIXES.delivery),
+    proforma: normalize(source.proforma, DEFAULT_DOCUMENT_NUMBER_PREFIXES.proforma),
+    creditNote: normalize(source.creditNote, DEFAULT_DOCUMENT_NUMBER_PREFIXES.creditNote),
+  };
+}
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 

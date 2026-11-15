@@ -16,7 +16,8 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Users, roles, permissions, activity history
 - [x] Arabic/French text localization and saved language choice; static translation coverage is tested. Visual RTL/LTR review remains open; theme uses black and gold.
 - [x] Sequential human-readable numbers for quotes, invoices, delivery notes, pro forma documents and credit notes; old document numbers remain intact
-- [ ] Configurable numbering prefixes, document templates and custom fields
+- [x] Editable Arabic/French settings for all five document number prefixes; preferences persist locally and travel in JSON backups
+- [ ] Custom document templates and fields
 - [x] Shareable JSON backup export, file picker restore and validated restore for local app data (encrypted backup not implemented)
 - [ ] Automated scheduled backups and encrypted backup files
 

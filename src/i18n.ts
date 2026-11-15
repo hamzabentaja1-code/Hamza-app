@@ -3,6 +3,13 @@ export type LayoutDirection = 'rtl' | 'ltr';
 
 const fr: Record<string, string> = {
   "الرئيسية": "Accueil",
+  "ترقيم الوثائق": "Numérotation des documents",
+  "بادئة رقم عرض السعر": "Préfixe du devis",
+  "بادئة رقم الفاتورة": "Préfixe de la facture",
+  "بادئة رقم سند الخروج": "Préfixe du bon de sortie",
+  "بادئة رقم الفاتورة الأولية": "Préfixe de la facture pro forma",
+  "بادئة رقم الإشعار الدائن": "Préfixe de l’avoir",
+  "تبدل البادئة ما كيبدلش أرقام الوثائق القديمة؛ الترقيم الجديد كيكمل من آخر رقم محفوظ.": "La modification du préfixe ne change pas les anciens numéros ; la prochaine série reprend le dernier numéro enregistré.",
   "أداء من الرصيد الافتتاحي": "Paiement du solde initial",
   "الرصيد الافتتاحي:": "Solde initial :",
   "تسجل الأداء على الرصيد الافتتاحي.": "Le paiement a été affecté au solde initial.",
