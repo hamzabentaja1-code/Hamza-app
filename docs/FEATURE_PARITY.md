@@ -55,10 +55,10 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] PDF visual layouts and print output need Android review; custom document templates and fields remain open
 
 ### Purchases
-- [x] Direct supplier purchase entry updates stock and records initial or partial payment; price requests, supplier orders, and separate supplier invoice documents remain open
+- [x] Direct supplier purchase entry updates stock and records initial or partial payment; request-to-order-to-receipt workflow is now available, while separate supplier invoice documents remain open
 - [x] Supplier payment records and partial settlements; supplier credit notes and returns remain open
 - [x] Purchase history and supplier debt reporting; supplier comparison and broader purchase reports remain open
-- [ ] Link/convert purchase documents and update stock correctly
+- [x] Link/convert purchase requests to orders and receipts, then update stock and supplier debt on receipt
 
 ### Cash, payments and banking
 - [x] Manual expenses with cash/card/bank payment; recurring expenses and categories remain open

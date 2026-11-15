@@ -8,6 +8,33 @@ export type PurchaseDocument = {
 };
 export type SupplierPayment = { id: string; supplierId: string; amount: number; date: string; method: "cash" | "bank" | "cheque"; reference?: string };
 
+export function createPurchaseDocument(input:{id:string;number:string;kind:PurchaseKind;supplierId:string;warehouseId?:string;sourceDocumentId?:string;lines:PurchaseLine[];globalDiscount?:number;createdAt:string},existing:readonly PurchaseDocument[]=[]):PurchaseDocument{
+  const doc:PurchaseDocument={...input,status:'draft',globalDiscount:input.globalDiscount??0,lines:input.lines.map(line=>({...line}))};
+  if(!doc.id.trim()||existing.some(item=>item.id===doc.id))throw new Error('معرف وثيقة الشراء فارغ أو مستعمل.');
+  if(!doc.number.trim()||existing.some(item=>item.number===doc.number))throw new Error('رقم وثيقة الشراء فارغ أو مستعمل.');
+  const errors=validatePurchase(doc);
+  if(errors.length)throw new Error(errors[0]);
+  if(!Number.isFinite(doc.globalDiscount)||doc.globalDiscount<0||doc.globalDiscount>purchaseTotals(doc).subtotal)throw new Error('التخفيض العام غير صالح.');
+  if(!doc.createdAt.trim())throw new Error('تاريخ وثيقة الشراء إجباري.');
+  return doc;
+}
+
+export function normalizePurchaseDocuments(value:unknown):PurchaseDocument[]{
+  if(!Array.isArray(value))return [];
+  const ids=new Set<string>(),numbers=new Set<string>();
+  return value.flatMap(raw=>{
+    if(typeof raw!=='object'||raw===null)return [];
+    const doc=raw as Partial<PurchaseDocument>;
+    if(typeof doc.id!=='string'||!doc.id.trim()||ids.has(doc.id)||typeof doc.number!=='string'||!doc.number.trim()||numbers.has(doc.number)||!['request','order','receipt','supplier_invoice','supplier_credit'].includes(doc.kind||'')||!['draft','confirmed','received','cancelled'].includes(doc.status||'')||typeof doc.supplierId!=='string'||!Array.isArray(doc.lines)||typeof doc.createdAt!=='string')return [];
+    const candidate=doc as PurchaseDocument;
+    if(validatePurchase(candidate).length||!Number.isFinite(candidate.globalDiscount)||candidate.globalDiscount<0||candidate.globalDiscount>purchaseTotals(candidate).subtotal)return [];
+    if(candidate.status==='received'&&candidate.kind!=='receipt')return [];
+    if(candidate.status==='received'&&!candidate.warehouseId)return [];
+    ids.add(candidate.id);numbers.add(candidate.number);
+    return [{...candidate,lines:candidate.lines.map(line=>({...line}))}];
+  });
+}
+
 export function purchaseTotals(doc: PurchaseDocument) {
   const subtotal = doc.lines.reduce((sum, line) => sum + Math.max(0, line.quantity * line.unitCost - line.discount), 0);
   const discount = Math.min(subtotal, Math.max(0, doc.globalDiscount));
@@ -41,6 +68,14 @@ export function changePurchaseStatus(doc: PurchaseDocument, next: PurchaseStatus
   if (doc.status === "cancelled") throw new Error("الوثيقة ملغاة");
   if (doc.status === "received" && next !== "received") throw new Error("الاستلام مسجل نهائيا");
   return { ...doc, status: next };
+}
+
+export function convertPurchaseDocument(source:PurchaseDocument,kind:PurchaseKind,input:{id:string;number:string;createdAt:string;warehouseId?:string},existing:readonly PurchaseDocument[]):PurchaseDocument{
+  const allowed=(source.kind==='request'&&kind==='order')||(source.kind==='order'&&kind==='receipt');
+  if(!allowed)throw new Error('تحويل وثيقة الشراء للمرحلة المطلوبة غير مسموح.');
+  if(source.status!=='confirmed')throw new Error('أكد الوثيقة قبل تحويلها للمرحلة التالية.');
+  if(kind==='receipt'&&!input.warehouseId)throw new Error('اختار المخزن قبل إنشاء سند الاستلام.');
+  return createPurchaseDocument({id:input.id,number:input.number,kind,supplierId:source.supplierId,warehouseId:input.warehouseId,sourceDocumentId:source.id,lines:source.lines,globalDiscount:source.globalDiscount,createdAt:input.createdAt},existing);
 }
 
 export function supplierOutstanding(invoiceTotal: number, payments: SupplierPayment[], supplierId: string): number {
