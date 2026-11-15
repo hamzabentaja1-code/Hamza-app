@@ -79,3 +79,10 @@ test('catalog PDF without photos omits photo markup', () => {
   assert.doesNotMatch(html,/class="image-row"/);
   assert.doesNotMatch(html,/data:image\/jpeg/);
 });
+
+test('PDF includes optional payment terms and document note as safely escaped footer text',()=>{
+  const html=buildPdfDocumentHtml(input({language:'FR',companyProfile:{...EMPTY_COMPANY_PROFILE,paymentTerms:'Paiement sous 15 jours',documentNote:'Garantie < 1 an & accessoires'}}));
+  assert.match(html,/Conditions de paiement:<\/strong> Paiement sous 15 jours/);
+  assert.match(html,/Garantie &lt; 1 an &amp; accessoires/);
+  assert.doesNotMatch(html,/Garantie < 1 an/);
+});

@@ -563,6 +563,8 @@ const fr: Record<string, string> = {
   "باركود: ": "Code-barres : ",
   "الصنف: ": "Catégorie : ",
   "معلومات الشركة": "Informations de l’entreprise",
+  "شروط الأداء اللي تظهر فـ PDF (اختياري)": "Conditions de paiement à afficher dans le PDF (facultatif)",
+  "ملاحظة أسفل الوثيقة (اختيارية)": "Note en bas du document (facultative)",
   "اسم الشركة أو النشاط": "Nom de l’entreprise ou de l’activité",
   "الهاتف": "Téléphone",
   "البريد الإلكتروني": "E-mail",

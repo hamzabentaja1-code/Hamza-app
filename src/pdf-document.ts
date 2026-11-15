@@ -24,8 +24,8 @@ export function buildPdfDocumentHtml(input:PdfDocumentInput):string{
   const rtl=input.language==='AR';
   const direction=rtl?'rtl':'ltr';
   const labels=rtl
-    ?{client:'الزبون',date:'التاريخ',total:'المجموع',thanks:'شكراً على ثقتكم'}
-    :{client:'Client',date:'Date',total:'Total',thanks:'Thank you for your trust'};
+    ?{client:'الزبون',date:'التاريخ',total:'المجموع',thanks:'شكراً على ثقتكم',terms:'شروط الأداء'}
+    :{client:'Client',date:'Date',total:'Total',thanks:'Thank you for your trust',terms:'Conditions de paiement'};
   const profile=input.companyProfile;
   const logo=profile.logoData
     ?`<img alt="Logo" src="${escapePdfHtml(profile.logoData)}" style="max-width:110px;max-height:80px;object-fit:contain"/>`
@@ -44,5 +44,7 @@ export function buildPdfDocumentHtml(input:PdfDocumentInput):string{
     return `<div class="image-row" dir="auto">${image}<p class="line">${escapePdfHtml(row.text)}</p></div>`;
   }).join(''):'';
   const bodyLines=input.includeImages?imageRows:lines;
-  return `<!doctype html><html lang="${rtl?'ar':'fr'}" dir="${direction}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:${font};padding:28px;color:#222;direction:${direction};text-align:${rtl?'right':'left'};line-height:1.7}h1,h2{color:#9A762D;margin:12px 0}p{margin:7px 0}.line{white-space:pre-wrap;unicode-bidi:plaintext}.image-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #ddd;padding:8px 0;break-inside:avoid}.image-row img{width:68px;height:68px;object-fit:contain}.total{border-top:1px solid #aaa;padding-top:10px;margin-top:16px}</style></head><body>${logo}<h1>${escapePdfHtml(profile.name.trim()||'HamZa')}</h1><p>${escapePdfHtml(profile.address)} ${escapePdfHtml(profile.phone)} ${escapePdfHtml(profile.email)}</p><p>${escapePdfHtml(companyIds)}</p><h2>${escapePdfHtml(input.title)}</h2><p>${labels.client}: ${escapePdfHtml(input.customerName||'—')}</p><p>${labels.date}: ${escapePdfHtml(input.date)}</p><hr/>${bodyLines}<hr/><h2 class="total">${labels.total}: ${input.total.toFixed(2)} DH</h2><p>${labels.thanks}</p></body></html>`;
+  const paymentTerms=profile.paymentTerms.trim()?`<p class="terms"><strong>${labels.terms}:</strong> ${escapePdfHtml(profile.paymentTerms)}</p>`:'';
+  const documentNote=profile.documentNote.trim()?`<p class="document-note">${escapePdfHtml(profile.documentNote)}</p>`:'';
+  return `<!doctype html><html lang="${rtl?'ar':'fr'}" dir="${direction}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:${font};padding:28px;color:#222;direction:${direction};text-align:${rtl?'right':'left'};line-height:1.7}h1,h2{color:#9A762D;margin:12px 0}p{margin:7px 0}.line{white-space:pre-wrap;unicode-bidi:plaintext}.image-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #ddd;padding:8px 0;break-inside:avoid}.image-row img{width:68px;height:68px;object-fit:contain}.total{border-top:1px solid #aaa;padding-top:10px;margin-top:16px}.terms,.document-note{white-space:pre-wrap;unicode-bidi:plaintext;color:#555;font-size:12px}</style></head><body>${logo}<h1>${escapePdfHtml(profile.name.trim()||'HamZa')}</h1><p>${escapePdfHtml(profile.address)} ${escapePdfHtml(profile.phone)} ${escapePdfHtml(profile.email)}</p><p>${escapePdfHtml(companyIds)}</p><h2>${escapePdfHtml(input.title)}</h2><p>${labels.client}: ${escapePdfHtml(input.customerName||'—')}</p><p>${labels.date}: ${escapePdfHtml(input.date)}</p><hr/>${bodyLines}<hr/><h2 class="total">${labels.total}: ${input.total.toFixed(2)} DH</h2>${paymentTerms}${documentNote}<p>${labels.thanks}</p></body></html>`;
 }
