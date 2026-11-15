@@ -1,7 +1,7 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const {createProject,addProjectTimeEntry}=require('../.test-build/projects.js');
-const {calculateTechnicianPayroll,createPayrollSettlement,normalizePayrollSettlements}=require('../.test-build/technician-payroll.js');
+const {calculateTechnicianPayroll,createPayrollSettlement,normalizePayrollSettlements,summarizePayrollSettlements}=require('../.test-build/technician-payroll.js');
 
 test('calculates earned pay from time-entry rate snapshots and applies partial settlements',()=>{
   const technician={id:3,name:'Amina',hourlyRate:100};
@@ -21,4 +21,13 @@ test('requires a bank account for bank payroll and normalizes only valid settlem
   const valid=createPayrollSettlement({technician,amount:10,method:'تحويل',bankAccountId:'bank1',date:'2026-11-03',id:1,dueCentimes:10000});
   assert.throws(()=>createPayrollSettlement({technician,amount:10,method:'نقداً',date:'2026-02-30',id:2,dueCentimes:10000}),/تاريخاً صحيحاً/);
   assert.deepEqual(normalizePayrollSettlements([valid,{...valid,id:1,amountCentimes:1},{...valid,id:2,technicianId:999}], [technician]),[valid]);
+});
+
+test('summarizes period payroll payments by technician without merging different profiles',()=>{
+ const rows=summarizePayrollSettlements([
+  {id:1,technicianId:4,technicianName:'Amina',date:'2026-11-01',amountCentimes:5000,method:'نقداً'},
+  {id:2,technicianId:4,technicianName:'Amina',date:'2026-11-05',amountCentimes:2500,method:'تحويل',bankAccountId:'bank1'},
+  {id:3,technicianId:5,technicianName:'Ali',date:'2026-11-05',amountCentimes:7000,method:'نقداً'},
+ ]);
+ assert.deepEqual(rows,[{technicianId:4,technicianName:'Amina',paymentCount:2,paidCentimes:7500},{technicianId:5,technicianName:'Ali',paymentCount:1,paidCentimes:7000}]);
 });

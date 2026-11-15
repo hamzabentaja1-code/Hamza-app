@@ -4,6 +4,7 @@ import {Technician} from './technicians';
 export type PayrollMethod='نقداً'|'بطاقة'|'تحويل';
 export type PayrollSettlement={id:number;technicianId:number;technicianName:string;date:string;amountCentimes:number;method:PayrollMethod;bankAccountId?:string;note?:string};
 export type TechnicianPayrollRow={technicianId:number;technicianName:string;earnedCentimes:number;paidCentimes:number;dueCentimes:number};
+export type TechnicianPayrollPeriodRow={technicianId:number;technicianName:string;paymentCount:number;paidCentimes:number};
 const validDate=(value:string)=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const parsed=new Date(value+'T00:00:00.000Z');return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===value;};
 
 export function calculateTechnicianPayroll(projects:readonly ProjectRecord[],technicians:readonly Technician[],settlements:readonly PayrollSettlement[]):TechnicianPayrollRow[]{
@@ -13,6 +14,12 @@ export function calculateTechnicianPayroll(projects:readonly ProjectRecord[],tec
     const paidCentimes=settlements.filter(item=>item.technicianId===technician.id).reduce((sum,item)=>sum+item.amountCentimes,0);
     return {technicianId:technician.id,technicianName:technician.name,earnedCentimes,paidCentimes,dueCentimes:Math.max(0,earnedCentimes-paidCentimes)};
   });
+}
+
+export function summarizePayrollSettlements(settlements:readonly PayrollSettlement[]):TechnicianPayrollPeriodRow[]{
+  const byTechnician=new Map<number,TechnicianPayrollPeriodRow>();
+  for(const settlement of settlements){const row=byTechnician.get(settlement.technicianId)||{technicianId:settlement.technicianId,technicianName:settlement.technicianName,paymentCount:0,paidCentimes:0};row.paymentCount++;row.paidCentimes+=settlement.amountCentimes;byTechnician.set(settlement.technicianId,row);}
+  return [...byTechnician.values()].sort((a,b)=>b.paidCentimes-a.paidCentimes||a.technicianName.localeCompare(b.technicianName));
 }
 
 export function createPayrollSettlement(input:{technician:Technician;amount:number;method:PayrollMethod;date:string;bankAccountId?:string;note?:string;id:number;dueCentimes:number},existing:readonly PayrollSettlement[]=[]):PayrollSettlement{
