@@ -30,3 +30,8 @@ test('normalizes legacy-safe purchase documents and drops malformed or duplicate
   assert.equal(restored.length,1);
   assert.equal(restored[0].number,valid.number);
 });
+
+test('confirmed supplier credit notes cannot be cancelled after they affect the account',()=>{
+  const credit=changePurchaseStatus(create('supplier_credit'),'confirmed');
+  assert.throws(()=>changePurchaseStatus(credit,'cancelled'),/تلغي إشعار دائن/);
+});

@@ -32,3 +32,10 @@ test('business export contains current stock and all financial records in one le
   assert.equal(rows[14][8],-3);
   assert.deepEqual(rows.slice(9,13).map(row=>row[8]),[-5,5,2,-2]);
 });
+
+test('supplier credit notes are positive non-cash liability adjustments in the ledger',()=>{
+  const rows=buildBusinessLedgerRows({products:[],sales:[],returns:[],purchases:[],expenses:[],payments:[],supplierPayments:[{id:12,purchaseId:4,date:'15/11/2026',supplierName:'Shop',amount:25,method:'إشعار دائن',reference:'AV-12'}],bankTransfers:[],receivables:[]});
+  assert.deepEqual(rows.map(row=>row.slice(0,5)),[['Supplier credit',12,'15/11/2026','Supplier credit note','Shop']]);
+  assert.equal(rows[0][8],25);
+  assert.match(rows[0][9],/إشعار دائن/);
+});

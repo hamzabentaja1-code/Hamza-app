@@ -8,7 +8,7 @@ test('cash balance reconciles cash-only receipts, supplier payments, purchases, 
   const withManual=recordManualCashEntry(account,{id:1,date:'12/11/2026',direction:'in',amount:20,description:'Cash correction'},12000);
   assert.equal(calculateCashBalance(withManual,{
     payments:[{id:1,amount:50,method:'نقداً',date:'12/11/2026',customerName:'Ali'},{id:2,amount:200,method:'تحويل',date:'12/11/2026',customerName:'Sara'}],
-    supplierPayments:[{id:3,amount:10,method:'نقداً',date:'12/11/2026',supplierName:'Shop'}],
+    supplierPayments:[{id:3,amount:10,method:'نقداً',date:'12/11/2026',supplierName:'Shop'},{id:30,amount:50,method:'إشعار دائن',date:'12/11/2026',supplierName:'Shop'}],
     purchases:[{id:4,paidAmount:5,paymentMethod:'نقداً',date:'12/11/2026',productName:'Cable',supplierName:'Shop'},{id:5,paidAmount:70,paymentMethod:'تحويل',date:'12/11/2026',productName:'Switch',supplierName:'Shop'}],
     expenses:[{id:6,amount:8,paymentMethod:'Espèces',date:'12/11/2026',title:'Taxi'},{id:7,amount:30,date:'12/11/2026',title:'Unknown'}],
     refunds:[{id:8,amountCentimes:400,method:'cash',date:'12/11/2026',number:'AV-1',customerName:'Ali'}],

@@ -67,6 +67,7 @@ export function changePurchaseStatus(doc: PurchaseDocument, next: PurchaseStatus
   if (!allowed[doc.kind].includes(next)) throw new Error("هاد المرحلة ما مسموحاش لهاد الوثيقة");
   if (doc.status === "cancelled") throw new Error("الوثيقة ملغاة");
   if (doc.status === "received" && next !== "received") throw new Error("الاستلام مسجل نهائيا");
+  if (doc.kind === "supplier_credit" && doc.status === "confirmed" && next === "cancelled") throw new Error("ما يمكنش تلغي إشعار دائن تطبق من قبل.");
   return { ...doc, status: next };
 }
 

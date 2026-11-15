@@ -17,6 +17,6 @@ export function buildActivityReportRows(input:{
     ...input.purchases.map(item=>[item.date,'Achat',item.supplierName,item.productName,item.qty,item.total] as ActivityReportRow),
     ...input.expenses.map(item=>[item.date,'Dépense','',item.title,'',item.amount] as ActivityReportRow),
     ...input.customerPayments.map(item=>[item.date,'Encaissement client',item.customerName,[item.method,item.note||''].filter(Boolean).join(' • '),'',item.amount] as ActivityReportRow),
-    ...input.supplierPayments.map(item=>[item.date,'Règlement fournisseur',item.supplierName,[item.method,item.reference||''].filter(Boolean).join(' • '),'',-item.amount] as ActivityReportRow),
+    ...input.supplierPayments.map(item=>[item.date,item.method==='إشعار دائن'?'Avoir fournisseur':'Règlement fournisseur',item.supplierName,[item.method,item.reference||''].filter(Boolean).join(' • '),'',item.method==='إشعار دائن'?item.amount:-item.amount] as ActivityReportRow),
   ];
 }
