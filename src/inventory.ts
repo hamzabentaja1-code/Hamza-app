@@ -36,6 +36,7 @@ export type StockCountLine = {
   expectedQuantity: number;
   countedQuantity: number;
   difference: number;
+  unitCost?: number;
 };
 export type StockCount = {
   id: string;
@@ -80,7 +81,7 @@ export function validateStockDemand(movements: StockMovement[], warehouseId: str
 
 export function transferStock(input: {
   id: string; productId: string; fromWarehouseId: string; toWarehouseId: string;
-  quantity: number; createdAt: string; reference?: string;
+  quantity: number; createdAt: string; reference?: string; unitCost?: number;
 }, movements: StockMovement[]): StockMovement[] {
   if (!input.id.trim()) throw new Error("معرف التحويل إجباري");
   if (input.fromWarehouseId === input.toWarehouseId) throw new Error("اختار مخزنين مختلفين");
@@ -88,7 +89,9 @@ export function transferStock(input: {
   if (movements.some(m => m.id === input.id + "-out" || m.id === input.id + "-in")) throw new Error("معرف التحويل مستعمل من قبل");
   const error = validateStockIssue(movements, input.productId, input.fromWarehouseId, input.quantity);
   if (error) throw new Error(error);
-  const common = { productId: input.productId, quantity: Math.abs(input.quantity), transferId: input.id, createdAt: input.createdAt, reference: input.reference };
+  const unitCost=input.unitCost??averageInventoryUnitCost(movements,input.productId,input.fromWarehouseId);
+  if(unitCost!==undefined&&(!Number.isFinite(unitCost)||unitCost<0))throw new Error("تكلفة التحويل غير صحيحة");
+  const common = { productId: input.productId, quantity: Math.abs(input.quantity), transferId: input.id, createdAt: input.createdAt, reference: input.reference, ...(unitCost===undefined?{}:{unitCost}) };
   return [...movements,
     { ...common, id: input.id + "-out", warehouseId: input.fromWarehouseId, kind: "transfer_out" },
     { ...common, id: input.id + "-in", warehouseId: input.toWarehouseId, kind: "transfer_in" }
@@ -98,7 +101,7 @@ export function transferStock(input: {
 /** Prepare a physical count against a stable snapshot of the current ledger. */
 export function createStockCount(input: {
   id: string; warehouseId: string; createdAt: string;
-  reference?: string; lines: Array<{ productId: string; countedQuantity: number }>;
+  reference?: string; lines: Array<{ productId: string; countedQuantity: number; unitCost?: number }>;
 }, movements: StockMovement[]): StockCount {
   if (!input.id.trim() || !input.warehouseId.trim()) throw new Error("معرف الجرد والمخزن إجباريان");
   if (!Array.isArray(input.lines) || input.lines.length === 0) throw new Error("خاص الجرد يحتوي على منتج واحد على الأقل");
@@ -109,6 +112,7 @@ export function createStockCount(input: {
     if (seen.has(line.productId)) throw new Error("كاين منتج مكرر فالجرد");
     seen.add(line.productId);
     if (!Number.isFinite(line.countedQuantity) || line.countedQuantity < 0) throw new Error("الكمية الفعلية خاصها تكون صفر أو أكثر");
+    if(line.unitCost!==undefined&&(!Number.isFinite(line.unitCost)||line.unitCost<0))throw new Error("تكلفة المنتج فالجرد غير صحيحة");
     const expectedQuantity = warehouseStock(movements, line.productId, input.warehouseId);
     if (expectedQuantity < 0) throw new Error("رصيد المخزون الحالي سالب ولا يمكن جرده");
     return {
@@ -116,6 +120,7 @@ export function createStockCount(input: {
       expectedQuantity,
       countedQuantity: line.countedQuantity,
       difference: line.countedQuantity - expectedQuantity,
+      ...(line.unitCost===undefined?{}:{unitCost:line.unitCost}),
     };
   });
   return { id: input.id, warehouseId: input.warehouseId, createdAt: input.createdAt, reference: input.reference, lines };
@@ -144,7 +149,9 @@ export function applyStockCount(count: StockCount, movements: StockMovement[]): 
       ids.add(id);
       adjustments.push({
         id, productId: line.productId, warehouseId: count.warehouseId,
-        kind: "adjustment", quantity: line.difference, stockCountId: count.id,
+        kind: "adjustment", quantity: line.difference,
+        ...(line.difference>0?{unitCost:averageInventoryUnitCost(movements,line.productId,count.warehouseId)??line.unitCost}:{}),
+        stockCountId: count.id,
         reference: count.reference ?? count.id, createdAt: count.createdAt,
         note: "تسوية جرد المخزون",
       });
@@ -181,6 +188,33 @@ export function inventoryValue(movements: StockMovement[], productId: string, wa
     }
   }
   return Math.max(0, value);
+}
+
+/** Return the current weighted-average unit cost from a warehouse's stock ledger. */
+export function averageInventoryUnitCost(movements: StockMovement[], productId: string, warehouseId: string): number | undefined {
+  const quantity=warehouseStock(movements,productId,warehouseId);
+  if(quantity<=0)return undefined;
+  const value=inventoryValue(movements,productId,warehouseId);
+  if(!Number.isFinite(value)||value<0)return undefined;
+  if(value>0)return value/quantity;
+  const hasExplicitZeroCost=movements.some(m=>m.productId===productId&&m.warehouseId===warehouseId&&m.unitCost===0&&
+    (m.kind==='opening'||m.kind==='purchase'||m.kind==='return_in'||m.kind==='transfer_in'||(m.kind==='adjustment'&&m.quantity>0)));
+  return hasExplicitZeroCost?0:undefined;
+}
+
+/** Return the on-hand weighted-average cost across a product's warehouses. */
+export function averageInventoryCostAcrossWarehouses(movements:StockMovement[],productId:string,warehouseIds:readonly string[],fallback=0):number {
+  const uniqueIds=new Set(warehouseIds.filter(id=>typeof id==='string'&&id.trim()));
+  let totalQuantity=0,totalValue=0;
+  for(const warehouseId of uniqueIds){
+    const quantity=Math.max(0,warehouseStock(movements,productId,warehouseId));
+    if(quantity<=0)continue;
+    const average=averageInventoryUnitCost(movements,productId,warehouseId);
+    const unitCost=average??(Number.isFinite(fallback)&&fallback>=0?fallback:0);
+    totalQuantity+=quantity;
+    totalValue+=quantity*unitCost;
+  }
+  return totalQuantity>0?totalValue/totalQuantity:(Number.isFinite(fallback)&&fallback>=0?fallback:0);
 }
 
 export function validateWarehouse(warehouse: Partial<Warehouse>, existing: Warehouse[] = []): string[] {

@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {purchaseOutstanding,recordSupplierPayment,recordSupplierOpeningPayment,supplierAccountBalances,normalizeSupplierPayments,normalizePurchasePaidAmount}=require('../.test-build/supplier-account.js');
+const {purchaseOutstanding,recordSupplierPayment,recordSupplierCredit,recordSupplierOpeningPayment,supplierAccountBalances,normalizeSupplierPayments,normalizePurchasePaidAmount}=require('../.test-build/supplier-account.js');
 
 const purchase={id:9,supplierName:'Fournisseur',total:1000,paidAmount:200};
 test('partial supplier payments reduce only the linked purchase balance',()=>{
@@ -12,6 +12,17 @@ test('supplier payment rejects overpayment and requires cheque reference',()=>{
   assert.throws(()=>recordSupplierPayment({purchase,payments:[],amount:801,id:2,date:'today',method:'نقداً'}));
   assert.throws(()=>recordSupplierPayment({purchase,payments:[],amount:50,id:3,date:'today',method:'شيك'}));
   assert.throws(()=>recordSupplierPayment({purchase,payments:[],amount:50,id:30,date:'today',method:'تحويل'}),/الحساب البنكي/);
+});
+test('supplier credit notes reduce only linked debt without a cash payment method',()=>{
+  const credit=recordSupplierCredit({purchase,payments:[],amount:250,id:31,date:'today',reference:'AV-31'});
+  assert.equal(credit.purchaseId,purchase.id);
+  assert.equal(credit.method,'إشعار دائن');
+  assert.equal(purchaseOutstanding(purchase,[credit]),550);
+  assert.equal(supplierAccountBalances([purchase],[credit])[0].paid,200);
+  assert.equal(supplierAccountBalances([purchase],[credit])[0].outstanding,550);
+  assert.equal(normalizeSupplierPayments([credit]).length,1);
+  assert.throws(()=>recordSupplierCredit({purchase,payments:[],amount:801,id:32,date:'today',reference:'AV-32'}),/أكبر من الدين/);
+  assert.throws(()=>recordSupplierCredit({purchase,payments:[],amount:10,id:33,date:'today',reference:''}));
 });
 test('supplier balances group purchases and payments by supplier',()=>{
   const payment=recordSupplierPayment({purchase,payments:[],amount:300,id:4,date:'today',method:'نقداً'});

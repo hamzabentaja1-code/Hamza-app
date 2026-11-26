@@ -1,12 +1,43 @@
+import {StockMovement,warehouseStock} from './inventory';
+
 export type PurchaseKind = "request" | "order" | "receipt" | "supplier_invoice" | "supplier_credit";
 export type PurchaseStatus = "draft" | "confirmed" | "received" | "cancelled";
 export type PurchaseLine = { productId: string; description: string; quantity: number; unitCost: number; discount: number };
 export type PurchaseDocument = {
   id: string; number: string; kind: PurchaseKind; status: PurchaseStatus;
   supplierId: string; warehouseId?: string; sourceDocumentId?: string;
-  lines: PurchaseLine[]; globalDiscount: number; createdAt: string; dueDate?: string;
+  lines: PurchaseLine[]; globalDiscount: number; createdAt: string; dueDate?: string; physicalReturn?: boolean;
 };
 export type SupplierPayment = { id: string; supplierId: string; amount: number; date: string; method: "cash" | "bank" | "cheque"; reference?: string };
+
+export function createPurchaseDocument(input:{id:string;number:string;kind:PurchaseKind;supplierId:string;warehouseId?:string;sourceDocumentId?:string;physicalReturn?:boolean;lines:PurchaseLine[];globalDiscount?:number;createdAt:string},existing:readonly PurchaseDocument[]=[]):PurchaseDocument{
+  const doc:PurchaseDocument={...input,status:'draft',globalDiscount:input.globalDiscount??0,lines:input.lines.map(line=>({...line}))};
+  if(!doc.id.trim()||existing.some(item=>item.id===doc.id))throw new Error('معرف وثيقة الشراء فارغ أو مستعمل.');
+  if(!doc.number.trim()||existing.some(item=>item.number===doc.number))throw new Error('رقم وثيقة الشراء فارغ أو مستعمل.');
+  const errors=validatePurchase(doc);
+  if(errors.length)throw new Error(errors[0]);
+  if(!Number.isFinite(doc.globalDiscount)||doc.globalDiscount<0||doc.globalDiscount>purchaseTotals(doc).subtotal)throw new Error('التخفيض العام غير صالح.');
+  if(doc.physicalReturn&&(doc.kind!=='supplier_credit'||!doc.warehouseId||!doc.sourceDocumentId))throw new Error('خاص اختيار المخزن وتاريخ الإرجاع.');
+  if(!doc.createdAt.trim())throw new Error('تاريخ وثيقة الشراء إجباري.');
+  return doc;
+}
+
+export function normalizePurchaseDocuments(value:unknown):PurchaseDocument[]{
+  if(!Array.isArray(value))return [];
+  const ids=new Set<string>(),numbers=new Set<string>();
+  return value.flatMap(raw=>{
+    if(typeof raw!=='object'||raw===null)return [];
+    const doc=raw as Partial<PurchaseDocument>;
+    if(typeof doc.id!=='string'||!doc.id.trim()||ids.has(doc.id)||typeof doc.number!=='string'||!doc.number.trim()||numbers.has(doc.number)||!['request','order','receipt','supplier_invoice','supplier_credit'].includes(doc.kind||'')||!['draft','confirmed','received','cancelled'].includes(doc.status||'')||typeof doc.supplierId!=='string'||!Array.isArray(doc.lines)||typeof doc.createdAt!=='string')return [];
+    const candidate=doc as PurchaseDocument;
+    if(validatePurchase(candidate).length||!Number.isFinite(candidate.globalDiscount)||candidate.globalDiscount<0||candidate.globalDiscount>purchaseTotals(candidate).subtotal)return [];
+    if(candidate.status==='received'&&candidate.kind!=='receipt')return [];
+    if(candidate.status==='received'&&!candidate.warehouseId)return [];
+    if(candidate.physicalReturn!==undefined&&(candidate.kind!=='supplier_credit'||typeof candidate.physicalReturn!=='boolean'||candidate.physicalReturn&&(!candidate.warehouseId||!candidate.sourceDocumentId?.trim())))return [];
+    ids.add(candidate.id);numbers.add(candidate.number);
+    return [{...candidate,lines:candidate.lines.map(line=>({...line}))}];
+  });
+}
 
 export function purchaseTotals(doc: PurchaseDocument) {
   const subtotal = doc.lines.reduce((sum, line) => sum + Math.max(0, line.quantity * line.unitCost - line.discount), 0);
@@ -40,7 +71,29 @@ export function changePurchaseStatus(doc: PurchaseDocument, next: PurchaseStatus
   if (!allowed[doc.kind].includes(next)) throw new Error("هاد المرحلة ما مسموحاش لهاد الوثيقة");
   if (doc.status === "cancelled") throw new Error("الوثيقة ملغاة");
   if (doc.status === "received" && next !== "received") throw new Error("الاستلام مسجل نهائيا");
+  if (doc.kind === "supplier_credit" && doc.status === "confirmed" && next === "cancelled") throw new Error("ما يمكنش تلغي إشعار دائن تطبق من قبل.");
   return { ...doc, status: next };
+}
+
+export function convertPurchaseDocument(source:PurchaseDocument,kind:PurchaseKind,input:{id:string;number:string;createdAt:string;warehouseId?:string},existing:readonly PurchaseDocument[]):PurchaseDocument{
+  const allowed=(source.kind==='request'&&kind==='order')||(source.kind==='order'&&kind==='receipt');
+  if(!allowed)throw new Error('تحويل وثيقة الشراء للمرحلة المطلوبة غير مسموح.');
+  if(source.status!=='confirmed')throw new Error('أكد الوثيقة قبل تحويلها للمرحلة التالية.');
+  if(kind==='receipt'&&!input.warehouseId)throw new Error('اختار المخزن قبل إنشاء سند الاستلام.');
+  return createPurchaseDocument({id:input.id,number:input.number,kind,supplierId:source.supplierId,warehouseId:input.warehouseId,sourceDocumentId:source.id,lines:source.lines,globalDiscount:source.globalDiscount,createdAt:input.createdAt},existing);
+}
+
+export function prepareSupplierReturn(input:{document:PurchaseDocument;purchase:{id:number;productId?:string;qty:number;unitCost:number};movements:readonly StockMovement[];previouslyReturnedQuantity:number;createdAt:string}):StockMovement{
+  const {document,purchase}=input;
+  if(document.kind!=='supplier_credit'||document.status!=='draft'||!document.physicalReturn)throw new Error('وثيقة الإرجاع الفعلي غير صالحة.');
+  if(document.sourceDocumentId!==String(purchase.id)||!purchase.productId||document.lines.length!==1)throw new Error('الإرجاع خاصو يرتبط بمنتج شراء واحد.');
+  if(!Number.isFinite(purchase.qty)||purchase.qty<=0||!Number.isFinite(input.previouslyReturnedQuantity)||input.previouslyReturnedQuantity<0)throw new Error('كمية الشراء المرتجع غير صالحة.');
+  const line=document.lines[0];
+  if(line.productId!==purchase.productId||line.quantity<=0||!Number.isInteger(line.quantity)||line.unitCost<0||Math.round(line.unitCost*100)!==Math.round(purchase.unitCost*100)||line.discount!==0)throw new Error('بيانات منتج أو كمية الإرجاع غير صالحة.');
+  if(input.previouslyReturnedQuantity+line.quantity>purchase.qty)throw new Error('كمية الإرجاع كتفوت الكمية اللي تشرت.');
+  if(!document.warehouseId||!input.createdAt.trim())throw new Error('خاص اختيار المخزن وتاريخ الإرجاع.');
+  if(line.quantity>warehouseStock([...input.movements],purchase.productId,document.warehouseId))throw new Error('المخزون فهاد المخزن ما كافيش للإرجاع.');
+  return {id:`supplier-return-${document.id}`,productId:purchase.productId,warehouseId:document.warehouseId,kind:'return_out',quantity:line.quantity,unitCost:line.unitCost,createdAt:input.createdAt,reference:document.number,note:'إرجاع فعلي للمورد'};
 }
 
 export function supplierOutstanding(invoiceTotal: number, payments: SupplierPayment[], supplierId: string): number {

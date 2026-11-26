@@ -58,3 +58,23 @@ test('failed restore keeps the write protection active', async () => {
   await assert.rejects(api.writeAppData({}));
   assert.equal(writes.length, 0);
 });
+
+test('backup and restore keep parked POS sales intact', async () => {
+  const {api,writes}=setup(null);
+  const parkedPosSales=[{id:'parked-1',title:'Sale',cart:{lines:[{productId:'1',quantity:2}]}}];
+  const backup=await api.createBackup({parkedPosSales});
+  const restored=await api.restoreBackup(backup);
+  assert.equal(JSON.stringify(restored.parkedPosSales),JSON.stringify(parkedPosSales));
+  assert.equal(JSON.stringify(JSON.parse(writes[0]).parkedPosSales),JSON.stringify(parkedPosSales));
+});
+
+test('backup and restore retain task attachment metadata and file payloads',async()=>{
+  const {api,writes}=setup(null);
+  const projects=[{id:1,tasks:[{id:2,title:'Inspect site',done:false,attachments:[{id:'task-1',name:'photo.jpg',uri:'file:///app/photo.jpg',mimeType:'image/jpeg',size:12}]}]}];
+  const taskAttachmentFiles=[{id:'task-1',base64:'AAECAw=='}];
+  const backup=await api.createBackup({projects,taskAttachmentFiles});
+  const restored=await api.restoreBackup(backup);
+  assert.deepEqual(JSON.parse(JSON.stringify(restored.projects)),projects);
+  assert.deepEqual(JSON.parse(JSON.stringify(restored.taskAttachmentFiles)),taskAttachmentFiles);
+  assert.deepEqual(JSON.parse(JSON.stringify(JSON.parse(writes[0]).taskAttachmentFiles)),taskAttachmentFiles);
+});

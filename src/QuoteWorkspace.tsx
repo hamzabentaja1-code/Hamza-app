@@ -3,12 +3,13 @@ import {Alert, Pressable, ScrollView, Text, TextInput, View} from 'react-native'
 import {calculateQuote} from './domain/quote-calculator';
 import {isValidIsoDate} from './domain/document-conversion';
 import {translate, getLayoutDirection} from './i18n';
+import {resolveDocumentProductPrice} from './domain/product-pricing';
 
-type Product = {id:number; name:string; price:number; qty:number};
+type Product = {id:number; name:string; price:number; quotePrice?:number; invoicePrice?:number; qty:number};
 type Customer = {id:number; name:string};
 export type QuoteLine = {productId:number; productName:string; qty:number; unitPrice:number; total:number};
 export type QuoteRecord = {
-  id:number; productName:string; customerName:string; qty:number;
+  id:number; number?:string; productName:string; customerName:string; qty:number;
   unitPrice:number; total:number; date:string; status:string;
   lines?:QuoteLine[]; notes?:string; validUntil?:string;
 };
@@ -78,7 +79,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,custo
     const qty=Number(quantity.replace(',','.'));
     if(!selectedProduct){Alert.alert(tr('اختار المنتج'),tr('حدد المنتج اللي بغيتي تزيد.'));return;}
     if(!Number.isFinite(qty)||qty<=0){Alert.alert(tr('كمية غير صحيحة'),tr('دخل كمية أكبر من صفر.'));return;}
-    const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):selectedProduct.price;
+    const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):resolveDocumentProductPrice(selectedProduct,initialMode);
     if(!Number.isFinite(unitPrice)||unitPrice<0){Alert.alert(tr('ثمن غير صحيح'),tr('دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.'));return;}
     const line:QuoteLine={productId:selectedProduct.id,productName:selectedProduct.name,qty,unitPrice,total:qty*unitPrice};
     setLines(current=>[...current,line]);
@@ -120,7 +121,7 @@ export default function QuoteWorkspace({language,products,customers,quotes,custo
       {initialMode==='invoice'&&selectedCustomer&&availableCreditCentimes>0&&<Pressable onPress={()=>setApplyCustomerCredit(value=>!value)} style={[choice,{borderColor:gold}]}><Text style={{color:'#FFF'}}>{applyCustomerCredit?'☑':'□'} {tr('استعمال رصيد الزبون المتاح')}: {(availableCreditCentimes/100).toFixed(2)} DH</Text></Pressable>}
       <Text style={{color:'#CCC',marginVertical:8}}>{tr('المنتج')}</Text>
       <TextInput value={productSearch} onChangeText={setProductSearch} placeholder={tr('بحث عن المنتج بالاسم')} placeholderTextColor="#888" style={input}/>
-      {filteredProducts.map(p=><Pressable key={p.id} onPress={()=>{setProductId(String(p.id));setCustomPrice(p.price.toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {p.price.toFixed(2)} DH</Text></Pressable>)}
+      {filteredProducts.map(p=>{const documentPrice=resolveDocumentProductPrice(p,initialMode);return <Pressable key={p.id} onPress={()=>{setProductId(String(p.id));setCustomPrice(documentPrice.toFixed(2));}} style={[choice,productId===String(p.id)&&active]}><Text style={{color:'#FFF'}}>{p.name} — {documentPrice.toFixed(2)} DH</Text></Pressable>;})}
       {products.length===0&&<Text style={{color:'#999',padding:8}}>{tr('زيد المنتجات أولاً.')}</Text>}
       {selectedProduct&&<TextInput value={customPrice} onChangeText={setCustomPrice} keyboardType="decimal-pad" placeholder={tr('ثمن البيع لهذا العرض (DH)')} placeholderTextColor="#888" style={input}/>}
       <View style={{flexDirection:'row',gap:8}}>
@@ -152,12 +153,13 @@ export default function QuoteWorkspace({language,products,customers,quotes,custo
     {showHistory&&<><Text style={{color:'#FFF',fontWeight:'800',fontSize:17,marginTop:18,marginBottom:10}}>{tr('عروض الأسعار السابقة')} ({quotes.length})</Text>
     {quotes.map(q=><View key={q.id} style={[panel,{marginBottom:8}]}>
       <Text style={{color:'#FFF',fontWeight:'800'}}>{q.customerName}</Text>
+      <Text style={{color:gold,fontSize:12,fontWeight:'800',marginTop:3}}>{q.number||`DEV-${q.id}`}</Text>
       <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {tr(q.status)}</Text>
       {q.validUntil&&<Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{tr('صالحة إلى غاية:')} {q.validUntil}</Text>}
       {quoteLines(q).map((line,i)=><Text key={i} style={{color:'#DDD',marginTop:5}}>{line}</Text>)}
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:8}}>
-        <Pressable onPress={()=>onPdf('Devis',q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[]),...(q.validUntil?[tr('صالحة إلى غاية:')+' '+q.validUntil]:[])],q.total)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
+        <Pressable onPress={()=>onPdf('Devis '+(q.number||`DEV-${q.id}`),q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[]),...(q.validUntil?[tr('صالحة إلى غاية:')+' '+q.validUntil]:[])],q.total)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'proforma')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة أولية')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'delivery')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('سند خروج')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'invoice')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة')}</Text></Pressable>

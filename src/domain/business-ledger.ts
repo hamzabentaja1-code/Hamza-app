@@ -19,7 +19,7 @@ type LedgerInput={
 /** One Excel-friendly ledger for the app's current product and financial records. */
 export function buildBusinessLedgerRows(input:LedgerInput):CsvCell[][] {
   const rows:CsvCell[][]=[];
-  for(const product of input.products) rows.push(['Stock',product.id,'',product.name,'',product.qty,product.costPrice??'',product.price,product.qty*product.price,product.reference??'']);
+  for(const product of input.products) rows.push(['Stock',product.id,'',product.name,'',product.qty,product.costPrice??'',product.price,product.qty*(product.costPrice??0),product.reference??'']);
   for(const sale of input.sales) rows.push(['Sale',sale.id,sale.date,sale.productName,sale.customerName,sale.qty,sale.unitCost??'',sale.unitPrice,sale.total,sale.paymentMethod??'']);
   for(const item of input.returns){
     const allocated=item.invoiceAllocations?.reduce((sum,allocation)=>sum+allocation.allocatedCentimes,0)??0;
@@ -35,7 +35,10 @@ export function buildBusinessLedgerRows(input:LedgerInput):CsvCell[][] {
     const allocations=payment.allocations?.map(item=>`invoice ${item.documentId}: ${(item.amountCentimes/100).toFixed(2)} DH`).join(', ');
     rows.push(['Payment',payment.id,payment.date,'Customer payment',payment.customerName,'','','',payment.amount,`${payment.method}${payment.bankAccountId?`; bank ${payment.bankAccountId}`:''}${allocations?`; ${allocations}`:payment.documentId?`; invoice ${payment.documentId}`:''}`]);
   }
-  for(const payment of input.supplierPayments) rows.push(['Supplier payment',payment.id,payment.date,'Supplier payment',payment.supplierName,'','','',-payment.amount,`${payment.purchaseId===undefined?'opening balance':`purchase ${payment.purchaseId}`}; ${payment.method}${payment.bankAccountId?`; bank ${payment.bankAccountId}`:''}${payment.reference?`; ${payment.reference}`:''}`]);
+  for(const payment of input.supplierPayments){
+    const isCredit=payment.method==='إشعار دائن';
+    rows.push([isCredit?'Supplier credit':'Supplier payment',payment.id,payment.date,isCredit?'Supplier credit note':'Supplier payment',payment.supplierName,'','','',isCredit?payment.amount:-payment.amount,`${payment.purchaseId===undefined?'opening balance':`purchase ${payment.purchaseId}`}; ${payment.method}${payment.bankAccountId?`; bank ${payment.bankAccountId}`:''}${payment.reference?`; ${payment.reference}`:''}`]);
+  }
   for(const transfer of input.bankTransfers??[]){
     const amount=transfer.amountCentimes/100;
     const cashOut=transfer.direction==='cash_to_bank';
