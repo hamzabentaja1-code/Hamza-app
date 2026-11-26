@@ -20,3 +20,32 @@ export function buildActivityReportRows(input:{
     ...input.supplierPayments.map(item=>[item.date,item.method==='إشعار دائن'?'Avoir fournisseur':'Règlement fournisseur',item.supplierName,[item.method,item.reference||''].filter(Boolean).join(' • '),'',item.method==='إشعار دائن'?item.amount:-item.amount] as ActivityReportRow),
   ];
 }
+
+type PostedSale = SaleRow & {id:number;documentId?:number;unitPrice:number;unitCost?:number;paymentMethod?:string};
+type ReportInvoice = {
+  id:number; type:string; date:string; customerName:string; number:string; total:number;
+  lines:ReadonlyArray<{productName:string;qty:number;unitPrice:number;total:number}>;
+};
+
+/** Include standalone and quote invoices without double-counting POS sales.
+ * Legacy invoices don't have a saved cost snapshot; never substitute today's cost.
+ */
+export function includeInvoicedSales(sales:readonly PostedSale[],documents:readonly ReportInvoice[]):Array<PostedSale & {reference?:string}>{
+  const recordedIds=new Set(sales.flatMap(sale=>sale.documentId!==undefined?[sale.documentId]:[]));
+  return [...sales,...documents.flatMap(invoice=>{
+    if(invoice.type!=='invoice'||recordedIds.has(invoice.id))return [];
+    const total=Math.round(invoice.total*100);
+    if(!Number.isSafeInteger(total)||total<0)return [];
+    const lines=invoice.lines.length?invoice.lines:[{productName:invoice.number,qty:1,unitPrice:invoice.total,total:invoice.total}];
+    const weights=lines.map(line=>Number.isFinite(line.total)?Math.max(0,line.total):0);
+    const sum=weights.reduce((n,value)=>n+value,0);
+    let cumulative=0, allocated=0;
+    return lines.map((line,index)=>{
+      cumulative+=weights[index];
+      const next=index===lines.length-1?total:sum>0?Math.min(total,Math.round(total*cumulative/sum)):0;
+      const amount=next-allocated;
+      allocated=next;
+      return {id:invoice.id,documentId:invoice.id,reference:invoice.number,date:invoice.date,customerName:invoice.customerName,productName:line.productName,qty:line.qty,unitPrice:line.unitPrice,total:amount/100};
+    });
+  })];
+}

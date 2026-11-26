@@ -86,3 +86,11 @@ test('reuses invoice allocation rows and rejects credits absent from the source 
   assert.throws(()=>applyCustomerCreditsToSalesReturns([item],[{creditNoteId:item.id,invoiceId:99,amountCentimes:3000}],99,'paid'));
   assert.throws(()=>applyCustomerCreditsToSalesReturns([item],[{creditNoteId:999,invoiceId:99,amountCentimes:100}],99,'paid'));
 });
+
+test('multiple partial returns reconcile to exactly the original amount in centimes',()=>{
+  const lowValueSale={...sale,qty:4,total:0.02};
+  const returns=[];
+  for(let i=0;i<4;i++)returns.push(createSalesReturn({sale:lowValueSale,quantity:1,existingReturns:returns,id:100+i,date:'11/11/2026',restock:false}));
+  assert.deepEqual(returns.map(item=>item.total),[0.01,0,0.01,0]);
+  assert.equal(returns.reduce((sum,item)=>sum+Math.round(item.total*100),0),2);
+});

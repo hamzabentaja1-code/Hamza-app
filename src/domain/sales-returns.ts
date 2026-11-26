@@ -19,15 +19,18 @@ export function createSalesReturn(input:{
     throw new Error('مرجع البيع غير صالح للمرتجع.');
   if(!Number.isFinite(input.quantity)||input.quantity<=0||Math.abs(Math.round(input.quantity*1000)-input.quantity*1000)>1e-8)
     throw new Error('كمية المرتجع خاصها تكون أكبر من صفر وبحد أقصى 3 أرقام عشرية.');
-  const returned=input.existingReturns.filter(item=>item.saleId===sale.id)
-    .reduce((sum,item)=>sum+item.qty,0);
+  const priorReturns=input.existingReturns.filter(item=>item.saleId===sale.id);
+  const returned=priorReturns.reduce((sum,item)=>sum+item.qty,0);
   const remaining=Math.round((sale.qty-returned)*1000)/1000;
   if(input.quantity>remaining+1e-9) throw new Error('كمية المرتجع أكبر من الكمية المتبقية من البيع.');
   if(input.restock&&!Number.isSafeInteger(input.productId)) throw new Error('المنتج غير مرتبط بهذا البيع ولا يمكن إرجاعه للمخزون.');
   if(!Number.isSafeInteger(input.id)||input.id<=0) throw new Error('معرف المرتجع غير صالح.');
   if(input.existingReturns.some(item=>item.id===input.id)) throw new Error('معرف المرتجع مستعمل من قبل.');
   if(!input.date.trim()) throw new Error('تاريخ المرتجع مطلوب.');
-  const total=Math.round((sale.total*input.quantity/sale.qty)*100)/100;
+  const saleCentimes=Math.round(sale.total*100);
+  const alreadyCredited=priorReturns.reduce((sum,item)=>sum+Math.round(item.total*100),0);
+  const cumulativeCredit=Math.round(saleCentimes*Math.min(1,(returned+input.quantity)/sale.qty));
+  const total=Math.max(0,cumulativeCredit-alreadyCredited)/100;
   return {
     id:input.id,number:'AV-'+input.id,saleId:sale.id,
     ...(sale.documentId?{documentId:sale.documentId}:{}),

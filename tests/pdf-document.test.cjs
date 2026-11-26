@@ -29,7 +29,7 @@ test('French PDF output declares LTR and uses French labels', () => {
   assert.match(html,/text-align:left/);
   assert.match(html,/Client: Client/);
   assert.match(html,/Total: 120\.00 DH/);
-  assert.match(html,/Thank you for your trust/);
+  assert.match(html,/Merci pour votre confiance/);
 });
 
 test('PDF text and company metadata are escaped instead of interpreted as HTML', () => {
@@ -68,7 +68,7 @@ test('product catalog PDF can include saved photos and escapes product text', ()
   assert.match(html,/قاطع &lt;A&gt; • 2 DH/);
   assert.match(html,/بدون صورة/);
   assert.doesNotMatch(html,/file:\/\/\/private/);
-  assert.match(html,/class="image-row"/);
+  assert.match(html,/class="image-row has-photo"/);
 });
 
 test('catalog PDF without photos omits photo markup', () => {
@@ -92,4 +92,12 @@ test('PDF includes optional payment terms and document note as safely escaped fo
   assert.match(html,/Conditions de paiement:<\/strong> Paiement sous 15 jours/);
   assert.match(html,/Garantie &lt; 1 an &amp; accessoires/);
   assert.doesNotMatch(html,/Garantie < 1 an/);
+});
+
+test('document photos keep non-photo rows and an empty photo selection keeps the original text',()=>{
+  const text='Solde restant : 20 DH';
+  const html=buildPdfDocumentHtml(input({lines:['Article',text],imageRows:[{text:'Article',imageData:'data:image/png;base64,AA=='},{text}],includeImages:true}));
+  assert.match(html,/class="image-row has-photo"/);
+  assert.match(html,/Solde restant : 20 DH/);
+  assert.match(buildPdfDocumentHtml(input({lines:[text],imageRows:[],includeImages:true})),/Solde restant : 20 DH/);
 });

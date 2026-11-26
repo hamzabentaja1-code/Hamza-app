@@ -33,7 +33,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Auditable stock ledger for opening balances, purchases, direct sales, POS sales, delivery notes and quantity corrections; physical stock counts post only the differences and prevent replay (single main warehouse UI)
 - [x] Optional quote and invoice prices per product are used automatically in the corresponding document flow; ordinary catalog price remains the POS/default price
 - [x] MAD amounts use TTC-only pricing with no VAT calculation, as requested; configurable tax rules are not implemented
-- [x] Invoice stock deductions are validated and recorded once; converting a quote already issued on a delivery note does not deduct it twice
+- [x] Invoice stock deductions are validated and recorded once; the matching invoice and delivery note do not deduct it twice, in either order
 - [x] Multiple warehouse records, active warehouse selection, paired stock transfers, per-warehouse stock counts, warehouse-filtered movement ledger and persistent audit trail (normal purchase/sale/POS/delivery operations use the selected warehouse; warehouse deactivation and location/site hierarchies remain pending)
 - [x] Bulk product import/export with name search, saved product catalog, PDF catalog export with or without product photos, and offline visual search that ranks each product by its closest saved photo
 
@@ -46,14 +46,14 @@ This project is an independent implementation of the workflows observed in YanCo
 - [ ] Attachments, contacts, custom fields, price groups
 
 ### Sales documents
-- [x] Quotes, delivery notes, invoices, and pro forma flows; customer orders are not implemented
+- [x] Quotes, delivery notes, invoices, pro forma and quote-linked customer orders. Orders can advance from confirmed through preparation to ready, then to delivered once a linked delivery note exists; a non-delivered order can be cancelled.
 - [x] Customer returns create PDF credit notes, reduce open invoice balances, carry excess credit into a later POS credit sale or quote-converted invoice, and record confirmed partial cash refunds against available unapplied credit in the return history, statement PDF and financial CSV
 - [x] Standalone multi-product invoice creation with stock validation and selected-warehouse deduction; available customer credit is applied automatically and invoice notes are included in PDF output
 - [x] Choose whether to apply available customer credit while creating a standalone invoice; payment workspace can apply credit to a selected existing invoice. Refunds require confirmation and do not move physical cash automatically
 - [x] Apply customer credit to a selected open invoice from the payments workspace after confirmation; cash refunds are recorded only after the user confirms the payout
 - [x] Quote conversion to invoice, delivery note, and pro forma; payment statuses and overdue dashboard. Scheduled reminders and follow-up remain open.
 - [x] Line/document discounts, notes, multi-line editing, and barcode entry; fees and section breaks remain open
-- [ ] PDF visual layouts and print output need Android review; per-document template assignment and document-specific field editing remain open
+- [x] With- and without-product-photo PDF output for quotes, invoices, delivery notes and credit notes; stored document dates and references carry through to exports. [ ] Android print/visual acceptance and per-document template assignment remain open.
 
 ### Purchases
 - [x] Direct supplier purchase entry updates stock and records initial or partial payment; request-to-order-to-receipt and purchase-linked supplier invoice capture are available
@@ -92,7 +92,7 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Agenda and reports
 - [x] Project task creation, editing, completion, confirmed deletion, priorities (normal, important, urgent), validated optional due dates, assignee and local file attachments; attachment metadata survives local storage and JSON backups include the file contents with per-file and total size limits
 - [ ] Sales/purchase/stock/cash/receivables/payables reports with full filtering and export
-- [x] Activity summary with validated date range and applied text search across customer, supplier, product, expense category, technician, cash, bank and stock records; filtered totals and PDF/CSV/XLSX exports include the applied search and period, with current debt snapshots kept clearly identified
+- [x] Activity summary with validated date range and applied text search across customer, supplier, product, expense category, technician, cash, bank and stock records; filtered totals and PDF/CSV/XLSX exports include the applied search and period, with current debt snapshots kept clearly identified. Issued invoices are included without duplicating linked POS transactions, and historic invoices without cost records are identified as such
 - [x] Supplier purchase performance comparison uses the selected purchase/payment period and exports supplier totals to PDF and Excel
 - [ ] Filters and date ranges across all report types; export and print
 

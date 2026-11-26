@@ -22,3 +22,16 @@ test('builds one report table for filtered sales, returns, purchases, expenses a
 test('keeps empty report sections empty',()=>{
   assert.deepEqual(buildActivityReportRows({sales:[],returns:[],purchases:[],expenses:[],customerPayments:[],supplierPayments:[]}),[]);
 });
+
+test('reports include draftless and quote invoices, retain global discounts, and never count a POS invoice twice',()=>{
+  const {includeInvoicedSales}=require('../.test-build/domain/activity-report.js');
+  const invoices=[{id:1,type:'invoice',number:'FV-00001',customerName:'Client',date:'12/11/2026',total:11.01,lines:[
+    {productName:'A',qty:1,unitPrice:15,total:15},{productName:'B',qty:1,unitPrice:15,total:15}
+  ]}];
+  const existing={id:3,documentId:2,date:'12/11/2026',productName:'POS',customerName:'Client',qty:1,unitPrice:30,total:30,unitCost:10};
+  const rows=includeInvoicedSales([existing],[...invoices,{...invoices[0],id:2,type:'invoice'},{...invoices[0],id:4,type:'proforma'}]);
+  assert.deepEqual(rows.map(item=>item.total),[30,5.51,5.5]);
+  assert.equal(rows[0].unitCost,10);
+  assert.equal(rows[1].unitCost,undefined);
+  assert.equal(rows[1].reference,'FV-00001');
+});

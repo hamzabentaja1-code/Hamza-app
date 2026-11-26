@@ -22,8 +22,8 @@ test('report text search matches all words across record fields without case or 
 
 test('activity report applies filters to visible totals and PDF values',()=>{
   const app=require('node:fs').readFileSync('App.tsx','utf8');
-  assert.match(app,/filterByDateRange\(sales,appliedReportRange\.from,appliedReportRange\.to\)/);
-  assert.match(app,/\.filter\(item=>matchesReportSearch\(appliedReportSearch,item\.customerName,item\.productName,item\.id\)\)/);
+  assert.match(app,/filterByDateRange\(accountedSales,appliedReportRange\.from,appliedReportRange\.to\)/);
+  assert.match(app,/\.filter\(item=>matchesReportSearch\(appliedReportSearch,item\.customerName,item\.productName,item\.reference,item\.id\)\)/);
   assert.match(app,/item\.title,item\.category,item\.id/);
   assert.match(app,/item\.technician,item\.projectName,item\.customerName,item\.note/);
   assert.match(app,/reportProfitLoss=calculateProfitLoss\(reportSales,reportReturns,reportExpenses\)/);
