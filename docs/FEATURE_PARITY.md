@@ -85,14 +85,17 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Parked POS sales are stored in local data and backups and can be resumed or removed; POS items support the sales return flow. Physical receipt-printer integration remains open
 
 ### Projects and field operations
-- [x] Local projects with editable details, protected deletion when records are linked, budgets, expenses, tasks, priorities, due dates, status, and technician time logs with hourly cost and labor totals in budget tracking; installation request workflow remains open
+- [x] Local projects with editable details, protected deletion when records are linked, budgets, expenses, tasks, priorities, due dates, status, and technician time logs with hourly cost and labor totals in budget tracking
 - [x] Local technician directory with name, optional phone and specialty, hourly rate, duplicate/name/rate validation; project task assignment and time logging can select a saved technician, and selected time logs copy the saved hourly rate
 - [x] Local technician equipment register with editable name/category, serial number, availability status, notes, optional technician assignment, duplicate serial validation, backup/restore and category reuse chips
 - [x] Payroll balances calculate earned labor from saved time-entry rate snapshots; partial cash or bank settlements cannot exceed the outstanding amount, affect the correct cash/bank balance, and remain in local storage, backup and register history without being counted again as a project expense
 - [x] Date-range payroll summaries by technician with payment count, method, notes, CSV/XLSX detail export and period total in the activity report
 - [x] Per-technician project work summaries honor the selected report period and group profile-linked logs separately from legacy name-only records; show hours, labor cost, work-entry count and distinct project count in the report, PDF and Excel
 
+- [x] Offline installation/intervention requests with customer, address, optional project link and notes; schedule with a saved technician, date and time, prevent duplicate appointment starts, and retain completed/cancelled history in storage and backups. Device acceptance pending.
+
 ### Agenda and reports
+- [x] Consolidated searchable agenda for scheduled field visits, project due dates and task dates, with open/closed filters. No external calendar sync or notifications.
 - [x] Project task creation, editing, completion, confirmed deletion, priorities (normal, important, urgent), validated optional due dates, assignee and local file attachments; attachment metadata survives local storage and JSON backups include the file contents with per-file and total size limits
 - [ ] Sales/purchase/stock/cash/receivables/payables reports with full filtering and export
 - [x] Activity summary with validated date range and applied text search across customer, supplier, product, expense category, technician, cash, bank and stock records; filtered totals and PDF/CSV/XLSX exports include the applied search and period, with current debt snapshots kept clearly identified. Issued invoices are included without duplicating linked POS transactions, and historic invoices without cost records are identified as such

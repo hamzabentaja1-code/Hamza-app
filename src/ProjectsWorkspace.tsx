@@ -1,3 +1,5 @@
+import FieldAgendaWorkspace from './FieldAgendaWorkspace';
+import type {FieldVisit,VisitInput,VisitStatus} from './domain/field-agenda';
 import React,{useState} from 'react';
 import {Alert,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
 import {translate} from './i18n';
@@ -9,6 +11,9 @@ import {PayrollSettlement,TechnicianPayrollRow} from './technician-payroll';
 import {isValidIsoDate} from './domain/document-conversion';
 
 type Props={
+  fieldVisits:FieldVisit[];
+  onSaveVisit:(input:VisitInput,id?:number)=>boolean;
+  onVisitStatus:(id:number,status:VisitStatus)=>void;
   language:'AR'|'FR';
   projects:ProjectRecord[];
   expenses:{id:number;projectId?:number;amount:number}[];
@@ -46,7 +51,7 @@ const input={backgroundColor:'#111',borderColor:'#3A3A3A',borderWidth:1,borderRa
 const button={backgroundColor:gold,borderRadius:9,padding:11,alignItems:'center' as const,marginTop:5};
 const statuses:ProjectStatus[]=['مخطط','جارٍ','مكتمل','متوقف'];
 
-export default function ProjectsWorkspace({language,projects,expenses,technicians,technicianEquipment,payrollRows,payrollSettlements,bankAccounts,onSettlePayroll,onAddEquipment,onUpdateEquipment,onDeleteEquipment,onAddTechnician,onUpdateTechnician,onDeleteTechnician,onCreate,onUpdate,onDelete,onStatusChange,onAddTask,onUpdateTask,onToggleTask,onDeleteTask,onAddTaskAttachment,onOpenTaskAttachment,onRemoveTaskAttachment,onAddExpense,onAddTime,onDeleteTime}:Props){
+export default function ProjectsWorkspace({language,fieldVisits,onSaveVisit,onVisitStatus,projects,expenses,technicians,technicianEquipment,payrollRows,payrollSettlements,bankAccounts,onSettlePayroll,onAddEquipment,onUpdateEquipment,onDeleteEquipment,onAddTechnician,onUpdateTechnician,onDeleteTechnician,onCreate,onUpdate,onDelete,onStatusChange,onAddTask,onUpdateTask,onToggleTask,onDeleteTask,onAddTaskAttachment,onOpenTaskAttachment,onRemoveTaskAttachment,onAddExpense,onAddTime,onDeleteTime}:Props){
   const tr=(value:string)=>translate(language,value);
   const [name,setName]=useState('');
   const [customerName,setCustomerName]=useState('');
@@ -85,6 +90,7 @@ export default function ProjectsWorkspace({language,projects,expenses,technician
     setName('');setCustomerName('');setBudget('');setTargetDate('');
   };
   return <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom:20}}>
+    <FieldAgendaWorkspace language={language} projects={projects} technicians={technicians} visits={fieldVisits} onSave={onSaveVisit} onStatus={onVisitStatus}/>
     <View style={panel}>
       <Text style={{color:gold,fontSize:19,fontWeight:'800',marginBottom:12}}>{tr('مشروع جديد')}</Text>
       <TextInput value={name} onChangeText={setName} placeholder={tr('اسم المشروع')} placeholderTextColor="#888" style={input}/>
