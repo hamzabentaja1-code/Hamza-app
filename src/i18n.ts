@@ -292,6 +292,8 @@ const fr: Record<string, string> = {
   "المشاريع": "Projets",
   "الإشعارات الدائنة": "Avoirs",
   "تسجيل مرتجع وإشعار دائن": "Enregistrer un retour et un avoir",
+  "ما كاين حتى سطر بيع باقي قابل للمرتجع.": "Aucune ligne de vente ne peut encore faire l’objet d’un retour.",
+  "يمكن تسجّل إشعار دائن فقط. مصدر المخزون أو تكلفة الخروج ما مؤكداش.": "Seul un avoir peut être enregistré. L’entrepôt d’origine ou le coût de sortie n’est pas confirmé.",
   "اختار البيع": "Choisir la vente",
   "الكمية المباعة": "Quantité vendue",
   "المتبقي للمرتجع": "Quantité restante à retourner",

@@ -1,7 +1,7 @@
 import React,{useMemo,useState} from 'react';
 import {Alert,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
 import {translate} from './i18n';
-import {SaleForReturn,SalesReturnRecord} from './domain/sales-returns';
+import {quantityAvailableForReturn,saleReturnKey,SaleForReturn,SalesReturnRecord} from './domain/sales-returns';
 
 type Props={language:'AR'|'FR';sales:SaleForReturn[];returns:SalesReturnRecord[];onCreate:(input:{sale:SaleForReturn;quantity:number;reason:string;restock:boolean})=>boolean;onPdf:(item:SalesReturnRecord)=>void;onRefund:(item:SalesReturnRecord,amount:number)=>void};
 const gold='#D6AE55';
@@ -16,25 +16,33 @@ export default function SalesReturnWorkspace({language,sales,returns,onCreate,on
   const [reason,setReason]=useState('');
   const [restock,setRestock]=useState(true);
   const [refundAmounts,setRefundAmounts]=useState<Record<number,string>>({});
-  const selectedSale=sales.find(sale=>String(sale.id)===selectedSaleId);
-  const remaining=useMemo(()=>selectedSale?Math.round((selectedSale.qty-returns.filter(item=>item.saleId===selectedSale.id).reduce((sum,item)=>sum+item.qty,0))*1000)/1000:0,[selectedSale,returns]);
+  const options=useMemo(()=>sales.map(sale=>({sale,key:saleReturnKey(sale),available:quantityAvailableForReturn(sale,returns)})).filter(item=>item.available>0),[sales,returns]);
+  const selected=options.find(item=>item.key===selectedSaleId);
+  const selectedSale=selected?.sale;
+  const remaining=selected?.available??0;
   const save=()=>{
     const amount=Number(quantity.replace(',','.'));
     if(!selectedSale||!Number.isFinite(amount)||amount<=0||amount>remaining){Alert.alert(tr('تعذر تسجيل المرتجع'),tr('اختار بيعاً وكمية لا تتجاوز المتبقي.'));return;}
-    if(onCreate({sale:selectedSale,quantity:amount,reason,restock})){setSelectedSaleId('');setQuantity('1');setReason('');setRestock(true);}
+    if(onCreate({sale:selectedSale,quantity:amount,reason,restock:restock&&selectedSale.canRestock!==false})){setSelectedSaleId('');setQuantity('1');setReason('');setRestock(true);}
   };
   return <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom:20}}>
     <View style={panel}>
       <Text style={{color:gold,fontSize:19,fontWeight:'800',marginBottom:12}}>{tr('تسجيل مرتجع وإشعار دائن')}</Text>
       <Text style={{color:'#CCC',marginBottom:7}}>{tr('اختار البيع')}</Text>
-      {sales.map(sale=>{const already=returns.filter(item=>item.saleId===sale.id).reduce((sum,item)=>sum+item.qty,0);const available=Math.round((sale.qty-already)*1000)/1000;return available>0?<Pressable key={sale.id} onPress={()=>setSelectedSaleId(String(sale.id))} style={{borderWidth:1,borderColor:selectedSaleId===String(sale.id)?gold:'#393939',borderRadius:8,padding:10,marginBottom:6}}><Text style={{color:'#FFF',fontWeight:'700'}}>{sale.productName} • {sale.customerName}</Text><Text style={{color:'#AAA',marginTop:4}}>{tr('الكمية المباعة')}: {sale.qty} • {tr('المتبقي للمرتجع')}: {available} • {sale.total.toFixed(2)} DH</Text></Pressable>:null;})}
-      {sales.length===0&&<Text style={{color:'#999',padding:8}}>{tr('ما كاين حتى بيع مسجل.')}</Text>}
+      {options.map(({sale,key,available})=><Pressable key={key} accessibilityRole="button" accessibilityState={{selected:selectedSaleId===key}} onPress={()=>{setSelectedSaleId(key);setRestock(sale.canRestock!==false);}} style={{borderWidth:1,borderColor:selectedSaleId===key?gold:'#393939',borderRadius:8,padding:10,marginBottom:6}}>
+        <Text style={{color:'#FFF',fontWeight:'700'}}>{sale.productName} • {sale.customerName}</Text>
+        <Text style={{color:'#CCC',marginTop:4}}>{[sale.reference,sale.date].filter(Boolean).join(' • ')}</Text>
+        <Text style={{color:'#AAA',marginTop:4}}>{tr('الكمية المباعة')}: {sale.qty} • {tr('المتبقي للمرتجع')}: {available} • {sale.total.toFixed(2)} DH</Text>
+      </Pressable>)}
+      {options.length===0&&<Text style={{color:'#999',padding:8}}>{tr('ما كاين حتى سطر بيع باقي قابل للمرتجع.')}</Text>}
       {selectedSale&&<>
         <TextInput value={quantity} onChangeText={setQuantity} keyboardType="decimal-pad" placeholder={tr('كمية المرتجع')} placeholderTextColor="#888" style={input}/>
         <Text style={{color:'#AAA',marginBottom:8}}>{tr('المتوفر للمرتجع')}: {remaining}</Text>
         <TextInput value={reason} onChangeText={setReason} placeholder={tr('سبب المرتجع (اختياري)')} placeholderTextColor="#888" style={input}/>
+        {selectedSale.canRestock===false?<Text style={{color:'#CCC',marginBottom:7}}>{tr('يمكن تسجّل إشعار دائن فقط. مصدر المخزون أو تكلفة الخروج ما مؤكداش.')}</Text>:<>
         <Text style={{color:'#CCC',marginBottom:7}}>{tr('إرجاع المنتج للمخزون؟')}</Text>
         <View style={{flexDirection:'row',gap:8}}>{[true,false].map(value=><Pressable key={String(value)} onPress={()=>setRestock(value)} style={{borderWidth:1,borderColor:restock===value?gold:'#444',borderRadius:8,padding:9}}><Text style={{color:restock===value?gold:'#DDD'}}>{tr(value?'نعم':'لا')}</Text></Pressable>)}</View>
+        </>}
         <Pressable onPress={save} style={button}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تأكيد المرتجع')}</Text></Pressable>
       </>}
     </View>

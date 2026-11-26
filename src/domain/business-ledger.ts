@@ -6,8 +6,8 @@ export const BUSINESS_LEDGER_HEADERS:CsvCell[]=[
 
 type LedgerInput={
   products:readonly {id:number;name:string;qty:number;costPrice?:number;price:number;reference?:string}[];
-  sales:readonly {id:number;date:string;productName:string;customerName:string;qty:number;unitCost?:number;unitPrice:number;total:number;paymentMethod?:string}[];
-  returns:readonly {id:number;date:string;number:string;saleId:number;productName:string;customerName:string;qty:number;total:number;restocked:boolean;invoiceAllocations?:{documentId:number;allocatedCentimes:number}[];unappliedCentimes?:number;refunds?:{id:number;amountCentimes:number;date:string;method:'cash'}[]}[];
+  sales:readonly {id:number;sourceKey?:string;reference?:string;date:string;productName:string;customerName:string;qty:number;unitCost?:number;unitPrice:number;total:number;paymentMethod?:string}[];
+  returns:readonly {id:number;date:string;number:string;saleId:number;sourceKey?:string;saleReference?:string;productName:string;customerName:string;qty:number;total:number;restocked:boolean;invoiceAllocations?:{documentId:number;allocatedCentimes:number}[];unappliedCentimes?:number;refunds?:{id:number;amountCentimes:number;date:string;method:'cash'}[]}[];
   purchases:readonly {id:number;date:string;productName:string;supplierName:string;qty:number;unitCost:number;total:number;paidAmount?:number;paymentMethod?:string;bankAccountId?:string}[];
   expenses:readonly {id:number;date:string;title:string;amount:number;paymentMethod?:string;bankAccountId?:string}[];
   payments:readonly {id:number;date:string;customerName:string;amount:number;method:string;documentId?:number;bankAccountId?:string;allocations?:{documentId:number;amountCentimes:number}[]}[];
@@ -20,10 +20,10 @@ type LedgerInput={
 export function buildBusinessLedgerRows(input:LedgerInput):CsvCell[][] {
   const rows:CsvCell[][]=[];
   for(const product of input.products) rows.push(['Stock',product.id,'',product.name,'',product.qty,product.costPrice??'',product.price,product.qty*(product.costPrice??0),product.reference??'']);
-  for(const sale of input.sales) rows.push(['Sale',sale.id,sale.date,sale.productName,sale.customerName,sale.qty,sale.unitCost??'',sale.unitPrice,sale.total,sale.paymentMethod??'']);
+  for(const sale of input.sales) rows.push(['Sale',sale.sourceKey??sale.id,sale.date,sale.productName,sale.customerName,sale.qty,sale.unitCost??'',sale.unitPrice,sale.total,[sale.reference,sale.paymentMethod].filter(Boolean).join(' • ')]);
   for(const item of input.returns){
     const allocated=item.invoiceAllocations?.reduce((sum,allocation)=>sum+allocation.allocatedCentimes,0)??0;
-    rows.push(['Credit note',item.id,item.date,item.productName,item.customerName,-item.qty,'','',-item.total,`${item.number}; sale ${item.saleId}; allocated ${(allocated/100).toFixed(2)} DH; customer credit ${((item.unappliedCentimes??0)/100).toFixed(2)} DH; ${item.restocked?'restocked':'not restocked'}`]);
+    rows.push(['Credit note',item.id,item.date,item.productName,item.customerName,-item.qty,'','',-item.total,`${item.number}; sale ${item.saleReference??item.sourceKey??item.saleId}; allocated ${(allocated/100).toFixed(2)} DH; customer credit ${((item.unappliedCentimes??0)/100).toFixed(2)} DH; ${item.restocked?'restocked':'not restocked'}`]);
     for(const refund of item.refunds??[]) rows.push(['Customer refund',refund.id,refund.date,`Cash refund ${item.number}`,item.customerName,'','','',-(refund.amountCentimes/100),`cash; credit note ${item.number}`]);
   }
   for(const purchase of input.purchases){

@@ -48,6 +48,7 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Sales documents
 - [x] Quotes, delivery notes, invoices, pro forma and quote-linked customer orders. Orders can advance from confirmed through preparation to ready, then to delivered once a linked delivery note exists; a non-delivered order can be cancelled.
 - [x] Customer returns create PDF credit notes, reduce open invoice balances, carry excess credit into a later POS credit sale or quote-converted invoice, and record confirmed partial cash refunds against available unapplied credit in the return history, statement PDF and financial CSV
+- [x] Direct and quote-derived invoice lines support partial returns and kind-specific credit notes without creating duplicate POS return entries. Physical returns use the documented source warehouse and saved issue cost; legacy or ambiguous stock provenance allows a financial credit only.
 - [x] Standalone multi-product invoice creation with stock validation and selected-warehouse deduction; available customer credit is applied automatically and invoice notes are included in PDF output
 - [x] Choose whether to apply available customer credit while creating a standalone invoice; payment workspace can apply credit to a selected existing invoice. Refunds require confirmation and do not move physical cash automatically
 - [x] Apply customer credit to a selected open invoice from the payments workspace after confirmation; cash refunds are recorded only after the user confirms the payout
@@ -79,7 +80,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Checkout records sales, posts stock reduction and generates a PDF receipt
 - [x] Credit checkout creates an invoice receivable and records partial payments
 - [x] Camera barcode scanning in product entry and POS; POS category and in-stock filters
-- [x] Parked POS sales are stored in local data and backups and can be resumed or removed; returns and physical receipt-printer integration remain open
+- [x] Parked POS sales are stored in local data and backups and can be resumed or removed; POS items support the sales return flow. Physical receipt-printer integration remains open
 
 ### Projects and field operations
 - [x] Local projects with editable details, protected deletion when records are linked, budgets, expenses, tasks, priorities, due dates, status, and technician time logs with hourly cost and labor totals in budget tracking; installation request workflow remains open
