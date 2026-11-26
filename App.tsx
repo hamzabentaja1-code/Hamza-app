@@ -56,6 +56,7 @@ import {summarizePurchasesBySupplier} from './src/domain/purchase-report';
 
 declare const require: (id:string)=>any;
 import {ProductVoiceSession,productVoiceLocale,productVoiceValue,type ProductVoiceTarget} from './src/domain/product-voice';
+import {MAX_PRODUCT_IMPORT_BYTES,previewProductImport,type ProductImportPreview} from './src/domain/product-import';
 let speechRecognition: typeof import('expo-speech-recognition').ExpoSpeechRecognitionModule | undefined;
 try{speechRecognition=require('expo-speech-recognition').ExpoSpeechRecognitionModule;}catch{speechRecognition=undefined;}
 
@@ -252,6 +253,10 @@ export default function App() {
   const [bankName,setBankName]=useState(''); const [bankOpeningAmount,setBankOpeningAmount]=useState(''); const [bankTransferAccountId,setBankTransferAccountId]=useState(''); const [bankTransferAmount,setBankTransferAmount]=useState(''); const [bankTransferDescription,setBankTransferDescription]=useState(''); const [bankTransferDirection,setBankTransferDirection]=useState<'cash_to_bank'|'bank_to_cash'>('cash_to_bank');
   const [loaded,setLoaded]=useState(false); const [storageReady,setStorageReady]=useState(false); const [backupText,setBackupText]=useState(''); const [backupBusy,setBackupBusy]=useState(false);
   const [productBulkText,setProductBulkText]=useState('');
+  const [productImport,setProductImport]=useState<{source:string;preview:ProductImportPreview;warehouseId:string;filename?:string}>();
+  const [productImportBusy,setProductImportBusy]=useState(false);
+  const productImportOpen=useRef(false);
+
   const [name,setName]=useState(''); const [price,setPrice]=useState(''); const [costPrice,setCostPrice]=useState(''); const [quotePrice,setQuotePrice]=useState(''); const [invoicePrice,setInvoicePrice]=useState(''); const [qty,setQty]=useState(''); const [productReference,setProductReference]=useState(''); const [productBarcode,setProductBarcode]=useState(''); const [productCategory,setProductCategory]=useState(''); const [productBrand,setProductBrand]=useState(''); const [productUnit,setProductUnit]=useState(''); const [productVariant,setProductVariant]=useState(''); const [editingProductId,setEditingProductId]=useState<number|null>(null);
   const [customer,setCustomer]=useState(''); const [customerPhone,setCustomerPhone]=useState(''); const [customerWhatsapp,setCustomerWhatsapp]=useState(''); const [customerAddress,setCustomerAddress]=useState(''); const [customerIce,setCustomerIce]=useState(''); const [customerRc,setCustomerRc]=useState(''); const [customerIf,setCustomerIf]=useState(''); const [customerCreditLimit,setCustomerCreditLimit]=useState(''); const [customerPaymentDays,setCustomerPaymentDays]=useState(''); const [customerOpeningBalance,setCustomerOpeningBalance]=useState('');
   const [saleProduct,setSaleProduct]=useState(''); const [saleCustomer,setSaleCustomer]=useState(''); const [saleQty,setSaleQty]=useState('1');
@@ -458,31 +463,62 @@ export default function App() {
   };
   const pickCompanyLogo=async()=>{try{const permission=await ImagePicker.requestMediaLibraryPermissionsAsync();if(!permission.granted){Alert.alert(tr('إذن الصور مطلوب'),tr('سمح للتطبيق بالوصول للصور لاختيار شعار الشركة.'));return;}const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,aspect:[1,1],quality:0.45,base64:true});if(result.canceled)return;const asset=result.assets[0];if(!asset.base64){Alert.alert(tr('تعذر تحميل الصورة'),tr('اختار صورة أخرى.'));return;}updateCompanyProfile('logoData','data:image/jpeg;base64,'+asset.base64);}catch{Alert.alert(tr('خطأ'),tr('ما قدرناش نختارو الصورة.'));}};
   const pickProductPhoto=async()=>{if(photoGallery.length>=4){Alert.alert(tr('صور المنتج'),tr('الحد الأقصى أربع صور للمنتج.'));return;}try{const permission=await ImagePicker.requestMediaLibraryPermissionsAsync();if(!permission.granted){Alert.alert(tr('إذن الصور مطلوب'),tr('سمح للتطبيق بالوصول للصور لاختيار صورة المنتج.'));return;}const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,aspect:[1,1],quality:0.55,base64:true});if(result.canceled)return;const asset=result.assets[0];if(!asset.base64){Alert.alert(tr('تعذر تحميل الصورة'),tr('اختار صورة أخرى.'));return;}setPhotoGallery(current=>appendProductPhoto(current,'data:image/jpeg;base64,'+asset.base64));}catch{Alert.alert(tr('خطأ'),tr('ما قدرناش نختارو الصورة.'));}};
-  const importProductsBulk=()=>{
-    const rows=productBulkText.split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
-    if(!rows.length){Alert.alert(tr('ما كايناش بيانات'),tr('لصق لائحة المنتجات أولاً.'));return;}
-    const delimiter=rows[0].includes('\t')?'\t':';';
-    const parse=(line:string)=>line.split(delimiter).map(value=>value.trim().replace(/^"|"$/g,'').replace(/""/g,'"'));
-    const first=parse(rows[0]).map(value=>value.toLowerCase());
-    const hasHeader=first.some(value=>['name','nom','الاسم','product'].includes(value));
-    const dataRows=hasHeader?rows.slice(1):rows;
-    const seenRefs=new Set(products.map(p=>(p.reference||'').toLowerCase()).filter(Boolean));
-    const seenBarcodes=new Set(products.map(p=>p.barcode||'').filter(Boolean));
-    const imported:Product[]=[];let rejected=0;
-    for(const row of dataRows){
-      const values=parse(row);
-      const [productName,reference,barcode,category,costText,priceText,qtyText,brand,unit,variant,quotePriceText,invoicePriceText]=values;
-      const number=(value:string|undefined)=>value===undefined||value===''?0:Number(value.replace(',','.').replace(/\s/g,''));
-      const cost=number(costText),salePrice=number(priceText),quantity=number(qtyText);let importedQuotePrice:number|undefined,importedInvoicePrice:number|undefined;try{importedQuotePrice=parseOptionalProductPrice(quotePriceText||'');importedInvoicePrice=parseOptionalProductPrice(invoicePriceText||'');}catch{rejected++;continue;}
-      if(!productName||!priceText||!Number.isFinite(cost)||cost<0||!Number.isFinite(salePrice)||salePrice<0||!Number.isInteger(quantity)||quantity<0){rejected++;continue;}
-      const ref=(reference||'').toLowerCase(),code=barcode||'';
-      if((ref&&seenRefs.has(ref))||(code&&seenBarcodes.has(code))){rejected++;continue;}
-      if(ref)seenRefs.add(ref);if(code)seenBarcodes.add(code);
-      imported.push({id:Date.now()+imported.length,name:productName,reference:reference||undefined,barcode:barcode||undefined,category:category||undefined,brand:brand||undefined,unit:unit||undefined,variant:variant||undefined,quotePrice:importedQuotePrice,invoicePrice:importedInvoicePrice,costPrice:cost,price:salePrice,qty:quantity});
+  const productImportMessage=(error:unknown)=>{
+    const reasons:Record<string,string>={
+      product_import_format:'ملف المنتجات ماشي فصيغة CSV أو TSV صحيحة.',
+      product_import_headers:'العناوين خاص فيها اسم المنتج وثمن البيع بلا تكرار.',
+      product_import_size_or_encoding:'استعمل ملف نصي UTF-8 أقل من 1 ميغابايت.',
+      product_import_too_many_rows:'قسم اللائحة لأجزاء ما يفوتوش 2000 سطر.',
+    };
+    return tr(reasons[error instanceof Error?error.message:'']||'ما قدرناش نقراو ملف المنتجات.');
+  };
+  const openProductImport=(source:string,filename?:string)=>{
+    try{
+      const preview=previewProductImport(source,products);
+      if(!preview.accepted.length&&!preview.rejected.length){Alert.alert(tr('ما كايناش بيانات'),tr('لائحة المنتجات فارغة'));return;}
+      setProductImport({source,preview,warehouseId:activeWarehouseId,filename});
+    }catch(error){Alert.alert(tr('تعذر استيراد المنتجات'),productImportMessage(error));}
+  };
+  const pickProductImport=async()=>{
+    if(productImportOpen.current)return;
+    productImportOpen.current=true;setProductImportBusy(true);
+    try{
+      const picked=await DocumentPicker.getDocumentAsync({type:['text/csv','text/tab-separated-values','text/plain','application/vnd.ms-excel','application/octet-stream'],copyToCacheDirectory:true,multiple:false});
+      if(picked.canceled||!picked.assets.length)return;
+      const {name,uri,size}=picked.assets[0];
+      if(!/\.(csv|tsv|txt)$/i.test(name))throw new Error('product_import_format');
+      const measured=size??(await FileSystem.getInfoAsync(uri));
+      const bytes=typeof measured==='number'?measured:measured.exists?measured.size:undefined;
+      if(!Number.isFinite(bytes)||bytes!>MAX_PRODUCT_IMPORT_BYTES)throw new Error('product_import_size_or_encoding');
+      const source=await FileSystem.readAsStringAsync(uri,{encoding:FileSystem.EncodingType.UTF8});
+      openProductImport(source,name);
+    }catch(error){Alert.alert(tr('تعذر استيراد المنتجات'),productImportMessage(error));}
+    finally{productImportOpen.current=false;setProductImportBusy(false);}
+  };
+  const importProductIssue=(code:ProductImportPreview['rejected'][number]['code'])=>({
+    missing_name:tr('اسم المنتج ناقص'),invalid_number:tr('ثمن أو كمية غير صالحة'),duplicate:tr('مرجع أو باركود مكرر'),
+    column_count:tr('عدد الخانات ما مطابقش'),unsupported_text:tr('نص طويل أو ترميز غير مدعوم'),
+  }[code]);
+  const confirmProductImport=()=>{
+    const staged=productImport;
+    if(!staged||!staged.preview.accepted.length)return;
+    if(!warehouses.some(warehouse=>warehouse.id===staged.warehouseId&&warehouse.active)){
+      setProductImport(undefined);Alert.alert(tr('تعذر استيراد المنتجات'),tr('اختار مخزناً نشيطاً وعاود المعاينة.'));return;
     }
-    if(!imported.length){Alert.alert(tr('ما تزاد حتى منتج'),`الأسطر المرفوضة: ${rejected}. راجع الصيغة والمرجع والباركود.`);return;}
-    setProducts(current=>[...imported,...current]);setStockMovements(current=>[...current,...imported.filter(p=>p.qty>0).map(p=>({id:'opening-'+p.id,productId:String(p.id),warehouseId:'main',kind:'opening' as const,quantity:p.qty,unitCost:p.costPrice||0,createdAt:new Date().toISOString(),note:'رصيد افتتاحي من الاستيراد الجماعي'}))]);setProductBulkText('');
-    Alert.alert(tr('تم الاستيراد'),`تزادو ${imported.length} منتج. الأسطر المرفوضة أو المكررة: ${rejected}.`);
+    try{
+      const fresh=previewProductImport(staged.source,products);
+      if(JSON.stringify(fresh)!==JSON.stringify(staged.preview)){
+        setProductImport({...staged,preview:fresh});
+        Alert.alert(tr('تبدلات نتائج المعاينة'),tr('راجع اللائحة الجديدة قبل التأكيد.'));return;
+      }
+      const firstId=products.reduce((id,product)=>Math.max(id,product.id+1),Date.now());
+      const imported:Product[]=fresh.accepted.map(({product},index)=>({id:firstId+index,...product}));
+      const timestamp=new Date().toISOString();
+      const movements:StockMovement[]=imported.filter(p=>p.qty>0).map(p=>({id:'opening-'+p.id,productId:String(p.id),warehouseId:staged.warehouseId,kind:'opening',quantity:p.qty,unitCost:p.costPrice,createdAt:timestamp,note:'رصيد افتتاحي من الاستيراد الجماعي'}));
+      setProducts(current=>[...imported,...current]);setStockMovements(current=>[...current,...movements]);
+      setProductImport(undefined);if(!staged.filename)setProductBulkText('');
+      Alert.alert(tr('تم الاستيراد'),tr('منتجات تزادو')+': '+imported.length);
+    }catch(error){Alert.alert(tr('تعذر استيراد المنتجات'),productImportMessage(error));}
   };
   const exportCsvFile=async(filename:string,headers:CsvCell[],rows:CsvCell[][])=>{
     try{
@@ -876,8 +912,21 @@ export default function App() {
         <View style={[s.panel,{marginTop:12}]}>
           <Text style={s.panelTitle}>{tr('إدخال جماعي للمنتجات')}</Text>
           <Text style={s.panelText}>{tr('كل سطر منتج واحد، والفاصل هو ; أو Tab. الترتيب: الاسم؛ المرجع؛ الباركود؛ الصنف؛ ثمن الشراء؛ ثمن البيع؛ الكمية؛ العلامة التجارية؛ الوحدة؛ الموديل؛ ثمن العرض؛ ثمن الفاتورة. آخر حقلين اختياريان.')}</Text>
-          <TextInput value={productBulkText} onChangeText={setProductBulkText} multiline numberOfLines={6} textAlignVertical="top" placeholder={tr('الاسم;المرجع;الباركود;الصنف;ثمن الشراء;ثمن البيع;الكمية;العلامة التجارية;الوحدة;الموديل;ثمن العرض;ثمن الفاتورة\nRouteur;R-01;61100001;Réseau;150;220;5;TP-Link;Pièce;Archer C6;210;205')} placeholderTextColor="#888" style={[s.input,{minHeight:135,textAlign:'left',marginTop:10}]}/>
-          <Pressable style={s.action} onPress={importProductsBulk}><Text style={s.actionText}>{tr("استيراد اللائحة وإضافة المنتجات")}</Text></Pressable>
+          <TextInput value={productBulkText} onChangeText={value=>{setProductBulkText(value);setProductImport(undefined);}} multiline numberOfLines={6} textAlignVertical="top" placeholder={tr('الاسم;المرجع;الباركود;الصنف;ثمن الشراء;ثمن البيع;الكمية;العلامة التجارية;الوحدة;الموديل;ثمن العرض;ثمن الفاتورة\nRouteur;R-01;61100001;Réseau;150;220;5;TP-Link;Pièce;Archer C6;210;205')} placeholderTextColor="#888" style={[s.input,{minHeight:135,textAlign:'left',marginTop:10}]}/>
+          <Pressable style={s.action} onPress={()=>openProductImport(productBulkText)}><Text style={s.actionText}>{tr('معاينة اللائحة')}</Text></Pressable>
+          <Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} disabled={productImportBusy} onPress={()=>void pickProductImport()}><Text style={s.gold}>{productImportBusy?tr('جاري التحميل...'):tr('اختار ملف CSV أو TSV')}</Text></Pressable>
+          <Text style={s.note}>{tr('من Excel اختار الحفظ بصيغة CSV UTF-8.')}</Text>
+          {productImport&&<View style={s.summary}>
+            <Text style={s.panelTitle}>{tr('معاينة الاستيراد')}</Text>
+            {!!productImport.filename&&<Text style={s.note}>{productImport.filename}</Text>}
+            <Text style={s.summaryText}>{tr('المخزن')}: {warehouses.find(w=>w.id===productImport.warehouseId)?.name??productImport.warehouseId}</Text>
+            <Text style={s.summaryText}>{tr('منتجات مقبولة')}: {productImport.preview.accepted.length} • {tr('سطور مرفوضة أو مكررة')}: {productImport.preview.rejected.length}</Text>
+            {productImport.preview.accepted.slice(0,8).map(({line,product})=><Text key={'preview-'+line} style={s.itemSub}>{line} • {product.name} • {product.qty} × {product.price.toFixed(2)} DH</Text>)}
+            {productImport.preview.rejected.slice(0,8).map(({line,code})=><Text key={'reject-'+line} style={s.note}>{tr('السطر')} {line}: {importProductIssue(code)}</Text>)}
+            {(productImport.preview.accepted.length>8||productImport.preview.rejected.length>8)&&<Text style={s.note}>{tr('المعاينة كتبرز غير أول 8 أسطر من كل فئة.')}</Text>}
+            {productImport.preview.accepted.length>0&&<Pressable style={s.action} onPress={confirmProductImport}><Text style={s.actionText}>{tr('أكد إضافة المنتجات المقبولة')}</Text></Pressable>}
+            <Pressable style={s.choice} onPress={()=>setProductImport(undefined)}><Text style={s.itemSub}>{tr('إلغاء')}</Text></Pressable>
+          </View>}
           <Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportProductsCsv}><Text style={s.gold}>{tr("تصدير لائحة المنتجات CSV")}</Text></Pressable><Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportProductsXlsx}><Text style={s.gold}>{tr("تصدير لائحة المنتجات Excel")}</Text></Pressable><Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={()=>exportProductsPdf(false)}><Text style={s.gold}>{tr("تصدير لائحة المنتجات PDF بلا صور")}</Text></Pressable><Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={()=>exportProductsPdf(true)}><Text style={s.gold}>{tr("تصدير لائحة المنتجات PDF بالصور")}</Text></Pressable>
         </View>
         <Text style={s.section}>{tr("لائحة المنتجات")} ({products.length})</Text><View style={[s.row,{alignItems:'center',marginBottom:8}]}><TextInput value={productSearch} onChangeText={value=>{clearVoiceField('search');clearImageSearch();setProductSearch(value);}} placeholder={tr("بحث بالاسم أو المرجع أو الباركود أو الصنف...")} placeholderTextColor="#888" style={[s.search,{flex:1,marginBottom:0}]}/>{productVoiceButton('search',tr('البحث بالصوت'))}</View>{productVoiceHint('search')}<View style={[s.row,{justifyContent:'flex-end',marginBottom:10}]}><Pressable onPress={searchProductsByImage} disabled={imageSearchBusy} accessibilityRole="button" accessibilityLabel={tr('البحث بالصورة')} style={{minWidth:76,minHeight:44,paddingHorizontal:10,borderRadius:9,borderWidth:1,borderColor:GOLD,backgroundColor:'#211D14',alignItems:'center',justifyContent:'center'}}><Text style={s.gold}>{imageSearchBusy?'…':tr('البحث بالصورة')}</Text></Pressable></View>{imageSearchPreview?<View style={[s.row,{alignItems:'center',marginBottom:10}]}><Image source={{uri:imageSearchPreview}} style={{width:48,height:48,borderRadius:8}}/><View style={{flex:1}}><Text style={s.itemSub}>{imageSearchBusy?tr('البحث عن صور المنتجات'):tr('عدد النتائج:')+' '+imageSearchMatches.length}</Text><Text style={[s.itemSub,{fontSize:10}]}>{tr('النتائج كتقارن الشكل العام والإضاءة ديال الصور المحفوظة.')}</Text></View><Pressable onPress={clearImageSearch}><Text style={s.gold}>{tr('إلغاء البحث بالصورة')}</Text></Pressable></View>:null}{imageSearchActive&&imageSearchMatches.length===0&&!imageSearchBusy?<Text style={s.empty}>{tr('ما لقيناش صور قريبة. زيد صور واضحة للمنتجات وجرب صورة أخرى.')}</Text>:null}{products.length===0?<Text style={s.empty}>{tr("مازال ما زدتي حتى منتج.")}</Text> :visibleProducts.map(p=><View key={p.id} style={s.listItem}>{p.photoData?<Pressable onPress={()=>setPhotoPreview(p.photoData||null)}><Image source={{uri:p.photoData}} style={{width:48,height:48,borderRadius:8}}/></Pressable>:null}<View style={{flex:1}}><Text style={s.itemTitle}>{p.name}</Text><Text style={s.itemSub}>{[p.reference?tr('مرجع: ')+p.reference:'',p.barcode?tr('باركود: ')+p.barcode:'',p.category?tr('الصنف: ')+p.category:'',p.brand?tr('العلامة: ')+p.brand:'',p.unit?tr('الوحدة: ')+p.unit:'',p.variant?tr('الموديل: ')+p.variant:''].filter(Boolean).join(' • ')}</Text><Text style={s.itemSub}>{tr("الكمية:")} {p.qty} • {tr("الشراء:")} {inventoryAverageProductCost(p.id,p.costPrice||0).toFixed(2)} DH • ربح الوحدة: {(p.price-inventoryAverageProductCost(p.id,p.costPrice||0)).toFixed(2)} DH</Text>{(p.quotePrice!==undefined||p.invoicePrice!==undefined)&&<Text style={s.itemSub}>{p.quotePrice!==undefined?tr("ثمن العرض:")+" "+p.quotePrice.toFixed(2)+" DH ":""}{p.invoicePrice!==undefined?tr("ثمن الفاتورة:")+" "+p.invoicePrice.toFixed(2)+" DH":""}</Text>}</View><Text style={s.itemPrice}>{p.price.toFixed(2)} DH</Text><Pressable onPress={()=>startEditProduct(p)}><Text style={s.gold}>{tr("تعديل")}</Text></Pressable><Pressable onPress={()=>Alert.alert(tr('حذف المنتج؟'),p.name,[{text:'إلغاء'},{text:tr('حذف'),style:'destructive',onPress:()=>{setProducts(v=>v.filter(x=>x.id!==p.id));if(editingProductId===p.id)resetProductForm();}}])}><Text style={s.delete}>{tr("حذف")}</Text></Pressable></View>)}

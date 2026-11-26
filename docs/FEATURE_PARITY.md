@@ -36,6 +36,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] MAD amounts use TTC-only pricing with no VAT calculation, as requested; configurable tax rules are not implemented
 - [x] Invoice stock deductions are validated and recorded once; the matching invoice and delivery note do not deduct it twice, in either order
 - [x] Multiple warehouse records, active warehouse selection, paired stock transfers, per-warehouse stock counts, warehouse-filtered movement ledger and persistent audit trail (normal purchase/sale/POS/delivery operations use the selected warehouse; warehouse deactivation and location/site hierarchies remain pending)
+- [x] Offline CSV/TSV product file picker and paste import with preview, valid/rejected line details, duplicate recheck, optional document prices, and warehouse-specific opening stock. The exported CSV can be imported; Excel can save a UTF-8 CSV for import. Android picker acceptance remains open.
 - [x] Bulk product import/export with name search, saved product catalog, PDF catalog export with or without product photos, and offline visual search that ranks each product by its closest saved photo
 
 ### Contacts
