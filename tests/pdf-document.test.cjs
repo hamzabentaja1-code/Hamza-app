@@ -101,3 +101,31 @@ test('document photos keep non-photo rows and an empty photo selection keeps the
   assert.match(html,/Solde restant : 20 DH/);
   assert.match(buildPdfDocumentHtml(input({lines:[text],imageRows:[],includeImages:true})),/Solde restant : 20 DH/);
 });
+
+test('applies overrides to the selected document kind in both photo and plain exports', () => {
+  const companyProfile = {
+    ...EMPTY_COMPANY_PROFILE, pdfTemplateStyle: 'compact', pdfCustomFields: 'Champ général',
+    pdfDocumentTemplates: {
+      quote: {style: 'framed', customFields: 'ضمان < سنة'},
+      invoice: {customFields: ''},
+      delivery: {style: 'classic'},
+    },
+  };
+  const args = {companyProfile, documentKind: 'quote', imageRows: [{text: 'Article', imageData: 'data:image/png;base64,AA=='}]};
+  for (const includeImages of [true, false]) {
+    const html = buildPdfDocumentHtml(input({...args, includeImages}));
+    assert.match(html, /<body class="framed">/);
+    assert.match(html, /ضمان &lt; سنة/);
+    assert.doesNotMatch(html, /Champ général/);
+    assert.equal(html.includes('data:image/png;base64,AA=='), includeImages);
+  }
+  const invoice = buildPdfDocumentHtml(input({companyProfile, documentKind: 'invoice', language: 'FR'}));
+  assert.match(invoice, /<body class="compact">/);
+  assert.doesNotMatch(invoice, /<p class="custom-field"/);
+  const delivery = buildPdfDocumentHtml(input({companyProfile, documentKind: 'delivery'}));
+  assert.match(delivery, /<body class="classic">/);
+  assert.match(delivery, /Champ général/);
+  const other = buildPdfDocumentHtml(input({companyProfile}));
+  assert.match(other, /<body class="compact">/);
+  assert.match(other, /Champ général/);
+});

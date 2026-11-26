@@ -33,7 +33,7 @@ import {allocatePaymentAcrossCustomerDebt, calculateCustomerBalances} from './sr
 import {canExtendCredit, normalizeCreditTerms, normalizeOpeningBalanceCentimes} from './src/domain/contact-credit';
 import {StockMovement, Warehouse, DEFAULT_WAREHOUSE, normalizeWarehouses, validateWarehouse, warehouseStock, inventoryValue, averageInventoryUnitCost, averageInventoryCostAcrossWarehouses, validateStockDemand, createStockCount, applyStockCount, transferStock} from './src/inventory';
 import {translate, getLayoutDirection} from './src/i18n';
-import {CompanyProfile, EMPTY_COMPANY_PROFILE, normalizeCompanyProfile} from './src/company-profile';
+import {CompanyProfile, EMPTY_COMPANY_PROFILE, normalizeCompanyProfile, PDF_DOCUMENT_KINDS, PDF_TEMPLATE_STYLES, PdfDocumentKind, PdfDocumentTemplate} from './src/company-profile';
 import {buildPdfDocumentHtml} from './src/pdf-document';
 import {buildWhatsAppChatUrl} from './src/whatsapp';
 import {normalizeParkedPosSales,ParkedPosSale} from './src/domain/pos-parked-sales';
@@ -116,8 +116,21 @@ export default function App() {
   const [language,setLanguage]=useState<'AR'|'FR'>('AR');
   const [companyProfile,setCompanyProfile]=useState<CompanyProfile>({...EMPTY_COMPANY_PROFILE});
   const [numberingPrefixes,setNumberingPrefixes]=useState<DocumentNumberPrefixes>({...DEFAULT_DOCUMENT_NUMBER_PREFIXES});
-  const updateCompanyProfile=(key:keyof CompanyProfile,value:string)=>setCompanyProfile(current=>({...current,[key]:value}));
+  const updateCompanyProfile=(key:keyof typeof EMPTY_COMPANY_PROFILE,value:string)=>setCompanyProfile(current=>({...current,[key]:value}));
+  const [selectedPdfKind,setSelectedPdfKind]=useState<PdfDocumentKind>('invoice');
+  const selectedPdfTemplate=companyProfile.pdfDocumentTemplates?.[selectedPdfKind];
+  const updatePdfTemplate=(patch:PdfDocumentTemplate)=>setCompanyProfile(current=>{
+    const templates={...current.pdfDocumentTemplates};
+    const existing={...templates[selectedPdfKind],...patch};
+    if(existing.style===undefined)delete existing.style;
+    if(existing.customFields===undefined)delete existing.customFields;
+    if(Object.keys(existing).length)templates[selectedPdfKind]=existing;
+    else delete templates[selectedPdfKind];
+    return {...current,pdfDocumentTemplates:templates};
+  });
+
   const tr=(value:string)=>translate(language,value);
+  const pdfKindLabels:Record<PdfDocumentKind,string>={quote:tr('عرض السعر'),invoice:tr('فاتورة'),delivery:tr('سند خروج'),proforma:tr('فاتورة أولية'),creditNote:tr('إشعار دائن للزبون'),customer_order:tr('طلب زبون')};
   useEffect(()=>{
     if(!speechRecognition)return;
     const startListener=speechRecognition.addListener('start',()=>setSpeechListening(true));
@@ -268,7 +281,7 @@ export default function App() {
     }catch(error){Alert.alert(tr('تعذر تسجيل المرتجع'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));return false;}
   };
   const requestCustomerRefund=(item:SalesReturnRecord,amount:number)=>Alert.alert(tr('تأكيد الرد النقدي'),`${tr('رد نقدي')}: ${amount.toFixed(2)} DH\n${tr('رصيد لصالح الزبون:')} ${((item.unappliedCentimes||0)/100).toFixed(2)} DH`,[{text:tr('إلغاء'),style:'cancel'},{text:tr('تأكيد'),style:'destructive',onPress:()=>{try{const updated=recordCustomerRefund(item,amount,Date.now(),new Date().toLocaleDateString('fr-MA'));setSalesReturns(current=>current.map(value=>value.id===item.id?updated:value));Alert.alert(tr('تم رد المبلغ'),`${amount.toFixed(2)} DH`);}catch(error){Alert.alert(tr('تعذر تسجيل المرتجع'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}}}]);
-  const exportSalesReturnPdf=(item:SalesReturnRecord)=>exportCommercialPdf((language==='FR'?'Avoir ':'إشعار دائن ')+item.number,item.customerName,[tr('تاريخ المرتجع:')+' '+item.date,tr('مرجع البيع:')+' '+item.saleId,item.productName+' × '+item.qty,tr('سبب المرتجع')+': '+(item.reason||tr('بدون سبب')),tr(item.restocked?'عاد للمخزون':'لم يعد للمخزون'),tr('المخصوم من دين الفاتورة:')+' '+((item.invoiceAllocations||[]).reduce((sum,allocation)=>sum+allocation.allocatedCentimes,0)/100).toFixed(2)+' DH',...(item.refunds||[]).map(refund=>`${tr('رد نقدي')}: ${(refund.amountCentimes/100).toFixed(2)} DH • ${refund.date}`),tr('رصيد لصالح الزبون:')+' '+((item.unappliedCentimes||0)/100).toFixed(2)+' DH'],item.total,item.date,[undefined,undefined,item.productId]);
+  const exportSalesReturnPdf=(item:SalesReturnRecord)=>exportCommercialPdf('creditNote',(language==='FR'?'Avoir ':'إشعار دائن ')+item.number,item.customerName,[tr('تاريخ المرتجع:')+' '+item.date,tr('مرجع البيع:')+' '+item.saleId,item.productName+' × '+item.qty,tr('سبب المرتجع')+': '+(item.reason||tr('بدون سبب')),tr(item.restocked?'عاد للمخزون':'لم يعد للمخزون'),tr('المخصوم من دين الفاتورة:')+' '+((item.invoiceAllocations||[]).reduce((sum,allocation)=>sum+allocation.allocatedCentimes,0)/100).toFixed(2)+' DH',...(item.refunds||[]).map(refund=>`${tr('رد نقدي')}: ${(refund.amountCentimes/100).toFixed(2)} DH • ${refund.date}`),tr('رصيد لصالح الزبون:')+' '+((item.unappliedCentimes||0)/100).toFixed(2)+' DH'],item.total,item.date,[undefined,undefined,item.productId]);
   const stockValue=useMemo(()=>products.reduce((a,p)=>a+p.price*p.qty,0),[products]);
   const potentialStockProfit=useMemo(()=>products.reduce((sum,p)=>sum+(p.price-inventoryAverageProductCost(p.id,p.costPrice||0))*p.qty,0),[products,warehouses,stockMovements]);
   const accountedSales=useMemo(()=>includeInvoicedSales(sales,documents),[sales,documents]);
@@ -685,25 +698,25 @@ export default function App() {
   }catch(e){Alert.alert(tr('خطأ'),e instanceof Error?tr(e.message):tr('ما قدرناش نوجدوا النسخة الاحتياطية.'));}finally{setBackupBusy(false);}};
   const chooseBackupFile=async()=>{try{const result=await DocumentPicker.getDocumentAsync({type:['application/json','text/json'],copyToCacheDirectory:true,multiple:false});if(result.canceled||!result.assets.length)return;const json=await FileSystem.readAsStringAsync(result.assets[0].uri,{encoding:FileSystem.EncodingType.UTF8});JSON.parse(json);setBackupText(json);Alert.alert(tr('تم تحميل ملف النسخة'),result.assets[0].name);}catch{Alert.alert(tr('تعذر قراءة ملف النسخة'),tr('اختار ملف JSON صالح صادر من HamZa.'));}};
   const importBackup=()=>{Alert.alert(tr('استرجاع البيانات'),tr('هاد العملية غادي تعوض البيانات الحالية بالنسخة اللي لصقتي. واش متأكد؟'),[{text:tr('إلغاء'),style:'cancel'},{text:'استرجاع',style:'destructive',onPress:async()=>{try{setBackupBusy(true);const envelope=JSON.parse(backupText);if(envelope?.app!=='HamZa'||envelope?.schemaVersion!==HAMZA_SCHEMA_VERSION||!envelope?.data||typeof envelope.data!=='object')throw new Error('النسخة الاحتياطية لا تخص إصدار HamZa المدعوم.');const restoredProjects=await materializeBackupTaskAttachments(normalizeProjects(envelope.data.projects),envelope.data.taskAttachmentFiles);const d=await restoreBackup(backupText);setLanguage(d.language==='FR'?'FR':'AR');setCompanyProfile(normalizeCompanyProfile(d.companyProfile));setNumberingPrefixes(normalizeDocumentNumberPrefixes(d.numberingPrefixes));setWarehouses(normalizeWarehouses(d.warehouses));setActiveWarehouseId(typeof d.activeWarehouseId==='string'&&normalizeWarehouses(d.warehouses).some(w=>w.id===d.activeWarehouseId)?d.activeWarehouseId:'main');setProducts(Array.isArray(d.products)?d.products as Product[]:[]);setStockMovements(Array.isArray(d.stockMovements)?d.stockMovements as StockMovement[]:(Array.isArray(d.products)?(d.products as Product[]).filter(p=>p.qty>0).map(p=>({id:'opening-backup-'+p.id,productId:String(p.id),warehouseId:'main',kind:'opening' as const,quantity:p.qty,unitCost:p.costPrice||0,createdAt:new Date().toISOString(),note:'رصيد افتتاحي مرحّل من النسخة الاحتياطية'})):[]));setCustomers(Array.isArray(d.customers)?d.customers as Customer[]:[]);setSales(Array.isArray(d.sales)?d.sales as Sale[]:[]);setPurchases(Array.isArray(d.purchases)?(d.purchases as Purchase[]).map(p=>({...p,paidAmount:normalizePurchasePaidAmount(p.total,p.paidAmount)})):[]);setPurchaseDocuments(normalizePurchaseDocuments(d.purchaseDocuments));setExpenses(Array.isArray(d.expenses)?d.expenses as Expense[]:[]);setSuppliers(Array.isArray(d.suppliers)?d.suppliers as Supplier[]:[]);setQuotes(Array.isArray(d.quotes)?d.quotes as Quote[]:[]);setPayments(Array.isArray(d.payments)?d.payments as Payment[]:[]);setDocuments(Array.isArray(d.documents)?d.documents as CommercialDocument[]:[]);setParkedPosSales(normalizeParkedPosSales(d.parkedPosSales));setProjects(restoredProjects);setTechnicians(normalizeTechnicians(d.technicians));setTechnicianEquipment(normalizeEquipment(d.technicianEquipment,normalizeTechnicians(d.technicians).map(item=>item.id)));setPayrollSettlements(normalizePayrollSettlements(d.payrollSettlements,normalizeTechnicians(d.technicians)));setRecurringExpenseRules(normalizeRecurringExpenses(d.recurringExpenseRules));setSalesReturns(normalizeSalesReturns(d.salesReturns));setSupplierPayments(normalizeSupplierPayments(d.supplierPayments));setCashAccount(normalizeCashAccount(d.cashAccount));const normalizedBanks=normalizeBankAccounts(d.bankAccounts);setBankAccounts(normalizedBanks);setBankTransfers(normalizeBankTransfers(d.bankTransfers,normalizedBanks));setBankStatementLines(normalizeBankStatementLines(d.bankStatementLines,normalizedBanks));setConfirmedBankStatementLineIds(Array.isArray(d.confirmedBankStatementLineIds)?(d.confirmedBankStatementLineIds as unknown[]).filter((id):id is string=>typeof id==='string'):[]);setBankReconciliationHistory(normalizeBankReconciliationHistory(d.bankReconciliationHistory,normalizedBanks));setStorageReady(true);setBackupText('');Alert.alert(tr('تم الاسترجاع'),tr('ترجعات البيانات بنجاح.'));}catch(e){Alert.alert(tr('تعذر الاسترجاع'),e instanceof Error?e.message:'النسخة غير صالحة.');}finally{setBackupBusy(false);}}}]);};
-  const exportPdf=async(title:string,customerName:string,lines:string[],total:number,documentDate?:string,imageRows?:Array<{text:string;imageData?:string}>)=>{
+  const exportPdf=async(title:string,customerName:string,lines:string[],total:number,documentDate?:string,imageRows?:Array<{text:string;imageData?:string}>,documentKind?:PdfDocumentKind)=>{
     try{
       const date=documentDate||new Date().toLocaleDateString(language==='AR'?'ar-MA':'fr-MA');
-      const html=buildPdfDocumentHtml({language,companyProfile,title,customerName,date,lines,total,imageRows,includeImages:!!imageRows});
+      const html=buildPdfDocumentHtml({language,companyProfile,title,customerName,date,lines,total,imageRows,includeImages:!!imageRows,documentKind});
       const file=await Print.printToFileAsync({html});
       if(await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri,{mimeType:'application/pdf',dialogTitle:title});
       else Alert.alert(tr('PDF جاهز'),file.uri);
     }catch(e){Alert.alert(tr('خطأ'),tr('تعذر إنشاء PDF. تأكد من تثبيت مكتبات expo-print و expo-sharing.'));}
   };
-  const exportCommercialPdf=(title:string,customerName:string,lines:string[],total:number,date?:string,photoProductIds?:Array<number|undefined>)=>{
+  const exportCommercialPdf=(documentKind:PdfDocumentKind,title:string,customerName:string,lines:string[],total:number,date?:string,photoProductIds?:Array<number|undefined>)=>{
     const rows=lines.map((text,index)=>{
       const product=products.find(item=>item.id===photoProductIds?.[index]);
       return {text,imageData:product?productPhotos(product)[0]:undefined};
     });
-    if(!rows.some(row=>row.imageData)){void exportPdf(title,customerName,lines,total,date);return;}
+    if(!rows.some(row=>row.imageData)){void exportPdf(title,customerName,lines,total,date,undefined,documentKind);return;}
     Alert.alert(tr('صور المنتجات في PDF'),title,[
       {text:tr('إلغاء'),style:'cancel'},
-      {text:tr('PDF بلا صور'),onPress:()=>{void exportPdf(title,customerName,lines,total,date);}},
-      {text:tr('PDF بالصور'),onPress:()=>{void exportPdf(title,customerName,lines,total,date,rows);}},
+      {text:tr('PDF بلا صور'),onPress:()=>{void exportPdf(title,customerName,lines,total,date,undefined,documentKind);}},
+      {text:tr('PDF بالصور'),onPress:()=>{void exportPdf(title,customerName,lines,total,date,rows,documentKind);}},
     ]);
   };
   const exportProductsPdf=async(includeImages:boolean)=>{
@@ -842,10 +855,17 @@ export default function App() {
            <TextInput value={companyProfile.paymentTerms} onChangeText={v=>updateCompanyProfile('paymentTerms',v)} placeholder={tr('شروط الأداء اللي تظهر فـ PDF (اختياري)')} placeholderTextColor="#888" multiline style={[s.input,{minHeight:56,textAlignVertical:'top'}]}/>
            <TextInput value={companyProfile.documentNote} onChangeText={v=>updateCompanyProfile('documentNote',v)} placeholder={tr('ملاحظة أسفل الوثيقة (اختيارية)')} placeholderTextColor="#888" multiline style={[s.input,{minHeight:72,textAlignVertical:'top'}]}/>
            <Text style={s.fieldLabel}>{tr('قالب PDF')}</Text>
-           <View style={s.row}>{(['classic','compact','framed'] as const).map(style=><Pressable key={style} onPress={()=>updateCompanyProfile('pdfTemplateStyle',style)} style={[s.choice,{flex:1},companyProfile.pdfTemplateStyle===style&&s.choiceActive]}><Text style={s.itemTitle}>{tr(style==='classic'?'كلاسيكي':style==='compact'?'مضغوط':'مؤطر')}</Text></Pressable>)}</View>
+           <View style={s.row}>{PDF_TEMPLATE_STYLES.map(style=><Pressable key={style} onPress={()=>updateCompanyProfile('pdfTemplateStyle',style)} style={[s.choice,{flex:1},companyProfile.pdfTemplateStyle===style&&s.choiceActive]}><Text style={s.itemTitle}>{tr(style==='classic'?'كلاسيكي':style==='compact'?'مضغوط':'مؤطر')}</Text></Pressable>)}</View>
            <TextInput value={companyProfile.pdfAccentColor} onChangeText={v=>updateCompanyProfile('pdfAccentColor',v)} autoCapitalize="characters" maxLength={7} placeholder={tr('لون القالب بصيغة #RRGGBB')} placeholderTextColor="#888" style={s.input}/>
-           <TextInput value={companyProfile.pdfCustomFields} onChangeText={v=>updateCompanyProfile('pdfCustomFields',v.slice(0,2000))} placeholder={tr('حقول إضافية تظهر في كل PDF (سطر لكل حقل)')} placeholderTextColor="#888" multiline style={[s.input,{minHeight:72,textAlignVertical:'top'}]}/>
-           <Text style={s.note}>{tr('القالب واللون والحقول الإضافية كتطبق على جميع وثائق PDF وكتتحفظ مع النسخة الاحتياطية.')}</Text>
+           <TextInput value={companyProfile.pdfCustomFields} onChangeText={v=>updateCompanyProfile('pdfCustomFields',v.slice(0,2000))} placeholder={tr('الحقول العامة الإضافية (سطر لكل حقل)')} placeholderTextColor="#888" multiline style={[s.input,{minHeight:72,textAlignVertical:'top'}]}/>
+           <Text style={s.note}>{tr('الإعدادات العامة كتطبق إلا إذا خصصتي نوع الوثيقة. الاختيارات كتحفظ مع النسخة الاحتياطية.')}</Text>
+           <Text style={s.fieldLabel}>{tr('تخصيص حسب نوع الوثيقة')}</Text>
+           {PDF_DOCUMENT_KINDS.map(kind=><Pressable key={kind} accessibilityRole="button" accessibilityState={{selected:selectedPdfKind===kind}} style={[s.choice,selectedPdfKind===kind&&s.choiceActive]} onPress={()=>setSelectedPdfKind(kind)}><Text style={s.itemTitle}>{pdfKindLabels[kind]}</Text></Pressable>)}
+           <Text style={s.fieldLabel}>{pdfKindLabels[selectedPdfKind]} · {tr('قالب PDF')}</Text>
+           <Pressable accessibilityRole="button" accessibilityState={{selected:!selectedPdfTemplate?.style}} onPress={()=>updatePdfTemplate({style:undefined})} style={[s.choice,!selectedPdfTemplate?.style&&s.choiceActive]}><Text style={s.itemTitle}>{tr('استعمال القالب العام')}</Text></Pressable>
+           <View style={s.row}>{PDF_TEMPLATE_STYLES.map(style=><Pressable key={style} accessibilityRole="button" accessibilityState={{selected:selectedPdfTemplate?.style===style}} onPress={()=>updatePdfTemplate({style})} style={[s.choice,{flex:1},selectedPdfTemplate?.style===style&&s.choiceActive]}><Text style={s.itemTitle}>{tr(style==='classic'?'كلاسيكي':style==='compact'?'مضغوط':'مؤطر')}</Text></Pressable>)}</View>
+           <Pressable accessibilityRole="switch" accessibilityState={{checked:selectedPdfTemplate?.customFields!==undefined}} style={[s.choice,selectedPdfTemplate?.customFields!==undefined&&s.choiceActive]} onPress={()=>updatePdfTemplate({customFields:selectedPdfTemplate?.customFields===undefined?companyProfile.pdfCustomFields:undefined})}><Text style={s.itemTitle}>{tr('استبدال الحقول العامة لهاد النوع')}</Text></Pressable>
+           {selectedPdfTemplate?.customFields!==undefined&&<TextInput key={selectedPdfKind} value={selectedPdfTemplate.customFields} onChangeText={customFields=>updatePdfTemplate({customFields:customFields.slice(0,2000)})} accessibilityLabel={tr('الحقول الخاصة بالوثيقة')} placeholder={tr('سطر لكل حقل. خليه فارغ باش تخبي الحقول العامة.')} placeholderTextColor="#888" multiline style={[s.input,{minHeight:72,textAlignVertical:'top'}]}/>}
            <Text style={s.note}>{tr('معلومات الشركة كتتحفظ تلقائياً وكتظهر فوثائق PDF.')}</Text>
          </View>
       </>:screen==='المخزون'?<>
@@ -907,7 +927,7 @@ export default function App() {
            <View style={{flex:1}}><Text style={s.itemTitle}>{d.number} • {d.customerName}</Text><Text style={s.itemSub}>{d.date} • {tr(d.status)} • {d.lines.length} {tr('سطر')}</Text>{d.type==='proforma'&&d.validUntil&&<Text style={s.itemSub}>{tr('صالحة إلى غاية:')} {d.validUntil}</Text>}{d.type==='invoice'&&<><Text style={s.itemSub}>{tr('المدفوع:')} {((d.paidCentimes||0)/100).toFixed(2)} DH • {tr('باقي')} {((Math.max(0,Math.round(d.total*100)-(d.paidCentimes||0)-(d.creditedCentimes||0)))/100).toFixed(2)} DH</Text>{dueDateForInvoice(d)&&<Text style={s.itemSub}>{tr('تاريخ الاستحقاق')}: {dueDateForInvoice(d)}</Text>}</>}</View>
           <Text style={s.itemPrice}>{d.total.toFixed(2)} DH</Text>
            {d.type==='customer_order'&&<View style={{gap:4}}>{allowedTrackedSalesDocumentStatuses({type:d.type,status:d.status,sourceQuoteId:d.sourceQuoteId},orderHasDelivery(d.sourceQuoteId)).map(status=><Pressable key={status} onPress={()=>updateCustomerOrder(d,status)} style={s.choice}><Text style={s.gold}>{tr(status)}</Text></Pressable>)}</View>}
-           <Pressable onPress={()=>exportCommercialPdf((d.type==='invoice'?tr('فاتورة'):d.type==='proforma'?tr('فاتورة أولية'):d.type==='customer_order'?tr('طلب زبون'):tr('سند خروج'))+' '+d.number,d.customerName,[...d.lines.map(line=>line.productName+' × '+line.qty+' — '+line.total.toFixed(2)+' DH'),...(d.notes?[d.notes]:[]),...(d.type==='invoice'?[tr('المدفوع:')+' '+((d.paidCentimes||0)/100).toFixed(2)+' DH',tr('المخصوم من دين الفاتورة:')+' '+((d.creditedCentimes||0)/100).toFixed(2)+' DH',tr('الباقي:')+' '+(Math.max(0,Math.round(d.total*100)-(d.paidCentimes||0)-(d.creditedCentimes||0))/100).toFixed(2)+' DH']:[]),...(d.type==='proforma'&&d.validUntil?[tr('صالحة إلى غاية:')+' '+d.validUntil]:[])],d.total,d.date,d.lines.map(line=>line.productId))}><Text style={s.gold}>PDF</Text></Pressable>
+           <Pressable onPress={()=>exportCommercialPdf(d.type,(d.type==='invoice'?tr('فاتورة'):d.type==='proforma'?tr('فاتورة أولية'):d.type==='customer_order'?tr('طلب زبون'):tr('سند خروج'))+' '+d.number,d.customerName,[...d.lines.map(line=>line.productName+' × '+line.qty+' — '+line.total.toFixed(2)+' DH'),...(d.notes?[d.notes]:[]),...(d.type==='invoice'?[tr('المدفوع:')+' '+((d.paidCentimes||0)/100).toFixed(2)+' DH',tr('المخصوم من دين الفاتورة:')+' '+((d.creditedCentimes||0)/100).toFixed(2)+' DH',tr('الباقي:')+' '+(Math.max(0,Math.round(d.total*100)-(d.paidCentimes||0)-(d.creditedCentimes||0))/100).toFixed(2)+' DH']:[]),...(d.type==='proforma'&&d.validUntil?[tr('صالحة إلى غاية:')+' '+d.validUntil]:[])],d.total,d.date,d.lines.map(line=>line.productId))}><Text style={s.gold}>PDF</Text></Pressable>
         </View>)}
          {documents.filter(d=>d.type===documentTypeForScreen).length===0&&<Text style={s.empty}>{tr('مازال ما تسجلات حتى وثيقة من هاد النوع.')}</Text>}
         {sales.length>0&&<Text style={s.note}>{tr('سجل المبيعات القديم باقي محفوظ كما هو.')}</Text>}

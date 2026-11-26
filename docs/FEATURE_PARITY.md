@@ -18,7 +18,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Sequential human-readable numbers for quotes, invoices, delivery notes, pro forma documents and credit notes; old document numbers remain intact
 - [x] Editable Arabic/French settings for all five document number prefixes; preferences persist locally and travel in JSON backups
 - [x] Optional shared payment terms and footer note on generated PDFs; values are escaped and follow Arabic/French document direction
-- [ ] Per-document template assignment and document-specific custom field editing
+- [x] Template style and optional replacement fields by sales document type (devis, facture, bon de sortie, pro forma, avoir, and customer order); explicit empty fields hide defaults, and settings persist and round-trip through backup. Android visual acceptance remains open.
 - [x] Shared PDF template styles (classic, compact, framed), accent color, and saved custom PDF lines; settings are included in company profile backup data
 - [x] Shareable JSON backup export, file picker restore and validated restore for local app data (encrypted backup not implemented)
 - [ ] Automated scheduled backups and encrypted backup files
@@ -53,7 +53,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Apply customer credit to a selected open invoice from the payments workspace after confirmation; cash refunds are recorded only after the user confirms the payout
 - [x] Quote conversion to invoice, delivery note, and pro forma; payment statuses and overdue dashboard. Scheduled reminders and follow-up remain open.
 - [x] Line/document discounts, notes, multi-line editing, and barcode entry; fees and section breaks remain open
-- [x] With- and without-product-photo PDF output for quotes, invoices, delivery notes and credit notes; stored document dates and references carry through to exports. [ ] Android print/visual acceptance and per-document template assignment remain open.
+- [x] With- and without-product-photo PDF output for quotes, invoices, delivery notes and credit notes; stored document dates and references carry through to exports. [ ] Android print/visual acceptance remains open.
 
 ### Purchases
 - [x] Direct supplier purchase entry updates stock and records initial or partial payment; request-to-order-to-receipt and purchase-linked supplier invoice capture are available

@@ -14,3 +14,28 @@ test('PDF settings normalize to safe template, color, and bounded custom fields'
   const invalid=normalizeCompanyProfile({pdfTemplateStyle:'<script>',pdfAccentColor:'red',pdfCustomFields:'x'.repeat(3000)});
   assert.equal(invalid.pdfTemplateStyle,'classic');assert.equal(invalid.pdfAccentColor,'#9A762D');assert.equal(invalid.pdfCustomFields.length,2000);
 });
+
+test('normalizes supported per-document PDF overrides after a JSON round trip', () => {
+  const input = {
+    pdfTemplateStyle: 'compact', pdfCustomFields: 'Global',
+    pdfDocumentTemplates: {
+      quote: {style: 'framed', customFields: 'Remise : sur devis'},
+      invoice: {style: 'invalid', customFields: ''},
+      delivery: {style: 'classic', customFields: 7},
+      proforma: ['framed'],
+      creditNote: {customFields: 'x'.repeat(2100)},
+      customer_order: {style: 'framed'},
+      unknown: {style: 'framed'},
+    },
+  };
+  const normalized = normalizeCompanyProfile(JSON.parse(JSON.stringify(input)));
+  assert.deepEqual(normalized.pdfDocumentTemplates, {
+    quote: {style: 'framed', customFields: 'Remise : sur devis'},
+    invoice: {customFields: ''},
+    delivery: {style: 'classic'},
+    creditNote: {customFields: 'x'.repeat(2000)},
+    customer_order: {style: 'framed'},
+  });
+  assert.deepEqual(normalizeCompanyProfile(JSON.parse(JSON.stringify(normalized))), normalized);
+  assert.equal(normalizeCompanyProfile({pdfDocumentTemplates: []}).pdfDocumentTemplates, undefined);
+});
