@@ -17,7 +17,7 @@ export type QuoteForConversion = {
   lines?:ConversionLine[];
 };
 export type StockProduct = {id:number; qty:number};
-export type DocumentKind = 'invoice'|'delivery'|'proforma';
+export type DocumentKind = 'invoice'|'delivery'|'proforma'|'customer_order';
 export type ConvertedDocument = {
   id:number;
   number:string;
@@ -54,13 +54,14 @@ export function convertQuote(
   products:StockProduct[],
   id:number,
   date:string,
+  stockAlreadyIssued=false,
 ):ConversionResult {
   if(documents.some(d=>d.sourceQuoteId===quote.id&&d.type===type)) {
     throw new Error('This quote has already been converted to this document type');
   }
   const lines=quote.lines?.length?quote.lines:[];
   let updatedProducts=products;
-  if(type==='delivery') {
+  if(type==='delivery'&&!stockAlreadyIssued) {
     if(!lines.length||lines.some(line=>!line.productId)) {
       throw new Error('A new quote with linked products is required for a delivery note');
     }
@@ -82,12 +83,12 @@ export function convertQuote(
   }];
   const document:ConvertedDocument={
     id,
-    number:(type==='invoice'?'FAC-':type==='delivery'?'BL-':'PRO-')+id,
+    number:(type==='invoice'?'FAC-':type==='delivery'?'BL-':type==='proforma'?'PRO-':'CMD-')+id,
     type,
     customerName:quote.customerName,
     total:quote.total,
     date,
-    status:'صادرة',
+    status:type==='customer_order'?'مؤكد':'صادرة',
     sourceQuoteId:quote.id,
     ...(type==='proforma'&&quote.validUntil?{validUntil:quote.validUntil}:{}),
     ...(quote.notes?.trim()?{notes:quote.notes.trim()}:{}),

@@ -24,6 +24,7 @@ import RecurringExpensesWorkspace from './src/RecurringExpensesWorkspace';
 import {advanceRecurringExpense,createRecurringExpense,normalizeRecurringExpenses,recordRecurringOccurrence,RecurringExpenseInput,RecurringExpenseRule} from './src/recurring-expenses';
 import SalesReturnWorkspace from './src/SalesReturnWorkspace';
 import {applyCustomerCreditsToSalesReturns,createSalesReturn,normalizeSalesReturns,recordCustomerRefund,SaleForReturn,SalesReturnRecord} from './src/domain/sales-returns';
+import {allowedTrackedSalesDocumentStatuses,changeTrackedSalesDocumentStatus} from './src/domain/commercial-lifecycle';
 import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/domain/document-conversion';
 import {DEFAULT_DOCUMENT_NUMBER_PREFIXES,DocumentNumberPrefixes,normalizeDocumentNumberPrefixes,nextDocumentNumber} from './src/domain/document-numbering';
 import {planInvoiceStockDeduction} from './src/domain/invoice-stock';
@@ -65,7 +66,7 @@ const modules = [
   {ar:'الموردون',en:'Suppliers',icon:'♧'}, {ar:'المبيعات',en:'Sales',icon:'↗'},
   {ar:'المشتريات',en:'Purchases',icon:'↙'}, {ar:'وثائق المشتريات',en:'Purchase documents',icon:'▤'}, {ar:'المخزون',en:'Stock',icon:'▤'},
   {ar:'عروض الأسعار',en:'Quotes / Devis',icon:'▧'}, {ar:'فاتورة مباشرة',en:'Direct invoice',icon:'＋'}, {ar:'الفواتير',en:'Invoices',icon:'▣'},
-  {ar:'فاتورة أولية',en:'Proforma',icon:'▤'},
+  {ar:'فاتورة أولية',en:'Proforma',icon:'▤'}, {ar:'طلبات الزبناء',en:'Customer orders',icon:'▤'},
   {ar:'Bon de sortie',en:'Delivery notes',icon:'⇧'}, {ar:'المصاريف',en:'Expenses',icon:'−'},
   {ar:'المشاريع',en:'Projects',icon:'◈'},
   {ar:'الإشعارات الدائنة',en:'Credit notes',icon:'↩'},
@@ -525,15 +526,26 @@ export default function App() {
   const removeBankAccount=(account:BankAccount)=>Alert.alert(tr('تأكيد حذف الحساب البنكي'),account.name,[{text:tr('إلغاء'),style:'cancel'},{text:tr('حذف الحساب'),style:'destructive',onPress:()=>{try{const updated=deleteBankAccount(bankAccounts,bankTransfers,account.id,[...payments,...supplierPayments,...bankOutflows]);setBankAccounts(updated);if(bankTransferAccountId===account.id)setBankTransferAccountId(updated[0]?.id||'');if(paymentBankAccountId===account.id)setPaymentBankAccountId('');if(supplierPaymentBankAccountId===account.id)setSupplierPaymentBankAccountId('');if(saleBankAccountId===account.id)setSaleBankAccountId('');if(purchaseBankAccountId===account.id)setPurchaseBankAccountId('');if(expenseBankAccountId===account.id)setExpenseBankAccountId('');if(editingBankAccountId===account.id){setEditingBankAccountId(null);setBankName('');}Alert.alert(tr('تم حذف الحساب البنكي'));}catch(error){Alert.alert(tr('تعذر حذف الحساب البنكي'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}}}]);
   const addBankTransfer=()=>{const amount=Number(bankTransferAmount.replace(',','.'));try{const account=bankAccounts.find(item=>item.id===bankTransferAccountId);const transfer=recordBankTransfer({id:'bank-transfer-'+Date.now(),bankAccountId:bankTransferAccountId,date:new Date().toLocaleDateString('fr-MA'),direction:bankTransferDirection,amount,description:bankTransferDescription},bankAccounts,bankTransfers,cashBalanceCentimes,payments,supplierPayments,bankOutflows);Alert.alert(tr('تأكيد التحويل بين الحسابات'),`${amount.toFixed(2)} DH • ${tr(bankTransferDirection==='cash_to_bank'?'من الصندوق إلى البنك':'من البنك إلى الصندوق')} • ${account?.name||''}`,[{text:tr('إلغاء'),style:'cancel'},{text:tr('تأكيد'),onPress:()=>{setBankTransfers(current=>[transfer,...current]);setBankTransferAmount('');setBankTransferDescription('');}}]);}catch(error){Alert.alert(tr('تعذر تسجيل التحويل'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}};
   const addQuote=()=>{const p=products.find(x=>String(x.id)===quoteProduct);const c=customers.find(x=>String(x.id)===quoteCustomer);const q=Number(quoteQty);if(!p||!c||!Number.isInteger(q)||q<1){Alert.alert(tr('معلومات ناقصة'),tr('اختار المنتج والزبون والكمية.'));return;}const quoteUnitPrice=p.quotePrice??p.price;const x:Quote={id:Date.now(),productName:p.name,customerName:c.name,qty:q,unitPrice:quoteUnitPrice,total:q*quoteUnitPrice,date:new Date().toLocaleDateString('fr-MA'),status:'معلق'};setQuotes(v=>[x,...v]);setQuoteQty('1');Alert.alert(tr('تم حفظ عرض السعر'),`${x.total.toFixed(2)} DH`);};
+  const deliveryStockIssuedByInvoice=(quoteId:number)=>documents.some(document=>document.type==='invoice'&&document.sourceQuoteId===quoteId&&stockMovements.some(movement=>movement.kind==='sale'&&movement.id.startsWith('invoice-'+document.id+'-')));
+  const orderHasDelivery=(quoteId:number)=>documents.some(document=>document.type==='delivery'&&document.sourceQuoteId===quoteId);
+  const updateCustomerOrder=(order:CommercialDocument,status:string)=>{
+    if(order.type!=='customer_order')return;
+    const apply=()=>setDocuments(current=>current.map(item=>{
+      if(item.id!==order.id||item.type!=='customer_order')return item;
+      return {...item,...changeTrackedSalesDocumentStatus({type:item.type,status:item.status,sourceQuoteId:item.sourceQuoteId},status,orderHasDelivery(item.sourceQuoteId))};
+    }));
+    if(status==='ملغى')Alert.alert(tr('إلغاء الطلب؟'),order.number,[{text:tr('إلغاء'),style:'cancel'},{text:tr('تأكيد'),style:'destructive',onPress:apply}]);
+    else apply();
+  };
+  const documentTypeForScreen=screen==='الفواتير'?'invoice':screen==='فاتورة أولية'?'proforma':screen==='طلبات الزبناء'?'customer_order':'delivery';
   const convertQuote=(quote:Quote,type:QuoteConversionType,direct=false,applyCredit=true):boolean=>{
     try{
-      if(type==='delivery'){
+      const skipDeliveryIssue=type==='delivery'&&deliveryStockIssuedByInvoice(quote.id);
+      if(type==='delivery'&&!skipDeliveryIssue){
         const deliveryLines=quote.lines?.length?quote.lines:[{productId:products.find(p=>p.name===quote.productName)?.id||0,qty:quote.qty}];
-        const insufficient=deliveryLines.find(line=>{
-          const product=products.find(p=>p.id===line.productId);
-          return !product||line.qty>warehouseStock(stockMovements,String(line.productId),activeWarehouseId);
-        });
-        if(insufficient)throw new Error('الكمية المطلوبة أكبر من مخزون المستودع المحدد.');
+        if(deliveryLines.some(line=>!products.some(p=>p.id===line.productId)))throw new Error('الكمية المطلوبة أكبر من مخزون المستودع المحدد.');
+        const stockError=validateStockDemand(stockMovements,activeWarehouseId,deliveryLines.map(line=>({productId:String(line.productId),quantity:line.qty})));
+        if(stockError)throw new Error(stockError);
       }
       const invoiceStockQuantities=new Map<number,number>();
       const alreadyDelivered=type==='invoice'&&documents.some(document=>document.sourceQuoteId===quote.id&&document.type==='delivery');
@@ -546,9 +558,9 @@ export default function App() {
         }
       }
       const result=createConvertedDocument(
-        quote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),
+        quote,type,documents,products,Date.now(),new Date().toLocaleDateString('fr-MA'),skipDeliveryIssue,
       );
-      result.document.number=nextDocumentNumber(numberingPrefixes[type==='invoice'?'invoice':type==='delivery'?'delivery':'proforma'],documents.filter(document=>document.type===type));
+      result.document.number=nextDocumentNumber(type==='customer_order'?'CMD':numberingPrefixes[type],documents.filter(document=>document.type===type));
       let convertedDocument:CommercialDocument=result.document;if(type==='invoice'){const customer=customers.find(item=>item.name===quote.customerName);if(customer?.paymentDelayDays!==undefined)convertedDocument={...result.document,paymentDelayDays:customer.paymentDelayDays};}
       let appliedCreditCentimes=0;
       if(type==='invoice'){const contact=customers.find(item=>item.name===quote.customerName);const creditPool=salesReturns.filter(item=>item.customerName===quote.customerName).reduce((sum,item)=>sum+(item.unappliedCentimes||0),0);const canUseCredits=!direct||applyCredit;const plannedCredit=canUseCredits?Math.min(creditPool,Math.round(result.document.total*100)):0;const currentDue=balanceFor(quote.customerName)?.outstandingCentimes||0;if(!canExtendCredit({creditLimitCentimes:contact?.creditLimitCentimes},currentDue,Math.round(result.document.total*100)-plannedCredit))throw new Error('هاد الفاتورة غادي تفوت سقف الدين المحدد للزبون.');}
@@ -557,16 +569,16 @@ export default function App() {
         const credit=applyExistingCustomerCreditsWhenSelected(availableCredits.map(item=>({id:item.id,unappliedCentimes:item.unappliedCentimes||0})),result.document.id,Math.round(result.document.total*100),!direct||applyCredit);
         appliedCreditCentimes=credit.creditedCentimes;
         const status=appliedCreditCentimes>=Math.round(result.document.total*100)?'paid':appliedCreditCentimes>0?'partially_paid':result.document.status;
-        convertedDocument={...result.document,paidCentimes:0,creditedCentimes:appliedCreditCentimes,status};
+        convertedDocument={...convertedDocument,paidCentimes:0,creditedCentimes:appliedCreditCentimes,status};
         if(credit.allocations.length)setSalesReturns(current=>applyCustomerCreditsToSalesReturns(current,credit.allocations,result.document.id,status==='paid'?'paid':'partially_paid'));
       }
       setDocuments(current=>[convertedDocument,...current]);
-      if(type==='delivery'){setProducts(result.updatedProducts as Product[]);const delivery=result.document;setStockMovements(v=>[...v,...delivery.lines.map((line,index)=>({id:'delivery-'+delivery.id+'-'+index,productId:String(line.productId),warehouseId:activeWarehouseId,kind:'sale' as const,quantity:line.qty,createdAt:new Date().toISOString(),reference:delivery.number,note:'سند خروج'}))]);}
+      if(type==='delivery'&&!skipDeliveryIssue){setProducts(result.updatedProducts as Product[]);const delivery=result.document;setStockMovements(v=>[...v,...delivery.lines.map((line,index)=>({id:'delivery-'+delivery.id+'-'+index,productId:String(line.productId),warehouseId:activeWarehouseId,kind:'sale' as const,quantity:line.qty,createdAt:new Date().toISOString(),reference:delivery.number,note:'سند خروج'}))]);}
       else if(type==='invoice'&&invoiceStockQuantities.size){const invoice=result.document;setProducts(current=>current.map(product=>{const quantity=invoiceStockQuantities.get(product.id)||0;return quantity?{...product,qty:product.qty-quantity}:product;}));setStockMovements(current=>[...current,...Array.from(invoiceStockQuantities.entries()).map(([productId,quantity])=>({id:'invoice-'+invoice.id+'-'+productId,productId:String(productId),warehouseId:activeWarehouseId,kind:'sale' as const,quantity,createdAt:new Date().toISOString(),reference:invoice.number,note:direct?'فاتورة مباشرة':'فاتورة محولة من عرض'}))]);}
-      Alert.alert(tr('تم التحويل'),type==='invoice'?`تسجلات الفاتورة.${appliedCreditCentimes?` ${tr('رصيد سابق مستعمل:')} ${(appliedCreditCentimes/100).toFixed(2)} DH`:''}`:'تسجل سند الخروج وتحدّث المخزون.');
+      Alert.alert(tr('تم التحويل'),type==='invoice'?`تسجلات الفاتورة.${appliedCreditCentimes?` ${tr('رصيد سابق مستعمل:')} ${(appliedCreditCentimes/100).toFixed(2)} DH`:''}`:tr(type==='delivery'&&!skipDeliveryIssue?'تسجل سند الخروج وتحدّث المخزون.':'تسجلات الوثيقة.'));
       return true;
     }catch(error){
-      Alert.alert(tr('تعذر التحويل'),error instanceof Error?error.message:'وقع خطأ أثناء تحويل العرض.');
+      Alert.alert(tr('تعذر التحويل'),tr(error instanceof Error?error.message:'وقع خطأ أثناء تحويل العرض.'));
       return false;
     }
   };
@@ -672,9 +684,9 @@ export default function App() {
   }catch(e){Alert.alert(tr('خطأ'),e instanceof Error?tr(e.message):tr('ما قدرناش نوجدوا النسخة الاحتياطية.'));}finally{setBackupBusy(false);}};
   const chooseBackupFile=async()=>{try{const result=await DocumentPicker.getDocumentAsync({type:['application/json','text/json'],copyToCacheDirectory:true,multiple:false});if(result.canceled||!result.assets.length)return;const json=await FileSystem.readAsStringAsync(result.assets[0].uri,{encoding:FileSystem.EncodingType.UTF8});JSON.parse(json);setBackupText(json);Alert.alert(tr('تم تحميل ملف النسخة'),result.assets[0].name);}catch{Alert.alert(tr('تعذر قراءة ملف النسخة'),tr('اختار ملف JSON صالح صادر من HamZa.'));}};
   const importBackup=()=>{Alert.alert(tr('استرجاع البيانات'),tr('هاد العملية غادي تعوض البيانات الحالية بالنسخة اللي لصقتي. واش متأكد؟'),[{text:tr('إلغاء'),style:'cancel'},{text:'استرجاع',style:'destructive',onPress:async()=>{try{setBackupBusy(true);const envelope=JSON.parse(backupText);if(envelope?.app!=='HamZa'||envelope?.schemaVersion!==HAMZA_SCHEMA_VERSION||!envelope?.data||typeof envelope.data!=='object')throw new Error('النسخة الاحتياطية لا تخص إصدار HamZa المدعوم.');const restoredProjects=await materializeBackupTaskAttachments(normalizeProjects(envelope.data.projects),envelope.data.taskAttachmentFiles);const d=await restoreBackup(backupText);setLanguage(d.language==='FR'?'FR':'AR');setCompanyProfile(normalizeCompanyProfile(d.companyProfile));setNumberingPrefixes(normalizeDocumentNumberPrefixes(d.numberingPrefixes));setWarehouses(normalizeWarehouses(d.warehouses));setActiveWarehouseId(typeof d.activeWarehouseId==='string'&&normalizeWarehouses(d.warehouses).some(w=>w.id===d.activeWarehouseId)?d.activeWarehouseId:'main');setProducts(Array.isArray(d.products)?d.products as Product[]:[]);setStockMovements(Array.isArray(d.stockMovements)?d.stockMovements as StockMovement[]:(Array.isArray(d.products)?(d.products as Product[]).filter(p=>p.qty>0).map(p=>({id:'opening-backup-'+p.id,productId:String(p.id),warehouseId:'main',kind:'opening' as const,quantity:p.qty,unitCost:p.costPrice||0,createdAt:new Date().toISOString(),note:'رصيد افتتاحي مرحّل من النسخة الاحتياطية'})):[]));setCustomers(Array.isArray(d.customers)?d.customers as Customer[]:[]);setSales(Array.isArray(d.sales)?d.sales as Sale[]:[]);setPurchases(Array.isArray(d.purchases)?(d.purchases as Purchase[]).map(p=>({...p,paidAmount:normalizePurchasePaidAmount(p.total,p.paidAmount)})):[]);setPurchaseDocuments(normalizePurchaseDocuments(d.purchaseDocuments));setExpenses(Array.isArray(d.expenses)?d.expenses as Expense[]:[]);setSuppliers(Array.isArray(d.suppliers)?d.suppliers as Supplier[]:[]);setQuotes(Array.isArray(d.quotes)?d.quotes as Quote[]:[]);setPayments(Array.isArray(d.payments)?d.payments as Payment[]:[]);setDocuments(Array.isArray(d.documents)?d.documents as CommercialDocument[]:[]);setParkedPosSales(normalizeParkedPosSales(d.parkedPosSales));setProjects(restoredProjects);setTechnicians(normalizeTechnicians(d.technicians));setTechnicianEquipment(normalizeEquipment(d.technicianEquipment,normalizeTechnicians(d.technicians).map(item=>item.id)));setPayrollSettlements(normalizePayrollSettlements(d.payrollSettlements,normalizeTechnicians(d.technicians)));setRecurringExpenseRules(normalizeRecurringExpenses(d.recurringExpenseRules));setSalesReturns(normalizeSalesReturns(d.salesReturns));setSupplierPayments(normalizeSupplierPayments(d.supplierPayments));setCashAccount(normalizeCashAccount(d.cashAccount));const normalizedBanks=normalizeBankAccounts(d.bankAccounts);setBankAccounts(normalizedBanks);setBankTransfers(normalizeBankTransfers(d.bankTransfers,normalizedBanks));setBankStatementLines(normalizeBankStatementLines(d.bankStatementLines,normalizedBanks));setConfirmedBankStatementLineIds(Array.isArray(d.confirmedBankStatementLineIds)?(d.confirmedBankStatementLineIds as unknown[]).filter((id):id is string=>typeof id==='string'):[]);setBankReconciliationHistory(normalizeBankReconciliationHistory(d.bankReconciliationHistory,normalizedBanks));setStorageReady(true);setBackupText('');Alert.alert(tr('تم الاسترجاع'),tr('ترجعات البيانات بنجاح.'));}catch(e){Alert.alert(tr('تعذر الاسترجاع'),e instanceof Error?e.message:'النسخة غير صالحة.');}finally{setBackupBusy(false);}}}]);};
-  const exportPdf=async(title:string,customerName:string,lines:string[],total:number)=>{
+  const exportPdf=async(title:string,customerName:string,lines:string[],total:number,documentDate?:string)=>{
     try{
-      const date=new Date().toLocaleDateString(language==='AR'?'ar-MA':'fr-MA');
+      const date=documentDate||new Date().toLocaleDateString(language==='AR'?'ar-MA':'fr-MA');
       const html=buildPdfDocumentHtml({language,companyProfile,title,customerName,date,lines,total});
       const file=await Print.printToFileAsync({html});
       if(await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri,{mimeType:'application/pdf',dialogTitle:title});
@@ -876,14 +888,15 @@ export default function App() {
        :screen==='المشاريع'?<ProjectsWorkspace language={language} projects={projects} expenses={expenses} technicians={technicians} payrollRows={payrollRows} payrollSettlements={payrollSettlements} bankAccounts={bankAccounts} onSettlePayroll={settleTechnicianPayroll} technicianEquipment={technicianEquipment} onAddEquipment={addTechnicianEquipment} onUpdateEquipment={updateTechnicianEquipment} onDeleteEquipment={deleteTechnicianEquipment} onAddTechnician={addTechnicianProfile} onUpdateTechnician={updateTechnicianProfile} onDeleteTechnician={deleteTechnicianProfile} onCreate={addProject} onUpdate={updateProject} onDelete={deleteProject} onStatusChange={changeProjectStatus} onAddTask={addTaskToProject} onUpdateTask={updateTaskInProject} onToggleTask={toggleProjectTask} onDeleteTask={deleteProjectTask} onAddTaskAttachment={addTaskAttachment} onOpenTaskAttachment={openTaskAttachment} onRemoveTaskAttachment={deleteTaskAttachment} onAddExpense={addProjectExpense} onAddTime={addProjectTime} onDeleteTime={deleteProjectTime}/>
        :screen==='الإشعارات الدائنة'?<SalesReturnWorkspace language={language} sales={sales} returns={salesReturns} onCreate={addSalesReturn} onPdf={exportSalesReturnPdf} onRefund={requestCustomerRefund}/>
         :screen==='عروض الأسعار'||screen==='فاتورة مباشرة'?<QuoteWorkspace language={language} products={products} customers={customers} customerCredits={Object.fromEntries(customerBalances.map(balance=>[balance.customerName,balance.customerCreditCentimes]))} quotes={quotes} initialMode={screen==='فاتورة مباشرة'?'invoice':'quote'} showHistory={screen==='عروض الأسعار'} onSave={(quote)=>setQuotes(v=>[{...quote,number:nextDocumentNumber(numberingPrefixes.quote,v)},...v])} onPdf={exportPdf} onConvert={convertQuote}/>
-       :screen==='الفواتير'||screen==='Bon de sortie'||screen==='فاتورة أولية'?<>
-         <Text style={s.section}>{screen==='الفواتير'?tr('الفواتير'):screen==='فاتورة أولية'?tr('فاتورة أولية'):tr('سندات الخروج')}</Text>
-         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':screen==='فاتورة أولية'?'proforma':'delivery')).map(d=><View key={d.id} style={s.listItem}>
+       :screen==='الفواتير'||screen==='Bon de sortie'||screen==='فاتورة أولية'||screen==='طلبات الزبناء'?<>
+         <Text style={s.section}>{screen==='الفواتير'?tr('الفواتير'):screen==='فاتورة أولية'?tr('فاتورة أولية'):screen==='طلبات الزبناء'?tr('طلبات الزبناء'):tr('سندات الخروج')}</Text>
+         {documents.filter(d=>d.type===documentTypeForScreen).map(d=><View key={d.id} style={s.listItem}>
            <View style={{flex:1}}><Text style={s.itemTitle}>{d.number} • {d.customerName}</Text><Text style={s.itemSub}>{d.date} • {tr(d.status)} • {d.lines.length} {tr('سطر')}</Text>{d.type==='proforma'&&d.validUntil&&<Text style={s.itemSub}>{tr('صالحة إلى غاية:')} {d.validUntil}</Text>}{d.type==='invoice'&&<><Text style={s.itemSub}>{tr('المدفوع:')} {((d.paidCentimes||0)/100).toFixed(2)} DH • {tr('باقي')} {((Math.max(0,Math.round(d.total*100)-(d.paidCentimes||0)-(d.creditedCentimes||0)))/100).toFixed(2)} DH</Text>{dueDateForInvoice(d)&&<Text style={s.itemSub}>{tr('تاريخ الاستحقاق')}: {dueDateForInvoice(d)}</Text>}</>}</View>
           <Text style={s.itemPrice}>{d.total.toFixed(2)} DH</Text>
-           <Pressable onPress={()=>exportPdf(d.type==='invoice'?'Facture':d.type==='proforma'?tr('فاتورة أولية'):'Bon de sortie',d.customerName,[...d.lines.map(line=>line.productName+' × '+line.qty+' — '+line.total.toFixed(2)+' DH'),...(d.notes?[d.notes]:[]),...(d.type==='invoice'?[tr('المدفوع:')+' '+((d.paidCentimes||0)/100).toFixed(2)+' DH',tr('المخصوم من دين الفاتورة:')+' '+((d.creditedCentimes||0)/100).toFixed(2)+' DH',tr('الباقي:')+' '+(Math.max(0,Math.round(d.total*100)-(d.paidCentimes||0)-(d.creditedCentimes||0))/100).toFixed(2)+' DH']:[]),...(d.type==='proforma'&&d.validUntil?[tr('صالحة إلى غاية:')+' '+d.validUntil]:[])],d.total)}><Text style={s.gold}>PDF</Text></Pressable>
+           {d.type==='customer_order'&&<View style={{gap:4}}>{allowedTrackedSalesDocumentStatuses({type:d.type,status:d.status,sourceQuoteId:d.sourceQuoteId},orderHasDelivery(d.sourceQuoteId)).map(status=><Pressable key={status} onPress={()=>updateCustomerOrder(d,status)} style={s.choice}><Text style={s.gold}>{tr(status)}</Text></Pressable>)}</View>}
+           <Pressable onPress={()=>exportPdf((d.type==='invoice'?tr('فاتورة'):d.type==='proforma'?tr('فاتورة أولية'):d.type==='customer_order'?tr('طلب زبون'):tr('سند خروج'))+' '+d.number,d.customerName,[...d.lines.map(line=>line.productName+' × '+line.qty+' — '+line.total.toFixed(2)+' DH'),...(d.notes?[d.notes]:[]),...(d.type==='invoice'?[tr('المدفوع:')+' '+((d.paidCentimes||0)/100).toFixed(2)+' DH',tr('المخصوم من دين الفاتورة:')+' '+((d.creditedCentimes||0)/100).toFixed(2)+' DH',tr('الباقي:')+' '+(Math.max(0,Math.round(d.total*100)-(d.paidCentimes||0)-(d.creditedCentimes||0))/100).toFixed(2)+' DH']:[]),...(d.type==='proforma'&&d.validUntil?[tr('صالحة إلى غاية:')+' '+d.validUntil]:[])],d.total,d.date)}><Text style={s.gold}>PDF</Text></Pressable>
         </View>)}
-         {documents.filter(d=>d.type===(screen==='الفواتير'?'invoice':screen==='فاتورة أولية'?'proforma':'delivery')).length===0&&<Text style={s.empty}>{tr('مازال ما تسجلات حتى وثيقة من هاد النوع.')}</Text>}
+         {documents.filter(d=>d.type===documentTypeForScreen).length===0&&<Text style={s.empty}>{tr('مازال ما تسجلات حتى وثيقة من هاد النوع.')}</Text>}
         {sales.length>0&&<Text style={s.note}>{tr('سجل المبيعات القديم باقي محفوظ كما هو.')}</Text>}
       </>
       :screen==='الأداءات'?<><View style={s.panel}><Text style={s.panelTitle}>{tr('تسجيل أداء زبون')}</Text>{customers.map(c=><Pressable key={c.id} onPress={()=>{setPaymentCustomer(String(c.id));setPaymentDocument('');}} style={[s.choice,paymentCustomer===String(c.id)&&s.choiceActive]}><Text style={s.itemTitle}>{c.name}</Text></Pressable>)}

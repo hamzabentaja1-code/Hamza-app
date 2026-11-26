@@ -13,7 +13,7 @@ export type QuoteRecord = {
   unitPrice:number; total:number; date:string; status:string;
   lines?:QuoteLine[]; notes?:string; validUntil?:string;
 };
-export type QuoteConversionType = 'invoice' | 'delivery' | 'proforma';
+export type QuoteConversionType = 'invoice' | 'delivery' | 'proforma' | 'customer_order';
 type Props = {
   language:'AR'|'FR';
   products:Product[];
@@ -23,7 +23,7 @@ type Props = {
   onSave:(quote:QuoteRecord)=>void;
   initialMode?:'quote'|'invoice';
   showHistory?:boolean;
-  onPdf:(title:string, customerName:string, lines:string[], total:number)=>void;
+  onPdf:(title:string, customerName:string, lines:string[], total:number, date?:string)=>void;
   onConvert:(quote:QuoteRecord,type:QuoteConversionType,direct?:boolean,applyCredit?:boolean)=>boolean;
 };
 
@@ -159,7 +159,8 @@ export default function QuoteWorkspace({language,products,customers,quotes,custo
       {quoteLines(q).map((line,i)=><Text key={i} style={{color:'#DDD',marginTop:5}}>{line}</Text>)}
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:8}}>
-        <Pressable onPress={()=>onPdf('Devis '+(q.number||`DEV-${q.id}`),q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[]),...(q.validUntil?[tr('صالحة إلى غاية:')+' '+q.validUntil]:[])],q.total)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
+        <Pressable onPress={()=>onPdf('Devis '+(q.number||`DEV-${q.id}`),q.customerName,[...quoteLines(q),...(q.notes?[q.notes]:[]),...(q.validUntil?[tr('صالحة إلى غاية:')+' '+q.validUntil]:[])],q.total,q.date)} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
+        <Pressable onPress={()=>onConvert(q,'customer_order')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('طلب زبون')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'proforma')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة أولية')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'delivery')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('سند خروج')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'invoice')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة')}</Text></Pressable>

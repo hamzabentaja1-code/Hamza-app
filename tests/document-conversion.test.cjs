@@ -44,3 +44,30 @@ test('ISO quote validity accepts real calendar dates and rejects malformed dates
   assert.equal(isValidIsoDate('2026-13-01'),false);
   assert.equal(isValidIsoDate('30/11/2026'),false);
 });
+
+test('a delivery created after an invoice records the note without issuing stock twice',()=>{
+  const lines=[{productId:7,productName:'Widget',qty:3,unitPrice:100,total:300}];
+  const quote={id:5,productName:'Widget',customerName:'Client',qty:3,unitPrice:100,total:300,lines};
+  const products=[{id:7,qty:0}];
+  const result=convertQuote(quote,'delivery',[],products,104,'12/11/2026',true);
+  assert.equal(result.document.type,'delivery');
+  assert.equal(result.document.lines[0].qty,3);
+  assert.deepEqual(result.updatedProducts,products);
+  assert.throws(()=>convertQuote(quote,'delivery',[result.document],products,105,'12/11/2026',true),/already/);
+});
+
+test('customer orders stay off stock and can only be fulfilled with a linked delivery',()=>{
+  const {allowedTrackedSalesDocumentStatuses,changeTrackedSalesDocumentStatus}=require('../.test-build/domain/commercial-lifecycle.js');
+  const quote={id:6,productName:'Widget',customerName:'Client',qty:3,unitPrice:100,total:300};
+  const products=[{id:7,qty:8}];
+  const {document,updatedProducts}=convertQuote(quote,'customer_order',[],products,106,'12/11/2026');
+  assert.deepEqual(updatedProducts,products);
+  assert.equal(document.status,'مؤكد');
+  assert.throws(()=>convertQuote(quote,'customer_order',[document],products,107,'12/11/2026'),/already/);
+  const order={...document,type:'customer_order'};
+  assert.deepEqual(allowedTrackedSalesDocumentStatuses(order,false),['قيد التجهيز','ملغى']);
+  const ready=changeTrackedSalesDocumentStatus(changeTrackedSalesDocumentStatus(order,'قيد التجهيز',false),'جاهز',false);
+  assert.deepEqual(allowedTrackedSalesDocumentStatuses(ready,false),['ملغى']);
+  assert.throws(()=>changeTrackedSalesDocumentStatus(ready,'مسلم',false));
+  assert.equal(changeTrackedSalesDocumentStatus(ready,'مسلم',true).status,'مسلم');
+});
