@@ -55,7 +55,8 @@ import {buildProjectTimeReport,summarizeTechnicianWork} from './src/domain/proje
 import {summarizePurchasesBySupplier} from './src/domain/purchase-report';
 
 declare const require: (id:string)=>any;
-let speechRecognition: any;
+import {ProductVoiceSession,productVoiceLocale,productVoiceValue,type ProductVoiceTarget} from './src/domain/product-voice';
+let speechRecognition: typeof import('expo-speech-recognition').ExpoSpeechRecognitionModule | undefined;
 try{speechRecognition=require('expo-speech-recognition').ExpoSpeechRecognitionModule;}catch{speechRecognition=undefined;}
 
 const GOLD = '#D6AE55';
@@ -109,8 +110,9 @@ export default function App() {
   const [screen,setScreen]=useState('الرئيسية');
   const [reportStart,setReportStart]=useState(''); const [reportEnd,setReportEnd]=useState(''); const [reportSearch,setReportSearch]=useState(''); const [appliedReportSearch,setAppliedReportSearch]=useState(''); const [appliedReportRange,setAppliedReportRange]=useState<{from:string;to:string}|null>(null);
   const [search,setSearch]=useState(''); const [productSearch,setProductSearch]=useState(''); const [photoGallery,setPhotoGallery]=useState<string[]>([]); const [photoPreview,setPhotoPreview]=useState<string|null>(null);
-  const [speechListening,setSpeechListening]=useState(false); const [speechSearchError,setSpeechSearchError]=useState('');
-  const speechTarget=useRef<'search'|'name'>('search');
+  const speechSession=useRef(new ProductVoiceSession());
+  const [voiceTarget,setVoiceTarget]=useState<ProductVoiceTarget>();
+  const [voiceError,setVoiceError]=useState<{target:ProductVoiceTarget;message:string}>();
   const [imageSearchActive,setImageSearchActive]=useState(false); const [imageSearchBusy,setImageSearchBusy]=useState(false); const [imageSearchPreview,setImageSearchPreview]=useState<string|null>(null); const [imageSearchMatches,setImageSearchMatches]=useState<Array<{id:number;distance:number}>>([]);
   const imageFingerprintCache=useRef(new Map<string,{photo:string;fingerprint:string}>());
   const [language,setLanguage]=useState<'AR'|'FR'>('AR');
@@ -131,37 +133,87 @@ export default function App() {
 
   const tr=(value:string)=>translate(language,value);
   const pdfKindLabels:Record<PdfDocumentKind,string>={quote:tr('عرض السعر'),invoice:tr('فاتورة'),delivery:tr('سند خروج'),proforma:tr('فاتورة أولية'),creditNote:tr('إشعار دائن للزبون'),customer_order:tr('طلب زبون')};
+  const stopProductVoice=(target?:ProductVoiceTarget)=>{
+    const session=speechSession.current;
+    if(session.cancel(target)){
+      try{speechRecognition?.abort();}catch{session.finish();}
+    }
+    if(!session.current)setVoiceTarget(undefined);
+  };
   useEffect(()=>{
     if(!speechRecognition)return;
-    const startListener=speechRecognition.addListener('start',()=>setSpeechListening(true));
-    const endListener=speechRecognition.addListener('end',()=>setSpeechListening(false));
-    const resultListener=speechRecognition.addListener('result',(event:any)=>{
-      const transcript=event.results[0]?.transcript?.trim();
-      if(transcript){setSpeechSearchError('');if(speechTarget.current==='name')setName(transcript);else{clearImageSearch();setProductSearch(transcript);}}
+    const endListener=speechRecognition.addListener('end',()=>{
+      if(speechSession.current.current?.phase==='preparing')return;
+      speechSession.current.finish();setVoiceTarget(undefined);
     });
-    const errorListener=speechRecognition.addListener('error',(event:any)=>{
-      setSpeechListening(false);
-      if(event.error!=='aborted'&&event.error!=='no-speech')setSpeechSearchError('تعذر البحث بالصوت. تأكد من الميكروفون وخدمة التعرف على الكلام.');
-    });
-    return ()=>{startListener.remove();endListener.remove();resultListener.remove();errorListener.remove();};
-  },[]);
-  const toggleVoiceProductSearch=async(target:'search'|'name'='search')=>{
-    setSpeechSearchError('');
-    speechTarget.current=target;
-    if(!speechRecognition){setSpeechSearchError('التعرف على الكلام غير متوفر. فعّل خدمة البحث الصوتي فالهاتف.');return;}
-    if(speechListening){speechRecognition.stop();return;}
-    try{
-      if(!speechRecognition.isRecognitionAvailable()){
-        setSpeechSearchError('التعرف على الكلام غير متوفر. فعّل خدمة البحث الصوتي فالهاتف.');
+    const resultListener=speechRecognition.addListener('result',event=>{
+      const target=speechSession.current.resultTarget();
+      if(!event.isFinal||!target)return;
+      const value=productVoiceValue(target,event.results[0]?.transcript??'');
+      if(!value){
+        setVoiceError({target,message:target==='price'||target==='quantity'
+          ?'قول رقم واحد بوحدو، ولا دخلو بالكتابة.':'ما تسمع حتى كلام واضح. حاول من جديد.'});
         return;
       }
-      const permission=await speechRecognition.requestPermissionsAsync();
-      if(!permission.granted){setSpeechSearchError('خاصك تسمح باستعمال الميكروفون للبحث بالصوت.');return;}
-      speechRecognition.start({lang:language==='FR'?'fr-MA':'ar-MA',interimResults:true,continuous:false});
-    }catch{
-      setSpeechListening(false);
-      setSpeechSearchError('تعذر البحث بالصوت. تأكد من الميكروفون وخدمة التعرف على الكلام.');
+      setVoiceError(undefined);
+      if(target==='name')setName(value);
+      else if(target==='price')setPrice(value);
+      else if(target==='quantity')setQty(value);
+      else{clearImageSearch();setProductSearch(value);}
+    });
+    const errorListener=speechRecognition.addListener('error',event=>{
+      const target=speechSession.current.resultTarget();
+      if(!target||event.error==='aborted')return;
+      const message=event.error==='no-speech'?'ما تسمع حتى كلام واضح. حاول من جديد.'
+        :event.error==='language-not-supported'
+          ?'حمّل لغة التعرّف على الكلام بلا إنترنت من إعدادات الهاتف.'
+          :'تعذر التعرّف على الكلام بلا إنترنت. تأكد من الميكروفون ولغة الهاتف.';
+      setVoiceError({target,message});
+    });
+    return ()=>{endListener.remove();resultListener.remove();errorListener.remove();if(speechSession.current.cancel())speechRecognition?.abort();};
+  },[]);
+  useEffect(()=>{if(screen!=='المنتجات'){stopProductVoice();setVoiceError(undefined);}},[screen]);
+  const toggleProductVoice=async(target:ProductVoiceTarget)=>{
+    const recognizer=speechRecognition;
+    const controller=speechSession.current;
+    if(controller.current){
+      if(controller.current.target!==target)return;
+      if(controller.current.phase==='preparing'){stopProductVoice(target);return;}
+      if(controller.stop(target)){
+        try{recognizer?.stop();}catch{stopProductVoice(target);}
+      }
+      return;
     }
+    const session=controller.begin(target);
+    if(!session)return;
+    setVoiceTarget(target);setVoiceError(undefined);
+    const fail=(message:string)=>{
+      if(controller.finish(session)){setVoiceTarget(undefined);setVoiceError({target,message});}
+    };
+    try{
+      if(!recognizer?.supportsOnDeviceRecognition()){
+        fail('التعرّف على الكلام بلا إنترنت غير متوفر فهاد الهاتف. تقدر تكتب مباشرة.');return;
+      }
+      const permission=await recognizer.requestMicrophonePermissionsAsync();
+      if(controller.current!==session)return;
+      if(!permission.granted){fail('سمح بالميكروفون من إعدادات الهاتف باش تستعمل الصوت.');return;}
+      const locales=await recognizer.getSupportedLocales({}).catch(()=>undefined);
+      if(!controller.start(session))return;
+      recognizer.start({lang:productVoiceLocale(language,locales?.installedLocales??[]),requiresOnDeviceRecognition:true,interimResults:false,continuous:false});
+    }catch{
+      fail('تعذر التعرّف على الكلام بلا إنترنت. تأكد من الميكروفون ولغة الهاتف.');
+    }
+  };
+  const productVoiceButton=(target:ProductVoiceTarget,label:string)=>{
+    const active=voiceTarget===target;
+    const disabled=!!voiceTarget&&!active;
+    return <Pressable onPress={()=>void toggleProductVoice(target)} disabled={disabled} accessibilityRole="button" accessibilityLabel={active?tr('إيقاف الميكروفون'):label} accessibilityState={{disabled}} style={{minWidth:46,minHeight:48,paddingHorizontal:8,borderRadius:9,borderWidth:1,borderColor:active?'#E28A78':GOLD,backgroundColor:'#211D14',alignItems:'center',justifyContent:'center',opacity:disabled?0.55:1}}><Text style={[s.gold,active&&{color:'#E28A78'}]}>{active?'■':'🎙'}</Text></Pressable>;
+  };
+  const productVoiceHint=(target:ProductVoiceTarget)=>voiceError?.target===target
+    ?<Text accessibilityLiveRegion="polite" style={[s.note,{marginTop:0,marginBottom:8}]}>{tr(voiceError.message)}</Text>:null;
+  const clearVoiceField=(target:ProductVoiceTarget)=>{
+    stopProductVoice(target);
+    if(voiceError?.target===target)setVoiceError(undefined);
   };
   const [products,setProducts]=useState<Product[]>([]);
   const [stockMovements,setStockMovements]=useState<StockMovement[]>([]);
@@ -388,8 +440,8 @@ export default function App() {
   const lowStockProducts=useMemo(()=>products.filter(p=>p.qty>0&&p.qty<=5),[products]);
   const outOfStockCount=useMemo(()=>products.filter(p=>p.qty<=0).length,[products]);
   const quoteTotal=useMemo(()=>quotes.reduce((sum,q)=>sum+q.total,0),[quotes]);
-  const resetProductForm=()=>{setName('');setPrice('');setCostPrice('');setQuotePrice('');setInvoicePrice('');setQty('');setProductReference('');setProductBarcode('');setProductCategory('');setProductBrand('');setProductUnit('');setProductVariant('');setPhotoGallery([]);setEditingProductId(null);};
-  const startEditProduct=(p:Product)=>{setEditingProductId(p.id);setName(p.name);setPrice(String(p.price));setCostPrice(String(inventoryAverageProductCost(p.id,p.costPrice||0)));setQuotePrice(p.quotePrice===undefined?'':String(p.quotePrice));setInvoicePrice(p.invoicePrice===undefined?'':String(p.invoicePrice));setQty(String(warehouseStock(stockMovements,String(p.id),activeWarehouseId)));setProductReference(p.reference||'');setProductBarcode(p.barcode||'');setProductCategory(p.category||'');setProductBrand(p.brand||'');setProductUnit(p.unit||'');setProductVariant(p.variant||'');setPhotoGallery(productPhotos(p));};
+  const resetProductForm=()=>{stopProductVoice();setVoiceError(undefined);setName('');setPrice('');setCostPrice('');setQuotePrice('');setInvoicePrice('');setQty('');setProductReference('');setProductBarcode('');setProductCategory('');setProductBrand('');setProductUnit('');setProductVariant('');setPhotoGallery([]);setEditingProductId(null);};
+  const startEditProduct=(p:Product)=>{stopProductVoice();setVoiceError(undefined);setEditingProductId(p.id);setName(p.name);setPrice(String(p.price));setCostPrice(String(inventoryAverageProductCost(p.id,p.costPrice||0)));setQuotePrice(p.quotePrice===undefined?'':String(p.quotePrice));setInvoicePrice(p.invoicePrice===undefined?'':String(p.invoicePrice));setQty(String(warehouseStock(stockMovements,String(p.id),activeWarehouseId)));setProductReference(p.reference||'');setProductBarcode(p.barcode||'');setProductCategory(p.category||'');setProductBrand(p.brand||'');setProductUnit(p.unit||'');setProductVariant(p.variant||'');setPhotoGallery(productPhotos(p));};
   const addProduct=()=>{
     const n=Number(price.replace(',','.'));const cost=Number((costPrice||'0').replace(',','.'));const q=Number(qty||'0');
     let quotePriceValue:number|undefined,invoicePriceValue:number|undefined;
@@ -819,7 +871,8 @@ export default function App() {
         <TextInput value={search} onChangeText={setSearch} placeholder={tr('قلب على قسم...')} placeholderTextColor="#888" style={s.search}/>
         <View style={s.grid}>{modules.filter(m=>m.ar.includes(search)||m.en.toLowerCase().includes(search.toLowerCase())).map(m=><Pressable key={m.en} onPress={()=>go(m.ar)} style={s.tile}><Text style={s.tileIcon}>{m.icon}</Text><Text style={s.tileTitle}>{tr(m.ar)}</Text><Text style={s.tileSub}>{language==='FR'?({'Produits':'Produits','Point of Sale':'Point de vente','Customers':'Clients','Suppliers':'Fournisseurs','Sales':'Ventes','Purchases':'Achats','Stock':'Stock','Quotes / Devis':'Devis','Invoices':'Factures','Delivery notes':'Bons de sortie','Expenses':'Dépenses','Backup & Restore':'Sauvegarde','Payments':'Paiements','Cash register':'Caisse','Reports':'Rapports','Settings':'Paramètres'} as Record<string,string>)[m.en]||m.en:m.en}</Text></Pressable>)}</View>
       </>:screen==='المنتجات'?<>
-        <View style={s.panel}><Text style={s.panelTitle}>{editingProductId!==null?tr('تعديل المنتج'):tr('إضافة منتج جديد')}</Text><View style={[s.row,{alignItems:'center'}]}><TextInput value={name} onChangeText={setName} placeholder={tr("اسم المنتج")} placeholderTextColor="#888" style={[s.input,{flex:1}]}/><Pressable onPress={()=>toggleVoiceProductSearch('name')} accessibilityRole="button" accessibilityLabel={tr('إملاء اسم المنتج')} style={{minWidth:50,minHeight:48,paddingHorizontal:9,marginBottom:10,borderRadius:9,borderWidth:1,borderColor:speechListening&&speechTarget.current==='name'?'#E28A78':GOLD,backgroundColor:'#211D14',alignItems:'center',justifyContent:'center'}}><Text style={[s.gold,speechListening&&speechTarget.current==='name'&&{color:'#E28A78'}]}>{speechListening&&speechTarget.current==='name'?'■':'🎙'}</Text></Pressable></View>{speechSearchError&&speechTarget.current==='name'?<Text accessibilityLiveRegion="polite" style={[s.note,{marginTop:0,marginBottom:8}]}>{tr(speechSearchError)}</Text>:null}<View style={s.row}><TextInput value={productReference} onChangeText={setProductReference} placeholder={tr("مرجع المنتج (اختياري)")} placeholderTextColor="#888" style={[s.input,s.half]}/><TextInput value={productBarcode} onChangeText={setProductBarcode} placeholder={tr("الباركود (اختياري)")} placeholderTextColor="#888" style={[s.input,s.half]}/></View><BarcodeScannerButton language={language} onScanned={setProductBarcode}/><TextInput value={productCategory} onChangeText={setProductCategory} placeholder={tr("الصنف / الفئة (اختياري)")} placeholderTextColor="#888" style={s.input}/><View style={s.row}><TextInput value={productBrand} onChangeText={setProductBrand} placeholder={tr("العلامة التجارية (اختياري)")} placeholderTextColor="#888" style={[s.input,s.half]}/><TextInput value={productUnit} onChangeText={setProductUnit} placeholder={tr("الوحدة (اختياري)")} placeholderTextColor="#888" style={[s.input,s.half]}/></View><TextInput value={productVariant} onChangeText={setProductVariant} placeholder={tr("الموديل / النسخة (اختياري)")} placeholderTextColor="#888" style={s.input}/><View style={s.row}><TextInput value={price} onChangeText={setPrice} keyboardType="decimal-pad" placeholder={tr("ثمن البيع (DH)")} placeholderTextColor="#888" style={[s.input,s.half]}/><TextInput value={qty} onChangeText={setQty} keyboardType="number-pad" placeholder={tr("الكمية")} placeholderTextColor="#888" style={[s.input,s.half]}/></View><View style={s.row}><TextInput value={quotePrice} onChangeText={setQuotePrice} keyboardType="decimal-pad" placeholder={tr("ثمن العرض الخاص (اختياري DH)")} placeholderTextColor="#888" style={[s.input,s.half]}/><TextInput value={invoicePrice} onChangeText={setInvoicePrice} keyboardType="decimal-pad" placeholder={tr("ثمن الفاتورة الخاص (اختياري DH)")} placeholderTextColor="#888" style={[s.input,s.half]}/></View><TextInput value={costPrice} onChangeText={setCostPrice} keyboardType="decimal-pad" placeholder={tr("ثمن الشراء / التكلفة (DH)")} placeholderTextColor="#888" style={s.input}/>{photoGallery.length>0?<View style={[s.row,{flexWrap:'wrap',justifyContent:'center'}]}>{photoGallery.map((uri,index)=><View key={index} style={{margin:4,alignItems:'center'}}><Pressable onPress={()=>setPhotoPreview(uri)}><Image source={{uri}} style={{width:72,height:72,borderRadius:9}}/></Pressable><Pressable accessibilityLabel={tr('حذف الصورة')} onPress={()=>setPhotoGallery(current=>removeProductPhoto(current,index))}><Text style={s.delete}>× {tr('حذف الصورة')}</Text></Pressable></View>)}</View>:null}<Pressable disabled={photoGallery.length>=4} style={[s.choice,{borderColor:GOLD,alignItems:'center',opacity:photoGallery.length>=4?0.5:1}]} onPress={pickProductPhoto}><Text style={s.gold}>{tr('إضافة صورة المنتج')} ({photoGallery.length}/4)</Text></Pressable><Pressable style={s.action} onPress={addProduct}><Text style={s.actionText}>{editingProductId!==null?tr('حفظ التعديلات'):tr('+ إضافة المنتج')}</Text></Pressable></View>
+        <View style={s.panel}><Text style={s.panelTitle}>{editingProductId!==null?tr('تعديل المنتج'):tr('إضافة منتج جديد')}</Text><View style={[s.row,{alignItems:'center'}]}><TextInput value={name} onChangeText={value=>{clearVoiceField('name');setName(value);}} placeholder={tr("اسم المنتج")} placeholderTextColor="#888" style={[s.input,{flex:1,marginBottom:0}]}/>{productVoiceButton('name',tr('إملاء اسم المنتج'))}</View>{productVoiceHint('name')}<View style={s.row}><TextInput value={productReference} onChangeText={setProductReference} placeholder={tr("مرجع المنتج (اختياري)")} placeholderTextColor="#888" style={[s.input,s.half]}/><TextInput value={productBarcode} onChangeText={setProductBarcode} placeholder={tr("الباركود (اختياري)")} placeholderTextColor="#888" style={[s.input,s.half]}/></View><BarcodeScannerButton language={language} onScanned={setProductBarcode}/><TextInput value={productCategory} onChangeText={setProductCategory} placeholder={tr("الصنف / الفئة (اختياري)")} placeholderTextColor="#888" style={s.input}/><View style={s.row}><TextInput value={productBrand} onChangeText={setProductBrand} placeholder={tr("العلامة التجارية (اختياري)")} placeholderTextColor="#888" style={[s.input,s.half]}/><TextInput value={productUnit} onChangeText={setProductUnit} placeholder={tr("الوحدة (اختياري)")} placeholderTextColor="#888" style={[s.input,s.half]}/></View><TextInput value={productVariant} onChangeText={setProductVariant} placeholder={tr("الموديل / النسخة (اختياري)")} placeholderTextColor="#888" style={s.input}/><View style={[s.row,{alignItems:'center'}]}><TextInput value={price} onChangeText={value=>{clearVoiceField('price');setPrice(value);}} keyboardType="decimal-pad" placeholder={tr("ثمن البيع (DH)")} placeholderTextColor="#888" style={[s.input,{flex:1,marginBottom:0}]}/>{productVoiceButton('price',tr('إملاء ثمن البيع'))}</View>{productVoiceHint('price')}
+        <View style={[s.row,{alignItems:'center'}]}><TextInput value={qty} onChangeText={value=>{clearVoiceField('quantity');setQty(value);}} keyboardType="number-pad" placeholder={tr("الكمية")} placeholderTextColor="#888" style={[s.input,{flex:1,marginBottom:0}]}/>{productVoiceButton('quantity',tr('إملاء الكمية'))}</View>{productVoiceHint('quantity')}<View style={s.row}><TextInput value={quotePrice} onChangeText={setQuotePrice} keyboardType="decimal-pad" placeholder={tr("ثمن العرض الخاص (اختياري DH)")} placeholderTextColor="#888" style={[s.input,s.half]}/><TextInput value={invoicePrice} onChangeText={setInvoicePrice} keyboardType="decimal-pad" placeholder={tr("ثمن الفاتورة الخاص (اختياري DH)")} placeholderTextColor="#888" style={[s.input,s.half]}/></View><TextInput value={costPrice} onChangeText={setCostPrice} keyboardType="decimal-pad" placeholder={tr("ثمن الشراء / التكلفة (DH)")} placeholderTextColor="#888" style={s.input}/>{photoGallery.length>0?<View style={[s.row,{flexWrap:'wrap',justifyContent:'center'}]}>{photoGallery.map((uri,index)=><View key={index} style={{margin:4,alignItems:'center'}}><Pressable onPress={()=>setPhotoPreview(uri)}><Image source={{uri}} style={{width:72,height:72,borderRadius:9}}/></Pressable><Pressable accessibilityLabel={tr('حذف الصورة')} onPress={()=>setPhotoGallery(current=>removeProductPhoto(current,index))}><Text style={s.delete}>× {tr('حذف الصورة')}</Text></Pressable></View>)}</View>:null}<Pressable disabled={photoGallery.length>=4} style={[s.choice,{borderColor:GOLD,alignItems:'center',opacity:photoGallery.length>=4?0.5:1}]} onPress={pickProductPhoto}><Text style={s.gold}>{tr('إضافة صورة المنتج')} ({photoGallery.length}/4)</Text></Pressable><Pressable style={s.action} onPress={addProduct}><Text style={s.actionText}>{editingProductId!==null?tr('حفظ التعديلات'):tr('+ إضافة المنتج')}</Text></Pressable></View>
         <View style={[s.panel,{marginTop:12}]}>
           <Text style={s.panelTitle}>{tr('إدخال جماعي للمنتجات')}</Text>
           <Text style={s.panelText}>{tr('كل سطر منتج واحد، والفاصل هو ; أو Tab. الترتيب: الاسم؛ المرجع؛ الباركود؛ الصنف؛ ثمن الشراء؛ ثمن البيع؛ الكمية؛ العلامة التجارية؛ الوحدة؛ الموديل؛ ثمن العرض؛ ثمن الفاتورة. آخر حقلين اختياريان.')}</Text>
@@ -827,7 +880,7 @@ export default function App() {
           <Pressable style={s.action} onPress={importProductsBulk}><Text style={s.actionText}>{tr("استيراد اللائحة وإضافة المنتجات")}</Text></Pressable>
           <Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportProductsCsv}><Text style={s.gold}>{tr("تصدير لائحة المنتجات CSV")}</Text></Pressable><Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportProductsXlsx}><Text style={s.gold}>{tr("تصدير لائحة المنتجات Excel")}</Text></Pressable><Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={()=>exportProductsPdf(false)}><Text style={s.gold}>{tr("تصدير لائحة المنتجات PDF بلا صور")}</Text></Pressable><Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={()=>exportProductsPdf(true)}><Text style={s.gold}>{tr("تصدير لائحة المنتجات PDF بالصور")}</Text></Pressable>
         </View>
-        <Text style={s.section}>{tr("لائحة المنتجات")} ({products.length})</Text><View style={[s.row,{alignItems:'center',marginBottom:8}]}><TextInput value={productSearch} onChangeText={value=>{clearImageSearch();setProductSearch(value);setSpeechSearchError('');}} placeholder={tr("بحث بالاسم أو المرجع أو الباركود أو الصنف...")} placeholderTextColor="#888" style={[s.search,{flex:1,marginBottom:0}]}/><Pressable onPress={()=>toggleVoiceProductSearch()} accessibilityRole="button" accessibilityLabel={tr(speechListening?'إيقاف البحث بالصوت':'البحث بالصوت')} style={{minWidth:54,minHeight:48,paddingHorizontal:10,borderRadius:9,borderWidth:1,borderColor:speechListening&&speechTarget.current==='search'?'#E28A78':GOLD,backgroundColor:'#211D14',alignItems:'center',justifyContent:'center'}}><Text style={[s.gold,speechListening&&speechTarget.current==='search'&&{color:'#E28A78'}]}>{speechListening&&speechTarget.current==='search'?'■':'🎙'}</Text></Pressable></View>{speechSearchError&&speechTarget.current==='search'?<Text accessibilityLiveRegion="polite" style={[s.note,{marginTop:0,marginBottom:8}]}>{tr(speechSearchError)}</Text>:null}<View style={[s.row,{justifyContent:'flex-end',marginBottom:10}]}><Pressable onPress={searchProductsByImage} disabled={imageSearchBusy} accessibilityRole="button" accessibilityLabel={tr('البحث بالصورة')} style={{minWidth:76,minHeight:44,paddingHorizontal:10,borderRadius:9,borderWidth:1,borderColor:GOLD,backgroundColor:'#211D14',alignItems:'center',justifyContent:'center'}}><Text style={s.gold}>{imageSearchBusy?'…':tr('البحث بالصورة')}</Text></Pressable></View>{imageSearchPreview?<View style={[s.row,{alignItems:'center',marginBottom:10}]}><Image source={{uri:imageSearchPreview}} style={{width:48,height:48,borderRadius:8}}/><View style={{flex:1}}><Text style={s.itemSub}>{imageSearchBusy?tr('البحث عن صور المنتجات'):tr('عدد النتائج:')+' '+imageSearchMatches.length}</Text><Text style={[s.itemSub,{fontSize:10}]}>{tr('النتائج كتقارن الشكل العام والإضاءة ديال الصور المحفوظة.')}</Text></View><Pressable onPress={clearImageSearch}><Text style={s.gold}>{tr('إلغاء البحث بالصورة')}</Text></Pressable></View>:null}{imageSearchActive&&imageSearchMatches.length===0&&!imageSearchBusy?<Text style={s.empty}>{tr('ما لقيناش صور قريبة. زيد صور واضحة للمنتجات وجرب صورة أخرى.')}</Text>:null}{products.length===0?<Text style={s.empty}>{tr("مازال ما زدتي حتى منتج.")}</Text> :visibleProducts.map(p=><View key={p.id} style={s.listItem}>{p.photoData?<Pressable onPress={()=>setPhotoPreview(p.photoData||null)}><Image source={{uri:p.photoData}} style={{width:48,height:48,borderRadius:8}}/></Pressable>:null}<View style={{flex:1}}><Text style={s.itemTitle}>{p.name}</Text><Text style={s.itemSub}>{[p.reference?tr('مرجع: ')+p.reference:'',p.barcode?tr('باركود: ')+p.barcode:'',p.category?tr('الصنف: ')+p.category:'',p.brand?tr('العلامة: ')+p.brand:'',p.unit?tr('الوحدة: ')+p.unit:'',p.variant?tr('الموديل: ')+p.variant:''].filter(Boolean).join(' • ')}</Text><Text style={s.itemSub}>{tr("الكمية:")} {p.qty} • {tr("الشراء:")} {inventoryAverageProductCost(p.id,p.costPrice||0).toFixed(2)} DH • ربح الوحدة: {(p.price-inventoryAverageProductCost(p.id,p.costPrice||0)).toFixed(2)} DH</Text>{(p.quotePrice!==undefined||p.invoicePrice!==undefined)&&<Text style={s.itemSub}>{p.quotePrice!==undefined?tr("ثمن العرض:")+" "+p.quotePrice.toFixed(2)+" DH ":""}{p.invoicePrice!==undefined?tr("ثمن الفاتورة:")+" "+p.invoicePrice.toFixed(2)+" DH":""}</Text>}</View><Text style={s.itemPrice}>{p.price.toFixed(2)} DH</Text><Pressable onPress={()=>startEditProduct(p)}><Text style={s.gold}>{tr("تعديل")}</Text></Pressable><Pressable onPress={()=>Alert.alert(tr('حذف المنتج؟'),p.name,[{text:'إلغاء'},{text:tr('حذف'),style:'destructive',onPress:()=>{setProducts(v=>v.filter(x=>x.id!==p.id));if(editingProductId===p.id)resetProductForm();}}])}><Text style={s.delete}>{tr("حذف")}</Text></Pressable></View>)}
+        <Text style={s.section}>{tr("لائحة المنتجات")} ({products.length})</Text><View style={[s.row,{alignItems:'center',marginBottom:8}]}><TextInput value={productSearch} onChangeText={value=>{clearVoiceField('search');clearImageSearch();setProductSearch(value);}} placeholder={tr("بحث بالاسم أو المرجع أو الباركود أو الصنف...")} placeholderTextColor="#888" style={[s.search,{flex:1,marginBottom:0}]}/>{productVoiceButton('search',tr('البحث بالصوت'))}</View>{productVoiceHint('search')}<View style={[s.row,{justifyContent:'flex-end',marginBottom:10}]}><Pressable onPress={searchProductsByImage} disabled={imageSearchBusy} accessibilityRole="button" accessibilityLabel={tr('البحث بالصورة')} style={{minWidth:76,minHeight:44,paddingHorizontal:10,borderRadius:9,borderWidth:1,borderColor:GOLD,backgroundColor:'#211D14',alignItems:'center',justifyContent:'center'}}><Text style={s.gold}>{imageSearchBusy?'…':tr('البحث بالصورة')}</Text></Pressable></View>{imageSearchPreview?<View style={[s.row,{alignItems:'center',marginBottom:10}]}><Image source={{uri:imageSearchPreview}} style={{width:48,height:48,borderRadius:8}}/><View style={{flex:1}}><Text style={s.itemSub}>{imageSearchBusy?tr('البحث عن صور المنتجات'):tr('عدد النتائج:')+' '+imageSearchMatches.length}</Text><Text style={[s.itemSub,{fontSize:10}]}>{tr('النتائج كتقارن الشكل العام والإضاءة ديال الصور المحفوظة.')}</Text></View><Pressable onPress={clearImageSearch}><Text style={s.gold}>{tr('إلغاء البحث بالصورة')}</Text></Pressable></View>:null}{imageSearchActive&&imageSearchMatches.length===0&&!imageSearchBusy?<Text style={s.empty}>{tr('ما لقيناش صور قريبة. زيد صور واضحة للمنتجات وجرب صورة أخرى.')}</Text>:null}{products.length===0?<Text style={s.empty}>{tr("مازال ما زدتي حتى منتج.")}</Text> :visibleProducts.map(p=><View key={p.id} style={s.listItem}>{p.photoData?<Pressable onPress={()=>setPhotoPreview(p.photoData||null)}><Image source={{uri:p.photoData}} style={{width:48,height:48,borderRadius:8}}/></Pressable>:null}<View style={{flex:1}}><Text style={s.itemTitle}>{p.name}</Text><Text style={s.itemSub}>{[p.reference?tr('مرجع: ')+p.reference:'',p.barcode?tr('باركود: ')+p.barcode:'',p.category?tr('الصنف: ')+p.category:'',p.brand?tr('العلامة: ')+p.brand:'',p.unit?tr('الوحدة: ')+p.unit:'',p.variant?tr('الموديل: ')+p.variant:''].filter(Boolean).join(' • ')}</Text><Text style={s.itemSub}>{tr("الكمية:")} {p.qty} • {tr("الشراء:")} {inventoryAverageProductCost(p.id,p.costPrice||0).toFixed(2)} DH • ربح الوحدة: {(p.price-inventoryAverageProductCost(p.id,p.costPrice||0)).toFixed(2)} DH</Text>{(p.quotePrice!==undefined||p.invoicePrice!==undefined)&&<Text style={s.itemSub}>{p.quotePrice!==undefined?tr("ثمن العرض:")+" "+p.quotePrice.toFixed(2)+" DH ":""}{p.invoicePrice!==undefined?tr("ثمن الفاتورة:")+" "+p.invoicePrice.toFixed(2)+" DH":""}</Text>}</View><Text style={s.itemPrice}>{p.price.toFixed(2)} DH</Text><Pressable onPress={()=>startEditProduct(p)}><Text style={s.gold}>{tr("تعديل")}</Text></Pressable><Pressable onPress={()=>Alert.alert(tr('حذف المنتج؟'),p.name,[{text:'إلغاء'},{text:tr('حذف'),style:'destructive',onPress:()=>{setProducts(v=>v.filter(x=>x.id!==p.id));if(editingProductId===p.id)resetProductForm();}}])}><Text style={s.delete}>{tr("حذف")}</Text></Pressable></View>)}
       </>:screen==='الإعدادات'?<>
         <View style={s.panel}>
           <Text style={s.panelTitle}>{tr('اختار اللغة')}</Text>

@@ -28,6 +28,7 @@ This project is an independent implementation of the workflows observed in YanCo
 - [x] Product photo gallery with up to four images per product, individual preview/removal and backward-compatible local persistence
 - [x] Product gallery: add up to four photos, preview, remove individually, persist locally, and preserve the first photo for older records
 - [x] Product name search and product edit flow
+- [x] Offline speech search and dictation of product name, sale price and quantity into the editable product form. One field at a time, keyboard fallback, no transmission to a network recognizer, no auto-save. Compatible Android recognizer and local speech language are required; on-device microphone acceptance remains open.
 - [x] Categories, brands, units, variants
 - [x] Basic product purchase cost, sale price, unit margin and estimated stock margin
 - [x] Auditable stock ledger for opening balances, purchases, direct sales, POS sales, delivery notes and quantity corrections; physical stock counts post only the differences and prevent replay (single main warehouse UI)
