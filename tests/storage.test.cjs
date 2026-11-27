@@ -155,11 +155,25 @@ test('protects malformed imports and preserves attachment links via prepared tra
 
 
 test('unreconciled historical finance fails closed but can be exported unchanged',async()=>{
-  const initial=oldChunks({products:[],inventoryMovements:[],cashMovements:[{id:'opening',kind:'opening',amountCentimes:1000}]});
+  const initial=oldChunks({products:[],inventoryMovements:[],bankMovements:[{id:'opening',kind:'opening',amountCentimes:1000}]});
   const f=fixture(initial);
   await assert.rejects(read(f.api));
   await assert.rejects(f.api.writeAppData({products:[]}));
-  assert.equal(JSON.parse(await f.api.exportOriginalBackup()).data.cashMovements[0].amountCentimes,1000);
+  assert.equal(JSON.parse(await f.api.exportOriginalBackup()).data.bankMovements[0].amountCentimes,1000);
   assert.equal(f.storage.get(key),initial[key]);
   assert.equal(f.storage.has(modern),false);
+});
+
+
+test('original chunked cash history and modern export reopen with the same centime balance',async()=>{
+  const old={products:[],inventoryMovements:[],cashMovements:[{id:'opening',kind:'opening',amountCentimes:1000,description:'Ouverture',date:'2026-02-01'}]};
+  const f=fixture(oldChunks(old));
+  const d=await read(f.api);
+  await f.api.writeAppData({products:[],cashAccount:d.cashAccount});
+  const cash=await read(f.restart());
+  assert.equal(cash.cashAccount.historicalJournal.entries[0].amountCentimes,1000);
+  const exported=await f.api.createBackup({products:[],cashAccount:cash.cashAccount});
+  const fresh=fixture();
+  const restored=await fresh.api.restoreBackup(exported);
+  assert.equal(restored.cashAccount.historicalJournal.entries[0].amountCentimes,1000);
 });

@@ -1,3 +1,4 @@
+import {cashMethod,EMPTY_CASH_ACCOUNT,validateHistoricalCashJournal} from './cash-register';
 import {DEFAULT_WAREHOUSE,type StockMovement,type StockMovementKind} from '../inventory';
 import {parseReportDate} from '../report-filters';
 
@@ -24,12 +25,16 @@ const oldKind:Readonly<Record<string,StockMovementKind>>={
   opening:'opening',purchase:'purchase',sale:'sale',delivery:'sale',return_in:'return_in',return_out:'return_out',
   adjustment:'adjustment',stock_count:'adjustment',transfer_in:'transfer_in',transfer_out:'transfer_out',
 };
-const unsafe=['cashMovements','bankMovements','bankReconciliations','cheques','chequeEvents','supplierReturns','salesReturns',
+const unsafe=['bankMovements','bankReconciliations','cheques','chequeEvents','supplierReturns','salesReturns',
   'productVariants','variantStockMovements','purchaseOrders','customerOrders','workTasks','workOrders','workTimeEntries','equipment','parkedPosCarts','projects'];
 
 /** Translate only demonstrated historical shapes. With material unreconciled records, leave original data untouched. */
 export function adaptHistoricalSnapshot(data:Row):Row{
-  if(data.hamzaHistoricalMapping===1){need(Array.isArray(data.stockMovements));return data;}
+  if(data.hamzaHistoricalMapping===1){
+    need(Array.isArray(data.stockMovements));
+    if(isRow(data.cashAccount)&&data.cashAccount.historicalJournal!==undefined)validateHistoricalCashJournal(data.cashAccount.historicalJournal);
+    return data;
+  }
   if(!Array.isArray(data.inventoryMovements)&&!Array.isArray(data.cashMovements)&&
       !Array.isArray(data.bankMovements)&&!Array.isArray(data.supplierReturns)&&
       !rows(data,'purchases').some(row=>row.paidCentimes!==undefined&&row.paidAmount===undefined))return data;
@@ -80,8 +85,8 @@ export function adaptHistoricalSnapshot(data:Row):Row{
   });
   if(stock.some(item=>!productIds.has(Number(item.productId))))throw new Error(HISTORICAL_REVIEW);
 
-  const usesCashOrBank=(row:Row)=>['نقداً','تحويل','بطاقة','cash','card','transfer','Espèces'].includes(String(row.method??row.paymentMethod))||text(row.bankAccountId);
-  need(!rows(data,'payments').some(usesCashOrBank)&&!rows(data,'expenses').some(usesCashOrBank));
+  const bankLinked=(row:Row)=>['تحويل','بطاقة','card','transfer'].includes(String(row.method??row.paymentMethod))||text(row.bankAccountId);
+  need(!rows(data,'payments').some(bankLinked)&&!rows(data,'expenses').some(bankLinked));
   const matches=new Map<number,Row>();
   const purchases=rows(data,'purchases');
   for(const buy of purchases){
@@ -94,22 +99,40 @@ export function adaptHistoricalSnapshot(data:Row):Row{
   const supplierPayments=rows(data,'supplierPayments').map(payment=>{
     const buy=positiveId(payment.purchaseId)?matches.get(payment.purchaseId):undefined;
     if(!buy||!positiveId(payment.id)||paymentIds.has(payment.id)||!positiveId(payment.amountCentimes)||payment.amount!==undefined||
-       !text(payment.date)||buy.supplierName!==payment.supplierName||payment.method!=='شيك'||text(payment.bankAccountId))throw new Error(HISTORICAL_REVIEW);
-    // Old cash and transfers additionally changed the standalone cash/bank ledgers; do not re-count without reconciling.
+       !text(payment.date)||buy.supplierName!==payment.supplierName||!['شيك','نقداً'].includes(String(payment.method))||bankLinked(payment))throw new Error(HISTORICAL_REVIEW);
+    // Old cash settlement is translated for supplier liability but its cash effect stays in the archived cash journal.
     paymentIds.add(payment.id);
     linkedPaid.set(buy.id as number,(linkedPaid.get(buy.id as number)??0)+payment.amountCentimes);
     return {...payment,amount:payment.amountCentimes/100,reference:payment.reference??payment.note};
   });
   const migratedBuys=purchases.map(buy=>{
     const paid=buy.paidCentimes??0,total=money(buy.total),linked=linkedPaid.get(buy.id as number)??0;
-    if(!integer(paid)||!integer(linked)||paid<linked||paid>total||buy.paidAmount!==undefined)throw new Error(HISTORICAL_REVIEW);
+    if(!integer(paid)||!integer(linked)||paid<linked||paid>total||buy.paidAmount!==undefined||bankLinked(buy))throw new Error(HISTORICAL_REVIEW);
     return {...buy,warehouseId:warehouseId(buy.warehouseId),productId:positiveId(buy.productId)?String(buy.productId):buy.productId,paidAmount:(paid-linked)/100};
   });
   const contacts=(key:string)=>rows(data,key).map(item=>({...item,ifNumber:item.ifNumber??item.taxId,paymentDelayDays:item.paymentDelayDays??item.paymentTermsDays}));
   const sales=rows(data,'sales').map(item=>({...item,warehouseId:warehouseId(item.warehouseId),unitCost:item.unitCost??item.costPrice}));
   need(!rows(data,'bankAccounts').some(item=>item.openingBalanceCentimes!==undefined&&item.openingBalanceCentimes!==0));
   const bankAccounts=rows(data,'bankAccounts').map(item=>({...item,openingBalanceCentimes:0,openingDate:''}));
+  // The Nov 10 app computed cash from its dedicated journal, not from the commercial records.
+  // Preserve that exact history and suppress only the modern derived rows already present at conversion.
+  // New actions generate new IDs and continue to affect cash normally.
+  const coveredRows:string[]=[];
+  for(const [prefix,entries] of [['payment',rows(data,'payments')],['supplier',supplierPayments],['purchase',migratedBuys],['expense',rows(data,'expenses')]] as [string,Row[]][]){
+    for(const item of entries){
+      const method=item.method??item.paymentMethod;
+      if(typeof method==='string'&&cashMethod(method)){
+        need(positiveId(item.id));
+        coveredRows.push(prefix+'-'+item.id);
+      }
+    }
+  }
+  const entries=rows(data,'cashMovements');
+  need(!coveredRows.length||Array.isArray(data.cashMovements));
+  need(data.cashAccount===undefined);
+  const cashAccount=entries.length||coveredRows.length?
+    {...EMPTY_CASH_ACCOUNT,historicalJournal:validateHistoricalCashJournal({entries,coveredRows})}:EMPTY_CASH_ACCOUNT;
   return {...data,hamzaHistoricalMapping:1,products,warehouses:[...places.values()],stockMovements:stock,
     activeWarehouseId:warehouseId(data.activeWarehouseId),customers:contacts('customers'),suppliers:contacts('suppliers'),
-    sales,purchases:migratedBuys,supplierPayments,bankAccounts};
+    sales,purchases:migratedBuys,supplierPayments,bankAccounts,cashAccount};
 }
