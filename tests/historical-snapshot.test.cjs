@@ -174,3 +174,76 @@ test('bank migration refuses broken pairs, modified supplier totals or invalid a
  migrated.bankAccounts[0].historicalJournal.entries[0].kind='unknown';
  assert.throws(()=>adaptHistoricalSnapshot(migrated));
 });
+
+function oldReturns(){
+ const d=old();
+ d.customers[0].openingBalanceCentimes=5000;
+ d.sales=[
+   {id:20,productId:1,productName:'Câble ضو',customerName:'Customer',qty:1,total:70,costPrice:9,warehouseId:'warehouse-default'},
+   {id:21,productId:2,productName:'Pièce',customerName:'Customer',qty:1,total:80,costPrice:11,warehouseId:'warehouse-default'},
+ ];
+ d.salesReturns=[
+   {id:31,number:'AV-00008',saleId:21,productId:2,productName:'Pièce',customerName:'Customer',qty:1,total:80,costPrice:11,unitPrice:80,date:'28/02/2026',reason:'No restock',restocked:false,warehouseId:'warehouse-default'},
+   {id:30,number:'AV-00007',saleId:20,productId:1,productName:'Câble ضو',customerName:'Customer',qty:1,total:70,costPrice:9,unitPrice:70,date:'27/02/2026',reason:'Restock',restocked:true,warehouseId:'warehouse-default'},
+ ];
+ d.inventoryMovements.push({id:'return-in-30',kind:'return_in',productId:1,quantityDelta:1,date:'2026-02-27T13:00:00Z',sourceId:'20'});
+ d.products[0].qty=6;
+ d.documents=[
+   {id:11,type:'invoice',date:'20/01/2026',customerName:'Customer',total:120,paidCentimes:2000,status:'partially_paid'},
+   {id:12,type:'invoice',date:'02/02/2026',customerName:'Customer',total:80,paidCentimes:6000,status:'partially_paid'},
+ ];
+ return d;
+}
+test('legacy return migration keeps the old invoice order, debt, unapplied credit and stock',()=>{
+ const {calculateCustomerBalances}=require('../.test-build/domain/customer-balances.js');
+ const {normalizeSalesReturns,quantityAvailableForReturn}=require('../.test-build/domain/sales-returns.js');
+ const original=oldReturns(),before=JSON.stringify(original);
+ const migrated=adaptHistoricalSnapshot(original);
+ const returns=normalizeSalesReturns(JSON.parse(JSON.stringify(migrated.salesReturns)));
+ assert.equal(returns.length,2);
+ assert.deepEqual(returns.find(item=>item.id===30).invoiceAllocations.map(item=>[item.documentId,item.allocatedCentimes]),[[12,2000],[11,5000]]);
+ assert.equal(returns.find(item=>item.id===31).number,'AV-00008');
+ assert.equal(returns.find(item=>item.id===31).unappliedCentimes,3000);
+ assert.ok(returns.every(item=>!item.refunds?.length&&item.historicalAllocation));
+ assert.equal(migrated.documents[0].creditedCentimes,10000);
+ assert.equal(migrated.documents[0].paidCentimes,2000);
+ assert.equal(migrated.documents[1].status,'paid');
+ const [balance]=calculateCustomerBalances(migrated.documents,returns,[{customerName:'Customer',amountCentimes:5000}]);
+ assert.equal(balance.outstandingCentimes,5000);
+ assert.equal(balance.customerCreditCentimes,3000);
+ assert.equal(quantityAvailableForReturn(migrated.sales[0],returns),0);
+ assert.equal(warehouseStock(migrated.stockMovements,'1','main'),5);
+ assert.equal(migrated.stockMovements.filter(item=>item.kind==='return_in').length,1);
+ assert.equal(JSON.stringify(original),before);
+ assert.equal(adaptHistoricalSnapshot(migrated),migrated);
+});
+
+test('historical return keeps the old per-return centime rounding and allows reversed stock history',()=>{
+ const d=oldReturns();
+ d.sales[0].qty=3;d.sales[0].total=10;d.salesReturns[1].total=3.33;
+ d.salesReturns.push({...d.salesReturns[1],id:32,number:'AV-00009',restocked:false});
+ d.inventoryMovements.push(
+   {id:'return-in-25',kind:'return_in',productId:1,quantityDelta:1,date:'2026-02-20',sourceId:'20'},
+   {id:'return-out-25',kind:'return_out',productId:1,quantityDelta:-1,date:'2026-02-21',sourceId:'20'});
+ const n=adaptHistoricalSnapshot(d);
+ assert.equal(n.salesReturns.filter(item=>item.saleId===20).reduce((sum,item)=>sum+Math.round(item.total*100),0),666);
+ assert.equal(n.salesReturns.some(item=>item.id===25),false);
+ assert.equal(warehouseStock(n.stockMovements,'1','main'),5);
+});
+
+test('invalid physical or financial return evidence and invisible supplier invoice balances fail closed',()=>{
+ for(const change of [
+   d=>{d.inventoryMovements.at(-1).sourceId='other-sale';},
+   d=>{d.salesReturns[1].restocked=false;},
+   d=>{d.salesReturns[1].total=70.01;},
+   d=>{d.documents[0].creditedCentimes=1;},
+   d=>{d.supplierInvoices=[{id:9,totalCentimes:999}];},
+   d=>{d.supplierInvoicePayments=[{id:9,amountCentimes:999}];},
+ ]){
+  const d=oldReturns();change(d);const source=JSON.stringify(d);
+  assert.throws(()=>adaptHistoricalSnapshot(d));
+  assert.equal(JSON.stringify(d),source);
+ }
+ const previous=adaptHistoricalSnapshot(old());
+ assert.throws(()=>adaptHistoricalSnapshot({...previous,supplierInvoices:[{id:7}]}));
+});

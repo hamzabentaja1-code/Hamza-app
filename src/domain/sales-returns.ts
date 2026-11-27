@@ -6,7 +6,7 @@ export type SalesReturnRecord={
   id:number;number:string;saleId:number;sourceKey?:string;saleReference?:string;productId?:number;warehouseId:string;
   documentId?:number;invoiceAllocations?:{documentId:number;creditedCentimes:number;allocatedCentimes:number;status:'partially_paid'|'paid'}[];
   refunds?:{id:number;amountCentimes:number;date:string;method:'cash'}[];
-  unappliedCentimes?:number;productName:string;customerName:string;qty:number;total:number;reason:string;restocked:boolean;date:string;
+  historicalAllocation?:boolean;unappliedCentimes?:number;productName:string;customerName:string;qty:number;total:number;reason:string;restocked:boolean;date:string;
 };
 
 export const saleReturnKey=(sale:{id:number;sourceKey?:string})=>sale.sourceKey??'sale:'+sale.id;

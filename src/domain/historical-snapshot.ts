@@ -1,3 +1,4 @@
+import {migrateHistoricalCustomerReturns} from './historical-customer-returns';
 import {normalizeBankAccounts} from './bank-accounts';
 import {validateHistoricalBankJournal,verifyHistoricalBankTransfers} from './historical-bank';
 import {cashMethod,EMPTY_CASH_ACCOUNT,validateHistoricalCashJournal} from './cash-register';
@@ -27,11 +28,14 @@ const oldKind:Readonly<Record<string,StockMovementKind>>={
   opening:'opening',purchase:'purchase',sale:'sale',delivery:'sale',return_in:'return_in',return_out:'return_out',
   adjustment:'adjustment',stock_count:'adjustment',transfer_in:'transfer_in',transfer_out:'transfer_out',
 };
-const unsafe=['cheques','chequeEvents','supplierReturns','salesReturns',
+const unsafe=['cheques','chequeEvents','supplierReturns',
   'productVariants','variantStockMovements','purchaseOrders','customerOrders','workTasks','workOrders','workTimeEntries','equipment','parkedPosCarts','projects'];
 
 /** Translate only demonstrated historical shapes. With material unreconciled records, leave original data untouched. */
 export function adaptHistoricalSnapshot(data:Row):Row{
+  // These old invoices were independent of purchases and have no equivalent modern screen.
+  // Guard even a previously converted snapshot that still carries the hidden original rows.
+  need(rows(data,'supplierInvoices').length===0&&rows(data,'supplierInvoicePayments').length===0);
   if(data.hamzaHistoricalMapping===1){
     need(Array.isArray(data.stockMovements));
     if(isRow(data.cashAccount)&&data.cashAccount.historicalJournal!==undefined)validateHistoricalCashJournal(data.cashAccount.historicalJournal);
@@ -179,7 +183,8 @@ export function adaptHistoricalSnapshot(data:Row):Row{
   need(data.cashAccount===undefined);
   const cashAccount=entries.length||coveredRows.length?
     {...EMPTY_CASH_ACCOUNT,historicalJournal:validateHistoricalCashJournal({entries,coveredRows})}:EMPTY_CASH_ACCOUNT;
-  return {...data,hamzaHistoricalMapping:1,products,warehouses:[...places.values()],stockMovements:stock,
+  const customerReturns=migrateHistoricalCustomerReturns(rows(data,'salesReturns'),sales,rows(data,'documents'),stock,warehouseId);
+  return {...data,hamzaHistoricalMapping:1,...customerReturns,products,warehouses:[...places.values()],stockMovements:stock,
     activeWarehouseId:warehouseId(data.activeWarehouseId),customers:contacts('customers'),suppliers:contacts('suppliers'),
     sales,purchases:migratedBuys,supplierPayments,bankAccounts,cashAccount};
 }
