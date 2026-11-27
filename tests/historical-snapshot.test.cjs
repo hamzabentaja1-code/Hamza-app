@@ -247,3 +247,71 @@ test('invalid physical or financial return evidence and invisible supplier invoi
  const previous=adaptHistoricalSnapshot(old());
  assert.throws(()=>adaptHistoricalSnapshot({...previous,supplierInvoices:[{id:7}]}));
 });
+
+function oldSupplierReturn(){
+ const d=old();
+ d.suppliers[0].openingBalanceCentimes=1000;
+ d.purchases=[
+   {id:16,supplierName:'Atelier',productId:1,productName:'Câble ضو',qty:10,unitCost:10,total:100,paidCentimes:10000,returnedCentimes:3000},
+   {id:17,supplierName:'Atelier',productId:2,productName:'Pièce',qty:8,unitCost:10,total:80,paidCentimes:2000},
+ ];
+ d.supplierPayments=[];
+ d.supplierReturns=[{id:52,purchaseId:16,supplierName:'Atelier',productName:'Câble ضو',qty:3,unitCost:10,amountCentimes:3000,date:'2026-02-08T12:00:00Z',reason:'Retour abîmé'}];
+ d.products[0].qty=2;
+ d.inventoryMovements.push({id:'supplier-return-52',productId:1,kind:'return_out',quantityDelta:-3,date:'2026-02-08T12:00:00Z',sourceId:'16'});
+ return d;
+}
+
+test('historical supplier return against settled purchase preserves group debt without reposting stock or payments',()=>{
+ const {supplierAccountLedger,recordSupplierPayment,recordSupplierCredit}=require('../.test-build/supplier-account.js');
+ const d=oldSupplierReturn(),n=adaptHistoricalSnapshot(d);
+ const opening=[{supplierName:'Atelier',amountCentimes:1000}];
+ const result=supplierAccountLedger(n.purchases,n.supplierPayments,opening);
+ assert.equal(n.purchases[0].historicalSupplierReturns[0].id,52);
+ assert.equal(result.balances[0].outstanding,40);
+ assert.equal(result.balances[0].paid,120);
+ assert.equal(result.balances[0].availableCreditCentimes,0);
+ assert.equal(result.dueByPurchase.get(16),0);
+ assert.equal(result.dueByPurchase.get(17),3000);
+ assert.equal(result.openingDueBySupplier.get('Atelier'),1000);
+ assert.equal(warehouseStock(n.stockMovements,'1','main'),1);
+ assert.equal(n.stockMovements.filter(item=>item.kind==='return_out').length,1);
+ assert.equal(n.supplierPayments.length,0);
+ const base={purchase:n.purchases[1],payments:[],maximumCentimes:result.dueByPurchase.get(17),id:999,
+   method:'نقداً',date:'2026-02-10',reference:'C-1'};
+ assert.throws(()=>recordSupplierPayment({...base,amount:30.01}));
+ assert.throws(()=>recordSupplierCredit({...base,amount:30.01}));
+ const payment=recordSupplierPayment({...base,amount:30});
+ assert.equal(supplierAccountLedger(n.purchases,[payment],opening).balances[0].outstanding,10);
+ const marker=JSON.parse(JSON.stringify(n));
+ marker.purchases[0].supplierName='Atelier renommé';
+ assert.equal(adaptHistoricalSnapshot(marker),marker);
+ marker.purchases[0].historicalSupplierReturns[0].amountCentimes--;
+ assert.throws(()=>adaptHistoricalSnapshot(marker));
+});
+test('remaining old supplier credit offsets opening debt first only after all purchase debt is covered',()=>{
+ const {supplierAccountLedger}=require('../.test-build/supplier-account.js');
+ const n=adaptHistoricalSnapshot(oldSupplierReturn());
+ n.purchases[1].paidAmount=65;
+ const opening=[{supplierName:'Atelier',amountCentimes:1000}];
+ const result=supplierAccountLedger(n.purchases,[],opening);
+ assert.equal(result.balances[0].outstanding,0);
+ assert.equal(result.balances[0].availableCreditCentimes,500);
+ assert.equal(result.openingDueBySupplier.get('Atelier'),0);
+ const next=supplierAccountLedger([...n.purchases,{id:18,supplierName:'Atelier',total:7,paidAmount:0}],[],opening);
+ assert.equal(next.balances[0].outstanding,2);
+ assert.equal(next.balances[0].availableCreditCentimes,0);
+});
+test('historical supplier return errors fail closed on invalid stock, cumulative amount or reversal evidence',()=>{
+ for(const mutate of [
+   x=>{x.inventoryMovements.at(-1).sourceId='other';},
+   x=>{x.purchases[0].returnedCentimes=2999;},
+   x=>{x.supplierReturns[0].amountCentimes=2999;},
+   x=>{x.inventoryMovements.push({id:'supplier-return-reversal-52',productId:1,kind:'adjustment',quantityDelta:3,date:'2026-02-09',sourceId:'52'});x.products[0].qty+=3;},
+ ]){
+  const d=oldSupplierReturn(); mutate(d);
+  const original=JSON.stringify(d);
+  assert.throws(()=>adaptHistoricalSnapshot(d));
+  assert.equal(JSON.stringify(d),original);
+ }
+});

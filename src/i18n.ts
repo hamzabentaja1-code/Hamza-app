@@ -3,6 +3,10 @@ export type LayoutDirection = 'rtl' | 'ltr';
 
 const fr: Record<string, string> = {
   "تحافظ سجل الصندوق القديم. الحركات اللي كتسجل دابا كيبقاو كيتحسبو معاه.": "Le journal de caisse historique est conservé. Les nouveaux mouvements s’y ajoutent.",
+  "سجل مرتجعات الموردين القديم غير صالح. البيانات الأصلية ما تبدلاتش.": "Le journal historique des retours fournisseurs est invalide. Les données d’origine restent intactes.",
+  "مرتجع مورد من النسخة القديمة": "Retour fournisseur historique",
+  "رصيد دائن عند المورد DH": "Crédit chez le fournisseur (DH)",
+  "رصيد مرتجعات المورد غير صالح.": "Crédit de retour fournisseur invalide.",
   "سجل مرتجعات الزبناء القديم غير صالح. البيانات الأصلية ما تبدلاتش.": "Le journal historique des retours clients est invalide. Les données d’origine restent intactes.",
   "توزيع الرصيد من النسخة القديمة": "Répartition du crédit lors de la migration",
   "سجل البنك القديم غير صالح. البيانات الأصلية ما تبدلاتش.": "Le journal bancaire historique est invalide. Les données d’origine restent intactes.",

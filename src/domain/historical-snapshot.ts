@@ -1,3 +1,4 @@
+import {checkHistoricalSupplierReturnCopies,linkHistoricalSupplierReturns} from './historical-supplier-returns';
 import {migrateHistoricalCustomerReturns} from './historical-customer-returns';
 import {normalizeBankAccounts} from './bank-accounts';
 import {validateHistoricalBankJournal,verifyHistoricalBankTransfers} from './historical-bank';
@@ -28,7 +29,7 @@ const oldKind:Readonly<Record<string,StockMovementKind>>={
   opening:'opening',purchase:'purchase',sale:'sale',delivery:'sale',return_in:'return_in',return_out:'return_out',
   adjustment:'adjustment',stock_count:'adjustment',transfer_in:'transfer_in',transfer_out:'transfer_out',
 };
-const unsafe=['cheques','chequeEvents','supplierReturns',
+const unsafe=['cheques','chequeEvents',
   'productVariants','variantStockMovements','purchaseOrders','customerOrders','workTasks','workOrders','workTimeEntries','equipment','parkedPosCarts','projects'];
 
 /** Translate only demonstrated historical shapes. With material unreconciled records, leave original data untouched. */
@@ -40,6 +41,7 @@ export function adaptHistoricalSnapshot(data:Row):Row{
     need(Array.isArray(data.stockMovements));
     if(isRow(data.cashAccount)&&data.cashAccount.historicalJournal!==undefined)validateHistoricalCashJournal(data.cashAccount.historicalJournal);
     normalizeBankAccounts(data.bankAccounts);
+    checkHistoricalSupplierReturnCopies(rows(data,'supplierReturns'),rows(data,'purchases'));
     return data;
   }
   if(!Array.isArray(data.inventoryMovements)&&!Array.isArray(data.cashMovements)&&
@@ -111,10 +113,10 @@ export function adaptHistoricalSnapshot(data:Row):Row{
   const matches=new Map<number,Row>();
   const purchases=rows(data,'purchases');
   for(const buy of purchases){
-    if(!positiveId(buy.id)||matches.has(buy.id)||!text(buy.supplierName)||!integer(money(buy.total))||
-       (buy.returnedCentimes!==undefined&&buy.returnedCentimes!==0))throw new Error(HISTORICAL_REVIEW);
+    if(!positiveId(buy.id)||matches.has(buy.id)||!text(buy.supplierName)||!integer(money(buy.total)))throw new Error(HISTORICAL_REVIEW);
     matches.set(buy.id,buy);
   }
+  const linkedHistoricalReturns=linkHistoricalSupplierReturns(rows(data,'supplierReturns'),purchases,products,stock,warehouseId);
   const paymentIds=new Set<number>();
   const linkedPaid=new Map<number,number>();
   const supplierBankGroups=new Map<string,{accountId:string;amount:number;ids:number[]}>();
@@ -140,7 +142,7 @@ export function adaptHistoricalSnapshot(data:Row):Row{
   const migratedBuys=purchases.map(buy=>{
     const paid=buy.paidCentimes??0,total=money(buy.total),linked=linkedPaid.get(buy.id as number)??0;
     if(!integer(paid)||!integer(linked)||paid<linked||paid>total||buy.paidAmount!==undefined||bankLinked(buy))throw new Error(HISTORICAL_REVIEW);
-    return {...buy,warehouseId:warehouseId(buy.warehouseId),productId:positiveId(buy.productId)?String(buy.productId):buy.productId,paidAmount:(paid-linked)/100};
+    return {...buy,warehouseId:warehouseId(buy.warehouseId),productId:positiveId(buy.productId)?String(buy.productId):buy.productId,paidAmount:(paid-linked)/100,...(linkedHistoricalReturns.has(buy.id as number)?{historicalSupplierReturns:linkedHistoricalReturns.get(buy.id as number)}:{})};
   });
   const contacts=(key:string)=>rows(data,key).map(item=>({...item,ifNumber:item.ifNumber??item.taxId,paymentDelayDays:item.paymentDelayDays??item.paymentTermsDays}));
   const sales=rows(data,'sales').map(item=>({...item,warehouseId:warehouseId(item.warehouseId),unitCost:item.unitCost??item.costPrice}));
