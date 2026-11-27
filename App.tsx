@@ -600,7 +600,7 @@ export default function App() {
     if(detailMode==='sales'){
       const rows=orderDatedReport([
         ...reportSales.map(value=>({date:value.date,kind:tr('بيع'),contact:value.customerName,product:value.productName,ref:value.reference??value.id,qty:value.qty,amount:value.total})),
-        ...reportReturns.map(value=>({date:value.date,kind:tr('إشعار دائن'),contact:value.customerName,product:value.productName,ref:value.number,qty:-value.qty,amount:-value.total})),
+        ...reportReturns.map(value=>({date:value.date,kind:tr('إشعار دائن للزبون'),contact:value.customerName,product:value.productName,ref:value.number,qty:-value.qty,amount:-value.total})),
       ]);
       return {title:tr('المبيعات'),context,headers:[tr('التاريخ'),tr('نوع الحركة'),tr('الزبون'),tr('المنتج'),tr('المرجع'),tr('الكمية'),amount],
         rows:rows.map(row=>[row.date,row.kind,row.contact,row.product,row.ref,row.qty,row.amount]),
