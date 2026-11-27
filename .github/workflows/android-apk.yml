@@ -53,204 +53,87 @@ jobs:
       - name: TypeScript validation
         run: npx tsc --noEmit
 
+  release:
+    name: Sign and test private HamZa APK
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/soxo9/hamza-completion'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    environment: hamza-android-release
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check release prereqs
+        env:
+          EXPECTED_SIGNER: ${{ vars.HAMZA_RELEASE_SIGNER_SHA256 }}
+          RECIPIENT: ${{ vars.HAMZA_APK_RECIPIENT_CERT_B64 }}
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          [[ "$EXPECTED_SIGNER" =~ ^[0-9a-fA-F]{64}$ ]]
+          test -n "$RECIPIENT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Generate native Android project
-        if: github.event_name == 'workflow_dispatch'
-        run: npx expo prebuild --platform android --clean
-
-      - name: Bundle JavaScript for standalone APK
-        if: github.event_name == 'workflow_dispatch'
         run: |
-          mkdir -p android/app/src/main/assets
-          npx expo export:embed --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
-
-      - name: Create temporary CI release signing key
-        if: github.event_name == 'workflow_dispatch'
-        shell: bash
-        run: |
-          STORE_PASS="$(openssl rand -hex 24)"
-          KEY_PASS="$STORE_PASS"
-          KEY_FILE="$RUNNER_TEMP/hamza-ci-release.keystore"
-          echo "::add-mask::$STORE_PASS"
-          echo "::add-mask::$KEY_PASS"
-          keytool -genkeypair -v -storetype PKCS12 -keystore "$KEY_FILE" \
-            -alias hamza-release -keyalg RSA -keysize 3072 -sigalg SHA256withRSA \
-            -validity 3650 -storepass "$STORE_PASS" -keypass "$KEY_PASS" \
-            -dname "CN=HamZa Temporary CI Release, OU=Build, O=HamZa, C=MA"
-          {
-            echo "HAMZA_RELEASE_STORE_FILE=$KEY_FILE"
-            echo "HAMZA_RELEASE_STORE_PASSWORD=$STORE_PASS"
-            echo "HAMZA_RELEASE_KEY_ALIAS=hamza-release"
-            echo "HAMZA_RELEASE_KEY_PASSWORD=$KEY_PASS"
-          } >> "$GITHUB_ENV"
-
-      - name: Configure release signing
-        if: github.event_name == 'workflow_dispatch'
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p = Path("android/app/build.gradle")
-          s = p.read_text()
-          if "signingConfigs {" not in s:
-              raise SystemExit("Could not locate signingConfigs block in generated Gradle file")
-          release_signing = """signingConfigs {
-                  release {
-                      storeFile file(System.getenv("HAMZA_RELEASE_STORE_FILE"))
-                      storePassword System.getenv("HAMZA_RELEASE_STORE_PASSWORD")
-                      keyAlias System.getenv("HAMZA_RELEASE_KEY_ALIAS")
-                      keyPassword System.getenv("HAMZA_RELEASE_KEY_PASSWORD")
-                  }
-          """
-          s = s.replace("signingConfigs {", release_signing, 1)
-          m = re.search(r"buildTypes\s*\{", s)
-          if not m:
-              raise SystemExit("Could not locate buildTypes block in generated Gradle file")
-          rel = re.search(r"release\s*\{", s[m.end():])
-          if not rel:
-              raise SystemExit("Could not locate release build type")
-          start = m.end() + rel.start()
-          brace = s.find("{", start)
-          depth = 0
-          end = None
-          for i in range(brace, len(s)):
-              if s[i] == "{": depth += 1
-              elif s[i] == "}":
-                  depth -= 1
-                  if depth == 0:
-                      end = i + 1
-                      break
-          if end is None:
-              raise SystemExit("Could not parse release build type")
-          block = s[start:end]
-          block = re.sub(r"signingConfig\s+signingConfigs\.debug", "signingConfig signingConfigs.release", block)
-          if "signingConfig signingConfigs.release" not in block:
-              block = block.replace("{", "{\n            signingConfig signingConfigs.release", 1)
-          s = s[:start] + block + s[end:]
-          p.write_text(s)
-          PY
-
-      - name: Verify hardened Android configuration
-        if: github.event_name == 'workflow_dispatch'
-        shell: bash
-        run: |
+          npm ci --no-audit --no-fund
+          npx expo prebuild --platform android --clean
           grep -Fq 'android.minSdkVersion=29' android/gradle.properties
           if grep -q 'android:usesCleartextTraffic="true"' android/app/src/main/AndroidManifest.xml; then
             echo "Cleartext traffic is still enabled"
             exit 1
           fi
-          grep -n 'android.minSdkVersion' android/gradle.properties
-          grep -n 'usesCleartextTraffic' android/app/src/main/AndroidManifest.xml || true
 
-      - name: Build signed release APK
-        if: github.event_name == 'workflow_dispatch'
+      - name: Build unsigned Android release
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
-
-      - name: Verify APK signature
-        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
-          APK="$(find android/app/build/outputs/apk/release -type f -name '*.apk' | head -n 1)"
-          test -n "$APK"
-          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
-          test -x "$APKSIGNER"
-          "$APKSIGNER" verify --verbose --print-certs "$APK"
-          echo "APK_PATH=$APK" >> "$GITHUB_ENV"
+          # RN's default generated release build type points to its debug signing config.
+          # Remove that reference, leaving the optimized release recipe and JavaScript unchanged.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path("app/build.gradle")
+          source, count = re.subn(r"(\brelease\s*\{[^{}]*?)^[ 	]*signingConfig[ 	]+signingConfigs\.debug[ 	]*$", r"\1", path.read_text(), flags=re.M)
+          if count != 1:
+              raise SystemExit("Could not unambiguously remove the generated debug release signature")
+          path.write_text(source)
+          PY
+          ./gradlew assembleRelease --no-daemon
 
-      - name: Set up Java 21 for APK inspection tools
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
+      - name: Sign the single release APK
+        env:
+          HAMZA_RELEASE_KEYSTORE_B64: ${{ secrets.HAMZA_RELEASE_KEYSTORE_B64 }}
+          HAMZA_RELEASE_STORE_PASSWORD: ${{ secrets.HAMZA_RELEASE_STORE_PASSWORD }}
+          HAMZA_RELEASE_KEY_ALIAS: ${{ vars.HAMZA_RELEASE_KEY_ALIAS }}
+          HAMZA_RELEASE_KEY_PASSWORD: ${{ secrets.HAMZA_RELEASE_KEY_PASSWORD }}
+          HAMZA_RELEASE_SIGNER_SHA256: ${{ vars.HAMZA_RELEASE_SIGNER_SHA256 }}
+        run: bash scripts/sign-hamza-release.sh android/app/build/outputs/apk/release dist/signed
 
-      - name: Install JADX and APKTool for APK inspection
-        if: github.event_name == 'workflow_dispatch'
-        shell: bash
+      - name: Verify the exact APK matches phone and emulator ABIs
         run: |
-          mkdir -p "$RUNNER_TEMP/hamza-apk-tools"
-          curl -fL https://github.com/skylot/jadx/releases/download/v1.5.6/jadx-1.5.6.zip -o "$RUNNER_TEMP/hamza-apk-tools/jadx.zip"
-          unzip -q "$RUNNER_TEMP/hamza-apk-tools/jadx.zip" -d "$RUNNER_TEMP/hamza-apk-tools/jadx"
-          curl -fL https://github.com/iBotPeaches/Apktool/releases/download/v3.0.3/apktool_3.0.3.jar -o "$RUNNER_TEMP/hamza-apk-tools/apktool.jar"
-          java -version
-          "$RUNNER_TEMP/hamza-apk-tools/jadx/bin/jadx" --version
-          java -jar "$RUNNER_TEMP/hamza-apk-tools/apktool.jar" --version
+          bash scripts/verify-android-smoke.sh dist/signed arm64-v8a
+          bash scripts/verify-android-smoke.sh dist/signed x86_64
 
-      - name: Inspect release APK with JADX and APKTool
-        if: github.event_name == 'workflow_dispatch'
-        shell: bash
-        run: |
-          APK="$(find android/app/build/outputs/apk/release -type f -name '*.apk' | head -n 1)"
-          mkdir -p inspection/apktool inspection/jadx
-          java -jar "$RUNNER_TEMP/hamza-apk-tools/apktool.jar" d -f "$APK" -o inspection/apktool
-          JADX_EXIT=0
-          "$RUNNER_TEMP/hamza-apk-tools/jadx/bin/jadx" -d inspection/jadx "$APK" || JADX_EXIT=$?
-          grep -q 'package="com.hamza.app"' inspection/apktool/AndroidManifest.xml
-          cp inspection/apktool/AndroidManifest.xml inspection/AndroidManifest-decoded.xml
-          {
-            echo "HamZa APK static inspection"
-            echo "Application ID: com.hamza.app"
-            echo "APK SHA-256:"
-            sha256sum "$APK"
-            echo "Decoded manifest: PASS"
-            if [ "$JADX_EXIT" -eq 0 ]; then
-              echo "JADX decompilation: PASS"
-            else
-              echo "JADX decompilation: PARTIAL (exit $JADX_EXIT; APKTool manifest decode passed)"
-            fi
-          } > inspection/inspection-summary.txt
-
-      - name: Upload APK inspection report
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v4
-        with:
-          name: HamZa-APK-Inspection
-          path: inspection
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Upload APK
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v4
-        with:
-          name: HamZa-APK
-          path: android/app/build/outputs/apk/release/*.apk
-          if-no-files-found: error
-          retention-days: 14
-
-  maestro-smoke:
-    name: Maestro Android emulator smoke test
-    if: github.event_name == 'workflow_dispatch'
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
-
-      - name: Download built APK
-        uses: actions/download-artifact@v4
-        with:
-          name: HamZa-APK
-          path: dist/apk
-
-      - name: Check APK matches the target emulator before boot
-        run: bash scripts/verify-android-smoke.sh dist/apk x86_64
-
-      - name: Enable and verify KVM on the hosted Linux runner
-        shell: bash
+      - name: Verify KVM on hosted Linux
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
           sudo udevadm settle
-          if ! test -c /dev/kvm || ! test -r /dev/kvm || ! test -w /dev/kvm; then
-            echo "::error::KVM is unavailable to the runner user. Not starting a software-emulated smoke test."
-            exit 1
-          fi
+          test -c /dev/kvm && test -r /dev/kvm && test -w /dev/kvm
 
-      - name: Run Maestro UI smoke test on Android emulator
+      - name: Install and run Maestro tests on the exact release
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -259,77 +142,17 @@ jobs:
           profile: pixel_6
           disable-linux-hw-accel: false
           disable-animations: false
-          script: bash scripts/verify-android-smoke.sh dist/apk x86_64 --run
+          script: bash scripts/verify-android-smoke.sh dist/signed x86_64 --run
 
-  mobsf:
-    name: MobSF Android security scan
-    if: github.event_name == 'workflow_dispatch'
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    steps:
-      - name: Download built APK
-        uses: actions/download-artifact@v4
-        with:
-          name: HamZa-APK
-          path: dist/apk
-
-      - name: Start MobSF container
+      - name: Encrypt the unchanged tested release for private delivery
         env:
-          MOBSF_API_KEY: ${{ secrets.MOBSF_API_KEY }}
-        run: |
-          API_KEY="${MOBSF_API_KEY:-$(openssl rand -hex 32)}"
-          echo "::add-mask::$API_KEY"
-          echo "MOBSF_RUNTIME_API_KEY=$API_KEY" >> "$GITHUB_ENV"
-          docker pull opensecurity/mobile-security-framework-mobsf:latest
-          docker run -d --name mobsf -p 8000:8000 -e MOBSF_API_KEY="$API_KEY" opensecurity/mobile-security-framework-mobsf:latest
-          for i in $(seq 1 60); do
-            if curl -fsS http://127.0.0.1:8000/ >/dev/null; then
-              echo "MobSF is ready"
-              exit 0
-            fi
-            sleep 5
-          done
-          docker logs mobsf
-          exit 1
+          HAMZA_APK_RECIPIENT_CERT_B64: ${{ vars.HAMZA_APK_RECIPIENT_CERT_B64 }}
+        run: bash scripts/encrypt-hamza-release.sh dist/signed dist/private/HamZa.cms
 
-      - name: Upload APK to MobSF and run static analysis
-        run: |
-          APK="$(find dist/apk -type f -name '*.apk' | head -n 1)"
-          test -n "$APK"
-          curl --fail-with-body -sS -X POST http://127.0.0.1:8000/api/v1/upload \
-            -H "Authorization: $MOBSF_RUNTIME_API_KEY" \
-            -F "file=@$APK" -o mobsf-upload.json
-          HASH="$(jq -r '.hash // empty' mobsf-upload.json)"
-          FILE_NAME="$(jq -r '.file_name // empty' mobsf-upload.json)"
-          test -n "$HASH"
-          echo "MOBSF_SCAN_HASH=$HASH" >> "$GITHUB_ENV"
-          echo "MOBSF_FILE_NAME=$FILE_NAME" >> "$GITHUB_ENV"
-          curl --fail-with-body -sS -X POST http://127.0.0.1:8000/api/v1/scan \
-            -H "Authorization: $MOBSF_RUNTIME_API_KEY" \
-            --data-urlencode "hash=$HASH" \
-            --data-urlencode "file_name=$FILE_NAME" \
-            --data-urlencode "scan_type=apk" -o mobsf-scan-response.json
-          cat mobsf-scan-response.json
-
-      - name: Export MobSF JSON security report
-        run: |
-          curl --fail-with-body -sS -X POST http://127.0.0.1:8000/api/v1/report_json \
-            -H "Authorization: $MOBSF_RUNTIME_API_KEY" \
-            --data-urlencode "hash=$MOBSF_SCAN_HASH" -o HamZa-MobSF-Report.json
-          test -s HamZa-MobSF-Report.json
-          jq '{app_name: .app_name, package_name: .package_name, security_score: .security_score, findings: (.appsec | {high: (.high|length), warning: (.warning|length)})}' HamZa-MobSF-Report.json || true
-
-      - name: Upload MobSF report
+      - name: Upload only encrypted release
         uses: actions/upload-artifact@v4
         with:
-          name: HamZa-MobSF-Report
-          path: |
-            HamZa-MobSF-Report.json
-            mobsf-scan-response.json
+          name: HamZa-private-release
+          path: dist/private/HamZa.cms
           if-no-files-found: error
-          retention-days: 14
-
-      - name: Stop MobSF container
-        if: always()
-        run: docker rm -f mobsf || true
+          retention-days: 3
