@@ -51,6 +51,8 @@ import {buildCashRegisterRows,calculateCashBalance,EMPTY_CASH_ACCOUNT,normalizeC
 import {BankAccount,BankTransfer,BankStatementLine,BankLedgerEntry,BankReconciliationRecord,calculateBankBalance,createBankAccount,deleteBankAccount,matchBankStatementLines,normalizeBankAccounts,normalizeBankTransfers,normalizeBankStatementLines,normalizeBankReconciliationHistory,parseBankStatementCsv,reconcileBankStatement,recordBankTransfer,renameBankAccount} from './src/domain/bank-accounts';
 import {preparePurchaseEntry} from './src/domain/purchase-entry';
 import {parseOptionalProductPrice} from './src/domain/product-pricing';
+import ReportDetailsWorkspace,{type DetailMode} from './src/ReportDetailsWorkspace';
+import {buildCashDetail,buildDetailReportHtml,buildStockDetail,moneyReportTotal,orderDatedReport,selectOpenBalances,type DetailReport} from './src/domain/report-details';
 import {buildActivityReportRows,includeInvoicedSales} from './src/domain/activity-report';
 import {buildProjectTimeReport,summarizeTechnicianWork} from './src/domain/project-time-report';
 import {summarizePurchasesBySupplier} from './src/domain/purchase-report';
@@ -110,6 +112,9 @@ async function materializeBackupTaskAttachments(projects:ProjectRecord[],value:u
 }
 export default function App() {
   const [screen,setScreen]=useState('الرئيسية');
+  const [detailMode,setDetailMode]=useState<DetailMode>('sales');
+  const [detailWarehouse,setDetailWarehouse]=useState('');
+  const [detailCashDirection,setDetailCashDirection]=useState<'all'|'in'|'out'>('all');
   const [reportStart,setReportStart]=useState(''); const [reportEnd,setReportEnd]=useState(''); const [reportSearch,setReportSearch]=useState(''); const [appliedReportSearch,setAppliedReportSearch]=useState(''); const [appliedReportRange,setAppliedReportRange]=useState<{from:string;to:string}|null>(null);
   const [search,setSearch]=useState(''); const [productSearch,setProductSearch]=useState(''); const [photoGallery,setPhotoGallery]=useState<string[]>([]); const [photoPreview,setPhotoPreview]=useState<string|null>(null);
   const speechSession=useRef(new ProductVoiceSession());
@@ -382,7 +387,7 @@ export default function App() {
   const reportSales=(appliedReportRange?filterByDateRange(accountedSales,appliedReportRange.from,appliedReportRange.to):accountedSales).filter(item=>matchesReportSearch(appliedReportSearch,item.customerName,item.productName,item.reference,item.id));
   const reportPurchases=(appliedReportRange?filterByDateRange(purchases,appliedReportRange.from,appliedReportRange.to):purchases).filter(item=>matchesReportSearch(appliedReportSearch,item.supplierName,item.productName,item.id));
   const reportExpenses=(appliedReportRange?filterByDateRange(expenses,appliedReportRange.from,appliedReportRange.to):expenses).filter(item=>matchesReportSearch(appliedReportSearch,item.title,item.category,item.id));
-  const reportReturns=(appliedReportRange?filterByDateRange(salesReturns,appliedReportRange.from,appliedReportRange.to):salesReturns).filter(item=>matchesReportSearch(appliedReportSearch,item.customerName,item.number,item.id));
+  const reportReturns=(appliedReportRange?filterByDateRange(salesReturns,appliedReportRange.from,appliedReportRange.to):salesReturns).filter(item=>matchesReportSearch(appliedReportSearch,item.customerName,item.productName,item.number,item.saleReference,item.id));
   const reportPayments=(appliedReportRange?filterByDateRange(payments,appliedReportRange.from,appliedReportRange.to):payments).filter(item=>matchesReportSearch(appliedReportSearch,item.customerName,item.method,item.note,item.reference,item.id));
   const reportSupplierPayments=(appliedReportRange?filterByDateRange(supplierPayments,appliedReportRange.from,appliedReportRange.to):supplierPayments).filter(item=>matchesReportSearch(appliedReportSearch,item.supplierName,item.method,item.reference,item.id));
   const reportPayrollSettlements=(appliedReportRange?filterByDateRange(payrollSettlements,appliedReportRange.from,appliedReportRange.to):payrollSettlements).filter(item=>matchesReportSearch(appliedReportSearch,item.technicianName,item.method,item.note,item.id));
@@ -426,7 +431,7 @@ export default function App() {
   const reportCashRows=(appliedReportRange?filterByDateRange(cashRegisterRows,appliedReportRange.from,appliedReportRange.to):cashRegisterRows).filter(row=>matchesReportSearch(appliedReportSearch,row.description,row.source,row.id));
   const reportBankEntries=(appliedReportRange?filterByDateRange(bankLedgerEntries,appliedReportRange.from,appliedReportRange.to):bankLedgerEntries).filter(entry=>matchesReportSearch(appliedReportSearch,entry.id,entry.bankAccountId,bankAccounts.find(account=>account.id===entry.bankAccountId)?.name,entry.amountCentimes));
   const datedStockMovements=stockMovements.map(item=>({...item,date:item.createdAt.slice(0,10)}));
-  const reportStockMovements=(appliedReportRange?filterByDateRange(datedStockMovements,appliedReportRange.from,appliedReportRange.to):datedStockMovements).filter(item=>matchesReportSearch(appliedReportSearch,item.productId,products.find(product=>String(product.id)===item.productId)?.name,item.kind,item.reference,item.note));
+  const reportStockMovements=(appliedReportRange?filterByDateRange(datedStockMovements,appliedReportRange.from,appliedReportRange.to):datedStockMovements).filter(item=>matchesReportSearch(appliedReportSearch,item.productId,products.find(product=>String(product.id)===item.productId)?.name,item.kind,tr(item.kind),warehouses.find(warehouse=>warehouse.id===item.warehouseId)?.name,item.reference,item.transferId,item.stockCountId,item.note));
   const allProjectTimeRows=buildProjectTimeReport(projects);
   const reportProjectTimeRows=(appliedReportRange?filterByDateRange(allProjectTimeRows,appliedReportRange.from,appliedReportRange.to):allProjectTimeRows).filter(item=>matchesReportSearch(appliedReportSearch,item.technician,item.projectName,item.customerName,item.note));
   const reportProjectLaborCost=reportProjectTimeRows.reduce((sum,row)=>sum+row.laborCost,0);
@@ -587,6 +592,82 @@ export default function App() {
   const exportSalesXlsx=()=>exportXlsxFile('HamZa-sales',[{name:'Ventes',headers:['Date','Produit','Client','Quantité','Prix unitaire DH','Total DH'],rows:accountedSales.map(item=>[item.date,item.productName,item.customerName,item.qty,item.unitPrice,item.total])}]);
   const exportBusinessLedgerXlsx=()=>exportXlsxFile('HamZa-business-ledger',[{name:'Registre',headers:BUSINESS_LEDGER_HEADERS,rows:buildBusinessLedgerRows({products:productsForExport,sales:accountedSales,returns:salesReturns,purchases,expenses,payments,supplierPayments,bankTransfers,receivables:customerBalances})}]);
   const exportCashRegisterXlsx=()=>exportXlsxFile('HamZa-cash-register',[{name:'Caisse',headers:['Date','Direction','Description','Amount DH','Source'],rows:cashRegisterRows.map(row=>[row.date,row.direction==='in'?'In':'Out',row.description,row.amountCentimes/100,row.source])}]);
+  const detailedReport=():DetailReport=>{
+    const searchLabel=tr('بحث التقرير')+': '+(appliedReportSearch||tr('الكل'));
+    const period=appliedReportRange?`${appliedReportRange.from||'—'} → ${appliedReportRange.to||'—'}`:tr('كل الفترات');
+    const context=`${tr('الفترة')}: ${period} • ${searchLabel}`;
+    const amount=tr('المبلغ DH');
+    if(detailMode==='sales'){
+      const rows=orderDatedReport([
+        ...reportSales.map(value=>({date:value.date,kind:tr('بيع'),contact:value.customerName,product:value.productName,ref:value.reference??value.id,qty:value.qty,amount:value.total})),
+        ...reportReturns.map(value=>({date:value.date,kind:tr('إشعار دائن'),contact:value.customerName,product:value.productName,ref:value.number,qty:-value.qty,amount:-value.total})),
+      ]);
+      return {title:tr('المبيعات'),context,headers:[tr('التاريخ'),tr('نوع الحركة'),tr('الزبون'),tr('المنتج'),tr('المرجع'),tr('الكمية'),amount],
+        rows:rows.map(row=>[row.date,row.kind,row.contact,row.product,row.ref,row.qty,row.amount]),
+        summary:[[tr('المبيعات الصافية'),moneyReportTotal(rows.map(row=>row.amount)).toFixed(2)+' DH']]};
+    }
+    if(detailMode==='purchases'){
+      const rows=orderDatedReport(reportPurchases);
+      return {title:tr('المشتريات'),context,headers:[tr('التاريخ'),tr('المورد'),tr('المنتج'),tr('المرجع'),tr('الكمية'),amount,tr('الأداء عند الشراء')+' DH'],
+        rows:rows.map(item=>[item.date,item.supplierName,item.productName,item.id,item.qty,item.total,item.paidAmount===undefined?'':normalizePurchasePaidAmount(item.total,item.paidAmount)]),
+        summary:[[tr('إجمالي المشتريات:'),moneyReportTotal(rows.map(item=>item.total)).toFixed(2)+' DH']]};
+    }
+    if(detailMode==='stock'){
+      // A restored backup may no longer have the warehouse selected before restore.
+      const selectedWarehouse=warehouses.find(item=>item.id===detailWarehouse);
+      const rows=buildStockDetail(reportStockMovements,selectedWarehouse?.id||'');
+      const names=new Map(products.map(item=>[String(item.id),item.name]));
+      const places=new Map(warehouses.map(item=>[item.id,item.name]));
+      return {title:tr('المخزون'),context:`${context} • ${tr('المخزن')}: ${selectedWarehouse?.name||tr('كل المخازن')}`,
+        headers:[tr('التاريخ'),tr('نوع الحركة'),tr('المنتج'),tr('المخزن'),tr('الكمية الموقعة'),tr('تكلفة الوحدة DH'),tr('المرجع'),tr('ملاحظة')],
+        rows:rows.map(item=>[item.date,tr(item.kind),names.get(item.productId)||item.productId,places.get(item.warehouseId)||item.warehouseId,item.signedQuantity,item.unitCost??'',item.reference||item.transferId||item.stockCountId||'',item.note||'']),
+        summary:[[tr('عدد الحركات'),rows.length]]};
+    }
+    if(detailMode==='cash'){
+      const rows=buildCashDetail(reportCashRows,detailCashDirection);
+      const net=rows.reduce((sum,row)=>sum+(row.source==='opening'?0:row.signedCentimes),0);
+      const direction=detailCashDirection==='in'?tr('داخل'):detailCashDirection==='out'?tr('خارج'):tr('الكل');
+      return {title:tr('الصندوق'),context:`${context} • ${tr('نوع الحركة')}: ${direction}`,
+        headers:[tr('التاريخ'),tr('نوع الحركة'),tr('الوصف'),amount],
+        rows:rows.map(row=>[row.date,row.source==='opening'?tr('الرصيد الافتتاحي'):row.direction==='in'?tr('داخل'):tr('خارج'),row.description,row.signedCentimes/100]),
+        summary:[[tr('صافي الحركات بلا الرصيد الافتتاحي'),(net/100).toFixed(2)+' DH']]};
+    }
+    const balanceContext=`${tr('الرصيد الحالي ما مرتبطش بالفترة.') } • ${searchLabel}`;
+    const dueLabel=tr('المبلغ المتبقي DH');
+    if(detailMode==='receivables'){
+      const rows=selectOpenBalances(customerBalances,appliedReportSearch,item=>item.customerName,item=>item.outstandingCentimes);
+      return {title:tr('ديون الزبناء'),context:balanceContext,headers:[tr('الزبون'),dueLabel,tr('رصيد غير مستعمل للزبون DH')],
+        rows:rows.map(item=>[item.customerName,item.outstandingCentimes/100,item.customerCreditCentimes/100]),
+        summary:[[tr('إجمالي المبالغ المتبقية:'),(rows.reduce((sum,row)=>sum+row.outstandingCentimes,0)/100).toFixed(2)+' DH']]};
+    }
+    const rows=selectOpenBalances(supplierBalances,appliedReportSearch,item=>item.supplierName,item=>item.outstanding);
+    return {title:tr('ديون الموردين'),context:balanceContext,headers:[tr('المورد'),dueLabel],
+      rows:rows.map(item=>[item.supplierName,item.outstanding]),
+      summary:[[tr('إجمالي المبالغ المتبقية:'),moneyReportTotal(rows.map(row=>row.outstanding)).toFixed(2)+' DH']]};
+  };
+  const exportDetailReport=async(report:DetailReport,format:'CSV'|'XLSX'|'PDF'|'print')=>{
+    const filename='HamZa-report-'+detailMode;
+    if(format==='CSV')return exportCsvFile(filename,report.headers,report.rows);
+    if(format==='XLSX')return exportXlsxFile(filename,[
+      {name:tr('تفاصيل التقارير'),headers:report.headers,rows:report.rows},
+      {name:tr('الفلاتر والمجاميع'),headers:[tr('الوصف'),tr('القيمة')],rows:[[report.title,report.context],...report.summary.map(row=>[...row])]},
+    ]);
+    try{
+      const html=buildDetailReportHtml(language,companyProfile.name,report,tr('ما كايناش بيانات بهاد الاختيار.'));
+      if(format==='print'){await Print.printAsync({html});return;}
+      if(!await Sharing.isAvailableAsync())throw new Error('sharing unavailable');
+      const file=await Print.printToFileAsync({html});
+      await Sharing.shareAsync(file.uri,{mimeType:'application/pdf',dialogTitle:report.title});
+    }catch{Alert.alert(tr('تعذر التصدير'),tr('ما قدرناش نشاركوا أو نطبعوا هاد التقرير.'));}
+  };
+  const renderDetailReport=()=>{
+    const report=detailedReport();
+    return <ReportDetailsWorkspace key={JSON.stringify([appliedReportRange,appliedReportSearch])}
+      tr={tr} mode={detailMode} setMode={setDetailMode} report={report}
+      warehouse={warehouses.some(item=>item.id===detailWarehouse)?detailWarehouse:''} setWarehouse={setDetailWarehouse} warehouses={warehouses}
+      cashDirection={detailCashDirection} setCashDirection={setDetailCashDirection} onShare={format=>void exportDetailReport(report,format)}
+      onPrint={()=>void exportDetailReport(report,'print')}/>;
+  };
   const reportDetailHeaders:CsvCell[]=['Date','Type','Contact','Description','Quantité','Montant DH'];
   const reportDetailRows:CsvCell[][]=[...buildActivityReportRows({sales:reportSales,returns:reportReturns,purchases:reportPurchases,expenses:reportExpenses,customerPayments:reportPayments,supplierPayments:reportSupplierPayments}),...reportProjectTimeRows.map(item=>[item.date,tr('ساعات مشروع'),`${item.projectName}${item.customerName?' • '+item.customerName:''}`,`${item.technician}${item.note?' • '+item.note:''}`,item.hours,item.laborCost]),...reportPayrollSettlements.map(item=>[item.date,tr('أداء أجرة تقني'),item.technicianName,[tr(item.method),item.note||''].filter(Boolean).join(' • '),'',-item.amountCentimes/100])];
   const exportActivityReportCsv=()=>exportCsvFile('HamZa-activity-report',reportDetailHeaders,reportDetailRows);
@@ -919,8 +1000,8 @@ export default function App() {
           <Text style={s.summaryText}>{tr('المبيعات المسجلة:')} {salesTotal.toFixed(2)} DH</Text>
           <Text style={s.summaryText}>{tr('المشتريات:')} {purchaseTotal.toFixed(2)} DH</Text>
           <Text style={s.summaryText}>{tr('المصاريف:')} {expenseTotal.toFixed(2)} DH</Text><Text style={s.summaryText}>{tr('الرصيد الحالي:')} {(cashBalanceCentimes/100).toFixed(2)} DH</Text><Text style={s.summaryText}>{tr('ديون الموردين:')} {supplierOutstandingTotal.toFixed(2)} DH</Text>
-          <Text style={s.summaryText}>{tr('هامش الربح من المبيعات ذات التكلفة المسجلة:')} {reportProfitLoss.grossProfitOnCostedSales.toFixed(2)} DH</Text>
-          {reportProfitLoss.uncostedRevenue>0&&<Text style={s.note}>{tr('قيمة المبيعات بلا تكلفة محفوظة:')} {reportProfitLoss.uncostedRevenue.toFixed(2)} DH</Text>}
+          <Text style={s.summaryText}>{tr('هامش الربح من المبيعات ذات التكلفة المسجلة:')} {profitLoss.grossProfitOnCostedSales.toFixed(2)} DH</Text>
+          {profitLoss.uncostedRevenue>0&&<Text style={s.note}>{tr('قيمة المبيعات بلا تكلفة محفوظة:')} {profitLoss.uncostedRevenue.toFixed(2)} DH</Text>}
         </View>
         {(overdueInvoices.length>0||overduePurchases.length>0)&&<View style={[s.summary,{marginTop:12}]}><Text style={s.panelTitle}>{tr('مستحقات متأخرة')}</Text>{overdueInvoices.slice(0,4).map(item=><View key={'overdue-invoice-'+item.id} style={[s.row,{alignItems:'center',marginTop:6}]}><Text style={[s.summaryText,{flex:1}]}>{item.name} • {item.number} • {item.amountCentimes/100} DH • {tr('تاريخ الاستحقاق')}: {item.dueDate}</Text><Pressable onPress={()=>{const customer=customers.find(contact=>contact.name===item.name);setPaymentCustomer(customer?String(customer.id):'');setPaymentDocument(String(item.id));setPaymentAmount((item.amountCentimes/100).toFixed(2));setScreen('الأداءات');}}><Text style={s.gold}>{tr('تسديد')}</Text></Pressable></View>)}{overduePurchases.slice(0,4).map(item=><View key={'overdue-purchase-'+item.id} style={[s.row,{alignItems:'center',marginTop:6}]}><Text style={[s.summaryText,{flex:1}]}>{item.name} • {item.amount.toFixed(2)} DH • {tr('تاريخ الاستحقاق')}: {item.dueDate}</Text><Pressable onPress={()=>{setSupplierPaymentPurchaseId(item.id);setSupplierPaymentOpeningSupplierId(null);setSupplierPaymentAmount(item.amount.toFixed(2));setScreen('المشتريات');}}><Text style={s.gold}>{tr('تسديد')}</Text></Pressable></View>)}</View>}
         <View style={s.stats}>
@@ -1103,6 +1184,7 @@ export default function App() {
           <Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportActivityReportXlsx}><Text style={s.gold}>{tr('تصدير تقرير الفترة Excel')}</Text></Pressable>
           <Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportBusinessLedger}><Text style={s.gold}>{tr('تصدير السجل الكامل CSV')}</Text></Pressable><Pressable style={[s.choice,{marginTop:8,borderColor:GOLD,alignItems:'center'}]} onPress={exportBusinessLedgerXlsx}><Text style={s.gold}>{tr('تصدير السجل الكامل Excel')}</Text></Pressable>
         </View>
+        {renderDetailReport()}
         <View style={[s.panel,{marginTop:12}]}>
           <Text style={s.panelTitle}>{tr('تقرير ديون الزبناء')}</Text>
           <Text style={s.panelText}>{tr('إجمالي المبالغ المتبقية:')} {receivablesTotal.toFixed(2)} DH</Text><Text style={s.panelText}>{tr('أرصدة لصالح الزبناء:')} {(customerBalances.reduce((sum,item)=>sum+item.customerCreditCentimes,0)/100).toFixed(2)} DH</Text>

@@ -97,10 +97,10 @@ This project is an independent implementation of the workflows observed in YanCo
 ### Agenda and reports
 - [x] Consolidated searchable agenda for scheduled field visits, project due dates and task dates, with open/closed filters. No external calendar sync or notifications.
 - [x] Project task creation, editing, completion, confirmed deletion, priorities (normal, important, urgent), validated optional due dates, assignee and local file attachments; attachment metadata survives local storage and JSON backups include the file contents with per-file and total size limits
-- [ ] Sales/purchase/stock/cash/receivables/payables reports with full filtering and export
+- [x] Separate sales (including credit notes), purchase, stock, cash, current receivables and current payables detail views with paginated rows and matching PDF, print, CSV and XLSX data. Activity views honor applied dates and text search; stock supports warehouse selection and cash supports in/out. Current balances support contact search and are explicitly not historical snapshots. Android print/share acceptance remains open.
 - [x] Activity summary with validated date range and applied text search across customer, supplier, product, expense category, technician, cash, bank and stock records; filtered totals and PDF/CSV/XLSX exports include the applied search and period, with current debt snapshots kept clearly identified. Issued invoices are included without duplicating linked POS transactions, and historic invoices without cost records are identified as such
 - [x] Supplier purchase performance comparison uses the selected purchase/payment period and exports supplier totals to PDF and Excel
-- [ ] Filters and date ranges across all report types; export and print
+- [ ] Historical balance snapshots by date (current balances and dated activity remain distinct).
 
 ## Acceptance tests required before calling a module complete
 - Create, read, update and delete (with confirmation) persist after app restart.

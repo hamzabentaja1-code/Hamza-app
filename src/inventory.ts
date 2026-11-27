@@ -51,7 +51,7 @@ export function warehouseStock(movements: StockMovement[], productId: string, wa
     .reduce((sum, m) => sum + signedQuantity(m), 0);
 }
 
-function signedQuantity(m: StockMovement): number {
+export function signedQuantity(m: StockMovement): number {
   switch (m.kind) {
     case "opening": case "purchase": case "return_in": case "transfer_in": return Math.abs(m.quantity);
     case "sale": case "return_out": case "transfer_out": return -Math.abs(m.quantity);

@@ -2,6 +2,22 @@ export type AppLanguage = 'AR' | 'FR';
 export type LayoutDirection = 'rtl' | 'ltr';
 
 const fr: Record<string, string> = {
+  "تفاصيل التقارير": "Rapports détaillés",
+  "ديون الموردين": "Dettes fournisseurs",
+  "كل المخازن": "Tous les dépôts",
+  "طباعة": "Imprimer",
+  "ما كايناش بيانات بهاد الاختيار.": "Aucune donnée pour cette sélection.",
+  "السابق": "Précédent",
+  "التالي": "Suivant",
+  "بيع": "Vente",
+  "عدد الحركات": "Nombre de mouvements",
+  "صافي الحركات بلا الرصيد الافتتاحي": "Mouvements nets hors solde d’ouverture",
+  "الرصيد الحالي ما مرتبطش بالفترة.": "Solde actuel, indépendant de la période sélectionnée.",
+  "المبلغ المتبقي DH": "Solde restant (DH)",
+  "رصيد غير مستعمل للزبون DH": "Avoir client non affecté (DH)",
+  "الفلاتر والمجاميع": "Filtres et totaux",
+  "القيمة": "Valeur",
+  "ما قدرناش نشاركوا أو نطبعوا هاد التقرير.": "Impossible de partager ou d’imprimer ce rapport.",
   "طلب جديد": "Nouvelle demande",
   "موعد مبرمج": "Rendez-vous planifié",
   "تم التدخل": "Intervention terminée",

@@ -12,7 +12,7 @@ export function matchesReportSearch(query:string,...values:unknown[]):boolean{
   return terms.every(term=>haystack.includes(term));
 }
 
-function iso(value:string):string|undefined{
+export function parseReportDate(value:string):string|undefined{
   const trimmed=value.trim();
   if(/^\d{4}-\d{2}-\d{2}$/.test(trimmed)){
     const [year,month,day]=trimmed.split('-').map(Number);
@@ -32,8 +32,8 @@ function iso(value:string):string|undefined{
 
 export function validateDateRange(from:string,to:string):string[]{
   const errors:string[]=[];
-  const start=from.trim()?iso(from):undefined;
-  const end=to.trim()?iso(to):undefined;
+  const start=from.trim()?parseReportDate(from):undefined;
+  const end=to.trim()?parseReportDate(to):undefined;
   if(from.trim()&&!start)errors.push('تاريخ البداية غير صالح');
   if(to.trim()&&!end)errors.push('تاريخ النهاية غير صالح');
   if(start&&end&&start>end)errors.push('تاريخ البداية خاصو يكون قبل تاريخ النهاية');
@@ -43,10 +43,10 @@ export function validateDateRange(from:string,to:string):string[]{
 export function filterByDateRange<T extends DatedRecord>(records:T[],from:string,to:string):T[]{
   const errors=validateDateRange(from,to);
   if(errors.length)throw new Error(errors[0]);
-  const start=from.trim()?iso(from)!:undefined;
-  const end=to.trim()?iso(to)!:undefined;
+  const start=from.trim()?parseReportDate(from)!:undefined;
+  const end=to.trim()?parseReportDate(to)!:undefined;
   return records.filter(record=>{
-    const date=iso(record.date);
+    const date=parseReportDate(record.date);
     if(!date)return false;
     return (!start||date>=start)&&(!end||date<=end);
   });
