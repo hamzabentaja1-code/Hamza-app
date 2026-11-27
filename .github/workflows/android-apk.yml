@@ -235,6 +235,21 @@ jobs:
           name: HamZa-APK
           path: dist/apk
 
+      - name: Check APK matches the target emulator before boot
+        run: bash scripts/verify-android-smoke.sh dist/apk x86_64
+
+      - name: Enable and verify KVM on the hosted Linux runner
+        shell: bash
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          sudo udevadm settle
+          if ! test -c /dev/kvm || ! test -r /dev/kvm || ! test -w /dev/kvm; then
+            echo "::error::KVM is unavailable to the runner user. Not starting a software-emulated smoke test."
+            exit 1
+          fi
+
       - name: Run Maestro UI smoke test on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -242,14 +257,9 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          script: |
-            APK="$(find dist/apk -type f -name '*.apk' | head -n 1)"
-            test -n "$APK"
-            adb install "$APK"
-            curl -Ls "https://get.maestro.mobile.dev" | bash
-            export PATH="$HOME/.maestro/bin:$PATH"
-            maestro --version
-            maestro test .maestro/smoke.yaml
+          disable-linux-hw-accel: false
+          disable-animations: false
+          script: bash scripts/verify-android-smoke.sh dist/apk x86_64 --run
 
   mobsf:
     name: MobSF Android security scan
