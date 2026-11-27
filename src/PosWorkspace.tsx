@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react';
+import React, {useMemo, useRef, useState} from 'react';
 import {Alert, Image, Pressable, Text, TextInput, View} from 'react-native';
 import {addPosLine, emptyPosCart, findPosProduct, PosCart, PosProduct, posTotals, validateCheckout} from './pos';
 import BarcodeScannerButton from './BarcodeScannerButton';
@@ -40,6 +40,8 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
   const [creditPaidText,setCreditPaidText]=useState('0');
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
+  const cartRef=useRef(cart);
+  const commitCart=(next:PosCart)=>{cartRef.current=next;setCart(next);};
   const mapped:PosCatalogProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,reference:p.reference,barcode:p.barcode,category:p.category,salePrice:p.price,stock:p.qty,trackStock:true})),[products]);
   const categories=useMemo(()=>[...new Set(mapped.map(product=>product.category?.trim()||'').filter(Boolean))].sort((a,b)=>a.localeCompare(b,language==='FR'?'fr':'ar')),[mapped,language]);
   const matches=useMemo(()=>filterPosCatalogProducts(mapped,term,selectedCategory,inStockOnly),[mapped,term,selectedCategory,inStockOnly]);
@@ -47,7 +49,12 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
   const creditPaid=Number(creditPaidText.replace(',','.'));
   const currentCart:PosCart={...cart,customerId:customerId||undefined,paymentMethod:method,globalDiscount:Number.isFinite(discount)?Math.max(0,discount):0,paidAmount:method==='credit'&&Number.isFinite(creditPaid)?Math.max(0,creditPaid):0};
   const totals=posTotals(currentCart);
-  const add=(p:PosProduct)=>{try{setCart(old=>addPosLine(old,p));setTerm('');}catch(e){Alert.alert(tr('المخزون غير كافٍ'),e instanceof Error?e.message:tr('تعذر إضافة المنتج'));}};
+  const add=(p:PosProduct)=>{
+    try{
+      // Validation can throw. Do it in the event, not inside a deferred React updater.
+      commitCart(addPosLine(cartRef.current,p));setTerm('');
+    }catch{Alert.alert(tr('المخزون غير كافٍ'),`${tr('المتوفر:')} ${p.stock??0}`);}
+  };
   const handleBarcodeScanned=(data:string)=>{
     const code=data.trim();
     if(!code)return;
@@ -55,18 +62,18 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
     const product=findPosProduct(mapped,code);
     if(product)add(product);
   };
-  const changeQty=(productId:string,delta:number)=>{setCart(old=>({...old,lines:old.lines.map(line=>line.productId===productId?{...line,quantity:line.quantity+delta}:line).filter(line=>line.quantity>0)}));};
-  const remove=(productId:string)=>setCart(old=>({...old,lines:old.lines.filter(line=>line.productId!==productId)}));
+  const changeQty=(productId:string,delta:number)=>{commitCart({...cartRef.current,lines:cartRef.current.lines.map(line=>line.productId===productId?{...line,quantity:line.quantity+delta}:line).filter(line=>line.quantity>0)});};
+  const remove=(productId:string)=>commitCart({...cartRef.current,lines:cartRef.current.lines.filter(line=>line.productId!==productId)});
   const parkCurrentSale=()=>{
     try{
       const parked=createParkedPosSale({title:`${tr('بيع محفوظ')} • ${new Date().toLocaleTimeString(language==='FR'?'fr-MA':'ar-MA')}`,cart:currentCart,customerId,method,bankAccountId,creditPaymentMethod,creditPaidText,discountText},`pos-${Date.now()}`,new Date().toISOString());
       if(!onPark(parked))return;
-      setCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');setTerm('');
+      commitCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');setTerm('');
     }catch(error){Alert.alert(tr('تعذر حفظ البيع'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}
   };
   const resumeParkedSale=(sale:ParkedPosSale)=>{
     if(cart.lines.length){Alert.alert(tr('السلة فيها منتجات'),tr('حفظ السلة الحالية أو فرغها قبل فتح بيع محفوظ.'));return;}
-    setCart(sale.cart);setCustomerId(sale.customerId);setMethod(sale.method);setBankAccountId(sale.bankAccountId);setCreditPaymentMethod(sale.creditPaymentMethod);setCreditPaidText(sale.creditPaidText);setDiscountText(sale.discountText);onResume(sale.id);
+    commitCart(sale.cart);setCustomerId(sale.customerId);setMethod(sale.method);setBankAccountId(sale.bankAccountId);setCreditPaymentMethod(sale.creditPaymentMethod);setCreditPaidText(sale.creditPaidText);setDiscountText(sale.discountText);onResume(sale.id);
   };
   const checkout=()=>{
     if(!Number.isFinite(discount)||discount<0){Alert.alert(tr('تخفيض غير صالح'),tr('دخل تخفيض صحيح.'));return;}
@@ -84,7 +91,7 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
     if(method==='credit'&&selectedCustomer&&!canExtendCredit({creditLimitCentimes:selectedCustomer.creditLimitCentimes},Math.round((outstandingByCustomer[name]||0)*100),Math.round((remaining-creditApplied)*100))){Alert.alert(tr('تجاوز سقف الدين'),tr('هاد البيع غادي يفوت سقف الدين المحدد للزبون.'));return;}
     Alert.alert(tr('تأكيد البيع'),`${tr('المجموع النهائي:')} ${money(totals.total)}\n${tr('الزبون')}: ${name}\n${tr('طريقة الأداء')}: ${tr(method==='cash'?'نقداً':method==='card'?'بطاقة':method==='credit'?'دين':'تحويل')}${method==='credit'?`\n${tr('المؤدى الآن:')} ${money(paidAmount)}${creditApplied>0?`\n${tr('رصيد سابق مستعمل:')} ${money(creditApplied)}`:''}\n${tr('الباقي:')} ${money(remaining-creditApplied)}`:''}`,[
       {text:tr('رجوع'),style:'cancel'},
-      {text:tr('تأكيد'),onPress:()=>{const accepted=onCheckout({customerId:customerId?Number(customerId):undefined,customerName:name,lines,paymentMethod:method,total:totals.total,paidAmount,...(bankRequired?{bankAccountId}:{}),...(method==='credit'?{creditPaymentMethod}:{})});if(accepted===false)return;setCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');}}
+      {text:tr('تأكيد'),onPress:()=>{const accepted=onCheckout({customerId:customerId?Number(customerId):undefined,customerName:name,lines,paymentMethod:method,total:totals.total,paidAmount,...(bankRequired?{bankAccountId}:{}),...(method==='credit'?{creditPaymentMethod}:{})});if(accepted===false)return;commitCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');}}
     ]);
   };
   return <View style={{gap:12,direction:getLayoutDirection(language)}}>
@@ -94,7 +101,7 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
     </View>
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>{tr('البحث عن منتج')}</Text>
-      <TextInput value={term} onChangeText={setTerm} onSubmitEditing={()=>{const product=findPosProduct(mapped,term);if(product){add(product);}}} returnKeyType="search" placeholder={tr('اسم المنتج أو المرجع أو الباركود...')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto'}}/>
+      <TextInput testID="hamza-pos-search" value={term} onChangeText={setTerm} onSubmitEditing={()=>{const product=findPosProduct(mapped,term);if(product){add(product);}}} returnKeyType="search" placeholder={tr('اسم المنتج أو المرجع أو الباركود...')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto'}}/>
       <BarcodeScannerButton language={language} onScanned={handleBarcodeScanned}/>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginVertical:8}}>
         <Pressable onPress={()=>setSelectedCategory('')} style={{borderWidth:1,borderColor:selectedCategory===''?GOLD:'#444',borderRadius:8,padding:8}}><Text style={{color:'#FFF'}}>{tr('جميع الأصناف')}</Text></Pressable>
@@ -113,7 +120,7 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
       {parkedSales.map(sale=>{const savedTotals=posTotals(sale.cart);return <View key={sale.id} style={{borderBottomWidth:1,borderBottomColor:'#333',paddingVertical:9}}>
         <Text style={{color:'#FFF',fontWeight:'700'}}>{sale.title}</Text>
         <Text style={{color:'#AAA',fontSize:12,marginTop:3}}>{new Date(sale.savedAt).toLocaleString(language==='FR'?'fr-MA':'ar-MA')} • {sale.cart.lines.length} {tr('منتج')} • {tr('المجموع النهائي:')} {money(savedTotals.total)}</Text>
-        <View style={{flexDirection:'row',gap:12,marginTop:6}}><Pressable accessibilityRole="button" onPress={()=>resumeParkedSale(sale)}><Text style={{color:GOLD,fontWeight:'800'}}>{tr('استرجاع البيع')}</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>onDeleteParked(sale.id)}><Text style={{color:'#E28A78'}}>{tr('حذف البيع المحفوظ')}</Text></Pressable></View>
+        <View style={{flexDirection:'row',gap:12,marginTop:6}}><Pressable testID="hamza-pos-resume" accessibilityRole="button" onPress={()=>resumeParkedSale(sale)}><Text style={{color:GOLD,fontWeight:'800'}}>{tr('استرجاع البيع')}</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>onDeleteParked(sale.id)}><Text style={{color:'#E28A78'}}>{tr('حذف البيع المحفوظ')}</Text></Pressable></View>
       </View>;})}
     </View>}
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
@@ -125,7 +132,7 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
           <View style={{flex:1}}><Text style={{color:'#FFF',fontWeight:'700'}}>{line.name}</Text><Text style={{color:'#AAA',fontSize:12}}>{money(line.unitPrice)} × {line.quantity}</Text></View>
           <Pressable onPress={()=>changeQty(line.productId,-1)} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>−</Text></Pressable>
           <Text style={{color:'#FFF'}}>{line.quantity}</Text>
-          <Pressable onPress={()=>{const p=mapped.find(x=>x.id===line.productId);if(p)add(p);}} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>+</Text></Pressable>
+          <Pressable testID="hamza-pos-increment" onPress={()=>{const p=mapped.find(x=>x.id===line.productId);if(p)add(p);}} style={{padding:7}}><Text style={{color:GOLD,fontSize:18}}>+</Text></Pressable>
           <Pressable onPress={()=>remove(line.productId)} style={{padding:5}}><Text style={{color:'#E28A78'}}>{tr('حذف')}</Text></Pressable>
         </View>;
       })}
@@ -146,7 +153,7 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
         <Text style={{color:'#DDD'}}>{tr('التخفيض:')} {money(totals.discount)}</Text>
         <Text style={{color:GOLD,fontWeight:'900',fontSize:21}}>{tr('المجموع النهائي:')} {money(totals.total)}</Text>
       </View>
-      <Pressable onPress={parkCurrentSale} disabled={!cart.lines.length} style={{borderWidth:1,borderColor:cart.lines.length?GOLD:'#555',borderRadius:9,padding:12,alignItems:'center',marginTop:10,opacity:cart.lines.length?1:0.55}}><Text style={{color:GOLD,fontWeight:'800'}}>{tr('حفظ البيع مؤقتاً')}</Text></Pressable>
+      <Pressable testID="hamza-pos-park" onPress={parkCurrentSale} disabled={!cart.lines.length} style={{borderWidth:1,borderColor:cart.lines.length?GOLD:'#555',borderRadius:9,padding:12,alignItems:'center',marginTop:10,opacity:cart.lines.length?1:0.55}}><Text style={{color:GOLD,fontWeight:'800'}}>{tr('حفظ البيع مؤقتاً')}</Text></Pressable>
       <Pressable onPress={checkout} disabled={!cart.lines.length} style={{backgroundColor:cart.lines.length?GOLD:'#555',borderRadius:9,padding:14,alignItems:'center',marginTop:12}}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('تأكيد البيع')}</Text></Pressable>
     </View>
   </View>;

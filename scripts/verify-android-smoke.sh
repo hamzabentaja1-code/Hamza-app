@@ -45,9 +45,22 @@ test "$(adb shell getprop sys.boot_completed | tr -d '\r\n')" = 1
 adb install "$apk"
 adb shell pm path com.hamza.app | grep '^package:'
 installer="$(mktemp)"
-trap 'rm -f "$installer"' EXIT
+cleanup(){
+  rm -f "$installer"
+  if [[ "${offline_enabled:-}" = 1 ]]; then
+    adb shell cmd connectivity airplane-mode disable >/dev/null 2>&1 || true
+    adb shell svc wifi enable >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup EXIT
 curl --fail --silent --show-error --location --retry 3 https://get.maestro.mobile.dev -o "$installer"
 bash "$installer"
 export PATH="$HOME/.maestro/bin:$PATH"
 maestro --version
+# The disposable Android emulator must pass without mobile data or Wi-Fi.
+offline_enabled=1
+adb shell cmd connectivity airplane-mode enable >/dev/null
+adb shell svc wifi disable >/dev/null
+test "$(adb shell settings get global airplane_mode_on | tr -d '\r\n')" = 1
+test "$(adb shell settings get global wifi_on | tr -d '\r\n')" = 0
 maestro test .maestro/smoke.yaml

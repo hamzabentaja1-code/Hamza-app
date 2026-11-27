@@ -1,12 +1,115 @@
 appId: com.hamza.app
 ---
+# Use only a freshly created, disposable CI emulator.
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: hamza-language-subtitle
+    text: "تسيير تجاري"
+- tapOn:
+    id: hamza-toggle-language
+- assertVisible:
+    id: hamza-language-subtitle
+    text: "Gestion commerciale"
+- scrollUntilVisible:
+    element:
+      id: hamza-module-products
+    direction: DOWN
+- tapOn:
+    id: hamza-module-products
+- tapOn:
+    id: hamza-product-name
+- inputText: HamZa CI article
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: hamza-product-price
+    direction: DOWN
+- tapOn:
+    id: hamza-product-price
+- inputText: "25"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: hamza-product-stock
+    direction: DOWN
+- tapOn:
+    id: hamza-product-stock
+- inputText: "1"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: hamza-save-product
+    direction: DOWN
+- tapOn:
+    id: hamza-save-product
+- scrollUntilVisible:
+    element:
+      text: "HamZa CI article"
+    direction: DOWN
+- assertVisible: "HamZa CI article"
+- stopApp
 - launchApp:
     clearState: false
-- assertVisible: "HamZa"
-- assertVisible: "Gestion commerciale"
-- assertVisible: "الرئيسية"
-- assertVisible: "المنتجات"
-- tapOn: "نقطة البيع"
-- assertVisible: "نقطة البيع"
-- tapOn: "الرئيسية"
-- assertVisible: "HamZa"
+- assertVisible:
+    id: hamza-language-subtitle
+    text: "Gestion commerciale"
+- scrollUntilVisible:
+    element:
+      id: hamza-module-pos
+    direction: DOWN
+- tapOn:
+    id: hamza-module-pos
+- tapOn:
+    id: hamza-pos-search
+- inputText: HamZa CI article
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "HamZa CI article"
+    direction: DOWN
+- tapOn: "HamZa CI article"
+- scrollUntilVisible:
+    element:
+      id: hamza-pos-increment
+    direction: DOWN
+- tapOn:
+    id: hamza-pos-increment
+- assertVisible: "Stock insuffisant"
+- tapOn:
+    id: "android:id/button1"
+- assertVisible: "25.00 DH × 1"
+- scrollUntilVisible:
+    element:
+      id: hamza-pos-park
+    direction: DOWN
+- tapOn:
+    id: hamza-pos-park
+- assertVisible: "Vente mise de côté"
+- tapOn:
+    id: "android:id/button1"
+- stopApp
+- launchApp:
+    clearState: false
+- scrollUntilVisible:
+    element:
+      id: hamza-module-pos
+    direction: DOWN
+- tapOn:
+    id: hamza-module-pos
+- scrollUntilVisible:
+    element:
+      id: hamza-pos-resume
+    direction: DOWN
+- tapOn:
+    id: hamza-pos-resume
+- scrollUntilVisible:
+    element:
+      text: "25.00 DH × 1"
+    direction: DOWN
+- assertVisible: "25.00 DH × 1"
+- tapOn:
+    id: hamza-toggle-language
+- assertVisible:
+    id: hamza-language-subtitle
+    text: "تسيير تجاري"
