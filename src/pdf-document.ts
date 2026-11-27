@@ -21,6 +21,17 @@ export const escapePdfHtml=(value:string)=>value
   .replace(/\"/g,'&quot;')
   .replace(/'/g,'&#39;');
 
+/** Display only: document math continues to use the stored numeric totals. */
+export function formatPdfAmount(amount:number,language:AppLanguage):string{
+  const fixed=amount.toFixed(2);
+  if(language!=='FR')return fixed;
+  const [whole,decimals]=fixed.split('.');
+  return decimals===undefined?fixed:whole.replace(/\B(?=(\d{3})+(?!\d))/g,'\u202f')+','+decimals;
+}
+export function formatPdfProductLine(line:{productName:string;qty:number;unitPrice:number;total:number},language:AppLanguage):string{
+  return `${line.productName} • ${line.qty} × ${formatPdfAmount(line.unitPrice,language)} DH = ${formatPdfAmount(line.total,language)} DH`;
+}
+
 export function buildPdfDocumentHtml(input:PdfDocumentInput):string{
   const rtl=input.language==='AR';
   const direction=rtl?'rtl':'ltr';
@@ -50,5 +61,5 @@ export function buildPdfDocumentHtml(input:PdfDocumentInput):string{
   const paymentTerms=profile.paymentTerms.trim()?`<p class="terms"><strong>${labels.terms}:</strong> ${escapePdfHtml(profile.paymentTerms)}</p>`:'';
   const documentNote=profile.documentNote.trim()?`<p class="document-note">${escapePdfHtml(profile.documentNote)}</p>`:'';
   const customFields=customFieldInput.split(/\r?\n/).map(line=>line.trim()).filter(Boolean).slice(0,12).map(line=>`<p class="custom-field" dir="auto">${escapePdfHtml(line)}</p>`).join('');
-  return `<!doctype html><html lang="${rtl?'ar':'fr'}" dir="${direction}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:${font};padding:28px;color:#222;direction:${direction};text-align:${rtl?'right':'left'};line-height:1.7}body.compact{padding:16px;line-height:1.45}body.framed{border:2px solid ${accent};margin:12px;padding:22px}h1,h2{color:${accent};margin:12px 0}p{margin:7px 0}.line{white-space:pre-wrap;unicode-bidi:plaintext}.image-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #ddd;padding:8px 0;break-inside:avoid}.image-row img{width:104px;height:88px;object-fit:contain}.total{border-top:1px solid #aaa;padding-top:10px;margin-top:16px}.terms,.document-note,.custom-field{white-space:pre-wrap;unicode-bidi:plaintext;color:#555;font-size:12px}body.framed .total{border-top:2px solid ${accent}}body.compact .image-row{padding:4px 0}</style></head><body class="${template}">${logo}<h1>${escapePdfHtml(profile.name.trim()||'HamZa')}</h1><p>${escapePdfHtml(profile.address)} ${escapePdfHtml(profile.phone)} ${escapePdfHtml(profile.email)}</p><p>${escapePdfHtml(companyIds)}</p><h2>${escapePdfHtml(input.title)}</h2><p>${labels.client}: ${escapePdfHtml(input.customerName||'—')}</p><p>${labels.date}: ${escapePdfHtml(input.date)}</p><hr/>${bodyLines}<hr/><h2 class="total">${labels.total}: ${input.total.toFixed(2)} DH</h2>${paymentTerms}${documentNote}${customFields}<p>${labels.thanks}</p></body></html>`;
+  return `<!doctype html><html lang="${rtl?'ar':'fr'}" dir="${direction}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:${font};padding:28px;color:#222;direction:${direction};text-align:${rtl?'right':'left'};font-size:13pt;line-height:1.5}body.compact{padding:16px;line-height:1.4}body.framed{border:2px solid ${accent};margin:12px;padding:22px}h1,h2{color:${accent};margin:12px 0}p{margin:7px 0}.line{white-space:pre-wrap;unicode-bidi:plaintext;overflow-wrap:anywhere;break-inside:avoid}.image-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #ddd;padding:8px 0;break-inside:avoid}.image-row img{width:104px;height:88px;object-fit:contain}.total{border-top:1px solid #aaa;padding-top:10px;margin-top:16px}.terms,.document-note,.custom-field{white-space:pre-wrap;unicode-bidi:plaintext;color:#555;font-size:12px}body.framed .total{border-top:2px solid ${accent}}body.compact .image-row{padding:4px 0}</style></head><body class="${template}">${logo}<h1>${escapePdfHtml(profile.name.trim()||'HamZa')}</h1><p>${escapePdfHtml(profile.address)} ${escapePdfHtml(profile.phone)} ${escapePdfHtml(profile.email)}</p><p>${escapePdfHtml(companyIds)}</p><h2>${escapePdfHtml(input.title)}</h2><p>${labels.client}: ${escapePdfHtml(input.customerName||'—')}</p><p>${labels.date}: ${escapePdfHtml(input.date)}</p><hr/>${bodyLines}<hr/><h2 class="total">${labels.total}: ${formatPdfAmount(input.total,input.language)} DH</h2>${paymentTerms}${documentNote}${customFields}<p>${labels.thanks}</p></body></html>`;
 }

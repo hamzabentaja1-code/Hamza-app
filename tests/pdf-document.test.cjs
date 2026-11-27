@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {buildPdfDocumentHtml,escapePdfHtml} = require('../.test-build/pdf-document.js');
+const {buildPdfDocumentHtml,escapePdfHtml,formatPdfAmount,formatPdfProductLine} = require('../.test-build/pdf-document.js');
 const {EMPTY_COMPANY_PROFILE} = require('../.test-build/company-profile.js');
 
 const input = (changes={}) => ({
@@ -28,7 +28,7 @@ test('French PDF output declares LTR and uses French labels', () => {
   assert.match(html,/<html lang="fr" dir="ltr">/);
   assert.match(html,/text-align:left/);
   assert.match(html,/Client: Client/);
-  assert.match(html,/Total: 120\.00 DH/);
+  assert.match(html,/Total: 120,00 DH/);
   assert.match(html,/Merci pour votre confiance/);
 });
 
@@ -128,4 +128,37 @@ test('applies overrides to the selected document kind in both photo and plain ex
   const other = buildPdfDocumentHtml(input({companyProfile}));
   assert.match(other, /<body class="compact">/);
   assert.match(other, /Champ général/);
+});
+
+test('six-item bon de sortie keeps TTC, product details and stock in both photo modes', () => {
+  const f = require('./fixtures/bon-de-sortie.json');
+  const {convertQuote} = require('../.test-build/domain/document-conversion.js');
+  const {planInvoiceStockDeduction} = require('../.test-build/domain/invoice-stock.js');
+  const lines = f.lines.map(line=>({...line,total:line.unitPrice*line.qty}));
+  const total = lines.reduce((sum,item)=>sum+Math.round(item.total*100),0);
+  assert.equal(total,f.expectedTotalCentimes);
+  const quote={id:51,productName:lines[0].productName,customerName:f.customerName,qty:1,unitPrice:lines[0].unitPrice,total:total/100,lines};
+  const stock = lines.map(line=>({id:line.productId,qty:f.stockBefore}));
+  const {document,updatedProducts}=convertQuote(quote,'delivery',[],stock,81,f.date);
+  assert.deepEqual(updatedProducts.map(i=>i.qty),[138,149,144,50,146,146]);
+  assert.deepEqual(planInvoiceStockDeduction(document.lines,true),[]);
+  assert.deepEqual(convertQuote(quote,'invoice',[document],updatedProducts,82,f.date).updatedProducts,updatedProducts);
+  assert.throws(()=>convertQuote(quote,'delivery',[document],stock,81,f.date));
+  assert.equal(document.number,'BL-81');
+  for(const language of ['FR','AR']){
+    const text=document.lines.map(line=>formatPdfProductLine(line,language));
+    const imageRows=text.map((value,index)=>({text:value,imageData:index<2?'data:image/png;base64,AA==':undefined}));
+    const args=input({language,documentKind:'delivery',title:'Bon de sortie BL-81',customerName:f.customerName,date:document.date,total:document.total,lines:text,imageRows});
+    for(const includeImages of [true,false]){
+      const html=buildPdfDocumentHtml({...args,includeImages});
+      assert.equal((html.match(/<img /g)||[]).length,includeImages?2:0);
+      assert.match(html,/13pt/);
+      assert.match(html,/Bon de sortie BL-81/);
+      assert.match(html,/15\/10\/2026/);
+      for(const row of text)assert.ok(html.includes(escapePdfHtml(row)));
+      assert.ok(html.includes(language==='FR'?'2\u202f390,00 DH':'2390.00 DH'));
+      assert.doesNotMatch(html,/TVA/);
+    }
+  }
+  assert.equal(formatPdfAmount(-12345.678,'FR'),'-12\u202f345,68');
 });

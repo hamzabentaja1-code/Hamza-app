@@ -1,0 +1,14 @@
+{
+  "date": "15/10/2026",
+  "customerName": "Atelier Démonstration",
+  "stockBefore": 150,
+  "expectedTotalCentimes": 239000,
+  "lines": [
+    {"productId": 1, "productName": "Disjoncteur 1P+N 20 A", "qty": 12, "unitPrice": 65},
+    {"productId": 2, "productName": "Disjoncteur 4P 50 A", "qty": 1, "unitPrice": 350},
+    {"productId": 3, "productName": "Disjoncteur 1P+N 20 A – série B", "qty": 6, "unitPrice": 50},
+    {"productId": 4, "productName": "Câble 2 × 1,5 mm² (au mètre)", "qty": 100, "unitPrice": 7},
+    {"productId": 5, "productName": "Lampe 58 W", "qty": 4, "unitPrice": 60},
+    {"productId": 6, "productName": "Douille B22", "qty": 4, "unitPrice": 5}
+  ]
+}
