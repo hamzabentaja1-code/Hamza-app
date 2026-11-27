@@ -1,3 +1,4 @@
+import {migrateHistoricalSupplierInvoices,verifyHistoricalSupplierInvoiceArchive} from './historical-supplier-invoices';
 import {checkHistoricalSupplierReturnCopies,linkHistoricalSupplierReturns} from './historical-supplier-returns';
 import {migrateHistoricalCustomerReturns} from './historical-customer-returns';
 import {normalizeBankAccounts} from './bank-accounts';
@@ -30,22 +31,21 @@ const oldKind:Readonly<Record<string,StockMovementKind>>={
   adjustment:'adjustment',stock_count:'adjustment',transfer_in:'transfer_in',transfer_out:'transfer_out',
 };
 const unsafe=['cheques','chequeEvents',
-  'productVariants','variantStockMovements','purchaseOrders','customerOrders','workTasks','workOrders','workTimeEntries','equipment','parkedPosCarts','projects'];
+  'productVariants','variantStockMovements','customerOrders','workTasks','workOrders','workTimeEntries','equipment','parkedPosCarts','projects'];
 
 /** Translate only demonstrated historical shapes. With material unreconciled records, leave original data untouched. */
 export function adaptHistoricalSnapshot(data:Row):Row{
-  // These old invoices were independent of purchases and have no equivalent modern screen.
-  // Guard even a previously converted snapshot that still carries the hidden original rows.
-  need(rows(data,'supplierInvoices').length===0&&rows(data,'supplierInvoicePayments').length===0);
   if(data.hamzaHistoricalMapping===1){
     need(Array.isArray(data.stockMovements));
     if(isRow(data.cashAccount)&&data.cashAccount.historicalJournal!==undefined)validateHistoricalCashJournal(data.cashAccount.historicalJournal);
     normalizeBankAccounts(data.bankAccounts);
+    verifyHistoricalSupplierInvoiceArchive(rows(data,'supplierInvoices'),rows(data,'supplierInvoicePayments'),rows(data,'historicalSupplierInvoices'),rows(data,'purchases'));
     checkHistoricalSupplierReturnCopies(rows(data,'supplierReturns'),rows(data,'purchases'));
     return data;
   }
   if(!Array.isArray(data.inventoryMovements)&&!Array.isArray(data.cashMovements)&&
       !Array.isArray(data.bankMovements)&&!Array.isArray(data.supplierReturns)&&
+      !rows(data,'supplierInvoices').length&&!rows(data,'supplierInvoicePayments').length&&!rows(data,'purchaseOrders').length&&
       !rows(data,'purchases').some(row=>row.paidCentimes!==undefined&&row.paidAmount===undefined))return data;
   if(Array.isArray(data.stockMovements))throw new Error(HISTORICAL_REVIEW);
   for(const key of unsafe)need(rows(data,key).length===0);
@@ -116,6 +116,8 @@ export function adaptHistoricalSnapshot(data:Row):Row{
     if(!positiveId(buy.id)||matches.has(buy.id)||!text(buy.supplierName)||!integer(money(buy.total)))throw new Error(HISTORICAL_REVIEW);
     matches.set(buy.id,buy);
   }
+  const historicalInvoices=migrateHistoricalSupplierInvoices({invoices:rows(data,'supplierInvoices'),payments:rows(data,'supplierInvoicePayments'),
+    orders:rows(data,'purchaseOrders'),purchases,suppliers:rows(data,'suppliers'),cash:rows(data,'cashMovements'),bank:rawBankMoves,stock,warehouse:warehouseId});
   const linkedHistoricalReturns=linkHistoricalSupplierReturns(rows(data,'supplierReturns'),purchases,products,stock,warehouseId);
   const paymentIds=new Set<number>();
   const linkedPaid=new Map<number,number>();
@@ -142,7 +144,9 @@ export function adaptHistoricalSnapshot(data:Row):Row{
   const migratedBuys=purchases.map(buy=>{
     const paid=buy.paidCentimes??0,total=money(buy.total),linked=linkedPaid.get(buy.id as number)??0;
     if(!integer(paid)||!integer(linked)||paid<linked||paid>total||buy.paidAmount!==undefined||bankLinked(buy))throw new Error(HISTORICAL_REVIEW);
-    return {...buy,warehouseId:warehouseId(buy.warehouseId),productId:positiveId(buy.productId)?String(buy.productId):buy.productId,paidAmount:(paid-linked)/100,...(linkedHistoricalReturns.has(buy.id as number)?{historicalSupplierReturns:linkedHistoricalReturns.get(buy.id as number)}:{})};
+    const archivedPaid=historicalInvoices.paidByPurchase.get(buy.id as number)??0;
+    need(!archivedPaid||buy.paymentMethod===undefined&&buy.method===undefined&&paid+archivedPaid<=total);
+    return {...buy,...(archivedPaid?{historicalInvoicePaidCentimes:archivedPaid}:{}),warehouseId:warehouseId(buy.warehouseId),productId:positiveId(buy.productId)?String(buy.productId):buy.productId,paidAmount:(paid-linked+archivedPaid)/100,...(linkedHistoricalReturns.has(buy.id as number)?{historicalSupplierReturns:linkedHistoricalReturns.get(buy.id as number)}:{})};
   });
   const contacts=(key:string)=>rows(data,key).map(item=>({...item,ifNumber:item.ifNumber??item.taxId,paymentDelayDays:item.paymentDelayDays??item.paymentTermsDays}));
   const sales=rows(data,'sales').map(item=>({...item,warehouseId:warehouseId(item.warehouseId),unitCost:item.unitCost??item.costPrice}));
@@ -154,7 +158,7 @@ export function adaptHistoricalSnapshot(data:Row):Row{
     for(const id of group.ids)covered.push(id);
     coveredSupplierIds.set(group.accountId,covered);
   }
-  need(rawBankMoves.every(item=>item.kind!=='supplier_payment'||supplierBankGroups.has(String(item.id))));
+  need(rawBankMoves.every(item=>item.kind!=='supplier_payment'||supplierBankGroups.has(String(item.id))||historicalInvoices.bankPostings.has(item.id)));
   const bankAccounts=rawBankAccounts.map(item=>{
     if(!text(item.id)||item.id!==item.id.trim()||!text(item.name)||item.currency!=='MAD'||item.openingBalanceCentimes!==undefined||
        (item.bankName!==undefined&&typeof item.bankName!=='string')||
@@ -186,7 +190,7 @@ export function adaptHistoricalSnapshot(data:Row):Row{
   const cashAccount=entries.length||coveredRows.length?
     {...EMPTY_CASH_ACCOUNT,historicalJournal:validateHistoricalCashJournal({entries,coveredRows})}:EMPTY_CASH_ACCOUNT;
   const customerReturns=migrateHistoricalCustomerReturns(rows(data,'salesReturns'),sales,rows(data,'documents'),stock,warehouseId);
-  return {...data,hamzaHistoricalMapping:1,...customerReturns,products,warehouses:[...places.values()],stockMovements:stock,
+  return {...data,hamzaHistoricalMapping:1,...customerReturns,historicalSupplierInvoices:historicalInvoices.archive,products,warehouses:[...places.values()],stockMovements:stock,
     activeWarehouseId:warehouseId(data.activeWarehouseId),customers:contacts('customers'),suppliers:contacts('suppliers'),
     sales,purchases:migratedBuys,supplierPayments,bankAccounts,cashAccount};
 }

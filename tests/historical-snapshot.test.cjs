@@ -315,3 +315,67 @@ test('historical supplier return errors fail closed on invalid stock, cumulative
   assert.equal(JSON.stringify(d),original);
  }
 });
+
+function oldSupplierInvoice(){
+ const d=old();
+ d.purchases=[
+   {id:60,purchaseOrderId:14,supplierName:'Atelier',productId:1,productName:'Câble ضو',qty:2,unitCost:10,total:20,paidCentimes:0},
+   {id:61,purchaseOrderId:14,supplierName:'Atelier',productId:1,productName:'Câble ضو',qty:3,unitCost:10,total:30,paidCentimes:0},
+ ];
+ d.supplierPayments=[];
+ d.purchaseOrders=[{id:14,supplierName:'Atelier',status:'received',lines:[{productId:1,quantity:5,receivedQuantity:5,unitCost:10}]}];
+ const makeInvoice=(id,qty,issuedAt)=>({id,number:id,supplierId:'4',purchaseOrderId:14,issuedAt,lines:[{productId:1,description:'Câble',quantity:qty,unitCostCentimes:1000}],totalCentimes:qty*1000});
+ d.supplierInvoices=[makeInvoice('FA-1',3,'2026-02-09'),makeInvoice('FA-2',2,'2026-02-11')];
+ d.supplierInvoicePayments=[
+   {id:'p0',invoiceId:'FA-1',supplierId:'4',date:'2026-02-09T12:00:00Z',method:'cash',amountCentimes:1250},
+   {id:'p1',invoiceId:'FA-1',supplierId:'4',date:'2026-02-10T12:00:00Z',method:'bank',bankAccountId:'cih',amountCentimes:1000},
+   {id:'p2',invoiceId:'FA-2',supplierId:'4',date:'2026-02-12T12:00:00Z',method:'cheque',reference:'CHQ-1',amountCentimes:500},
+ ];
+ d.bankAccounts=[{id:'cih',name:'CIH',currency:'MAD'}];
+ d.bankMovements=[
+   {id:'opening',accountId:'cih',kind:'opening',date:'2026-02-08',amountCentimes:2000,description:'Opening'},
+   {id:'supplier-invoice-payment-bank-p1',accountId:'cih',kind:'supplier_payment',date:'2026-02-10T12:00:00Z',amountCentimes:1000,description:'Bank settlement'},
+   {id:'supplier-invoice-payment-bank-p3',accountId:'cih',kind:'supplier_payment',date:'2026-02-11T12:00:00Z',amountCentimes:100,description:'Old payment'},
+   {id:'supplier-invoice-payment-bank-reversal-p3',accountId:'cih',kind:'deposit',date:'2026-02-11T12:30:00Z',amountCentimes:100,description:'Reversal'},
+ ];
+ d.cashMovements=[
+   {id:'opening',kind:'opening',date:'2026-02-08',amountCentimes:2500,description:'Opening'},
+   {id:'supplier-invoice-payment-cash-p0',kind:'cash_out',date:'2026-02-09T12:00:00Z',amountCentimes:1250,description:'Cash settlement'},
+ ];
+ d.inventoryMovements.push(
+   {id:'po-receipt-60',kind:'purchase',productId:1,quantityDelta:2,date:'2026-02-08T12:00:00Z',sourceId:'14'},
+   {id:'po-receipt-61',kind:'purchase',productId:1,quantityDelta:3,date:'2026-02-08T12:00:00Z',sourceId:'14'});
+ d.products[0].qty=10;
+ return d;
+}
+
+test('legacy supplier invoices share one liability with verified receipts and do not re-post settlements',()=>{
+ const {calculateCashBalance}=require('../.test-build/domain/cash-register.js');
+ const {calculateBankBalance}=require('../.test-build/domain/bank-accounts.js');
+ const d=oldSupplierInvoice(),n=adaptHistoricalSnapshot(d);
+ assert.deepEqual(n.purchases.map(item=>item.paidAmount),[20,7.5]);
+ assert.deepEqual(n.historicalSupplierInvoices.map(item=>item.paidCentimes),[2250,500]);
+ assert.equal(supplierAccountBalances(n.purchases,[])[0].outstanding,22.5);
+ assert.equal(n.supplierPayments.length,0);
+ assert.equal(calculateCashBalance(n.cashAccount,{purchases:n.purchases,payments:[],supplierPayments:[],expenses:[],refunds:[]}),1250);
+ assert.equal(calculateBankBalance(n.bankAccounts[0],[]),1000);
+ assert.equal(warehouseStock(n.stockMovements,'1','main'),9);
+ const reopened=JSON.parse(JSON.stringify(n));
+ assert.equal(adaptHistoricalSnapshot(reopened),reopened);
+ reopened.purchases[0].paidAmount=0;
+ assert.throws(()=>adaptHistoricalSnapshot(reopened));
+});
+test('legacy supplier invoice migration rejects mismatched payments and receipts instead of inventing due amounts',()=>{
+ for(const mutate of [
+   d=>{d.supplierInvoices[0].lines[0].unitCostCentimes=900;d.supplierInvoices[0].totalCentimes=2700;},
+   d=>{d.purchases[0].paidCentimes=100;},
+   d=>{d.bankMovements.splice(3,1);},
+   d=>{d.cashMovements[1].amountCentimes=0;},
+   d=>{d.purchaseOrders[0].status='partially_received';},
+   d=>{d.inventoryMovements.at(-1).sourceId='77';},
+ ]){
+  const d=oldSupplierInvoice();mutate(d);const original=JSON.stringify(d);
+  assert.throws(()=>adaptHistoricalSnapshot(d));
+  assert.equal(JSON.stringify(d),original);
+ }
+});

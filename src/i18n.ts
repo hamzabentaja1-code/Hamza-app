@@ -3,6 +3,11 @@ export type LayoutDirection = 'rtl' | 'ltr';
 
 const fr: Record<string, string> = {
   "تحافظ سجل الصندوق القديم. الحركات اللي كتسجل دابا كيبقاو كيتحسبو معاه.": "Le journal de caisse historique est conservé. Les nouveaux mouvements s’y ajoutent.",
+  "فواتير الموردين القديمة ما تطابقوش مع سجلات الشراء. البيانات الأصلية ما تبدلاتش.": "Les anciennes factures fournisseurs ne concordent pas avec les achats. Les données d’origine restent intactes.",
+  "فاتورة مورد من النسخة القديمة": "Facture fournisseur historique",
+  "فواتير الموردين من النسخة القديمة": "Factures fournisseurs historiques",
+  "المدفوع وقت النقل": "Réglé lors de la reprise",
+  "الأداءات القديمة محسوبة فالمشتريات وما خاصهاش تتسجل مرة أخرى.": "Les anciens règlements sont repris dans les achats. Ne les saisissez pas une seconde fois.",
   "سجل مرتجعات الموردين القديم غير صالح. البيانات الأصلية ما تبدلاتش.": "Le journal historique des retours fournisseurs est invalide. Les données d’origine restent intactes.",
   "مرتجع مورد من النسخة القديمة": "Retour fournisseur historique",
   "رصيد دائن عند المورد DH": "Crédit chez le fournisseur (DH)",
