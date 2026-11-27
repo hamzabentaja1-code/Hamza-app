@@ -2,6 +2,12 @@ export type AppLanguage = 'AR' | 'FR';
 export type LayoutDirection = 'rtl' | 'ltr';
 
 const fr: Record<string, string> = {
+  "مرفقات النسخة الاحتياطية ناقصة أو غير صالحة.": "Les fichiers joints de la sauvegarde sont manquants ou invalides.",
+  "حجم بيانات HamZa تجاوز الحد المسموح.": "Les données HamZa dépassent la taille maximale autorisée.",
+  "توقف الحفظ لحماية البيانات الأصلية. أعد فتح التطبيق أو استرجع نسخة احتياطية صالحة.": "L’enregistrement est bloqué pour protéger les données d’origine. Rouvrez l’application ou restaurez une sauvegarde valide.",
+  "ملف البيانات المحلي تالف ولا يمكن قراءته.": "Les données locales sont endommagées et ne peuvent pas être lues.",
+  "نسخة البيانات غير مدعومة. احتافظ بنسخة احتياطية قبل التحديث.": "La version des données n’est pas prise en charge. Conservez une sauvegarde avant la mise à jour.",
+  "النسخة الاحتياطية لا تخص إصدار HamZa المدعوم.": "Cette sauvegarde ne correspond pas à une version prise en charge de HamZa.",
   "تفاصيل التقارير": "Rapports détaillés",
   "ديون الموردين": "Dettes fournisseurs",
   "كل المخازن": "Tous les dépôts",
