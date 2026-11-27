@@ -36,7 +36,7 @@ function fixture(initial={}){
   };
   function restart(){
     const exports={};
-    vm.runInNewContext(code,{exports,require:name=>name==='expo-file-system/legacy'?fsMock:{default:asMock}});
+    vm.runInNewContext(code,{exports,require:name=>name==='expo-file-system/legacy'?fsMock:name==='./domain/historical-snapshot'?require('../.test-build/domain/historical-snapshot.js'):{default:asMock}});
     return exports;
   }
   return {storage,files,flags,restart,api:restart()};
@@ -73,20 +73,20 @@ test('first launch can save; nonempty plain legacy store is never rewritten in p
 
 test('old Nov 10 chunk format and external JSON keep Arabic/French, photo galleries and unrecognized records',async()=>{
   const old={schemaVersion:1,products:[{id:1,name:'Électricité الضو',photoData:'data:image/png;base64,'+'A'.repeat(370000)}],
-    suppliers:[{id:2,name:'وشركة'}],inventoryMovements:[{id:'old-stock',quantityDelta:4}],workTasks:[{id:7,title:'قديمة'}]};
+    suppliers:[{id:2,name:'وشركة'}],expenseCategories:[{id:7,title:'قديمة'}]};
   const orig=oldChunks(old);
   const f=fixture(orig);
   const loaded=await read(f.api);
   assert.equal(loaded.products[0].photoData,old.products[0].photoData);
-  assert.equal(loaded.inventoryMovements[0].id,'old-stock');
+  assert.equal(loaded.expenseCategories[0].id,7);
   await f.api.writeAppData({products:loaded.products,language:'FR'});
-  assert.equal((await read(f.restart())).workTasks[0].title,old.workTasks[0].title);
+  assert.equal((await read(f.restart())).expenseCategories[0].title,old.expenseCategories[0].title);
   for(const [k,v] of Object.entries(orig))assert.equal(f.storage.get(k),v);
   const fresh=fixture();
   const restored=await fresh.api.restoreBackup(json(old));
   assert.equal(restored.products[0].name,old.products[0].name);
   assert.equal((await read(fresh.restart())).products[0].photoData,old.products[0].photoData);
-  assert.equal(JSON.parse(await f.api.createBackup({products:loaded.products})).data.workTasks.length,1);
+  assert.equal(JSON.parse(await f.api.createBackup({products:loaded.products})).data.expenseCategories.length,1);
 });
 
 test('missing or damaged earlier chunks do not fall through to empty or overwrite the pointer',async()=>{
@@ -151,4 +151,15 @@ test('protects malformed imports and preserves attachment links via prepared tra
   const actual=await read(f.restart());
   assert.equal(actual.projects[0].tasks[0].attachments[0].uri,'file:///new.jpg');
   assert.equal(actual.taskAttachmentFiles,undefined);
+});
+
+
+test('unreconciled historical finance fails closed but can be exported unchanged',async()=>{
+  const initial=oldChunks({products:[],inventoryMovements:[],cashMovements:[{id:'opening',kind:'opening',amountCentimes:1000}]});
+  const f=fixture(initial);
+  await assert.rejects(read(f.api));
+  await assert.rejects(f.api.writeAppData({products:[]}));
+  assert.equal(JSON.parse(await f.api.exportOriginalBackup()).data.cashMovements[0].amountCentimes,1000);
+  assert.equal(f.storage.get(key),initial[key]);
+  assert.equal(f.storage.has(modern),false);
 });

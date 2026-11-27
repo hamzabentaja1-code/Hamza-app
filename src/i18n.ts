@@ -2,6 +2,8 @@ export type AppLanguage = 'AR' | 'FR';
 export type LayoutDirection = 'rtl' | 'ltr';
 
 const fr: Record<string, string> = {
+  "هاد النسخة القديمة فيها سجلات ما قدرناش نطابقوها بأمان. البيانات الأصلية ما تبدلاتش.": "Cette ancienne version contient des écritures qui ne peuvent pas être rapprochées en toute sécurité. Les données d’origine restent intactes.",
+  "تصدير البيانات الأصلية": "Exporter les données d’origine",
   "مرفقات النسخة الاحتياطية ناقصة أو غير صالحة.": "Les fichiers joints de la sauvegarde sont manquants ou invalides.",
   "حجم بيانات HamZa تجاوز الحد المسموح.": "Les données HamZa dépassent la taille maximale autorisée.",
   "توقف الحفظ لحماية البيانات الأصلية. أعد فتح التطبيق أو استرجع نسخة احتياطية صالحة.": "L’enregistrement est bloqué pour protéger les données d’origine. Rouvrez l’application ou restaurez une sauvegarde valide.",

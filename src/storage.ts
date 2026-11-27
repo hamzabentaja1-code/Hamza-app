@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
+import {adaptHistoricalSnapshot} from './domain/historical-snapshot';
 
 export const HAMZA_STORAGE_KEY = 'hamza_app_data_v03';
 export const HAMZA_SNAPSHOT_KEY = 'hamza_app_snapshot_v2';
@@ -110,19 +111,34 @@ function queued<T>(operation:()=>Promise<T>):Promise<T>{
   return next;
 }
 
+async function readOriginal():Promise<Record<string,unknown>|null>{
+  const pointer=await AsyncStorage.getItem(HAMZA_SNAPSHOT_KEY);
+  if(pointer!==null)return decodedLocal(await readVerified(filePointer(pointer)));
+  const legacy=await AsyncStorage.getItem(HAMZA_STORAGE_KEY);
+  return legacy===null?null:readLegacy(legacy);
+}
+
 export function readAppData<T extends Record<string,unknown>>(fallback:T):Promise<T>{
   return queued(async()=>{
     try{
-      const pointer=await AsyncStorage.getItem(HAMZA_SNAPSHOT_KEY);
-      const legacy=pointer===null?await AsyncStorage.getItem(HAMZA_STORAGE_KEY):null;
-      lastRead=pointer!==null?decodedLocal(await readVerified(filePointer(pointer))):legacy===null?{}:await readLegacy(legacy);
+      const original=await readOriginal();
+      lastRead=original===null?{}:adaptHistoricalSnapshot(original);
       writesBlocked=false;
-      return pointer===null&&legacy===null?fallback:lastRead as T;
+      return original===null?fallback:lastRead as T;
     }catch(error){
       writesBlocked=true;
       if(error instanceof SyntaxError)throw new Error(invalidData);
       throw error;
     }
+  });
+}
+
+/** Export a structurally verified original even when its financial migration requires review. */
+export function exportOriginalBackup():Promise<string>{
+  return queued(async()=>{
+    const original=await readOriginal();
+    if(original===null)throw new Error(invalidData);
+    return encodeBackup(original);
   });
 }
 
@@ -153,12 +169,15 @@ export function writeAppData(data:Record<string,unknown>):Promise<void>{
   return queued(()=>persist(data,false));
 }
 
-export async function createBackup(data:Record<string,unknown>):Promise<string>{
-  if(writesBlocked)throw new Error(invalidData);
-  // Carry over data from historical features that this release does not edit directly.
-  const json=JSON.stringify({schemaVersion:HAMZA_SCHEMA_VERSION,exportedAt:new Date().toISOString(),app:'HamZa',data:{...lastRead,...data}},null,2);
+function encodeBackup(data:Record<string,unknown>):string{
+  const json=JSON.stringify({schemaVersion:HAMZA_SCHEMA_VERSION,exportedAt:new Date().toISOString(),app:'HamZa',data},null,2);
   if(utf8Bytes(json)>MAX_BACKUP_BYTES)throw new Error(oversized);
   return json;
+}
+
+export async function createBackup(data:Record<string,unknown>):Promise<string>{
+  if(writesBlocked)throw new Error(invalidData);
+  return encodeBackup({...lastRead,...data});
 }
 
 export function decodeHamzaBackup(json:string):Record<string,unknown>{
@@ -172,8 +191,9 @@ export function decodeHamzaBackup(json:string):Record<string,unknown>{
 
 export async function restoreAppData(data:Record<string,unknown>):Promise<Record<string,unknown>>{
   assertBusinessShape(data,invalidBackup,true);
-  await queued(()=>persist(data,true));
-  return data;
+  const adapted=adaptHistoricalSnapshot(data);
+  await queued(()=>persist(adapted,true));
+  return adapted;
 }
 
 export function restoreBackup(json:string):Promise<Record<string,unknown>>{
