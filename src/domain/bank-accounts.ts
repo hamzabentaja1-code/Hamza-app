@@ -1,8 +1,10 @@
-export type BankAccount={id:string;name:string;openingBalanceCentimes:number;openingDate:string};
+import {bankCalendarDate,historicalBankAmount,HISTORICAL_BANK_INVALID,validateHistoricalBankJournal,type HistoricalBankJournal} from './historical-bank';
+
+export type BankAccount={id:string;name:string;openingBalanceCentimes:number;openingDate:string;historicalJournal?:HistoricalBankJournal;bankName?:string;accountNumberMasked?:string;currency?:'MAD';isDefault?:boolean};
 export type BankTransfer={id:string;bankAccountId:string;date:string;direction:'cash_to_bank'|'bank_to_cash';amountCentimes:number;description:string};
 export type LinkedBankPayment={id:number|string;bankAccountId?:string;method:string;amount:number;date:string;customerName?:string;supplierName?:string;reference?:string};
 export type BankStatementLine={id:string;bankAccountId:string;date:string;description:string;amountCentimes:number;reportedBalanceCentimes?:number};
-export type BankLedgerEntry={id:string;bankAccountId:string;date:string;amountCentimes:number};
+export type BankLedgerEntry={id:string;bankAccountId:string;date:string;amountCentimes:number;description?:string};
 export type BankStatementMatch={lineId:string;status:'matched'|'unmatched'|'ambiguous';ledgerEntryId?:string};
 export type BankReconciliationRecord={id:string;bankAccountId:string;createdAt:string;fromDate:string;toDate:string;reportedBalanceCentimes:number;expectedBalanceCentimes:number;differenceCentimes:number;matched:number;confirmed:number;unmatched:number;ambiguous:number};
 
@@ -107,18 +109,24 @@ export function parseBankStatementCsv(text:string,bankAccountId:string,existing:
 export function matchBankStatementLines(lines:readonly BankStatementLine[],entries:readonly BankLedgerEntry[]):BankStatementMatch[]{
   const used=new Set<string>();
   return lines.map(line=>{
-    const date=normalizeBankDate(line.date);
-    const candidates=entries.filter(entry=>entry.bankAccountId===line.bankAccountId&&normalizeBankDate(entry.date)===date&&entry.amountCentimes===line.amountCentimes&&!used.has(entry.id));
+    const date=bankCalendarDate(line.date);
+    const candidates=entries.filter(entry=>entry.bankAccountId===line.bankAccountId&&date!==undefined&&bankCalendarDate(entry.date)===date&&entry.amountCentimes===line.amountCentimes&&!used.has(entry.id));
     if(candidates.length===1){used.add(candidates[0].id);return {lineId:line.id,status:'matched',ledgerEntryId:candidates[0].id};}
     return {lineId:line.id,status:candidates.length?'ambiguous':'unmatched'};
   });
 }
 
 export function reconcileBankStatement(account:BankAccount,lines:readonly BankStatementLine[],entries:readonly BankLedgerEntry[],matches:readonly BankStatementMatch[]){
-  const accountLines=lines.filter(line=>line.bankAccountId===account.id).sort((a,b)=>a.date.localeCompare(b.date));
+  const accountLines=lines.filter(line=>line.bankAccountId===account.id).sort((a,b)=>(bankCalendarDate(a.date)??'').localeCompare(bankCalendarDate(b.date)??''));
   const closingLine=[...accountLines].reverse().find(line=>line.reportedBalanceCentimes!==undefined);
-  const endDate=closingLine?.date||accountLines[accountLines.length-1]?.date;
-  const expectedBalanceCentimes=account.openingBalanceCentimes+entries.filter(entry=>entry.bankAccountId===account.id&&(!endDate||entry.date<=endDate)).reduce((sum,entry)=>sum+entry.amountCentimes,0);
+  const endDate=bankCalendarDate(closingLine?.date||accountLines[accountLines.length-1]?.date||'');
+  const openingDate=bankCalendarDate(account.openingDate);
+  const opening=!endDate||!openingDate||openingDate<=endDate?account.openingBalanceCentimes:0;
+  const expectedBalanceCentimes=opening+entries.filter(entry=>{
+    if(entry.bankAccountId!==account.id)return false;
+    const date=bankCalendarDate(entry.date);
+    return !endDate||date!==undefined&&date<=endDate;
+  }).reduce((sum,entry)=>sum+entry.amountCentimes,0);
   const counts=matches.filter(match=>accountLines.some(line=>line.id===match.lineId)).reduce((result,match)=>{result[match.status]++;return result;},{matched:0,unmatched:0,ambiguous:0});
   return {lineCount:accountLines.length,matched:counts.matched,unmatched:counts.unmatched,ambiguous:counts.ambiguous,reportedBalanceCentimes:closingLine?.reportedBalanceCentimes,expectedBalanceCentimes,differenceCentimes:closingLine?.reportedBalanceCentimes===undefined?undefined:closingLine.reportedBalanceCentimes-expectedBalanceCentimes};
 }
@@ -131,9 +139,11 @@ export function normalizeBankAccounts(value:unknown):BankAccount[]{
     const account=item as Partial<BankAccount>;
     const id=typeof account.id==='string'?account.id.trim():'';
     const name=typeof account.name==='string'?account.name.trim():'';
-    if(!id||!name||ids.has(id)||names.has(name.toLocaleLowerCase())||!Number.isSafeInteger(account.openingBalanceCentimes)||Number(account.openingBalanceCentimes)<0||typeof account.openingDate!=='string')return [];
+    const valid=!!id&&!!name&&!ids.has(id)&&!names.has(name.toLocaleLowerCase())&&Number.isSafeInteger(account.openingBalanceCentimes)&&Number(account.openingBalanceCentimes)>=0&&typeof account.openingDate==='string';
+    if(account.historicalJournal!==undefined&&(!valid||account.openingBalanceCentimes!==0||account.openingDate!==''||account.currency!=='MAD'))throw new Error(HISTORICAL_BANK_INVALID);
+    if(!valid)return [];
     ids.add(id);names.add(name.toLocaleLowerCase());
-    return [{id,name,openingBalanceCentimes:Number(account.openingBalanceCentimes),openingDate:account.openingDate}];
+    return [{id,name,openingBalanceCentimes:Number(account.openingBalanceCentimes),openingDate:account.openingDate!,...(account.historicalJournal===undefined?{}:{historicalJournal:validateHistoricalBankJournal(account.historicalJournal,id),currency:account.currency,bankName:account.bankName,accountNumberMasked:account.accountNumberMasked,isDefault:account.isDefault})}];
   });
 }
 
@@ -169,16 +179,45 @@ export function renameBankAccount(accounts:readonly BankAccount[],accountId:stri
 
 export function deleteBankAccount(accounts:readonly BankAccount[],transfers:readonly BankTransfer[],accountId:string,linkedPayments:readonly LinkedBankPayment[]=[]):BankAccount[]{
   if(!accounts.some(item=>item.id===accountId))throw new Error('اختار حساب بنكي موجود.');
-  if(transfers.some(item=>item.bankAccountId===accountId)||linkedPayments.some(item=>item.bankAccountId===accountId))throw new Error('ما يمكنش تحذف حساب مرتبط بحركات مالية محفوظة.');
+  if(accounts.some(item=>item.id===accountId&&item.historicalJournal!==undefined)||transfers.some(item=>item.bankAccountId===accountId)||linkedPayments.some(item=>item.bankAccountId===accountId))throw new Error('ما يمكنش تحذف حساب مرتبط بحركات مالية محفوظة.');
   return accounts.filter(item=>item.id!==accountId);
 }
 
 const bankMethod=(method:string)=>method==='تحويل'||method==='بطاقة'||method==='transfer'||method==='card';
+function toCentimes(amount:number):number{
+  const result=Math.round(amount*100);
+  return Number.isSafeInteger(result)&&result>0?result:0;
+}
+
+/** The same records drive the balance, reports and statement matching. */
+export function buildBankLedgerEntries(accounts:readonly BankAccount[],transfers:readonly BankTransfer[],customerPayments:readonly LinkedBankPayment[]=[],supplierPayments:readonly LinkedBankPayment[]=[],otherOutflows:readonly LinkedBankPayment[]=[]):BankLedgerEntry[]{
+  const byId=new Map(accounts.map(account=>[account.id,account]));
+  const covered=new Map(accounts.map(account=>[account.id,new Set(account.historicalJournal?.coveredSupplierIds)]));
+  const rows:BankLedgerEntry[]=[];
+  for(const account of accounts)for(const entry of account.historicalJournal?.entries??[]){
+    rows.push({id:'legacy-bank-'+account.id+':'+entry.id,bankAccountId:account.id,date:bankCalendarDate(entry.date)!,amountCentimes:historicalBankAmount(entry),description:entry.description});
+  }
+  const linked=(item:LinkedBankPayment,id:string,sign:number,description?:string)=>{
+    const amount=toCentimes(item.amount);
+    if(item.bankAccountId&&byId.has(item.bankAccountId)&&amount>0){
+      rows.push({id,bankAccountId:item.bankAccountId,date:bankCalendarDate(item.date)??item.date,amountCentimes:sign*amount,description});
+    }
+  };
+  for(const item of customerPayments)if(bankMethod(item.method))linked(item,'customer-payment-'+item.id,1,item.customerName);
+  for(const item of supplierPayments)if((item.method==='تحويل'||item.method==='transfer')&&!covered.get(item.bankAccountId??'')?.has(Number(item.id))){
+    linked(item,'supplier-payment-'+item.id,-1,item.supplierName);
+  }
+  for(const item of otherOutflows)if(bankMethod(item.method))linked(item,'bank-outflow-'+item.id+'-'+item.date,-1,item.supplierName);
+  for(const item of transfers)if(byId.has(item.bankAccountId))rows.push({
+    id:item.id,bankAccountId:item.bankAccountId,date:bankCalendarDate(item.date)??item.date,
+    amountCentimes:item.direction==='cash_to_bank'?item.amountCentimes:-item.amountCentimes,description:item.description,
+  });
+  return rows;
+}
+
 export function calculateBankBalance(account:BankAccount,transfers:readonly BankTransfer[],customerPayments:readonly LinkedBankPayment[]=[],supplierPayments:readonly LinkedBankPayment[]=[],otherOutflows:readonly LinkedBankPayment[]=[]):number{
-  const customerIn=customerPayments.filter(item=>item.bankAccountId===account.id&&bankMethod(item.method)).reduce((sum,item)=>sum+(Number.isFinite(item.amount)&&item.amount>0?Math.round(item.amount*100):0),0);
-  const supplierOut=supplierPayments.filter(item=>item.bankAccountId===account.id&&item.method==='تحويل').reduce((sum,item)=>sum+(Number.isFinite(item.amount)&&item.amount>0?Math.round(item.amount*100):0),0);
-  const otherOut=otherOutflows.filter(item=>item.bankAccountId===account.id&&bankMethod(item.method)).reduce((sum,item)=>sum+(Number.isFinite(item.amount)&&item.amount>0?Math.round(item.amount*100):0),0);
-  return account.openingBalanceCentimes+customerIn-supplierOut-otherOut+transfers.filter(item=>item.bankAccountId===account.id).reduce((sum,item)=>sum+(item.direction==='cash_to_bank'?item.amountCentimes:-item.amountCentimes),0);
+  return buildBankLedgerEntries([account],transfers,customerPayments,supplierPayments,otherOutflows)
+    .reduce((sum,item)=>sum+item.amountCentimes,account.openingBalanceCentimes);
 }
 
 export function recordBankTransfer(input:{id:string;bankAccountId:string;date:string;direction:BankTransfer['direction'];amount:number;description:string},accounts:readonly BankAccount[],transfers:readonly BankTransfer[],cashBalanceCentimes:number,customerPayments:readonly LinkedBankPayment[]=[],supplierPayments:readonly LinkedBankPayment[]=[],otherOutflows:readonly LinkedBankPayment[]=[]):BankTransfer{

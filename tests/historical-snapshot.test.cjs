@@ -96,3 +96,81 @@ test('old cash settlements update supplier debt once and keep the authoritative 
  assert.equal(calculateCashBalance(next,sources),9755);
  assert.equal(buildCashRegisterRows(next,sources).length,6);
 });
+
+function oldBank(){
+ const d=old();
+ d.bankAccounts=[{id:'cih',name:'CIH',currency:'MAD',bankName:'CIH Bank',isDefault:true},{id:'other',name:'Other',currency:'MAD'}];
+ const movement=(id,accountId,kind,amountCentimes,day,extra={})=>({
+   id,accountId,kind,amountCentimes,date:'2026-02-'+day+'T12:00:00Z',description:id,...extra,
+ });
+ d.purchases.push({...d.purchases[0],id:17,paidCentimes:225});
+ d.supplierPayments=[
+   {...d.supplierPayments[0],method:'تحويل',bankAccountId:'cih'},
+   {...d.supplierPayments[0],id:3,method:'تحويل',bankAccountId:'cih',amountCentimes:124,transactionId:'supplier-bulk-3'},
+   {...d.supplierPayments[0],id:4,purchaseId:17,method:'تحويل',bankAccountId:'cih',amountCentimes:225,transactionId:'supplier-bulk-3'},
+ ];
+ d.payments=[{id:12,method:'تحويل',date:'03/02/2026',amount:2,customerName:'Customer'}];
+ d.bankMovements=[
+   movement('opening','cih','opening',20000,'01'),
+   movement('customer-payment-bank-12','cih','customer_payment',200,'03'),
+   movement('supplier-payment-bank-2','cih','supplier_payment',125,'06'),
+   movement('supplier-bulk-bank-supplier-bulk-3','cih','supplier_payment',349,'06'),
+   movement('cash-bank-12-bank','cih','cash_transfer_in',500,'06',{sourceId:'cash-bank-12',transferId:'cash-bank-12'}),
+   movement('cross-out','cih','bank_transfer_out',1100,'06',{sourceId:'cross',transferId:'cross'}),
+   movement('cross-in','other','bank_transfer_in',1100,'06',{sourceId:'cross',transferId:'cross'}),
+   movement('reconcile-r1','cih','adjustment_in',74,'07',{sourceId:'r1'}),
+ ];
+ d.cashMovements=[
+   {id:'start-cash',kind:'opening',amountCentimes:1500,date:'2026-02-01T12:00:00Z',description:'Opening cash'},
+   {id:'cash-bank-12-cash',kind:'cash_out',amountCentimes:500,date:'2026-02-06T12:00:00Z',description:'Transfer',reference:'cash-bank-12'},
+ ];
+ d.bankReconciliations=[{id:'r1',accountId:'cih',date:'2026-02-07T12:00:00Z',bookBalanceCentimes:19126,statementBalanceCentimes:19200,differenceCentimes:74}];
+ return d;
+}
+test('historical bank transfers, bulk supplier payments and reconciliations post exactly once',()=>{
+ const {buildBankLedgerEntries,calculateBankBalance,deleteBankAccount,matchBankStatementLines,normalizeBankAccounts,reconcileBankStatement,recordBankTransfer}=require('../.test-build/domain/bank-accounts.js');
+ const {calculateCashBalance}=require('../.test-build/domain/cash-register.js');
+ const {filterByDateRange}=require('../.test-build/report-filters.js');
+ const original=oldBank(),migrated=adaptHistoricalSnapshot(original);
+ const [cih,other]=normalizeBankAccounts(JSON.parse(JSON.stringify(migrated.bankAccounts)));
+ assert.equal(cih.bankName,'CIH Bank');
+ assert.equal(cih.historicalJournal.reconciliations[0].differenceCentimes,74);
+ assert.deepEqual(cih.historicalJournal.coveredSupplierIds,[2,3,4]);
+ assert.equal(calculateBankBalance(cih,[],migrated.payments,migrated.supplierPayments),19200);
+ assert.equal(calculateBankBalance(other,[],migrated.payments,migrated.supplierPayments),1100);
+ assert.equal(calculateCashBalance(migrated.cashAccount,{payments:migrated.payments,supplierPayments:migrated.supplierPayments,purchases:migrated.purchases,expenses:[],refunds:[]}),1000);
+ assert.deepEqual(migrated.bankMovements,original.bankMovements);
+ assert.throws(()=>deleteBankAccount([cih,other],[],other.id),/محفوظة/);
+ const rows=buildBankLedgerEntries([cih,other],[],migrated.payments,migrated.supplierPayments);
+ assert.equal(rows.length,8);
+ assert.equal(filterByDateRange(rows,'06/02/2026','06/02/2026').length,5);
+ const lines=[{id:'s1',bankAccountId:'cih',date:'06/02/2026',amountCentimes:-349,description:'Supplier',reportedBalanceCentimes:19126}];
+ const matches=matchBankStatementLines(lines,rows);
+ assert.equal(matches[0].status,'matched');
+ assert.equal(reconcileBankStatement(cih,lines,rows,matches).differenceCentimes,0);
+ const historicalOutflows=[...migrated.supplierPayments,{id:55,method:'تحويل',bankAccountId:'cih',amount:5,date:'08/02/2026'}];
+ const newDeposit=recordBankTransfer({id:'new',bankAccountId:'cih',date:'08/02/2026',direction:'cash_to_bank',amount:1,description:'New'},[cih,other],[],1000);
+ assert.equal(calculateBankBalance(cih,[newDeposit],migrated.payments,historicalOutflows),18800);
+ assert.throws(()=>recordBankTransfer({...newDeposit,id:'too-much',direction:'bank_to_cash',amount:188.01},[cih,other],[newDeposit],1000,migrated.payments,historicalOutflows),/المتوفر/);
+});
+test('bank migration refuses broken pairs, modified supplier totals or invalid archived state',()=>{
+ for(const change of [
+   d=>{d.bankMovements[0].accountId='missing';},
+   d=>{d.bankMovements[0].amountCentimes=1;},
+   d=>{d.bankMovements[3].amountCentimes++;},
+   d=>{d.bankMovements[4].amountCentimes++;},
+   d=>{d.bankMovements.splice(4,1);},
+   d=>{d.bankMovements.splice(6,1);},
+   d=>{d.bankReconciliations[0].differenceCentimes=73;},
+   d=>{d.bankAccounts[0].currency='EUR';},
+ ]){
+  const d=oldBank();change(d);
+  const original=JSON.stringify(d);
+  assert.throws(()=>adaptHistoricalSnapshot(d));
+  assert.equal(JSON.stringify(d),original);
+ }
+ const migrated=adaptHistoricalSnapshot(oldBank());
+ assert.equal(adaptHistoricalSnapshot(migrated),migrated);
+ migrated.bankAccounts[0].historicalJournal.entries[0].kind='unknown';
+ assert.throws(()=>adaptHistoricalSnapshot(migrated));
+});

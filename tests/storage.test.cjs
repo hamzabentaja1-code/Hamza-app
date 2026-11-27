@@ -177,3 +177,28 @@ test('original chunked cash history and modern export reopen with the same centi
   const restored=await fresh.api.restoreBackup(exported);
   assert.equal(restored.cashAccount.historicalJournal.entries[0].amountCentimes,1000);
 });
+
+test('old bank journal survives a native snapshot round trip and a portable restore',async()=>{
+  const original={
+    products:[],inventoryMovements:[],
+    bankAccounts:[{id:'primary',name:'CIH',currency:'MAD'}],
+    bankMovements:[
+      {id:'initial',accountId:'primary',kind:'opening',amountCentimes:1000,description:'Ouverture',date:'2026-02-01T00:00:00Z'},
+      {id:'withdraw',accountId:'primary',kind:'withdrawal',amountCentimes:123,description:'Retrait',date:'2026-02-02T00:00:00Z'},
+    ],
+  };
+  const f=fixture(oldChunks(original));
+  const d=await read(f.api);
+  const state={products:[],stockMovements:d.stockMovements,bankAccounts:d.bankAccounts};
+  await f.api.writeAppData(state);
+  const reopened=await read(f.restart());
+  assert.equal(JSON.stringify(reopened.bankAccounts[0].historicalJournal.entries),JSON.stringify(original.bankMovements));
+  const exported=await f.api.createBackup(state);
+  const fresh=fixture();
+  await fresh.api.restoreBackup(exported);
+  assert.equal(JSON.stringify((await read(fresh.restart())).bankAccounts),JSON.stringify(reopened.bankAccounts));
+  const altered=JSON.parse(exported);
+  altered.data.bankAccounts[0].openingBalanceCentimes=1;
+  await assert.rejects(fresh.api.restoreBackup(JSON.stringify(altered)));
+  assert.equal(JSON.stringify((await read(fresh.restart())).bankAccounts),JSON.stringify(reopened.bankAccounts));
+});
