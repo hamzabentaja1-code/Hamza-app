@@ -71,3 +71,19 @@ test('customer orders stay off stock and can only be fulfilled with a linked del
   assert.throws(()=>changeTrackedSalesDocumentStatus(ready,'مسلم',false));
   assert.equal(changeTrackedSalesDocumentStatus(ready,'مسلم',true).status,'مسلم');
 });
+
+test('quote discount and recorded line amounts survive all conversions without altering totals',()=>{
+  const quote={id:192,productName:'Cable, Plug',customerName:'Client',qty:3.5,unitPrice:0,total:61.88,discountCentimes:500,
+    lines:[{productId:7,productName:'Cable',qty:2.5,unitPrice:18.75,total:46.88},{productId:8,productName:'Plug',qty:1,unitPrice:20,total:20}]};
+  const products=[{id:7,qty:10},{id:8,qty:5}];
+  for(const kind of ['invoice','delivery','proforma','customer_order']){
+    const {document}=convertQuote(quote,kind,[],products,77,'28/11/2026');
+    assert.equal(document.total,61.88);
+    assert.equal(document.discountCentimes,500);
+    assert.deepEqual(document.lines,quote.lines);
+  }
+  const {discountCentimes,...legacy}=quote;
+  const {document}=convertQuote(legacy,'invoice',[],products,78,'28/11/2026');
+  assert.equal(document.total,61.88);
+  assert.equal(Object.hasOwn(document,'discountCentimes'),false);
+});

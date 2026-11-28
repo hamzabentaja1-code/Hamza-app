@@ -202,3 +202,19 @@ test('old bank journal survives a native snapshot round trip and a portable rest
   await assert.rejects(fresh.api.restoreBackup(JSON.stringify(altered)));
   assert.equal(JSON.stringify((await read(fresh.restart())).bankAccounts),JSON.stringify(reopened.bankAccounts));
 });
+
+test('snapshot and exported backup preserve explicit discount on new records and absence on older ones',async()=>{
+  const f=fixture();
+  const quotes=[{id:1,total:61.88,discountCentimes:500},{id:2,total:61.88}];
+  const documents=[{id:3,total:61.88,discountCentimes:500}];
+  await f.api.writeAppData({quotes,documents,products:[]});
+  const reopened=await read(f.restart());
+  const backup=await f.api.createBackup({quotes,documents,products:[]});
+  const restored=await fixture().api.restoreBackup(backup);
+  for(const data of [reopened,restored]){
+    assert.equal(data.quotes[0].discountCentimes,500);
+    assert.equal(data.quotes[0].total,61.88);
+    assert.equal(Object.hasOwn(data.quotes[1],'discountCentimes'),false);
+    assert.equal(data.documents[0].discountCentimes,500);
+  }
+});

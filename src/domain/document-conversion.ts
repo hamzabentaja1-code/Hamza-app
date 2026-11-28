@@ -12,6 +12,7 @@ export type QuoteForConversion = {
   qty:number;
   unitPrice:number;
   total:number;
+  discountCentimes?:number;
   validUntil?:string;
   notes?:string;
   lines?:ConversionLine[];
@@ -24,6 +25,7 @@ export type ConvertedDocument = {
   type:DocumentKind;
   customerName:string;
   total:number;
+  discountCentimes?:number;
   date:string;
   status:string;
   sourceQuoteId:number;
@@ -87,6 +89,7 @@ export function convertQuote(
     type,
     customerName:quote.customerName,
     total:quote.total,
+    ...(quote.discountCentimes!==undefined?{discountCentimes:quote.discountCentimes}:{}),
     date,
     status:type==='customer_order'?'مؤكد':'صادرة',
     sourceQuoteId:quote.id,

@@ -1,5 +1,5 @@
 import {CompanyProfile,PdfDocumentKind,resolvePdfDocumentTemplate} from './company-profile';
-import {AppLanguage} from './i18n';
+import {AppLanguage,translate} from './i18n';
 
 export type PdfDocumentInput={
   language:AppLanguage;
@@ -30,6 +30,16 @@ export function formatPdfAmount(amount:number,language:AppLanguage):string{
 }
 export function formatPdfProductLine(line:{productName:string;qty:number;unitPrice:number;total:number},language:AppLanguage):string{
   return `${line.productName} • ${line.qty} × ${formatPdfAmount(line.unitPrice,language)} DH = ${formatPdfAmount(line.total,language)} DH`;
+}
+
+/** A legacy document does not get an invented discount or a changed total. */
+export function formatPdfDiscountLines(total:number,discountCentimes:number|undefined,language:AppLanguage):string[]{
+  const totalCentimes=Math.round(total*100);
+  if(discountCentimes===undefined||!Number.isSafeInteger(discountCentimes)||discountCentimes<=0||
+     !Number.isSafeInteger(totalCentimes)||totalCentimes<0||!Number.isSafeInteger(totalCentimes+discountCentimes))return [];
+  const subtotal=formatPdfAmount((totalCentimes+discountCentimes)/100,language);
+  const discount=formatPdfAmount(discountCentimes/100,language);
+  return [translate(language,'المجموع قبل التخفيض:')+' '+subtotal+' DH',translate(language,'التخفيض:')+' '+discount+' DH'];
 }
 
 export function buildPdfDocumentHtml(input:PdfDocumentInput):string{

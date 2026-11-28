@@ -1,7 +1,7 @@
-import {formatPdfProductLine} from './pdf-document';
-import React, {useMemo, useState} from 'react';
+import {formatPdfDiscountLines,formatPdfProductLine} from './pdf-document';
+import React, {useMemo, useRef, useState} from 'react';
 import {Alert, Pressable, ScrollView, Text, TextInput, View} from 'react-native';
-import {calculateQuote} from './domain/quote-calculator';
+import {calculateQuoteDraft,parseQuoteDecimal,type QuoteLineDraft} from './domain/quote-calculator';
 import {isValidIsoDate} from './domain/document-conversion';
 import {translate, getLayoutDirection} from './i18n';
 import {resolveDocumentProductPrice} from './domain/product-pricing';
@@ -12,7 +12,7 @@ export type QuoteLine = {productId:number; productName:string; qty:number; unitP
 export type QuoteRecord = {
   id:number; number?:string; productName:string; customerName:string; qty:number;
   unitPrice:number; total:number; date:string; status:string;
-  lines?:QuoteLine[]; notes?:string; validUntil?:string;
+  discountCentimes?:number; lines?:QuoteLine[]; notes?:string; validUntil?:string;
 };
 export type QuoteConversionType = 'invoice' | 'delivery' | 'proforma' | 'customer_order';
 type Props = {
@@ -45,7 +45,8 @@ export default function QuoteWorkspace({language,products,customers,quotes,custo
   const [customPrice,setCustomPrice]=useState('');
   const [quantity,setQuantity]=useState('1');
   const [discount,setDiscount]=useState('0');
-  const [lines,setLines]=useState<QuoteLine[]>([]);
+  const nextLineId=useRef(0);
+  const [lines,setLines]=useState<Array<QuoteLineDraft&{key:number}>>([]);
   const [notes,setNotes]=useState('');
   const [validUntil,setValidUntil]=useState('');
   const [applyCustomerCredit,setApplyCustomerCredit]=useState(true);
@@ -56,33 +57,20 @@ export default function QuoteWorkspace({language,products,customers,quotes,custo
   const filteredProducts=products.filter(p=>p.name.toLocaleLowerCase().includes(productSearch.trim().toLocaleLowerCase()));
 
   const calculation=useMemo(()=>{
-    if(!lines.length) return null;
-    try {
-      const discountValue=Number(discount.replace(',','.'));
-      if(!Number.isFinite(discountValue)||discountValue<0) return null;
-      return calculateQuote(lines.map(line=>({
-        productId:String(line.productId),
-        description:line.productName,
-        quantity:line.qty,
-        unitPriceCentimes:Math.round(line.unitPrice*100),
-      })),Math.round(Math.max(0,Number(discount.replace(',','.'))||0)*100));
-    } catch { return null; }
+    if(!lines.length)return null;
+    try{return calculateQuoteDraft(lines,discount);}
+    catch{return null;}
   },[lines,discount]);
 
-  const updateLine=(index:number, patch:Partial<Pick<QuoteLine,'qty'|'unitPrice'>>)=>{
-    setLines(current=>current.map((line,i)=>{
-      if(i!==index) return line;
-      const next={...line,...patch};
-      return {...next,total:next.qty*next.unitPrice};
-    }));
-  };
+  const updateLine=(key:number,patch:Partial<Pick<QuoteLineDraft,'qtyText'|'priceText'>>)=>
+    setLines(current=>current.map(line=>line.key===key?{...line,...patch}:line));
   const addLine=()=>{
-    const qty=Number(quantity.replace(',','.'));
     if(!selectedProduct){Alert.alert(tr('اختار المنتج'),tr('حدد المنتج اللي بغيتي تزيد.'));return;}
-    if(!Number.isFinite(qty)||qty<=0){Alert.alert(tr('كمية غير صحيحة'),tr('دخل كمية أكبر من صفر.'));return;}
-    const unitPrice=customPrice.trim()?Number(customPrice.replace(',','.')):resolveDocumentProductPrice(selectedProduct,initialMode);
-    if(!Number.isFinite(unitPrice)||unitPrice<0){Alert.alert(tr('ثمن غير صحيح'),tr('دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.'));return;}
-    const line:QuoteLine={productId:selectedProduct.id,productName:selectedProduct.name,qty,unitPrice,total:qty*unitPrice};
+    const qty=parseQuoteDecimal(quantity,3);
+    if(qty===undefined||qty<=0){Alert.alert(tr('كمية غير صحيحة'),tr('دخل كمية أكبر من صفر.'));return;}
+    const priceText=customPrice.trim()?customPrice:resolveDocumentProductPrice(selectedProduct,initialMode).toFixed(2);
+    if(parseQuoteDecimal(priceText,2)===undefined){Alert.alert(tr('ثمن غير صحيح'),tr('دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.'));return;}
+    const line={key:nextLineId.current++,productId:selectedProduct.id,productName:selectedProduct.name,qtyText:quantity,priceText};
     setLines(current=>[...current,line]);
     setProductId('');
     setProductSearch('');
@@ -91,18 +79,18 @@ export default function QuoteWorkspace({language,products,customers,quotes,custo
   };
   const save=()=>{
     if(!selectedCustomer){Alert.alert(tr('اختار الزبون'),tr('خاصك تحدد الزبون قبل الحفظ.'));return;}
-    if(!calculation){Alert.alert(tr('راجع العرض'),tr('زيد منتج واحد على الأقل وتأكد من التخفيض.'));return;}
+    if(!calculation){Alert.alert(tr('راجع العرض'),tr('زيد منتج واحد على الأقل وتأكد من الكميات والأثمنة والتخفيض.'));return;}
     const validity=validUntil.trim();
     if(initialMode==='quote'&&validity&&!isValidIsoDate(validity)){Alert.alert(tr('تاريخ غير صالح'),tr('دخل تاريخاً صحيحاً بصيغة YYYY-MM-DD.'));return;}
     const now=Date.now();
     const record:QuoteRecord={
       id:now,productName:lines.map(x=>x.productName).join(', '),
-      customerName:selectedCustomer.name,qty:lines.reduce((n,x)=>n+x.qty,0),
-      unitPrice:0,total:calculation.totalCentimes/100,
+      customerName:selectedCustomer.name,qty:calculation.lines.reduce((n,x)=>n+Math.round(x.quantity*1000),0)/1000,
+      unitPrice:0,total:calculation.totalCentimes/100,discountCentimes:calculation.discountCentimes,
       date:new Date().toLocaleDateString('fr-MA'),status:'معلق',
       notes:notes.trim(),
       validUntil:initialMode==='quote'&&validity?validity:undefined,
-      lines:lines.map((line,index)=>({...line,total:calculation.lines[index].lineTotalCentimes/100})),
+      lines:calculation.lines.map((line,index)=>({productId:lines[index].productId,productName:line.description,qty:line.quantity,unitPrice:line.unitPriceCentimes/100,total:line.lineTotalCentimes/100})),
     };
     if(initialMode==='invoice') { if(!onConvert(record,'invoice',true,applyCustomerCredit)) return; } else onSave(record);
     setLines([]);setDiscount('0');setNotes('');setValidUntil('');
@@ -130,17 +118,20 @@ export default function QuoteWorkspace({language,products,customers,quotes,custo
         <Pressable onPress={addLine} style={[button,{flex:1,marginTop:0}]}><Text style={{color:'#151515',fontWeight:'900'}}>{tr('+ إضافة للسطر')}</Text></Pressable>
       </View>
       <Text style={{color:gold,fontWeight:'800',marginVertical:8}}>{tr('المنتجات المضافة')} ({lines.length})</Text>
-      {lines.map((line,index)=><View key={index} style={{flexDirection:'row',alignItems:'center',gap:8,borderBottomWidth:1,borderColor:'#333',paddingVertical:9}}>
+      {lines.map(line=>{
+        let preview:number|undefined;
+        try{preview=calculateQuoteDraft([line],'').totalCentimes;}catch{}
+        return <View key={line.key} style={{flexDirection:'row',alignItems:'center',gap:8,borderBottomWidth:1,borderColor:'#333',paddingVertical:9}}>
         <View style={{flex:1}}>
           <Text style={{color:'#FFF',fontWeight:'700'}}>{line.productName}</Text>
           <View style={{flexDirection:'row',gap:6,marginTop:6}}>
-            <TextInput value={String(line.qty)} onChangeText={v=>updateLine(index,{qty:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder={tr("الكمية")} placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
-            <TextInput value={String(line.unitPrice)} onChangeText={v=>updateLine(index,{unitPrice:v.trim()===''?0:Number(v.replace(',','.'))})} keyboardType="decimal-pad" placeholder={tr("الثمن")} placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
+            <TextInput value={line.qtyText} onChangeText={qtyText=>updateLine(line.key,{qtyText})} keyboardType="decimal-pad" placeholder={tr("الكمية")} placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
+            <TextInput value={line.priceText} onChangeText={priceText=>updateLine(line.key,{priceText})} keyboardType="decimal-pad" placeholder={tr("الثمن")} placeholderTextColor="#888" style={[input,{flex:1,marginBottom:0,padding:7}]}/>
           </View>
         </View>
-        <Text style={{color:gold,fontWeight:'800'}}>{Number.isFinite(line.total)?line.total.toFixed(2):'—'} DH</Text>
-        <Pressable onPress={()=>setLines(v=>v.filter((_,i)=>i!==index))}><Text style={{color:'#E28A78'}}>{tr('حذف')}</Text></Pressable>
-      </View>)}
+        <Text style={{color:gold,fontWeight:'800'}}>{preview===undefined?'—':money(preview)}</Text>
+        <Pressable onPress={()=>setLines(v=>v.filter(row=>row.key!==line.key))}><Text style={{color:'#E28A78'}}>{tr('حذف')}</Text></Pressable>
+      </View>;})}
       <TextInput value={discount} onChangeText={setDiscount} keyboardType="decimal-pad" placeholder={tr('تخفيض إجمالي (DH)')} placeholderTextColor="#888" style={[input,{marginTop:12}]}/>
       <TextInput value={notes} onChangeText={setNotes} placeholder={tr('ملاحظات (اختياري)')} placeholderTextColor="#888" style={input}/>
       {initialMode==='quote'&&<TextInput value={validUntil} onChangeText={setValidUntil} placeholder={tr('تاريخ صلاحية العرض (اختياري) YYYY-MM-DD')} placeholderTextColor="#888" style={input}/>}
@@ -157,10 +148,10 @@ export default function QuoteWorkspace({language,products,customers,quotes,custo
       <Text style={{color:gold,fontSize:12,fontWeight:'800',marginTop:3}}>{q.number||`DEV-${q.id}`}</Text>
       <Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{q.date} • {tr(q.status)}</Text>
       {q.validUntil&&<Text style={{color:'#AAA',fontSize:12,marginTop:4}}>{tr('صالحة إلى غاية:')} {q.validUntil}</Text>}
-      {quoteLines(q).map((line,i)=><Text key={i} style={{color:'#DDD',marginTop:5}}>{line}</Text>)}
+      {[...quoteLines(q),...formatPdfDiscountLines(q.total,q.discountCentimes,language)].map((line,i)=><Text key={i} style={{color:'#DDD',marginTop:5}}>{line}</Text>)}
       <Text style={{color:gold,fontWeight:'900',fontSize:16,marginTop:8}}>{q.total.toFixed(2)} DH</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:8}}>
-        <Pressable onPress={()=>onPdf('quote',tr('عرض السعر')+' '+(q.number||`DEV-${q.id}`),q.customerName,[...(q.lines?.length?q.lines:[q]).map(line=>formatPdfProductLine(line,language)),...(q.notes?[q.notes]:[]),...(q.validUntil?[tr('صالحة إلى غاية:')+' '+q.validUntil]:[])],q.total,q.date,q.lines?.map(line=>line.productId))} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
+        <Pressable onPress={()=>onPdf('quote',tr('عرض السعر')+' '+(q.number||`DEV-${q.id}`),q.customerName,[...(q.lines?.length?q.lines:[q]).map(line=>formatPdfProductLine(line,language)),...formatPdfDiscountLines(q.total,q.discountCentimes,language),...(q.notes?[q.notes]:[]),...(q.validUntil?[tr('صالحة إلى غاية:')+' '+q.validUntil]:[])],q.total,q.date,q.lines?.map(line=>line.productId))} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>PDF</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'customer_order')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('طلب زبون')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'proforma')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('فاتورة أولية')}</Text></Pressable>
         <Pressable onPress={()=>onConvert(q,'delivery')} style={{padding:9,borderWidth:1,borderColor:gold,borderRadius:8}}><Text style={{color:gold,fontWeight:'800'}}>{tr('سند خروج')}</Text></Pressable>

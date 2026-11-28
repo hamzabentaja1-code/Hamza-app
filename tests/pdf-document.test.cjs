@@ -162,3 +162,18 @@ test('six-item bon de sortie keeps TTC, product details and stock in both photo 
   }
   assert.equal(formatPdfAmount(-12345.678,'FR'),'-12\u202f345,68');
 });
+
+test('Arabic and French discounted quote and invoice PDF variants explain the final total',()=>{
+  const {formatPdfDiscountLines}=require('../.test-build/pdf-document.js');
+  for(const language of ['FR','AR'])for(const documentKind of ['quote','invoice'])for(const includeImages of [false,true]){
+    const products=[{productName:'Cable',qty:2.5,unitPrice:18.75,total:46.88},{productName:'Plug',qty:1,unitPrice:20,total:20}];
+    const lines=[...products.map(row=>formatPdfProductLine(row,language)),...formatPdfDiscountLines(61.88,500,language)];
+    const imageRows=lines.map((text,index)=>({text,...(index===0?{imageData:'data:image/png;base64,AA=='}:{})}));
+    const html=buildPdfDocumentHtml(input({language,documentKind,lines,imageRows,includeImages,total:61.88}));
+    assert.match(html,language==='FR'?/Sous-total avant remise : 66,88 DH/:/المجموع قبل التخفيض: 66\.88 DH/);
+    assert.match(html,language==='FR'?/Remise : 5,00 DH/:/التخفيض: 5\.00 DH/);
+    assert.match(html,language==='FR'?/Total: 61,88 DH/:/المجموع: 61\.88 DH/);
+    assert.equal(html.includes('data:image/png;base64'),includeImages);
+  }
+  for(const value of [undefined,0,-500,NaN,5.5])assert.deepEqual(formatPdfDiscountLines(61.88,value,'FR'),[]);
+});

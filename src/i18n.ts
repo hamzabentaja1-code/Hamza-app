@@ -755,6 +755,7 @@ const fr: Record<string, string> = {
   "دخل ثمن بيع صحيح أو خليه بالثمن الأصلي.": "Saisissez un prix valide ou conservez le prix initial.",
   "خاصك تحدد الزبون قبل الحفظ.": "Vous devez sélectionner un client avant l’enregistrement.",
   "راجع العرض": "Vérifier le devis",
+  "زيد منتج واحد على الأقل وتأكد من الكميات والأثمنة والتخفيض.": "Ajoutez au moins un produit et vérifiez les quantités, les prix et la remise.",
   "زيد منتج واحد على الأقل وتأكد من التخفيض.": "Ajoutez au moins un produit et vérifiez la remise.",
   "تم حفظ عرض السعر": "Devis enregistré",
   "تقدر دابا تصدره PDF.": "Vous pouvez maintenant l’exporter en PDF.",

@@ -77,3 +77,30 @@ test('delivery conversion refuses insufficient stock', () => {
   };
   assert.throws(() => convertQuote(quote,'delivery',[],[{id:7,qty:2}],102,'04/11/2026'),/Insufficient stock/);
 });
+
+const {parseQuoteDecimal,calculateQuoteDraft}=require('../.test-build/domain/quote-calculator.js');
+test('decimal drafts accept French, Arabic and Persian keystrokes without mutating their strings',()=>{
+  for(const [priceText,qtyText,discountText] of [['18,75','2,5','5'],['١٨٫٧٥','٢٫٥','٥'],['۱۸٫۷۵','۲٫۵','۵']]){
+    const lines=[{productId:7,productName:'Cable',priceText,qtyText},{productId:8,productName:'Plug',priceText:'20',qtyText:'1'}];
+    const draft=JSON.stringify(lines);
+    const calculated=calculateQuoteDraft(lines,discountText);
+    assert.equal(JSON.stringify(lines),draft);
+    assert.deepEqual(calculated.lines.map(row=>row.lineTotalCentimes),[4688,2000]);
+    assert.equal(calculated.subtotalCentimes,6688);
+    assert.equal(calculated.discountCentimes,500);
+    assert.equal(calculated.totalCentimes,6188);
+  }
+  for(const v of ['18,','18.','١٨٫','','١٨٫٧٥٦','1e2','12 34','1,2.3','-2']){
+    assert.equal(parseQuoteDecimal(v,2),undefined);
+  }
+  assert.equal(parseQuoteDecimal(',75',2),75);
+  assert.equal(parseQuoteDecimal('٠٫٠٠١',3),1);
+  assert.throws(()=>calculateQuoteDraft([{productId:1,productName:'Cable',priceText:'18,',qtyText:'2,5'}],'0'));
+  assert.throws(()=>calculateQuoteDraft([{productId:1,productName:'Cable',priceText:'18,75',qtyText:'2,5'}],'5,'));
+});
+
+test('quote multiplication rejects overflow and uses exact integer rounding',()=>{
+  assert.equal(calculateQuote([{description:'A',quantity:2.5,unitPriceCentimes:1875}]).totalCentimes,4688);
+  assert.equal(calculateQuote([{description:'A',quantity:999999999.001,unitPriceCentimes:2999}]).totalCentimes,2998999997004);
+  assert.throws(()=>calculateQuote([{description:'A',quantity:999999999,unitPriceCentimes:99999999999}]),/Line total/);
+});
