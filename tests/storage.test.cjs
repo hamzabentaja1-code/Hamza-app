@@ -218,3 +218,23 @@ test('snapshot and exported backup preserve explicit discount on new records and
     assert.equal(data.documents[0].discountCentimes,500);
   }
 });
+
+test('a supported 40 MiB snapshot plus six 4.5 MiB files fits a portable backup over 64 MiB',async()=>{
+  const f=fixture();
+  const legacyRecord='x'.repeat(40*1024*1024);
+  const binary=Buffer.alloc(4.5*1024*1024,19).toString('base64');
+  const taskAttachmentFiles=Array.from({length:6},(_,i)=>({id:'fixture-'+i,base64:binary}));
+  const data={products:[{id:1,name:'Fixture'}],customerArchive:legacyRecord,taskAttachmentFiles};
+  const json=await f.api.createBackup(data);
+  assert.ok(Buffer.byteLength(json)>f.api.MAX_SNAPSHOT_BYTES);
+  assert.ok(Buffer.byteLength(json)<f.api.MAX_BACKUP_BYTES);
+  const decoded=f.api.decodeHamzaBackup(json);
+  assert.equal(decoded.taskAttachmentFiles.length,6);
+  assert.equal(decoded.taskAttachmentFiles[5].base64,binary);
+  assert.equal(decoded.customerArchive.length,legacyRecord.length);
+  // Embedded files must be staged separately before committing the live snapshot.
+  await assert.rejects(f.api.restoreAppData(decoded),/تجاوز الحد/);
+  const {taskAttachmentFiles:_,...records}=decoded;
+  await f.api.restoreAppData(records);
+  assert.equal((await read(f.restart())).customerArchive.length,legacyRecord.length);
+});

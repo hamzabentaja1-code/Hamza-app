@@ -129,3 +129,31 @@ test('restores valid task attachment metadata and drops invalid or duplicate att
   const legacy=normalizeProjects([{id:2,name:'Legacy',customerName:'',budget:0,status:'مخطط',tasks:[{id:1,title:'Old task',done:false}]}]);
   assert.equal(Object.hasOwn(legacy[0].tasks[0],'attachments'),false);
 });
+
+test('shared task attachment budget accepts the existing 27 MiB case, blocks excess and preserves original rows during records-only recovery',()=>{
+  const {assertTaskAttachmentBudget,taskAttachmentSize,projectRecordsWithoutTaskFiles}=require('../.test-build/projects.js');
+  const size=4.5*1024*1024;
+  const attachments=Array.from({length:6},(_,i)=>({id:'file-'+i,name:'File '+i,uri:'file:///files/'+i,size}));
+  const tasks=[{id:1,title:'Fixture',done:false,attachments},{id:2,title:'Keep me',done:true}];
+  const projects=[{id:1,name:'Project',tasks,timeEntries:[]}];
+  const total=taskAttachmentSize(projects);
+  assert.equal(total,27*1024*1024);
+  assert.doesNotThrow(()=>assertTaskAttachmentBudget(total));
+  assert.doesNotThrow(()=>assertTaskAttachmentBudget(total+5*1024*1024));
+  assert.throws(()=>assertTaskAttachmentBudget(total+5*1024*1024+1),/32/);
+  const records=projectRecordsWithoutTaskFiles(projects);
+  assert.equal(Object.hasOwn(records[0].tasks[0],'attachments'),false);
+  assert.equal(records[0].tasks[1].title,'Keep me');
+  assert.deepEqual(projects[0].tasks[0].attachments,attachments);
+});
+
+test('base64 size check handles padding and refuses malformed or oversize file entries',()=>{
+  const {MAX_TASK_ATTACHMENT_BYTES,taskAttachmentBase64Bytes}=require('../.test-build/projects.js');
+  assert.equal(taskAttachmentBase64Bytes('YQ=='),1);
+  assert.equal(taskAttachmentBase64Bytes('YWI='),2);
+  assert.equal(taskAttachmentBase64Bytes('YWJj'),3);
+  for(const text of ['','','YWI','Y=I=','AA+!','===='])assert.equal(taskAttachmentBase64Bytes(text),undefined);
+  const max=Buffer.alloc(MAX_TASK_ATTACHMENT_BYTES).toString('base64');
+  assert.equal(taskAttachmentBase64Bytes(max),MAX_TASK_ATTACHMENT_BYTES);
+  assert.equal(taskAttachmentBase64Bytes(max.replace(/=+$/,'A')),undefined);
+});

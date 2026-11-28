@@ -17,6 +17,36 @@ export type ProjectExpense={id:number;projectId?:number;amount:number};
 export const MAX_TASK_ATTACHMENT_BYTES=5*1024*1024;
 export const MAX_TASK_ATTACHMENTS=10;
 
+export const MAX_PORTABLE_TASK_ATTACHMENT_BYTES=32*1024*1024;
+export const TASK_ATTACHMENT_BUDGET_ERROR='المجموع ديال مرفقات المهام تجاوز 32 ميغابايت.';
+export const taskAttachmentSize=(projects:readonly ProjectRecord[])=>projects.reduce((total,project)=>
+  total+project.tasks.reduce((sum,task)=>sum+(task.attachments||[]).reduce((bytes,file)=>bytes+file.size,0),0),0);
+
+export function assertTaskAttachmentBudget(total:number):void{
+  if(!Number.isSafeInteger(total)||total<0||total>MAX_PORTABLE_TASK_ATTACHMENT_BYTES)throw new Error(TASK_ATTACHMENT_BUDGET_ERROR);
+}
+
+/** Explicitly exclude task files without mutating the live records or their files. */
+export function projectRecordsWithoutTaskFiles(projects:readonly ProjectRecord[]):ProjectRecord[]{
+  return projects.map(project=>({...project,tasks:project.tasks.map(task=>{
+    const {attachments:_,...record}=task;
+    return record;
+  })}));
+}
+
+export function taskAttachmentBase64Bytes(body:string):number|undefined{
+  if(!body.length||body.length%4!==0||body.length>4*Math.ceil(MAX_TASK_ATTACHMENT_BYTES/3))return;
+  const pad=body.endsWith('==')?2:body.endsWith('=')?1:0;
+  // Validate without copying a multi-megabyte payload.
+  const end=body.length-pad;
+  for(let i=0;i<end;i++){
+    const c=body.charCodeAt(i);
+    if(!(c>=65&&c<=90||c>=97&&c<=122||c>=48&&c<=57||c===43||c===47))return;
+  }
+  const size=body.length/4*3-pad;
+  return size>0&&size<=MAX_TASK_ATTACHMENT_BYTES?size:undefined;
+}
+
 function isValidIsoDate(value:string):boolean {
   if(!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed=new Date(value+'T00:00:00.000Z');

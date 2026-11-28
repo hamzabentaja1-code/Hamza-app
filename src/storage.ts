@@ -5,7 +5,9 @@ import {adaptHistoricalSnapshot} from './domain/historical-snapshot';
 export const HAMZA_STORAGE_KEY = 'hamza_app_data_v03';
 export const HAMZA_SNAPSHOT_KEY = 'hamza_app_snapshot_v2';
 export const HAMZA_SCHEMA_VERSION = 1;
-export const MAX_BACKUP_BYTES = 64 * 1024 * 1024;
+export const MAX_SNAPSHOT_BYTES = 64 * 1024 * 1024;
+// Portable envelopes also contain base64 attachments. Live snapshots keep the original 64 MiB gate.
+export const MAX_BACKUP_BYTES = 108 * 1024 * 1024;
 const LEGACY_CHUNK_CHARS = 180_000;
 const LEGACY_MAX_CHARS = 2_000_000;
 const invalidData = 'ملف البيانات المحلي تالف ولا يمكن قراءته.';
@@ -87,7 +89,7 @@ async function readLegacy(root:string):Promise<Record<string,unknown>>{
 type FilePointer = {format:'file-v2';slot:Slot;size:number;checksum:string};
 function filePointer(raw:string):FilePointer {
   const value:unknown=JSON.parse(raw);
-  if(!record(value)||value.format!=='file-v2'||!slotValid(value.slot)||!bounded(value.size,MAX_BACKUP_BYTES)||!checksumValid(value.checksum))throw new Error(invalidData);
+  if(!record(value)||value.format!=='file-v2'||!slotValid(value.slot)||!bounded(value.size,MAX_SNAPSHOT_BYTES)||!checksumValid(value.checksum))throw new Error(invalidData);
   return {format:'file-v2',slot:value.slot,size:value.size,checksum:value.checksum};
 }
 function snapshotUri(slot:Slot):string{
@@ -148,7 +150,7 @@ async function persist(data:Record<string,unknown>,restoring:boolean):Promise<vo
   assertBusinessShape(merged,invalidData,true);
   const snapshot=JSON.stringify(merged);
   const size=utf8Bytes(snapshot);
-  if(size>MAX_BACKUP_BYTES)throw new Error(oversized);
+  if(size>MAX_SNAPSHOT_BYTES)throw new Error(oversized);
   const current=await AsyncStorage.getItem(HAMZA_SNAPSHOT_KEY);
   let active:Slot|undefined;
   if(current!==null){
@@ -170,7 +172,7 @@ export function writeAppData(data:Record<string,unknown>):Promise<void>{
 }
 
 function encodeBackup(data:Record<string,unknown>):string{
-  const json=JSON.stringify({schemaVersion:HAMZA_SCHEMA_VERSION,exportedAt:new Date().toISOString(),app:'HamZa',data},null,2);
+  const json=JSON.stringify({schemaVersion:HAMZA_SCHEMA_VERSION,exportedAt:new Date().toISOString(),app:'HamZa',data});
   if(utf8Bytes(json)>MAX_BACKUP_BYTES)throw new Error(oversized);
   return json;
 }
