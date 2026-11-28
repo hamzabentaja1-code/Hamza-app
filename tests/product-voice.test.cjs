@@ -52,3 +52,31 @@ test('number dictation accepts decimal and Arabic digits but rejects ambiguous s
   assert.equal(productVoiceValue('name','  كاميرا  '),'كاميرا');
   assert.equal(productVoiceValue('search',' '),undefined);
 });
+
+test('POS voice produces a bounded search string, without interpreting it as quantity or price',()=>{
+  const {productVoiceTargetMatchesScreen}=require('../.test-build/domain/product-voice.js');
+  assert.equal(productVoiceValue('pos-search','  caméra 5  '),'caméra 5');
+  assert.equal(productVoiceValue('pos-search',' كاميرا  '),'كاميرا');
+  assert.equal(productVoiceValue('pos-search',' '.repeat(20)),undefined);
+  assert.equal(productVoiceValue('pos-search','a'.repeat(241)).length,240);
+  assert.equal(productVoiceTargetMatchesScreen('pos-search','نقطة البيع'),true);
+  assert.equal(productVoiceTargetMatchesScreen('pos-search','المنتجات'),false);
+  assert.equal(productVoiceTargetMatchesScreen('search','نقطة البيع'),false);
+});
+
+test('cancelling POS dictation cannot route its result to the catalogue or a later draft',()=>{
+  const voice=new ProductVoiceSession();
+  const pending=voice.begin('pos-search');
+  assert.equal(voice.cancel('pos-search'),false);
+  assert.equal(voice.start(pending),false);
+  const live=voice.begin('pos-search');
+  assert.equal(voice.start(live),true);
+  assert.equal(voice.resultTarget(),'pos-search');
+  assert.equal(voice.cancel('pos-search'),true);
+  assert.equal(voice.resultTarget(),undefined);
+  assert.equal(voice.begin('search'),undefined);
+  assert.equal(voice.finish(live),true);
+  const catalogue=voice.begin('search');
+  assert.equal(voice.start(catalogue),true);
+  assert.equal(voice.resultTarget(),'search');
+});

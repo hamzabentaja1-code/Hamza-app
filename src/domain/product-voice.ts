@@ -1,4 +1,4 @@
-export type ProductVoiceTarget = 'search' | 'name' | 'price' | 'quantity';
+export type ProductVoiceTarget = 'search' | 'pos-search' | 'name' | 'price' | 'quantity';
 export type VoiceSession = {target: ProductVoiceTarget; phase: 'preparing' | 'native' | 'stopping' | 'cancelled'};
 
 /** One target owns the recognizer until the native end event. Permission callbacks keep the original token. */
@@ -43,6 +43,10 @@ export class ProductVoiceSession {
   }
 }
 
+export function productVoiceTargetMatchesScreen(target:ProductVoiceTarget,screen:string):boolean{
+  return target==='pos-search'?screen==='نقطة البيع':screen==='المنتجات';
+}
+
 export function productVoiceLocale(language: 'AR' | 'FR', installed: readonly string[]): string {
   const preferred = language === 'FR' ? 'fr-MA' : 'ar-MA';
   const normalized = installed.map(locale => locale.replace(/_/g,'-'));
@@ -60,7 +64,7 @@ export function productVoiceLocale(language: 'AR' | 'FR', installed: readonly st
 export function productVoiceValue(target: ProductVoiceTarget, transcript: string): string | undefined {
   const text = transcript.trim();
   if (!text) return;
-  if (target === 'name' || target === 'search') return text.slice(0,240);
+  if (target === 'name' || target === 'search' || target === 'pos-search') return text.slice(0,240);
   const normalized = text.replace(/[٠-٩۰-۹]/g,digit=>String(digit.charCodeAt(0)-(digit <= '٩' ? 0x660 : 0x6f0)))
     .replace(/[٫,]/g,'.').replace(/\s*\.\s*/g,'.');
   if (!/^\d{1,9}(?:\.\d{1,2})?$/.test(normalized)) return;

@@ -14,6 +14,11 @@ type PosCatalogProduct=PosProduct&{category?:string};
 type CheckoutLine = {productId:number; name:string; quantity:number; unitPrice:number; discount:number};
 type Props = {
   language: 'AR'|'FR';
+  searchTerm:string;
+  onSearchChange:(value:string)=>void;
+  onBarcodeStart:()=>void;
+  voiceSearchButton:React.ReactNode;
+  voiceSearchHint:React.ReactNode;
   products: Product[];
   customers: Customer[];
   bankAccounts:BankAccountOption[];
@@ -29,9 +34,8 @@ type Props = {
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PosWorkspace({language,products,customers,bankAccounts,creditByCustomer,outstandingByCustomer,parkedSales,warehouseId,warehouses,onPark,onDeleteParked,onCheckout}:Props){
+export default function PosWorkspace({language,searchTerm:term,onSearchChange:setTerm,onBarcodeStart,voiceSearchButton,voiceSearchHint,products,customers,bankAccounts,creditByCustomer,outstandingByCustomer,parkedSales,warehouseId,warehouses,onPark,onDeleteParked,onCheckout}:Props){
   const tr=(value:string)=>translate(language,value);
-  const [term,setTerm]=useState('');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [inStockOnly,setInStockOnly]=useState(false);
   const [customerId,setCustomerId]=useState('');
@@ -126,8 +130,10 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
     </View>
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>{tr('البحث عن منتج')}</Text>
-      <TextInput testID="hamza-pos-search" value={term} onChangeText={setTerm} onSubmitEditing={()=>{const product=findPosProduct(mapped,term);if(product){add(product);}}} returnKeyType="search" placeholder={tr('اسم المنتج أو المرجع أو الباركود...')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto'}}/>
-      <BarcodeScannerButton language={language} onScanned={handleBarcodeScanned}/>
+      <View style={{flexDirection:'row',gap:8,alignItems:'center'}}>
+      <TextInput testID="hamza-pos-search" value={term} onChangeText={setTerm} onSubmitEditing={()=>{const product=findPosProduct(mapped,term);if(product){add(product);}}} returnKeyType="search" placeholder={tr('اسم المنتج أو المرجع أو الباركود...')} placeholderTextColor="#888" style={{backgroundColor:'#111',borderWidth:1,borderColor:'#444',borderRadius:9,padding:12,color:'#FFF',textAlign:'auto',flex:1}}/>
+      {voiceSearchButton}</View>{voiceSearchHint}
+      <BarcodeScannerButton language={language} onStart={onBarcodeStart} onScanned={handleBarcodeScanned}/>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginVertical:8}}>
         <Pressable onPress={()=>setSelectedCategory('')} style={{borderWidth:1,borderColor:selectedCategory===''?GOLD:'#444',borderRadius:8,padding:8}}><Text style={{color:'#FFF'}}>{tr('جميع الأصناف')}</Text></Pressable>
         {categories.map(category=><Pressable key={category} onPress={()=>setSelectedCategory(category)} style={{borderWidth:1,borderColor:selectedCategory===category?GOLD:'#444',borderRadius:8,padding:8}}><Text style={{color:'#FFF'}}>{category}</Text></Pressable>)}

@@ -3,16 +3,17 @@ import {CameraView, useCameraPermissions} from 'expo-camera';
 import {Alert, Modal, Pressable, Text, View} from 'react-native';
 import {translate} from './i18n';
 
-type Props={language:'AR'|'FR';onScanned:(value:string)=>void};
+type Props={language:'AR'|'FR';onScanned:(value:string)=>void;onStart?:()=>void};
 const GOLD='#D6AE55';
 
-export default function BarcodeScannerButton({language,onScanned}:Props){
+export default function BarcodeScannerButton({language,onScanned,onStart}:Props){
   const tr=(value:string)=>translate(language,value);
   const [open,setOpen]=useState(false);
   const [permission,requestPermission]=useCameraPermissions();
   const handled=useRef(false);
 
   const start=async()=>{
+    onStart?.();
     const current=permission?.granted?permission:await requestPermission();
     if(!current.granted){
       Alert.alert(tr('صلاحية الكاميرا مطلوبة'),tr('سمح لـ HamZa باستعمال الكاميرا باش يمسح الباركود.'));
