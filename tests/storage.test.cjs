@@ -28,7 +28,8 @@ function fixture(initial={}){
     writeAsStringAsync:async (uri,value)=>{
       if(flags.failFile)throw Error('no disk space');
       files.set(uri,flags.badWrite?'wrong':value);
-    }
+    },
+    deleteAsync:async uri=>{if(flags.failUnlink)throw Error('unlink failed');files.delete(uri);},
   };
   const asMock={
     getItem:async id=>{if(flags.failRead)throw Error('read failed');return storage.get(id)??null;},
@@ -237,4 +238,64 @@ test('a supported 40 MiB snapshot plus six 4.5 MiB files fits a portable backup 
   const {taskAttachmentFiles:_,...records}=decoded;
   await f.api.restoreAppData(records);
   assert.equal((await read(f.restart())).customerArchive.length,legacyRecord.length);
+});
+
+const taskPdf=nativePath+'task-attachments/task-1-1-42.pdf';
+const littlePdf='%PDF-test';
+function taskSnapshot(linked=true,keepTask=true){
+  return {products:[],projects:[{id:1,tasks:keepTask?[{
+    id:1,title:'Task with fixture PDF',...(linked?{attachments:[{id:'file-1',name:'fixture.pdf',uri:taskPdf,size:littlePdf.length}]}:{}),
+  }]:[]}]};
+}
+
+for(const [label,removeTask] of [['remove attachment',false],['delete whole task',true]])test(label+' unlinks only after a verified durable commit',async()=>{
+  const f=fixture();
+  f.files.set(taskPdf,littlePdf);
+  const old=taskSnapshot();
+  await f.api.writeAppData(old);
+  const next=taskSnapshot(false,!removeTask);
+  for(const flag of ['failFile','badWrite','failCommit']){
+    f.flags[flag]=true;
+    await assert.rejects(f.api.writeAppData(next,[taskPdf]));
+    f.flags[flag]=false;
+    const reopened=await read(f.restart());
+    assert.equal(reopened.projects[0].tasks[0].attachments[0].uri,taskPdf);
+    assert.equal(f.files.get(taskPdf),littlePdf);
+    const originalFile={id:'file-1',base64:Buffer.from(f.files.get(taskPdf)).toString('base64')};
+    const json=await f.api.createBackup({...reopened,taskAttachmentFiles:[originalFile]});
+    assert.equal(f.api.decodeHamzaBackup(json).taskAttachmentFiles[0].base64,originalFile.base64);
+  }
+  assert.equal((await f.api.writeAppData(next,[taskPdf]))[0],taskPdf);
+  const updated=await read(f.restart());
+  assert.equal(updated.projects[0].tasks.length,removeTask?0:1);
+  assert.equal(updated.projects[0].tasks[0]?.attachments,undefined);
+  assert.equal(f.files.has(taskPdf),false);
+});
+
+test('shared references and files outside the owned attachment path are retained',async()=>{
+  const f=fixture();
+  const outside=nativePath+'not-a-task.pdf';
+  f.files.set(outside,'safe file');
+  f.files.set(taskPdf,littlePdf);
+  const data=taskSnapshot();
+  data.projects[0].tasks.push({...data.projects[0].tasks[0],id:2});
+  await f.api.writeAppData(data);
+  data.projects[0].tasks.shift();
+  const removed=await f.api.writeAppData(data,[taskPdf,outside,nativePath+'task-attachments/../not-a-task.pdf']);
+  assert.equal(removed.length,0);
+  assert.equal(f.files.get(taskPdf),littlePdf);
+  assert.equal(f.files.get(outside),'safe file');
+});
+
+test('failure during unlink leaves a harmless orphan and can retry on a queued write',async()=>{
+  const f=fixture();
+  f.files.set(taskPdf,littlePdf);
+  await f.api.writeAppData(taskSnapshot());
+  f.flags.failUnlink=true;
+  assert.equal((await f.api.writeAppData(taskSnapshot(false),[taskPdf])).length,0);
+  assert.equal((await read(f.restart())).projects[0].tasks[0].attachments,undefined);
+  assert.ok(f.files.has(taskPdf));
+  f.flags.failUnlink=false;
+  assert.equal((await f.api.writeAppData(taskSnapshot(false),[taskPdf]))[0],taskPdf);
+  assert.equal(f.files.has(taskPdf),false);
 });

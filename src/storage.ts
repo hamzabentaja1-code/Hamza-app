@@ -167,8 +167,43 @@ async function persist(data:Record<string,unknown>,restoring:boolean):Promise<vo
   writesBlocked=false;
 }
 
-export function writeAppData(data:Record<string,unknown>):Promise<void>{
-  return queued(()=>persist(data,false));
+function committedTaskFileReferences(data:Record<string,unknown>):Set<string>|undefined{
+  const files=new Set<string>();
+  if(!Array.isArray(data.projects))return undefined;
+  for(const project of data.projects){
+    if(!record(project)||!Array.isArray(project.tasks))return undefined;
+    for(const task of project.tasks){
+      if(!record(task))return undefined;
+      if(task.attachments===undefined)continue;
+      if(!Array.isArray(task.attachments))return undefined;
+      for(const file of task.attachments){
+        if(!record(file)||typeof file.uri!=='string')return undefined;
+        files.add(file.uri);
+      }
+    }
+  }
+  return files;
+}
+
+/** Candidates come only from confirmed task removals. Unlink under the same write queue, after commit. */
+export function writeAppData(data:Record<string,unknown>,unlinkCandidates:readonly string[]=[]):Promise<string[]>{
+  const requested=[...new Set(unlinkCandidates)];
+  return queued(async()=>{
+    await persist(data,false);
+    if(!requested.length)return [];
+    const references=committedTaskFileReferences(lastRead);
+    const root=FileSystem.documentDirectory;
+    if(!references||!root)return [];
+    const prefix=`${root}task-attachments/`;
+    const removed:string[]=[];
+    for(const uri of requested){
+      // Never traverse directories, touch another app file, or unlink a shared reference.
+      if(!uri.startsWith(prefix)||!/^[a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9]{1,10})?$/.test(uri.slice(prefix.length))||references.has(uri))continue;
+      try{await FileSystem.deleteAsync(uri,{idempotent:true});removed.push(uri);}
+      catch{/* A leftover file is safe; retry on a later state write. */}
+    }
+    return removed;
+  });
 }
 
 function encodeBackup(data:Record<string,unknown>):string{
