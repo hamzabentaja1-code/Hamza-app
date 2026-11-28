@@ -27,11 +27,7 @@ rm -f -- "$work/signing.p12"
 unset HAMZA_RELEASE_STORE_PASSWORD HAMZA_RELEASE_KEY_PASSWORD HAMZA_RELEASE_KEY_ALIAS
 "$tool_dir/zipalign" -c -P 16 4 "$work/HamZa.apk"
 "$tool_dir/apksigner" verify --verbose --print-certs "$work/HamZa.apk" > "$work/cert.txt"
-mapfile -t signers < <(sed -n 's/^Signer #[0-9][0-9]* certificate SHA-256 digest: //p' "$work/cert.txt" | tr '[:upper:]' '[:lower:]')
-if [[ ${#signers[@]} != 1 || "${signers[0]}" != "$expected" ]]; then
-  echo "APK signer does not match the designated release signing identity." >&2
-  exit 1
-fi
+python3 "$(dirname "${BASH_SOURCE[0]}")/verify-apk-cert.py" "$expected" "$work/cert.txt"
 install -m 600 "$work/HamZa.apk" "$target_dir/HamZa.apk"
 printf '%s\n' "$expected" > "$target_dir/signer.sha256"
 (cd "$target_dir" && sha256sum HamZa.apk > apk.sha256)

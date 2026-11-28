@@ -62,6 +62,15 @@ export function recordCustomerRefund(item:SalesReturnRecord,amount:number,id:num
   return {...item,unappliedCentimes:unapplied-amountCentimes,refunds:[...(item.refunds||[]),{id,amountCentimes,date,method:'cash'}]};
 }
 
+export function recordCashCustomerRefund(
+  item:SalesReturnRecord,amount:number,id:number,date:string,cashBalanceCentimes:number,
+):SalesReturnRecord {
+  const updated=recordCustomerRefund(item,amount,id,date);
+  if(!Number.isSafeInteger(cashBalanceCentimes)||Math.round(amount*100)>cashBalanceCentimes)
+    throw new Error('المبلغ خارج الرصيد المتوفر فالصندوق.');
+  return updated;
+}
+
 export function applyCustomerCreditsToSalesReturns(
   returns:readonly SalesReturnRecord[],
   allocations:readonly {creditNoteId:number;invoiceId:number;amountCentimes:number}[],

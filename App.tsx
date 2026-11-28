@@ -1,3 +1,4 @@
+import {allocatePosLineTotals} from './src/pos';
 import type {ArchivedSupplierInvoice} from './src/domain/historical-supplier-invoices';
 import type {HistoricalSupplierReturn} from './src/domain/historical-supplier-returns';
 import {adaptHistoricalSnapshot} from './src/domain/historical-snapshot';
@@ -27,7 +28,7 @@ import {calculateTechnicianPayroll,createPayrollSettlement,normalizePayrollSettl
 import RecurringExpensesWorkspace from './src/RecurringExpensesWorkspace';
 import {advanceRecurringExpense,createRecurringExpense,normalizeRecurringExpenses,recordRecurringOccurrence,RecurringExpenseInput,RecurringExpenseRule} from './src/recurring-expenses';
 import SalesReturnWorkspace from './src/SalesReturnWorkspace';
-import {applyCustomerCreditsToSalesReturns,createSalesReturn,normalizeSalesReturns,recordCustomerRefund,SaleForReturn,SalesReturnRecord} from './src/domain/sales-returns';
+import {applyCustomerCreditsToSalesReturns,createSalesReturn,normalizeSalesReturns,recordCashCustomerRefund,SaleForReturn,SalesReturnRecord} from './src/domain/sales-returns';
 import {allowedTrackedSalesDocumentStatuses,changeTrackedSalesDocumentStatus} from './src/domain/commercial-lifecycle';
 import {convertQuote as createConvertedDocument, ConvertedDocument} from './src/domain/document-conversion';
 import {DEFAULT_DOCUMENT_NUMBER_PREFIXES,DocumentNumberPrefixes,normalizeDocumentNumberPrefixes,nextDocumentNumber} from './src/domain/document-numbering';
@@ -399,7 +400,20 @@ export default function App() {
       Alert.alert(tr('تم تسجيل المرتجع'),item.number+' • '+item.total.toFixed(2)+' DH'+(credit.unappliedCentimes?` • ${tr('رصيد لصالح الزبون:')} ${(credit.unappliedCentimes/100).toFixed(2)} DH`:''));return true;
     }catch(error){Alert.alert(tr('تعذر تسجيل المرتجع'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));return false;}
   };
-  const requestCustomerRefund=(item:SalesReturnRecord,amount:number)=>Alert.alert(tr('تأكيد الرد النقدي'),`${tr('رد نقدي')}: ${amount.toFixed(2)} DH\n${tr('رصيد لصالح الزبون:')} ${((item.unappliedCentimes||0)/100).toFixed(2)} DH`,[{text:tr('إلغاء'),style:'cancel'},{text:tr('تأكيد'),style:'destructive',onPress:()=>{try{const updated=recordCustomerRefund(item,amount,Date.now(),new Date().toLocaleDateString('fr-MA'));setSalesReturns(current=>current.map(value=>value.id===item.id?updated:value));Alert.alert(tr('تم رد المبلغ'),`${amount.toFixed(2)} DH`);}catch(error){Alert.alert(tr('تعذر تسجيل المرتجع'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}}}]);
+  const requestCustomerRefund=(item:SalesReturnRecord,amount:number)=>Alert.alert(
+    tr('تأكيد الرد النقدي'),
+    `${tr('رد نقدي')}: ${amount.toFixed(2)} DH\n${tr('رصيد لصالح الزبون:')} ${((item.unappliedCentimes||0)/100).toFixed(2)} DH`,
+    [{text:tr('إلغاء'),style:'cancel'},{text:tr('تأكيد'),style:'destructive',onPress:()=>{
+      try{
+        const current=refundState.current;
+        const fresh=current.returns.find(row=>row.id===item.id);
+        if(!fresh)throw new Error('راجع البيانات وحاول من جديد.');
+        const updated=recordCashCustomerRefund(fresh,amount,Date.now(),new Date().toLocaleDateString('fr-MA'),current.cash);
+        refundState.current={cash:current.cash-Math.round(amount*100),returns:current.returns.map(row=>row.id===item.id?updated:row)};
+        setSalesReturns(rows=>rows.map(row=>row.id===item.id?updated:row));
+        Alert.alert(tr('تم رد المبلغ'),`${amount.toFixed(2)} DH`);
+      }catch(error){Alert.alert(tr('تعذر تسجيل المرتجع'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}
+    }}]);
   const exportSalesReturnPdf=(item:SalesReturnRecord)=>exportCommercialPdf('creditNote',(language==='FR'?'Avoir ':'إشعار دائن ')+item.number,item.customerName,[tr('تاريخ المرتجع:')+' '+item.date,tr('مرجع البيع:')+' '+(item.saleReference??item.saleId),item.productName+' × '+item.qty,tr('سبب المرتجع')+': '+(item.reason||tr('بدون سبب')),tr(item.restocked?'عاد للمخزون':'لم يعد للمخزون'),...(item.historicalAllocation?[tr('توزيع الرصيد من النسخة القديمة')]:[]),tr('المخصوم من دين الفاتورة:')+' '+((item.invoiceAllocations||[]).reduce((sum,allocation)=>sum+allocation.allocatedCentimes,0)/100).toFixed(2)+' DH',...(item.refunds||[]).map(refund=>`${tr('رد نقدي')}: ${(refund.amountCentimes/100).toFixed(2)} DH • ${refund.date}`),tr('رصيد لصالح الزبون:')+' '+((item.unappliedCentimes||0)/100).toFixed(2)+' DH'],item.total,item.date,[undefined,undefined,item.productId]);
   const stockValue=useMemo(()=>products.reduce((a,p)=>a+p.price*p.qty,0),[products]);
   const potentialStockProfit=useMemo(()=>products.reduce((sum,p)=>sum+(p.price-inventoryAverageProductCost(p.id,p.costPrice||0))*p.qty,0),[products,warehouses,stockMovements]);
@@ -451,6 +465,8 @@ export default function App() {
   const selectedCustomerCreditCentimes=salesReturns.filter(item=>item.customerName===customers.find(customer=>String(customer.id)===paymentCustomer)?.name).reduce((sum,item)=>sum+(item.unappliedCentimes||0),0);
   const cashSources=useMemo(()=>({payments,supplierPayments,purchases,expenses,refunds:salesReturns.flatMap(item=>(item.refunds||[]).map(refund=>({...refund,number:item.number,customerName:item.customerName}))),bankTransfers,payrollSettlements}),[payments,supplierPayments,purchases,expenses,salesReturns,bankTransfers,payrollSettlements]);
   const cashBalanceCentimes=useMemo(()=>calculateCashBalance(cashAccount,cashSources),[cashAccount,cashSources]);
+  const refundState=useRef({cash:cashBalanceCentimes,returns:salesReturns});
+  useEffect(()=>{refundState.current={cash:cashBalanceCentimes,returns:salesReturns};},[cashBalanceCentimes,salesReturns]);
   const cashRegisterRows=useMemo(()=>buildCashRegisterRows(cashAccount,cashSources),[cashAccount,cashSources]);
   const reportCashRows=(appliedReportRange?filterByDateRange(cashRegisterRows,appliedReportRange.from,appliedReportRange.to):cashRegisterRows).filter(row=>matchesReportSearch(appliedReportSearch,row.description,row.source,row.id));
   const reportBankEntries=(appliedReportRange?filterByDateRange(bankLedgerEntries,appliedReportRange.from,appliedReportRange.to):bankLedgerEntries).filter(entry=>matchesReportSearch(appliedReportSearch,entry.id,entry.description,entry.bankAccountId,bankAccounts.find(account=>account.id===entry.bankAccountId)?.name,entry.amountCentimes));
@@ -999,8 +1015,9 @@ export default function App() {
     if(data.paymentMethod==='credit'){const contact=customers.find(item=>item.id===data.customerId);const availableCredit=salesReturns.filter(item=>item.customerName===data.customerName).reduce((sum,item)=>sum+(item.unappliedCentimes||0),0);const dueCentimes=Math.max(0,Math.round(data.total*100)-Math.round(data.paidAmount*100)-Math.min(availableCredit,Math.max(0,Math.round(data.total*100)-Math.round(data.paidAmount*100))));if(!canExtendCredit({creditLimitCentimes:contact?.creditLimitCentimes},balanceFor(data.customerName)?.outstandingCentimes||0,dueCentimes)){Alert.alert(tr('تجاوز سقف الدين'),tr('هاد البيع غادي يفوت سقف الدين المحدد للزبون.'));return false;}}
     const invalid=data.lines.find(line=>{const product=products.find(p=>p.id===line.productId);return !product||warehouseStock(stockMovements,String(line.productId),activeWarehouseId)<line.quantity;});
     if(invalid){Alert.alert(tr('المخزون تبدل'),tr('الكمية المتوفرة ما بقاتش كافية. راجع السلة.'));return false;}
-    const subtotal=data.lines.reduce((sum,line)=>sum+line.quantity*line.unitPrice-line.discount,0);
-    const globalDiscount=Math.max(0,subtotal-data.total);
+    let lineTotals:number[];
+    try{lineTotals=allocatePosLineTotals(data.lines,data.total);}
+    catch{Alert.alert(tr('معلومات ناقصة'),tr('مجموع نقطة البيع غير صالح.'));return false;}
     const today=new Date().toLocaleDateString('fr-MA');
     const transactionId=Date.now();
     const invoiceId=transactionId+data.lines.length+1;
@@ -1010,7 +1027,7 @@ export default function App() {
     const creditedCentimes=carriedCredit.creditedCentimes;
     const invoiceStatus=paidCentimes+creditedCentimes>=Math.round(data.total*100)?'paid':paidCentimes+creditedCentimes>0?'partially_paid':'صادرة';
     if(carriedCredit.allocations.length)setSalesReturns(current=>applyCustomerCreditsToSalesReturns(current,carriedCredit.allocations,invoiceId,invoiceStatus==='paid'?'paid':'partially_paid'));
-    const records=data.lines.map((line,index)=>{const raw=line.quantity*line.unitPrice-line.discount;const share=subtotal>0?globalDiscount*(raw/subtotal):0;return {id:transactionId+index,productId:line.productId,warehouseId:activeWarehouseId,documentId:invoiceId,productName:line.name,customerName:data.customerName,qty:line.quantity,unitPrice:line.unitPrice,unitCost:averageInventoryUnitCost(stockMovements,String(line.productId),activeWarehouseId)??inventoryAverageProductCost(line.productId,products.find(product=>product.id===line.productId)?.costPrice||0),total:Math.max(0,raw-share),discount:line.discount+share,date:today,paymentMethod:data.paymentMethod};});
+    const records=data.lines.map((line,index)=>{const total=lineTotals[index];return {id:transactionId+index,productId:line.productId,warehouseId:activeWarehouseId,documentId:invoiceId,productName:line.name,customerName:data.customerName,qty:line.quantity,unitPrice:line.unitPrice,unitCost:averageInventoryUnitCost(stockMovements,String(line.productId),activeWarehouseId)??inventoryAverageProductCost(line.productId,products.find(product=>product.id===line.productId)?.costPrice||0),total,discount:Math.max(0,Math.round((line.quantity*line.unitPrice-total)*100)/100),date:today,paymentMethod:data.paymentMethod};});
     setSales(current=>[...records,...current]);
     setProducts(current=>current.map(product=>{const sold=data.lines.filter(line=>line.productId===product.id).reduce((sum,line)=>sum+line.quantity,0);return sold?{...product,qty:product.qty-sold}:product;}));
     setStockMovements(current=>[...current,...data.lines.map((line,index)=>({id:'pos-'+Date.now()+'-'+index,productId:String(line.productId),warehouseId:activeWarehouseId,kind:'sale' as const,quantity:line.quantity,createdAt:new Date().toISOString(),note:'بيع نقطة البيع'}))]);

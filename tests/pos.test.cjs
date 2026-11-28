@@ -52,3 +52,17 @@ test('credit checkout requires a registered customer and a valid partial payment
   assert.deepEqual(validateCheckout({...cart,customerId:'7'}),[]);
   assert.ok(validateCheckout({...cart,customerId:'7',paidAmount:25}).includes('المبلغ المؤدى ما صالحش'));
 });
+
+test('POS line cents, invoice and full-return credits cannot exceed the charged total',()=>{
+  const {allocatePosLineTotals}=require('../.test-build/pos.js');
+  const {createSalesReturn}=require('../.test-build/domain/sales-returns.js');
+  const lines=[1,2,3].map(i=>({productId:String(i),name:'Article '+i,quantity:1,unitPrice:10,discount:0}));
+  const total=posTotals({...emptyPosCart(),lines,globalDiscount:0.01}).total;
+  const allocated=allocatePosLineTotals(lines,total);
+  assert.deepEqual(allocated,[10,9.99,10]);
+  const credits=allocated.map((value,i)=>createSalesReturn({sale:{id:i+1,qty:1,total:value,productName:lines[i].name,customerName:'Client'},quantity:1,existingReturns:[],id:i+10,date:'2026-11-28',restock:false}));
+  assert.equal(credits.reduce((sum,item)=>sum+Math.round(item.total*100),0),2999);
+  assert.deepEqual(allocatePosLineTotals([{quantity:2.5,unitPrice:18.75,discount:0}],46.88),[46.88]);
+  assert.deepEqual(allocatePosLineTotals(lines,0),[0,0,0]);
+  assert.throws(()=>allocatePosLineTotals(lines,30.01));
+});

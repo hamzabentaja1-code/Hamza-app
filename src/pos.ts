@@ -23,12 +23,35 @@ export function addPosLine(cart: PosCart, product: PosProduct, quantity = 1): Po
   return { ...cart, lines };
 }
 
+type PricedPosition=Pick<PosLine,'quantity'|'unitPrice'|'discount'>;
+const toCents=(value:number)=>Math.round(value*100);
+const lineNetCentimes=(line:PricedPosition)=>Math.max(0,toCents(line.quantity*line.unitPrice-line.discount));
+
+/** Account for every centime exactly once, in a stable line order. */
+export function allocatePosLineTotals(lines:readonly PricedPosition[],total:number):number[]{
+  const weights=lines.map(lineNetCentimes),goal=toCents(total);
+  const subtotal=weights.reduce((sum,value)=>sum+value,0);
+  if(!Number.isSafeInteger(goal)||goal<0||!weights.every(Number.isSafeInteger)||
+     !Number.isSafeInteger(subtotal)||goal>subtotal)throw new Error('مجموع نقطة البيع غير صالح.');
+  if(subtotal===0)return weights.map(()=>0);
+  let cumulative=BigInt(0),allocated=BigInt(0);
+  const denominator=BigInt(subtotal),target=BigInt(goal);
+  return weights.map(weight=>{
+    cumulative+=BigInt(weight);
+    const next=(cumulative*target+denominator/BigInt(2))/denominator;
+    const portion=next-allocated;allocated=next;
+    return Number(portion)/100;
+  });
+}
+
 export function posTotals(cart: PosCart) {
-  const subtotal = cart.lines.reduce((s, l) => s + Math.max(0, l.quantity * l.unitPrice - l.discount), 0);
-  const discount = Math.min(subtotal, Math.max(0, cart.globalDiscount));
+  const subtotal = cart.lines.reduce((sum, line) => sum + lineNetCentimes(line), 0);
+  const discount = Math.min(subtotal, Math.max(0,toCents(cart.globalDiscount)));
   const total = Math.max(0, subtotal - discount);
-  const paid = Math.min(total, Math.max(0, cart.paidAmount));
-  return { subtotal, discount, total, paid, remaining: total - paid, change: Math.max(0, cart.paidAmount - total) };
+  const received = Math.max(0,toCents(cart.paidAmount));
+  const paid = Math.min(total,received);
+  return {subtotal:subtotal/100,discount:discount/100,total:total/100,paid:paid/100,
+    remaining:(total-paid)/100,change:Math.max(0,received-total)/100};
 }
 
 export function validateCheckout(cart: PosCart): string[] {

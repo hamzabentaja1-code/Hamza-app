@@ -94,3 +94,19 @@ test('multiple partial returns reconcile to exactly the original amount in centi
   assert.deepEqual(returns.map(item=>item.total),[0.01,0,0.01,0]);
   assert.equal(returns.reduce((sum,item)=>sum+Math.round(item.total*100),0),2);
 });
+
+test('cash refund cannot consume more than the current till or create a zero-cent posting',()=>{
+  const {recordCashCustomerRefund}=require('../.test-build/domain/sales-returns.js');
+  const {buildCashRegisterRows,calculateCashBalance}=require('../.test-build/domain/cash-register.js');
+  const item={id:1,saleId:2,number:'AV-01',unappliedCentimes:10000};
+  const cash={openingBalanceCentimes:2000,openingDate:'2026-11-27',manualEntries:[]};
+  assert.throws(()=>recordCashCustomerRefund(item,50,7,'2026-11-28',2000),/الصندوق/);
+  assert.throws(()=>recordCashCustomerRefund(item,0.004,7,'2026-11-28',2000));
+  assert.equal(item.unappliedCentimes,10000);
+  const updated=recordCashCustomerRefund(item,20,7,'2026-11-28',2000);
+  const refunds=JSON.parse(JSON.stringify(updated.refunds)).map(row=>({...row,number:item.number,customerName:'Client'}));
+  const sources={payments:[],supplierPayments:[],purchases:[],expenses:[],refunds};
+  assert.equal(updated.unappliedCentimes,8000);
+  assert.equal(calculateCashBalance(cash,sources),0);
+  assert.equal(buildCashRegisterRows(cash,sources).filter(row=>row.source==='refund').length,1);
+});

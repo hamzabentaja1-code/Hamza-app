@@ -14,6 +14,7 @@ const fr: Record<string, string> = {
   "رصيد مرتجعات المورد غير صالح.": "Crédit de retour fournisseur invalide.",
   "سجل مرتجعات الزبناء القديم غير صالح. البيانات الأصلية ما تبدلاتش.": "Le journal historique des retours clients est invalide. Les données d’origine restent intactes.",
   "توزيع الرصيد من النسخة القديمة": "Répartition du crédit lors de la migration",
+  "مجموع نقطة البيع غير صالح.": "Total du point de vente invalide.",
   "سجل البنك القديم غير صالح. البيانات الأصلية ما تبدلاتش.": "Le journal bancaire historique est invalide. Les données d’origine restent intactes.",
   "سجل البنك القديم محفوظ": "Journal bancaire historique conservé",
   "تسوية قديمة": "Rapprochement historique",
