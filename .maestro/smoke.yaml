@@ -108,6 +108,22 @@ appId: com.hamza.app
       text: "25.00 DH × 1"
     direction: DOWN
 - assertVisible: "25.00 DH × 1"
+# Resuming is non-destructive. A second restart must still find the saved sale.
+- stopApp
+- launchApp:
+    clearState: false
+- scrollUntilVisible:
+    element:
+      id: hamza-module-pos
+    direction: DOWN
+- tapOn:
+    id: hamza-module-pos
+- scrollUntilVisible:
+    element:
+      id: hamza-pos-resume
+    direction: DOWN
+- assertVisible:
+    id: hamza-pos-resume
 - tapOn:
     id: hamza-toggle-language
 - assertVisible:

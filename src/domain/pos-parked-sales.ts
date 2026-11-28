@@ -5,6 +5,7 @@ export type ParkedPosSale={
   id:string;
   title:string;
   savedAt:string;
+  warehouseId?:string;
   cart:PosCart;
   customerId:string;
   method:ParkedPosMethod;
@@ -44,6 +45,7 @@ export function normalizeParkedPosSales(value:unknown):ParkedPosSale[]{
     const globalDiscount=typeof cart.globalDiscount==='number'&&Number.isFinite(cart.globalDiscount)&&cart.globalDiscount>=0?cart.globalDiscount:0;
     const paidAmount=typeof cart.paidAmount==='number'&&Number.isFinite(cart.paidAmount)&&cart.paidAmount>=0?cart.paidAmount:0;
     const sale:ParkedPosSale={
+      ...(typeof candidate.warehouseId==='string'&&candidate.warehouseId.trim()?{warehouseId:candidate.warehouseId.trim()}:{}),
       id,title:typeof candidate.title==='string'&&candidate.title.trim()?candidate.title.trim():'بيع محفوظ',savedAt,
       cart:{customerId:typeof cart.customerId==='string'?cart.customerId:undefined,lines,globalDiscount,paymentMethod:candidate.method,paidAmount},
       customerId:typeof candidate.customerId==='string'?candidate.customerId:'',method:candidate.method,
@@ -55,4 +57,26 @@ export function normalizeParkedPosSales(value:unknown):ParkedPosSale[]{
     results.push(sale);
   }
   return results;
+}
+
+/** Re-parking edits the same durable row and cannot retarget a known warehouse. */
+export function saveParkedPosSale(rows:readonly ParkedPosSale[],sale:ParkedPosSale,replace:boolean):ParkedPosSale[]{
+  const matches=rows.filter(row=>row.id===sale.id);
+  if(!sale.warehouseId?.trim())throw new Error('اختار المخزن ديال هاد البيع.');
+  if(replace?(matches.length!==1):matches.length>0)throw new Error('البيع المحفوظ ما بقاش متاح.');
+  if(!replace&&rows.length>=50)throw new Error('حيد بعض المبيعات المحفوظة قبل ما تزيد أخرى.');
+  if(matches[0]?.warehouseId&&matches[0].warehouseId!==sale.warehouseId)throw new Error('هاد البيع مربوط بمخزن آخر.');
+  return [sale,...rows.filter(row=>row.id!==sale.id)];
+}
+
+export function parkedCheckoutError(rows:readonly ParkedPosSale[], activeWarehouseId:string, input:{
+  parkedSaleId?:string;warehouseId:string;legacyWarehouseConfirmed?:boolean;
+}):string|undefined {
+  if(!input.warehouseId||input.warehouseId!==activeWarehouseId)return 'هاد البيع مربوط بمخزن آخر.';
+  if(!input.parkedSaleId)return;
+  const matches=rows.filter(row=>row.id===input.parkedSaleId);
+  if(matches.length!==1)return 'البيع المحفوظ ما بقاش متاح.';
+  const saved=matches[0];
+  if(saved.warehouseId&&saved.warehouseId!==input.warehouseId)return 'هاد البيع مربوط بمخزن آخر.';
+  if(!saved.warehouseId&&!input.legacyWarehouseConfirmed)return 'اختار المخزن ديال هاد البيع.';
 }

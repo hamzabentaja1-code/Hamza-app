@@ -20,15 +20,16 @@ type Props = {
   creditByCustomer: Record<string,number>;
   outstandingByCustomer: Record<string,number>;
   parkedSales:ParkedPosSale[];
-  onPark:(sale:ParkedPosSale)=>boolean;
-  onResume:(id:string)=>void;
+  warehouseId:string;
+  warehouses:readonly {id:string;name:string}[];
+  onPark:(sale:ParkedPosSale,replace:boolean)=>boolean;
   onDeleteParked:(id:string)=>void;
-  onCheckout: (data:{customerId?:number;customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'|'credit'; total:number;paidAmount:number;bankAccountId?:string;creditPaymentMethod?:'cash'|'card'|'transfer'})=>boolean|void;
+  onCheckout: (data:{warehouseId:string;parkedSaleId?:string;legacyWarehouseConfirmed?:boolean;customerId?:number;customerName:string; lines:CheckoutLine[]; paymentMethod:'cash'|'card'|'transfer'|'credit'; total:number;paidAmount:number;bankAccountId?:string;creditPaymentMethod?:'cash'|'card'|'transfer'})=>boolean;
 };
 const GOLD='#D6AE55';
 const money=(value:number)=>value.toFixed(2)+' DH';
 
-export default function PosWorkspace({language,products,customers,bankAccounts,creditByCustomer,outstandingByCustomer,parkedSales,onPark,onResume,onDeleteParked,onCheckout}:Props){
+export default function PosWorkspace({language,products,customers,bankAccounts,creditByCustomer,outstandingByCustomer,parkedSales,warehouseId,warehouses,onPark,onDeleteParked,onCheckout}:Props){
   const tr=(value:string)=>translate(language,value);
   const [term,setTerm]=useState('');
   const [selectedCategory,setSelectedCategory]=useState('');
@@ -41,6 +42,12 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
   const [discountText,setDiscountText]=useState('0');
   const [cart,setCart]=useState<PosCart>(emptyPosCart());
   const cartRef=useRef(cart);
+  const binding=useRef<{id:string;title:string;warehouseId:string;legacyWarehouseConfirmed:boolean}|undefined>(undefined);
+  const warehouseName=(id:string)=>warehouses.find(row=>row.id===id)?.name||id;
+  const resetCart=()=>{
+    binding.current=undefined;
+    commitCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');setTerm('');
+  };
   const commitCart=(next:PosCart)=>{cartRef.current=next;setCart(next);};
   const mapped:PosCatalogProduct[]=useMemo(()=>products.map(p=>({id:String(p.id),name:p.name,reference:p.reference,barcode:p.barcode,category:p.category,salePrice:p.price,stock:p.qty,trackStock:true})),[products]);
   const categories=useMemo(()=>[...new Set(mapped.map(product=>product.category?.trim()||'').filter(Boolean))].sort((a,b)=>a.localeCompare(b,language==='FR'?'fr':'ar')),[mapped,language]);
@@ -66,14 +73,29 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
   const remove=(productId:string)=>commitCart({...cartRef.current,lines:cartRef.current.lines.filter(line=>line.productId!==productId)});
   const parkCurrentSale=()=>{
     try{
-      const parked=createParkedPosSale({title:`${tr('بيع محفوظ')} • ${new Date().toLocaleTimeString(language==='FR'?'fr-MA':'ar-MA')}`,cart:currentCart,customerId,method,bankAccountId,creditPaymentMethod,creditPaidText,discountText},`pos-${Date.now()}`,new Date().toISOString());
-      if(!onPark(parked))return;
-      commitCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');setTerm('');
+      const previous=binding.current;
+      const now=new Date();
+      const parked=createParkedPosSale({
+        title:previous?.title??`${tr('بيع محفوظ')} • ${now.toLocaleTimeString(language==='FR'?'fr-MA':'ar-MA')}`,
+        warehouseId:previous?.warehouseId??warehouseId,cart:currentCart,customerId,method,bankAccountId,creditPaymentMethod,creditPaidText,discountText,
+      },previous?.id??`pos-${now.getTime()}-${Math.random().toString(36).slice(2,10)}`,now.toISOString());
+      if(!onPark(parked,!!previous))return;
+      resetCart();
     }catch(error){Alert.alert(tr('تعذر حفظ البيع'),error instanceof Error?tr(error.message):tr('راجع البيانات وحاول من جديد.'));}
   };
   const resumeParkedSale=(sale:ParkedPosSale)=>{
-    if(cart.lines.length){Alert.alert(tr('السلة فيها منتجات'),tr('حفظ السلة الحالية أو فرغها قبل فتح بيع محفوظ.'));return;}
-    commitCart(sale.cart);setCustomerId(sale.customerId);setMethod(sale.method);setBankAccountId(sale.bankAccountId);setCreditPaymentMethod(sale.creditPaymentMethod);setCreditPaidText(sale.creditPaidText);setDiscountText(sale.discountText);onResume(sale.id);
+    if(cartRef.current.lines.length||binding.current){Alert.alert(tr('السلة فيها منتجات'),tr('حفظ السلة الحالية أو فرغها قبل فتح بيع محفوظ.'));return;}
+    if(sale.warehouseId&&sale.warehouseId!==warehouseId){
+      Alert.alert(tr('هاد البيع مربوط بمخزن آخر.'),`${tr('المخزن')}: ${warehouseName(sale.warehouseId)}`);return;
+    }
+    const resume=()=>{
+      binding.current={id:sale.id,title:sale.title,warehouseId:sale.warehouseId??warehouseId,legacyWarehouseConfirmed:!sale.warehouseId};
+      commitCart(sale.cart);setCustomerId(sale.customerId);setMethod(sale.method);setBankAccountId(sale.bankAccountId);setCreditPaymentMethod(sale.creditPaymentMethod);setCreditPaidText(sale.creditPaidText);setDiscountText(sale.discountText);
+    };
+    if(sale.warehouseId){resume();return;}
+    Alert.alert(tr('اختار المخزن ديال هاد البيع.'),`${tr('المخزن')}: ${warehouseName(warehouseId)}`,[
+      {text:tr('إلغاء'),style:'cancel'},{text:tr('استعمل هاد المخزن'),onPress:resume},
+    ]);
   };
   const checkout=()=>{
     if(!Number.isFinite(discount)||discount<0){Alert.alert(tr('تخفيض غير صالح'),tr('دخل تخفيض صحيح.'));return;}
@@ -89,15 +111,18 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
     const creditApplied=method==='credit'?Math.min(Math.max(0,creditByCustomer[name]||0),remaining):0;
     const selectedCustomer=customers.find(c=>String(c.id)===customerId);
     if(method==='credit'&&selectedCustomer&&!canExtendCredit({creditLimitCentimes:selectedCustomer.creditLimitCentimes},Math.round((outstandingByCustomer[name]||0)*100),Math.round((remaining-creditApplied)*100))){Alert.alert(tr('تجاوز سقف الدين'),tr('هاد البيع غادي يفوت سقف الدين المحدد للزبون.'));return;}
-    Alert.alert(tr('تأكيد البيع'),`${tr('المجموع النهائي:')} ${money(totals.total)}\n${tr('الزبون')}: ${name}\n${tr('طريقة الأداء')}: ${tr(method==='cash'?'نقداً':method==='card'?'بطاقة':method==='credit'?'دين':'تحويل')}${method==='credit'?`\n${tr('المؤدى الآن:')} ${money(paidAmount)}${creditApplied>0?`\n${tr('رصيد سابق مستعمل:')} ${money(creditApplied)}`:''}\n${tr('الباقي:')} ${money(remaining-creditApplied)}`:''}`,[
+    const source=binding.current;
+    let sent=false;
+    Alert.alert(tr('تأكيد البيع'),`${tr('المجموع النهائي:')} ${money(totals.total)}\n${tr('الزبون')}: ${name}\n${tr('المخزن')}: ${warehouseName(source?.warehouseId??warehouseId)}\n${tr('طريقة الأداء')}: ${tr(method==='cash'?'نقداً':method==='card'?'بطاقة':method==='credit'?'دين':'تحويل')}${method==='credit'?`\n${tr('المؤدى الآن:')} ${money(paidAmount)}${creditApplied>0?`\n${tr('رصيد سابق مستعمل:')} ${money(creditApplied)}`:''}\n${tr('الباقي:')} ${money(remaining-creditApplied)}`:''}`,[
       {text:tr('رجوع'),style:'cancel'},
-      {text:tr('تأكيد'),onPress:()=>{const accepted=onCheckout({customerId:customerId?Number(customerId):undefined,customerName:name,lines,paymentMethod:method,total:totals.total,paidAmount,...(bankRequired?{bankAccountId}:{}),...(method==='credit'?{creditPaymentMethod}:{})});if(accepted===false)return;commitCart(emptyPosCart());setDiscountText('0');setCustomerId('');setCreditPaidText('0');}}
+      {text:tr('تأكيد'),onPress:()=>{if(sent)return;sent=true;const accepted=onCheckout({warehouseId:source?.warehouseId??warehouseId,parkedSaleId:source?.id,legacyWarehouseConfirmed:source?.legacyWarehouseConfirmed,customerId:customerId?Number(customerId):undefined,customerName:name,lines,paymentMethod:method,total:totals.total,paidAmount,...(bankRequired?{bankAccountId}:{}),...(method==='credit'?{creditPaymentMethod}:{})});if(accepted)resetCart();}}
     ]);
   };
   return <View style={{gap:12,direction:getLayoutDirection(language)}}>
     <View style={{backgroundColor:'#211D14',borderColor:'#5D4A25',borderWidth:1,borderRadius:14,padding:14}}>
       <Text style={{color:GOLD,fontSize:19,fontWeight:'900'}}>{tr('نقطة البيع POS')}</Text>
       <Text style={{color:'#DDD',marginTop:5}}>{tr('قلب على المنتج بالاسم، زيدو للسلة، وكمّل البيع.')}</Text>
+      <Text style={{color:'#DDD'}}>{tr('المخزن')}: {warehouseName(warehouseId)}</Text>
     </View>
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:'#FFF',fontWeight:'800',marginBottom:8}}>{tr('البحث عن منتج')}</Text>
@@ -115,12 +140,14 @@ export default function PosWorkspace({language,products,customers,bankAccounts,c
       {!!(term.trim()||selectedCategory||inStockOnly)&&matches.length===0&&<Text style={{color:'#999',padding:10}}>{tr('ما كاين حتى منتج فهاد الفلتر.')}</Text>}
       {products.length===0&&<Text style={{color:'#999',padding:10}}>{tr('زيد المنتجات أولاً من قسم المنتجات.')}</Text>}
     </View>
+    {binding.current&&<Pressable accessibilityRole="button" onPress={resetCart}><Text style={{color:GOLD}}>{tr('سد السلة بلا حفظ التعديلات')}</Text></Pressable>}
     {parkedSales.length>0&&<View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
       <Text style={{color:GOLD,fontSize:17,fontWeight:'800',marginBottom:8}}>{tr('مبيعات محفوظة مؤقتاً')} ({parkedSales.length})</Text>
       {parkedSales.map(sale=>{const savedTotals=posTotals(sale.cart);return <View key={sale.id} style={{borderBottomWidth:1,borderBottomColor:'#333',paddingVertical:9}}>
         <Text style={{color:'#FFF',fontWeight:'700'}}>{sale.title}</Text>
         <Text style={{color:'#AAA',fontSize:12,marginTop:3}}>{new Date(sale.savedAt).toLocaleString(language==='FR'?'fr-MA':'ar-MA')} • {sale.cart.lines.length} {tr('منتج')} • {tr('المجموع النهائي:')} {money(savedTotals.total)}</Text>
-        <View style={{flexDirection:'row',gap:12,marginTop:6}}><Pressable testID="hamza-pos-resume" accessibilityRole="button" onPress={()=>resumeParkedSale(sale)}><Text style={{color:GOLD,fontWeight:'800'}}>{tr('استرجاع البيع')}</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>onDeleteParked(sale.id)}><Text style={{color:'#E28A78'}}>{tr('حذف البيع المحفوظ')}</Text></Pressable></View>
+        <Text style={{color:'#AAA'}}>{tr('المخزن')}: {sale.warehouseId?warehouseName(sale.warehouseId):tr('ما تحددش')}</Text>
+        <View style={{flexDirection:'row',gap:12,marginTop:6}}><Pressable testID="hamza-pos-resume" accessibilityRole="button" onPress={()=>resumeParkedSale(sale)} disabled={binding.current?.id===sale.id}><Text style={{color:GOLD,fontWeight:'800'}}>{tr('استرجاع البيع')}</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>onDeleteParked(sale.id)} disabled={binding.current?.id===sale.id}><Text style={{color:'#E28A78'}}>{tr('حذف البيع المحفوظ')}</Text></Pressable></View>
       </View>;})}
     </View>}
     <View style={{backgroundColor:'#1B1B1B',padding:14,borderRadius:12,borderWidth:1,borderColor:'#444'}}>
